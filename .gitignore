@@ -5,3 +5,6 @@
 **/*.xlsx
 **/*.xls
 **/*.Rproj
+**/*.Rdata
+**/*.rdata
+
