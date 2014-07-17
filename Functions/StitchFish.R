@@ -5,18 +5,6 @@
 
 StitchFish<- function(Data,IdVar,Groups,GroupSamples,Iterations)
 {
-  Data<- RAM
-  
-  IdVar<- 'IdOrig' #Id variable to use in regressions
-  
-  Groups<- unique(RAM$SpeciesCat,na.rm=T)
-  
-  Groups<- Groups[is.na(Groups)==F]
-  
-  GroupSamples<- 10
-
-  Iterations<- 10
-  
   
   if (length(GroupSamples)==1)
   {
@@ -43,9 +31,7 @@ StitchFish<- function(Data,IdVar,Groups,GroupSamples,Iterations)
     
     for (i in 1:Iterations)
     {
-      
-     show(paste('Group ',Groups[g],' is ', round(100*(g/length(Groups))),'% done stitching',sep=''))
-     
+           
       Samples<- sample(GroupIds,GroupSample,replace=FALSE)
       
       WhereSamples<- GroupData[,IdVar] %in% Samples
@@ -81,7 +67,10 @@ StitchFish<- function(Data,IdVar,Groups,GroupSamples,Iterations)
       TempStitchMat[,IdVar]<- StitchId
 
       TempStitchMat$SpeciesCat<- Groups[g]
-      
+
+     TempStitchMat$Year<- SampleYears
+     
+     
       TempStitchMat$Catch<-  StitchCatch
 
       TempStitchMat$Biomass<-  StitchBio
@@ -96,4 +85,5 @@ StitchFish<- function(Data,IdVar,Groups,GroupSamples,Iterations)
     
   } #Close groups loop
   
+  return(StitchMat)
 } #Close function
