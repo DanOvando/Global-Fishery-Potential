@@ -12,7 +12,7 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
   
   DependentName<- if (IsLog==T){paste('Log',DependentVariable,sep='')}
   
-  RegNames<- c(IdVar,DependentName,'ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'TimeToMaxCatch','InitalScaledCatchSlope'
+  RegNames<- c(IdVar,DependentName,'ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'TimeToMaxCatch','InitialScaledCatchSlope'
                ,'MeanScaledCatch','CatchToRollingMax','SpeciesCategory',LifeHistoryVars)
   
   RegFrame<- as.data.frame(matrix(NA,nrow=dim(Data)[1],ncol=length(RegNames)))
@@ -100,6 +100,9 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
     LifeData<- LifeData[,order(colnames(LifeData))]
     
     RegFrame[Where,WhereToGo]<- LifeData
+
+    RegFrame$SpeciesCategory[Where]<- Data$SpeciesCat[Where]
+    
     
   }#Close fisheries loop
   
