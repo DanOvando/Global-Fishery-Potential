@@ -12,7 +12,9 @@ sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source);
 # Read in and process data ------------------------------------------------------------
 
 #Call Tyler's code here when its' ready
-#source(RAM_Build.R)
+
+# source('Database_Build.r')
+
 RAM<- read.csv('Data/RAM_Complete_TC_071514.csv')
 
 RAM$Bmsy[RAM$Bmsy==0]<- NA
@@ -37,9 +39,13 @@ SyntheticStocks<- StitchFish(RAM,IdVar,Groups,GroupSamples,Iterations)
 
 RegressionData<- FormatForRegression(RAM,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
 
+SyntheticRegressionData<- FormatForRegression(SyntheticStocks,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
 
 # Run regressions ---------------------------------------------------------
 
+RealModels<- RunRegressions(RegressionData,Regressions,'Real Stocks')
+
+NeiModels<- RunRegressions(SyntheticRegressionData,Regressions,'Synthetic Stocks')
 
 # Apply regressions -------------------------------------------------------
 

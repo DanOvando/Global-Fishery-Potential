@@ -4,7 +4,7 @@
 # to estimate B/Bmsy 
 ######################################
 rm(list=ls())
-
+library(car)
 # Basic Controls -------------------------------------------------------------
 
 BatchFolder<- 'Results/Scratch Folder/'
@@ -40,6 +40,12 @@ dir.create(ResultFolder)
 DependentVariable<- 'BvBmsy' #Dependent variable in regression
 
 IsLog<- TRUE #Should dependent variable be logged?
+
+DependentName<- DependentVariable
+
+DependentName<- if (IsLog==T){paste('Log',DependentVariable,sep='')}
+
+
   
 CatchLags<- 4 #Number of years of lagged catch to create for regression
 
@@ -47,6 +53,10 @@ LifeHistoryVars<- c('MaxLength','AgeMat','VonBertK') #Life history variables to 
 
 IdVar<- 'IdOrig' #Id variable to use in regressions
 
+CatchVariables<- c('ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'TimeToMaxCatch','InitialScaledCatchSlope'
+                   ,'MeanScaledCatch','CatchToRollingMax')
+
+Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCat'),M6=c(DependentName,CatchVariables,'SpeciesCat'))  
 
 # Synthetic Stock Settings ------------------------------------------------
 
