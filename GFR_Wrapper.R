@@ -24,13 +24,38 @@ head(RAM)
 
 # Create synthetic stocks -------------------------------------------------
 
+if (Groups=='All')
+{
 Groups<- unique(RAM$SpeciesCat,na.rm=T)
 
 Groups<- Groups[is.na(Groups)==F]
+}
 
 SyntheticStocks<- StitchFish(RAM,IdVar,Groups,GroupSamples,Iterations)
 
 # Prepare data for regression ---------------------------------------------
 
 RegressionData<- FormatForRegression(RAM,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
+
+
+# Run regressions ---------------------------------------------------------
+
+
+# Apply regressions -------------------------------------------------------
+
+
+# Create stitched database ------------------------------------------------
+
+
+# Estimate MSY ------------------------------------------------------------
+
+
+# Run projection analysis -------------------------------------------------
+
+
+# Scale and Analyze Results -----------------------------------------------
+
+
+# Publish in Science ------------------------------------------------------
+
 

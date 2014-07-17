@@ -50,14 +50,13 @@ IdVar<- 'IdOrig' #Id variable to use in regressions
 
 # Synthetic Stock Settings ------------------------------------------------
 
+Groups<- 'All'
 
-GroupSamples<- 10
+GroupSamples<- 10 #The number of stocks to put in each synthetic nei. This can be a single number, or a vector for each group of interest
 
-Iterations<- 10
+Iterations<- 10 #Number of synthetic stocks to create within each group
 
-Data<- RAM
-
-IdVar<- 'IdOrig' #Id variable to use in regressions
+IdVar<- 'IdOrig' #Id variable to use in creating synthetic stocks
 
 #Interpolation etc. 
 

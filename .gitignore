@@ -8,3 +8,4 @@
 **/*.Rdata
 **/*.rdata
 Results**/*.csv
+Results**/*.*

@@ -52,6 +52,9 @@ RunDynamicOpt<- function(MSY,r,BaseP,BaseC,f0,beta,disc,bvec,TT,CSPrices,CSCost)
         
         [AA, BB] = fminbnd('GFRM_fun',0,1.99,[],b,p,MSY,c,r,beta,V,bvec,delta);
       
+        #Example
+        OptNTZSize<-   optim(StartingGuess,FindOptimalMPASize,lower=0,upper=0.999,FTemp=FScenarios[f],StartPop=StartPop,FleetSpill=FleetSpill,method="Brent") #You need a better optimization here, gets really stuck with any kind of stochasticity
+        
         Vnew[i]<- -BB
       
       } #Close bvec loop
