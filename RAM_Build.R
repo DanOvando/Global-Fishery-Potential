@@ -151,6 +151,9 @@ for (i in 1:length(RamNames)) ## multiple matches for Age at Mat for some studie
 Spec_ISSCAAP=read.csv("Data/Species_ASFIS_ISSCAAP.csv") # list of ASFIS scientific names and corressponding ISSCAAP codes 
 Spec_Region_RAM=read.csv("Data/Species_Region_RAM.csv") # list of RAM Assessed IDs previously matched to species code and FAO Region
 
+Spec_Region_RAM$Assessed.ID=as.character(levels(Spec_Region_RAM$Assessed.ID))[Spec_Region_RAM$Assessed.ID] # convert ID to character
+Spec_ISSCAAP$Species_AFSIS=as.character(levels(Spec_ISSCAAP$Species_AFSIS))[Spec_ISSCAAP$Species_AFSIS] # convert ID to character
+
 # FAO Region matching
 
 for (i in 1:length(RamNames)) 
@@ -158,5 +161,28 @@ for (i in 1:length(RamNames))
   
   Where<- RAM$IdOrig==RamNames[i]
   
+  if (sum(Spec_Region_RAM$Assessed.ID==RamNames[i])>0)
+  {
   RAM$RegionFAO[Where]<-Spec_Region_RAM[Spec_Region_RAM$Assessed.ID==RamNames[i],4]
 }
+} #Warning messages:
+# 1: In RAM$RegionFAO[Where] <- Spec_Region_RAM[Spec_Region_RAM$Assessed.ID ==  ... :
+# number of items to replace is not a multiple of replacement length
+
+# create variable to check region matches against
+RAMfao=aggregate(RAM$RegionFAO~RAM$IdOrig,FUN=mean)
+
+# ISSCAAP Species Code Matching
+
+SpecNames<-unique(RAM$SciName)
+
+for (i in 1:length(SpecNames))
+{
+  Where<-RAM$SciName==SpecNames[i]
+  
+  if (sum(Spec_ISSCAAP$Species_AFSIS==SpecNames[i])>0)
+  {
+    RAM$SpeciesCat[Where]<-Spec_ISSCAAP[Spec_ISSCAAP$Species_AFSIS==SpecNames[i],2]
+  }
+}
+  
