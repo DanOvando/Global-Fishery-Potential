@@ -66,26 +66,32 @@ RAM$SpeciesCatName=character(length=nrow(RAM))
 
 ####### Biomass Calculation ####### 
 # calculate biomass variable by either taking "total" if available and ssb otherwise. fill BiomassMetric with B or SSB and BiomassUnit w/ corresponding units
+
+Wheressb<-(is.na(RAM$total) & is.na(RAM$ssb)==F & RAM$ssb>0) # where no biomass but ssb 
+Whereb<-((RAM$total>0) & (is.na(RAM$total)==F))  # where biomass
+Nowhere<-(is.na(RAM$total) & is.na(RAM$ssb)) # where neither biomass or ssb
+
+RAM$Biomass[Wheressb]<- RAM$ssb[Wheressb]
+RAM$BiomassMetric[Wheressb]<- 'SSB'
+RAM$BiomassUnit[Wheressb]<- RAM[Wheressb,7]
+
 for (i in 1:nrow(RAM))
 {
+
   
-  Wheressb<-(is.na(RAM$total) & RAM$ssb[i]>1) # where no biomass but ssb 
-  Whereb<-((RAM$total>0) & (is.na(RAM$total)==F))  # where biomass
-  Nowhere<-(is.na(RAM$total) & is.na(RAM$ssb)) # where neither biomass or ssb
-  
-  if (sum(is.na(RAM$total) & RAM$ssb[i]>1)>1)
+  if ((is.na(RAM$total[i]) & is.na(RAM$ssb[i])==F & RAM$ssb[i]>0))
   {
-    RAM$Biomass[Wheressb]<-RAM[is.na(RAM$total) & RAM$ssb[i]>1,3]
+    RAM$Biomass[Wheressb]<- RAM[is.na(RAM$total) & RAM$ssb[i]>1,3]
     RAM$BiomassMetric[Wheressb]<-"SSB"
     RAM$BiomassUnit[Wheressb]<-RAM[is.na(RAM$total) & RAM$ssb[i]>0,7]
   }
-  if (sum((RAM$total[i]>0) & (is.na(RAM$total)==F))>0) 
+  if (((RAM$total[i]>0) & (is.na(RAM$total[i])==F))) 
   {
     RAM$Biomass[Whereb]<-RAM[(RAM$total[i]>0) & (is.na(RAM$total)==F),4]
     RAM$BiomassMetric[Whereb]<-"B"
     RAM$BiomassUnit[Whereb]<-RAM[(RAM$total[i]>0) & (is.na(RAM$total)==F),8]
   }
-  if (sum(is.na(RAM$total[i]) & is.na(RAM$ssb[i]))>1) # portion of loop currently not working properly. no errors but not effective
+  if ((is.na(RAM$total[i]) & is.na(RAM$ssb[i]))) # portion of loop currently not working properly. no errors but not effective
   {
     RAM$Biomass[Nowhere]<-RAM[is.na(RAM$total)[i] & is.na(RAM$ssb)[i],4]
     RAM$BiomassMetric[Nowhere]<-"NA"
