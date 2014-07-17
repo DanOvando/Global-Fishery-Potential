@@ -11,7 +11,7 @@
 ColNames = c("IdOrig","Year","Fmort","Catch","FmortUnit","CatchUnit","SciName","CommName",
              "Country","RegionFAO","SpeciesCat","SpeciesCatName","Bmsy","SSBmsy","Umsy","Fmsy","Id","Dbase","Biomass","BiomassMetric",
              "BiomassUnit","FmortMetric","ExploitStatus", "VonBertK","VonBertKUnit","VonBertKSource","Temp","TempUnit",
-             "TempSource","MaxLength","MaxLengthUnit", "MaxLengthSource","AgeMat","AgeMatUnit","AgeMatSource")
+             "TempSource","MaxLength","MaxLengthUnit", "MaxLengthSource","AgeMat","AgeMatUnit","AgeMatSource",'ReferenceBiomass','ReferenceBiomassUnits')
 
 ############################################################################################################
 ############ RAM DATABASE ############
@@ -64,6 +64,27 @@ RAM$AgeMatSource=character(length=nrow(RAM))
 RAM$AgeMatUnit=character(length=nrow(RAM))
 RAM$SpeciesCatName=character(length=nrow(RAM))
 RAM$RegionFAO=rep(0,nrow(RAM))
+
+RAM$Bmsy[RAM$Bmsy=='SEE NOTES']<- NA
+
+RAM$Bmsy<- as.numeric(RAM$Bmsy)
+
+WhereSSB<- is.na(RAM$Bmsy) & is.na(RAM$SSBmsy)==F
+
+ReferenceBiomass<- RAM$Bmsy
+
+ReferenceBiomass[WhereSSB]<- RAM$SSBmsy[WhereSSB]
+
+ReferenceBiomassUnits<- matrix(NA,nrow=length(ReferenceBiomass),ncol=1)
+
+ReferenceBiomassUnits[is.na(RAM$Bmsy)==F]<- 'Bmsy'
+
+ReferenceBiomassUnits[WhereSSB]<- 'SSBmsy'
+
+RAM$ReferenceBiomass<- ReferenceBiomass
+
+RAM$ReferenceBiomassUnits<- ReferenceBiomassUnits
+
 
 ####### Biomass Calculation ####### 
 # calculate biomass variable by either taking "total" if available and ssb otherwise. fill BiomassMetric with B or SSB and BiomassUnit w/ corresponding units
@@ -295,7 +316,10 @@ SOFIA$AgeMatUnit=character(length=nrow(SOFIA))
 SOFIA$VonBertKUnit=character(length=nrow(SOFIA))
 SOFIA$TempUnit=character(length=nrow(SOFIA))
 SOFIA$MaxLengthUnit=character(length=nrow(SOFIA))
+SOFIA$ReferenceBiomass<- NA
+SOFIA$ReferenceBiomassUnits<- NA
 
+  
 # *** IdOrig, Catch, and Year to be created next for specific reasons***
 
 # create assessment-specfic ID code for SOFIA by combining Dbase, FAO Region, Species Code, and a Sequential Column
@@ -360,6 +384,8 @@ FAO$ExploitStatus=character(length=nrow(FAO))
 FAO$VonBertKUnit=character(length=nrow(FAO))
 FAO$TempUnit=character(length=nrow(FAO))
 FAO$MaxLengthUnit=character(length=nrow(FAO))
+FAO$ReferenceBiomass<- NA
+FAO$ReferenceBiomassUnits<- NA
 
 # create IdOrig for FAO entries. Use same syntax as for SOFIA = 
 FAOID=seq(from=1, to=nrow(FAO))
