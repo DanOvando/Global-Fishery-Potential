@@ -48,6 +48,17 @@ LifeHistoryVars<- c('MaxLength','AgeMat','VonBertK') #Life history variables to 
 IdVar<- 'IdOrig' #Id variable to use in regressions
 
 
+# Synthetic Stock Settings ------------------------------------------------
+
+
+GroupSamples<- 10
+
+Iterations<- 10
+
+Data<- RAM
+
+IdVar<- 'IdOrig' #Id variable to use in regressions
+
 #Interpolation etc. 
 
 #Any other basic regression options
