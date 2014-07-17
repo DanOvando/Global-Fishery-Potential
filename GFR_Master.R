@@ -3,12 +3,25 @@
 # This code takes RAM data processed by XXX.r and uses panel regressions similar to those docomented in Costello et al. 2012 
 # to estimate B/Bmsy 
 ######################################
-
+rm(list=ls())
 
 # Basic Controls -------------------------------------------------------------
 
-#Batch Names
+BatchFolder<- 'Results/Scratch Folder/'
 
+InputFolder<- 'Data/'
+
+FigureFolder<- paste(BatchFolder,'/Figures/',sep='')
+
+ResultFolder<- paste(BatchFolder,'/Data/',sep='')
+
+dir.create(BatchFolder)
+
+dir.create(FigureFolder)
+
+dir.create(ResultFolder)
+  
+  
 #Output storage
 
 #Sections to run/or try and call
@@ -24,7 +37,16 @@
 
 # Regressions -------------------------------------------------------------
 
-#What variables to include for each model
+DependentVariable<- 'BvBmsy' #Dependent variable in regression
+
+IsLog<- TRUE #Should dependent variable be logged?
+  
+CatchLags<- 4 #Number of years of lagged catch to create for regression
+
+LifeHistoryVars<- c('MaxLength','AgeMat','VonBertK') #Life history variables to include for potential regression
+
+IdVar<- 'IdOrig' #Id variable to use in regressions
+
 
 #Interpolation etc. 
 
@@ -48,7 +70,10 @@
 
 #Figure fonts, formats etc. 
 
+save.image(file=paste(BatchFolder,'Controlfile Settings.rdata'))
 
 # Run Analysis ------------------------------------------------------------
 
-#Call wrapper
+source('GFR_Wrapper.R')
+
+
