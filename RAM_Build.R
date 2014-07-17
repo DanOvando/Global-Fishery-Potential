@@ -1,15 +1,12 @@
 
 # Ram Build ---------------------------------------------------------------
 
-
-setwd("~/Documents/Sustainable Fisheries Group/SFG 2014/Database Files/Data_CSVs/Master Database CSVs")
-
 ############################################################################################################
 
-# Script first creates an example database, then formats the RAM, SOFIA, and FAO databases, and finally stacks the databases
+# Script first creates columns for final database, then formats the RAM, SOFIA, and FAO databases, and finally binds the three databases
 
 ############################################################################################################
-############ CREATE MODEL DATABASE ############
+############ CREATE DATABASE COLUMNS ############
 
 ColNames=c("Id","IdOrig","Dbase","CommName","SciName","SpeciesCat","Country","RegionFAO","Year","Catch","CatchUnit", "Biomass",
            "BiomassUnit","BiomassMetric", "Fmort","FmortUnit","FmortMetric", "ExploitStatus","Bmsy","SSBmsy","Fmsy",
@@ -20,8 +17,8 @@ ColNames=c("Id","IdOrig","Dbase","CommName","SciName","SpeciesCat","Country","Re
 ############ READ IN RAM DATASET ############
 
 # .csvs from RAM Legacy output
-RAM<-read.csv("Ram Time Series 6_11_14.csv", stringsAsFactors=F) # Time series .csv
-RAM_BioParams<-read.csv("RAM BioParams 6_11_14.csv", stringsAsFactors=F) # Bio parameters .csv
+RAM<-read.csv("Data/Ram Time Series 6_11_14.csv", stringsAsFactors=F) # Time series .csv
+RAM_BioParams<-read.csv("Data/RAM BioParams 6_11_14.csv", stringsAsFactors=F) # Bio parameters .csv
 
 # drop unwanted columns
 RAM<-subset(RAM, select=c("assessid","tsyear","ssb","total","f","catch_landings","ssb_unit","total_unit",
@@ -71,28 +68,27 @@ for (i in 1:nrow(RAM))
 {
   
   Wheressb<-(is.na(RAM$total) & RAM$ssb[i]>1) # where no biomass but ssb 
-  Whereb<-RAM$total>0 # where biomass
+  Whereb<-((RAM$total>0) & (is.na(RAM$total)==F))  # where biomass
   Nowhere<-(is.na(RAM$total) & is.na(RAM$ssb)) # where neither biomass or ssb
   
-  if (is.na(RAM$total[i]) & is.na(RAM$ssb[i])) # portion of loop currently not working properly. no errors but not effective
-  {
-    RAM$Biomass[Nowhere]<-RAM[is.na(RAM$total[i]) & is.na(RAM$ssb[i]),4]
-    RAM$BiomassMetric[Nowhere]<-"NA"
-    RAM$BiomassUnit[Nowhere]<-"NA"
-  }
   if (sum(is.na(RAM$total) & RAM$ssb[i]>1)>1)
   {
-    RAM$Biomass[Wheressb]<-RAM[is.na(RAM$total) & RAM$ssb[i]>0,3]
+    RAM$Biomass[Wheressb]<-RAM[is.na(RAM$total) & RAM$ssb[i]>1,3]
     RAM$BiomassMetric[Wheressb]<-"SSB"
     RAM$BiomassUnit[Wheressb]<-RAM[is.na(RAM$total) & RAM$ssb[i]>0,7]
   }
-  if (RAM$total[i]>0) 
+  if (sum((RAM$total[i]>0) & (is.na(RAM$total)==F))>0) 
   {
-    RAM$Biomass[Whereb]<-RAM[RAM$total[i]>1,4]
+    RAM$Biomass[Whereb]<-RAM[(RAM$total[i]>0) & (is.na(RAM$total)==F),4]
     RAM$BiomassMetric[Whereb]<-"B"
-    RAM$BiomassUnit[Whereb]<-RAM[RAM$total[i]>1,8]
+    RAM$BiomassUnit[Whereb]<-RAM[(RAM$total[i]>0) & (is.na(RAM$total)==F),8]
   }
-  
+  if (sum(is.na(RAM$total[i]) & is.na(RAM$ssb[i]))>1) # portion of loop currently not working properly. no errors but not effective
+  {
+    RAM$Biomass[Nowhere]<-RAM[is.na(RAM$total)[i] & is.na(RAM$ssb)[i],4]
+    RAM$BiomassMetric[Nowhere]<-"NA"
+    RAM$BiomassUnit[Nowhere]<-"NA"
+  } 
 }
 
 ####### Life History ####### 
@@ -152,8 +148,8 @@ for (i in 1:length(RamNames)) ## multiple matches for Age at Mat for some studie
 ####### Species and Region Codes ####### 
 # read in .csvs with matched RAM assessids and FAO regions and species scientific names and ISSCAAP codes
 
-Spec_ISSCAAP=read.csv("Species_ASFIS_ISSCAAP.csv") # list of ASFIS scientific names and corressponding ISSCAAP codes 
-Spec_Region_RAM=read.csv("Species_Region_RAM.csv") # list of RAM Assessed IDs previously matched to species code and FAO Region
+Spec_ISSCAAP=read.csv("Data/Species_ASFIS_ISSCAAP.csv") # list of ASFIS scientific names and corressponding ISSCAAP codes 
+Spec_Region_RAM=read.csv("Data/Species_Region_RAM.csv") # list of RAM Assessed IDs previously matched to species code and FAO Region
 
 # FAO Region matching
 
