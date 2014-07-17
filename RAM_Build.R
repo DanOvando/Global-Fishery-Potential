@@ -49,6 +49,7 @@ RAM$BiomassMetric=character(length=nrow(RAM))
 RAM$BiomassUnit=character(length=nrow(RAM))
 RAM$FmortMetric=character(length=nrow(RAM))
 RAM$FmortUnit=character(length=nrow(RAM))
+RAM$ExploitStatus=character(length=nrow(RAM))
 RAM$VonBertK=rep(0,nrow(RAM))
 RAM$VonBertKSource=character(length=nrow(RAM))
 RAM$VonBertKUnit=character(length=nrow(RAM))
@@ -61,6 +62,7 @@ RAM$MaxLengthUnit=character(length=nrow(RAM))
 RAM$AgeMat=rep(0,nrow(RAM))
 RAM$AgeMatSource=character(length=nrow(RAM))
 RAM$AgeMatUnit=character(length=nrow(RAM))
+RAM$SpeciesCatName=character(length=nrow(RAM))
 
 ####### Biomass Calculation ####### 
 # calculate biomass variable by either taking "total" if available and ssb otherwise. fill BiomassMetric with B or SSB and BiomassUnit w/ corresponding units
@@ -145,6 +147,20 @@ for (i in 1:length(RamNames)) ## multiple matches for Age at Mat for some studie
   }
 }
 
+# clean up life history values that are non-numeric, convert variables to numeric
+# Von bert
+RAM$VonBertK[grepl("SEE TABLE 5",RAM$VonBertK)]
+RAM$VonBertK=gsub("varies by region","",RAM$VonBertK) # remove "varies by region"
+RAM$VonBertK=gsub("SEE TABLE 5","",RAM$VonBertK) # remove "SEE TABLE 5"
+RAM$VonBertK=gsub("8.30E-02",".083",RAM$VonBertK) # convert "8.30E-02" from scientific notation
+RAM$VonBertK=gsub("0.232/0.161","0.161", RAM$VonBertK) # original value indicates "male/female", select only female entry
+RAM$VonBertK=gsub("0.261/0.213","0.213", RAM$VonBertK) # original value indicates "male/female", select only female entry
+
+# Max Length
+RAM$MaxLength=gsub("26+","26",RAM$MaxLength) # remove + from end of 26
+RAM$MaxLength=gsub("available","",RAM$MaxLength) # remove "available", RAM entry says "varies greatly"
+
+
 ####### Species and Region Codes ####### 
 # read in .csvs with matched RAM assessids and FAO regions and species scientific names and ISSCAAP codes
 
@@ -174,9 +190,11 @@ RAMfao=aggregate(RAM$RegionFAO~RAM$IdOrig,FUN=mean)
 
 # ISSCAAP Species Code Matching
 
+GroupNames_ISSCAAP<-read.csv("Data/ISSCAAP Codes.csv",stringsAsFactors=F)
 SpecNames<-unique(RAM$SciName)
 
-for (i in 1:length(SpecNames))
+
+for (i in 1:length(SpecNames)) # match species name to group code
 {
   Where<-RAM$SciName==SpecNames[i]
   
@@ -185,4 +203,29 @@ for (i in 1:length(SpecNames))
     RAM$SpeciesCat[Where]<-Spec_ISSCAAP[Spec_ISSCAAP$Species_AFSIS==SpecNames[i],2]
   }
 }
+
+GroupNums<-unique(na.omit(RAM$SpeciesCat))
+
+for (i in 1:length(GroupNums)) # match group code to group name
+{
+  Where<-((RAM$SpeciesCat==GroupNums[i]))
+  
+  if (sum(GroupNames_ISSCAAP$ISSCAAP.code==GroupNums[i])>0)
+  {
+    RAM$SpeciesCatName[Where]<-GroupNames_ISSCAAP[GroupNames_ISSCAAP$ISSCAAP.code==GroupNums[i],2]
+  }
+}
+
+# convert Life history columns to numeric *** TEMPORARY - Need to go back and adjust values using references
+RAM$VonBertK=as.numeric(levels(RAM$VonBertK))[RAM$VonBertK]
+RAM$MaxLength=as.numeric(levels(RAM$MaxLength))[RAM$MaxLength]
+RAM$AgeMat=as.numeric(levels(RAM$AgeMat))[RAM$AgeMat]
+
+
+# delete unneeded columns
+RAM<-subset(RAM, select=c("IdOrig","Year","Fmort","Catch","FmortUnit","CatchUnit","SciName","CommName",
+                          "Country","RegionFAO","SpeciesCat","SpeciesCatName","Bmsy","SSBmsy","Umsy","Fmsy","Id","Dbase","Biomass","BiomassMetric",
+                          "BiomassUnit","FmortMetric","Exploit Status", "VonBertK","VonBertKUnit","VonBertKSource","Temp","TempUnit",
+                          "TempSource","MaxLength","MaxLengthUnit", "MaxLengthSource","AgeMat","AgeMatUnit","AgeMatSource")
+                          
   

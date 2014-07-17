@@ -11,9 +11,9 @@ BatchFolder<- 'Results/Scratch Folder/'
 
 InputFolder<- 'Data/'
 
-FigureFolder<- paste(BatchFolder,'/Figures/',sep='')
+FigureFolder<- paste(BatchFolder,'Figures/',sep='')
 
-ResultFolder<- paste(BatchFolder,'/Data/',sep='')
+ResultFolder<- paste(BatchFolder,'Data/',sep='')
 
 dir.create(BatchFolder)
 
@@ -47,6 +47,17 @@ LifeHistoryVars<- c('MaxLength','AgeMat','VonBertK') #Life history variables to 
 
 IdVar<- 'IdOrig' #Id variable to use in regressions
 
+
+# Synthetic Stock Settings ------------------------------------------------
+
+
+GroupSamples<- 10
+
+Iterations<- 10
+
+Data<- RAM
+
+IdVar<- 'IdOrig' #Id variable to use in regressions
 
 #Interpolation etc. 
 
