@@ -11,9 +11,9 @@ BatchFolder<- 'Results/Scratch Folder/'
 
 InputFolder<- 'Data/'
 
-FigureFolder<- paste(BatchFolder,'/Figures/',sep='')
+FigureFolder<- paste(BatchFolder,'Figures/',sep='')
 
-ResultFolder<- paste(BatchFolder,'/Data/',sep='')
+ResultFolder<- paste(BatchFolder,'Data/',sep='')
 
 dir.create(BatchFolder)
 
