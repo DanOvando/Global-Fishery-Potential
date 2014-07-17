@@ -5,6 +5,10 @@
 ######################################
 
 
+# Source Functions --------------------------------------------------------
+
+sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source);
+
 # Read in and process data ------------------------------------------------------------
 
 #Call Tyler's code here when its' ready
@@ -19,6 +23,6 @@ RAM$BvBmsy<- RAM$Biomass/RAM$Bmsy
 head(RAM)
 
 # Prepare data for regression ---------------------------------------------
-
-RegressionData<- FormatForRegression(RAM,'BvBmsy',4,c('MaxLength','AgeMat','VonBertK'),TRUE,'IdOrig')
+  
+RegressionData<- FormatForRegression(RAM,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
 

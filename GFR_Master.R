@@ -37,7 +37,16 @@ dir.create(ResultFolder)
 
 # Regressions -------------------------------------------------------------
 
-#What variables to include for each model
+DependentVariable<- 'BvBmsy' #Dependent variable in regression
+
+IsLog<- TRUE #Should dependent variable be logged?
+  
+CatchLags<- 4 #Number of years of lagged catch to create for regression
+
+LifeHistoryVars<- c('MaxLength','AgeMat','VonBertK') #Life history variables to include for potential regression
+
+IdVar<- 'IdOrig' #Id variable to use in regressions
+
 
 #Interpolation etc. 
 
