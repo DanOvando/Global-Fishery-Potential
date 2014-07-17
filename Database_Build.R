@@ -63,6 +63,7 @@ RAM$AgeMat=rep(0,nrow(RAM))
 RAM$AgeMatSource=character(length=nrow(RAM))
 RAM$AgeMatUnit=character(length=nrow(RAM))
 RAM$SpeciesCatName=character(length=nrow(RAM))
+RAM$RegionFAO=rep(0,nrow(RAM))
 
 ####### Biomass Calculation ####### 
 # calculate biomass variable by either taking "total" if available and ssb otherwise. fill BiomassMetric with B or SSB and BiomassUnit w/ corresponding units
@@ -75,29 +76,14 @@ RAM$Biomass[Wheressb]<- RAM$ssb[Wheressb]
 RAM$BiomassMetric[Wheressb]<- 'SSB'
 RAM$BiomassUnit[Wheressb]<- RAM[Wheressb,7]
 
-for (i in 1:nrow(RAM))
-{
+RAM$Biomass[Whereb]<-RAM$total[Whereb]
+RAM$BiomassMetric[Whereb]<-"B"
+RAM$BiomassUnit[Whereb]<-RAM[Whereb,8]
 
-  
-  if ((is.na(RAM$total[i]) & is.na(RAM$ssb[i])==F & RAM$ssb[i]>0))
-  {
-    RAM$Biomass[Wheressb]<- RAM[is.na(RAM$total) & RAM$ssb[i]>1,3]
-    RAM$BiomassMetric[Wheressb]<-"SSB"
-    RAM$BiomassUnit[Wheressb]<-RAM[is.na(RAM$total) & RAM$ssb[i]>0,7]
-  }
-  if (((RAM$total[i]>0) & (is.na(RAM$total[i])==F))) 
-  {
-    RAM$Biomass[Whereb]<-RAM[(RAM$total[i]>0) & (is.na(RAM$total)==F),4]
-    RAM$BiomassMetric[Whereb]<-"B"
-    RAM$BiomassUnit[Whereb]<-RAM[(RAM$total[i]>0) & (is.na(RAM$total)==F),8]
-  }
-  if ((is.na(RAM$total[i]) & is.na(RAM$ssb[i]))) # portion of loop currently not working properly. no errors but not effective
-  {
-    RAM$Biomass[Nowhere]<-RAM[is.na(RAM$total)[i] & is.na(RAM$ssb)[i],4]
-    RAM$BiomassMetric[Nowhere]<-"NA"
-    RAM$BiomassUnit[Nowhere]<-"NA"
-  } 
-}
+RAM$Biomass[Nowhere]<-"NA"
+RAM$BiomassMetric[Nowhere]<-"NA"
+RAM$BiomassUnit[Nowhere]<-"NA"
+
 
 ####### Life History ####### 
 # run for loop to match life history parameters by assessid/IdOrig to RAM_BioParams .csv
@@ -111,7 +97,7 @@ for (i in 1:length(RamNames))
   
   if (sum(RAM_BioParams$assessid==RamNames[i] & grepl("VB-k",RAM_BioParams$bioid))>0)
   {
-    show(sum(RAM_BioParams$assessid==RamNames[i] & grepl("VB-k",RAM_BioParams$bioid)))
+    
     
     RAM$VonBertK[Where]=RAM_BioParams[RAM_BioParams$assessid==RamNames[i] & grepl("VB-k",RAM_BioParams$bioid),24]
     RAM$VonBertKUnit[Where]=RAM_BioParams[RAM_BioParams$assessid==RamNames[i]& grepl("VB-k",RAM_BioParams$bioid),23]
@@ -128,7 +114,7 @@ for (i in 1:length(RamNames))
   
   if (sum(RAM_BioParams$assessid==RamNames[i] & grepl("MAX-LEN",RAM_BioParams$bioid))>0)
   {
-    show(sum(RAM_BioParams$assessid==RamNames[i] & grepl("MAX-LEN",RAM_BioParams$bioid)))
+    
     
     RAM$MaxLength[Where]=RAM_BioParams[RAM_BioParams$assessid==RamNames[i] & grepl("MAX-LEN",RAM_BioParams$bioid),24]
     RAM$MaxLengthUnit[Where]=RAM_BioParams[RAM_BioParams$assessid==RamNames[i]& grepl("MAX-LEN",RAM_BioParams$bioid),23]
@@ -145,7 +131,7 @@ for (i in 1:length(RamNames)) ## multiple matches for Age at Mat for some studie
   
   if (sum(RAM_BioParams$assessid==RamNames[i] & grepl("A50-yr",RAM_BioParams$bioid))>0)
   {
-    show(sum(RAM_BioParams$assessid==RamNames[i] & grepl("A50-yr",RAM_BioParams$bioid)))
+    
     
     RAM$AgeMat[Where]=RAM_BioParams[RAM_BioParams$assessid==RamNames[i] & grepl("A50-yr",RAM_BioParams$bioid),24]
     RAM$AgeMatUnit[Where]=RAM_BioParams[RAM_BioParams$assessid==RamNames[i]& grepl("A50-yr",RAM_BioParams$bioid),23]
@@ -155,7 +141,7 @@ for (i in 1:length(RamNames)) ## multiple matches for Age at Mat for some studie
 
 # clean up life history values that are non-numeric, convert variables to numeric
 # Von bert
-RAM$VonBertK[grepl("SEE TABLE 5",RAM$VonBertK)]
+RAM$VonBertK=gsub("SEE TABLE 5","",RAM$VonBertK)
 RAM$VonBertK=gsub("varies by region","",RAM$VonBertK) # remove "varies by region"
 RAM$VonBertK=gsub("SEE TABLE 5","",RAM$VonBertK) # remove "SEE TABLE 5"
 RAM$VonBertK=gsub("8.30E-02",".083",RAM$VonBertK) # convert "8.30E-02" from scientific notation
@@ -177,22 +163,21 @@ Spec_Region_RAM$Assessed.ID=as.character(levels(Spec_Region_RAM$Assessed.ID))[Sp
 Spec_ISSCAAP$Species_AFSIS=as.character(levels(Spec_ISSCAAP$Species_AFSIS))[Spec_ISSCAAP$Species_AFSIS] # convert ID to character
 
 # FAO Region matching
+RegionFAOMatches=unique(Spec_Region_RAM$Assessed.ID)
 
 for (i in 1:length(RamNames)) 
 {
   
-  Where<- RAM$IdOrig==RamNames[i]
+  Where1<- RamNames[i]==Spec_Region_RAM$Assessed.ID
+
+  Where2<- RamNames[i]==RAM$IdOrig
+  
   
   if (sum(Spec_Region_RAM$Assessed.ID==RamNames[i])>0)
   {
-    RAM$RegionFAO[Where]<-Spec_Region_RAM[Spec_Region_RAM$Assessed.ID==RamNames[i],4]
+    RAM$RegionFAO[Where2]<- Spec_Region_RAM[Where1,4][1]
   }
-} #Warning messages:
-# 1: In RAM$RegionFAO[Where] <- Spec_Region_RAM[Spec_Region_RAM$Assessed.ID ==  ... :
-# number of items to replace is not a multiple of replacement length
-
-# create variable to check region matches against
-RAMfao=aggregate(RAM$RegionFAO~RAM$IdOrig,FUN=mean)
+}
 
 # ISSCAAP Species Code Matching
 
