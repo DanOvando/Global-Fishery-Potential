@@ -66,6 +66,7 @@ RAM$SpeciesCatName=character(length=nrow(RAM))
 RAM$RegionFAO=rep(0,nrow(RAM))
 
 RAM$Bmsy[RAM$Bmsy=='SEE NOTES']<- NA
+RAM$Bmsy[RAM$Bmsy=="1,438,000"]<-1438000 # remove commas to preserve number before conversion to numeric
 
 RAM$Bmsy<- as.numeric(RAM$Bmsy)
 
@@ -170,9 +171,20 @@ RAM$VonBertK=gsub("0.232/0.161","0.161", RAM$VonBertK) # original value indicate
 RAM$VonBertK=gsub("0.261/0.213","0.213", RAM$VonBertK) # original value indicates "male/female", select only female entry
 
 # Max Length
-RAM$MaxLength=gsub("26+","26",RAM$MaxLength) # remove + from end of 26
+RAM$MaxLength=gsub("26+","26",RAM$MaxLength, fixed=T) # remove + from end of 26
 RAM$MaxLength=gsub("available","",RAM$MaxLength) # remove "available", RAM entry says "varies greatly"
 
+# Age at Maturity
+RAM$AgeMat=gsub("7.7+","7.7",RAM$AgeMat,fixed=T) # remove + from end of 7.7 
+RAM$AgeMat=gsub(" yr","",RAM$AgeMat) # remove yr from end of 2.5 
+RAM$AgeMat=gsub("0-1","0.5",RAM$AgeMat) # average 
+RAM$AgeMat=gsub("1-2","1.5",RAM$AgeMat) # average
+RAM$AgeMat=gsub("2-3","2.5",RAM$AgeMat) # average
+RAM$AgeMat=gsub("3-4","3.5",RAM$AgeMat) # average
+RAM$AgeMat=gsub("4-5","4.5",RAM$AgeMat) # average
+RAM$AgeMat=gsub("6-7","6.5",RAM$AgeMat) # average
+RAM$AgeMat=gsub("7-8","8.5",RAM$AgeMat) # average
+# still have "FOUND AS A TIME SERIES IN FIGURE 10", "AVAILABLE", and "3-Apr" data points. Will be converted to NA
 
 ####### Species and Region Codes ####### 
 # read in .csvs with matched RAM assessids and FAO regions and species scientific names and ISSCAAP codes
@@ -229,9 +241,9 @@ for (i in 1:length(GroupNums)) # match group code to group name
 }
 
 # convert Life history columns to numeric *** TEMPORARY - Need to go back and adjust values using references
-RAM$VonBertK=as.numeric(levels(RAM$VonBertK))[RAM$VonBertK]
-RAM$MaxLength=as.numeric(levels(RAM$MaxLength))[RAM$MaxLength]
-RAM$AgeMat=as.numeric(levels(RAM$AgeMat))[RAM$AgeMat]
+RAM$VonBertK=as.numeric(RAM$VonBertK)
+RAM$MaxLength=as.numeric(RAM$MaxLength)
+RAM$AgeMat=as.numeric(RAM$AgeMat)
 
 
 # delete unneeded columns
@@ -405,5 +417,5 @@ fao=fao[order(fao$IdOrig,fao$Year),] # *** currently ordering based only on the 
 ############ BIND COMPLETE DATABASE ############
 
 # RAM and fao
-fulldata=rbind(RAM,fao)
+fulldata=rbind(RAM,fao,sofia)
 write.csv(file=paste(ResultFolder,"fulldata.csv",sep=""),fulldata)
