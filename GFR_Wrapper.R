@@ -11,33 +11,36 @@ sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source);
 
 # Read in and process data ------------------------------------------------------------
 
-#Call Tyler's code here when its' ready
+source('Database_Build.r') #Build Tyler's database
 
-# source('Database_Build.r')
+FullData<- fulldata
 
-RAM<- read.csv('Data/RAM_Complete_TC_071514.csv')
+rm(fulldata)
 
-RAM$Bmsy[RAM$Bmsy==0]<- NA
+FullData$ReferenceBiomass[FullData$ReferenceBiomass==0]<- NA
 
-RAM$BvBmsy<- RAM$Biomass/RAM$Bmsy
+FullData$Biomass<- as.numeric(FullData$Biomass)
 
-head(RAM)
+FullData$BvBmsy<- FullData$Biomass/FullData$ReferenceBiomass
 
+head(FullData)
 
 # Create synthetic stocks -------------------------------------------------
 
 if (Groups=='All')
 {
-Groups<- unique(RAM$SpeciesCat,na.rm=T)
+Groups<- unique(FullData$SpeciesCatName,na.rm=T)
 
 Groups<- Groups[is.na(Groups)==F]
 }
 
-SyntheticStocks<- StitchFish(RAM,IdVar,Groups,GroupSamples,Iterations)
+SyntheticStocks<- StitchFish(FullData,IdVar,Groups,GroupSamples,Iterations)
 
 # Prepare data for regression ---------------------------------------------
 
-RegressionData<- FormatForRegression(RAM,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
+RamData<- FullData[FullData$Dbase=='RAM', ]
+
+RegressionData<- FormatForRegression(RamData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
 
 SyntheticRegressionData<- FormatForRegression(SyntheticStocks,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
 
@@ -49,18 +52,13 @@ NeiModels<- RunRegressions(SyntheticRegressionData,Regressions,'Synthetic Stocks
 
 # Apply regressions -------------------------------------------------------
 
-
 # Create stitched database ------------------------------------------------
-
 
 # Estimate MSY ------------------------------------------------------------
 
-
 # Run projection analysis -------------------------------------------------
 
-
 # Scale and Analyze Results -----------------------------------------------
-
 
 # Publish in Science ------------------------------------------------------
 

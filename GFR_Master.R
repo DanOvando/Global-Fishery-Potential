@@ -56,7 +56,10 @@ IdVar<- 'IdOrig' #Id variable to use in regressions
 CatchVariables<- c('ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'TimeToMaxCatch','InitialScaledCatchSlope'
                    ,'MeanScaledCatch','CatchToRollingMax')
 
-Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCat'),M6=c(DependentName,CatchVariables,'SpeciesCat'))  
+# Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCatName'),M6=c(DependentName,CatchVariables,'SpeciesCatName'))  
+
+Regressions<- list(M6=c(DependentName,CatchVariables,'SpeciesCatName'))  
+
 
 # Synthetic Stock Settings ------------------------------------------------
 
