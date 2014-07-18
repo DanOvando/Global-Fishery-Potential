@@ -5,7 +5,9 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
   # the structure for a panel regression #
   
   # Create Regression Data Frame --------------------------------------------
-    
+  
+  Data<- RamData
+  
   LifeHistoryVars<- sort(LifeHistoryVars)
   
   DependentName<- DependentVariable
@@ -29,16 +31,40 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
   
   RegFrame[,DependentName]<-DependentTemp
   
-  head(RegFrame)
+  
+  
+  
+  # Populate Life History ---------------------------------------------------
+  
+  
+  WhereLifeHistory<- colnames(Data) %in% LifeHistoryVars
+  
+  WhereToGo<- colnames(RegFrame) %in% LifeHistoryVars
+  
+  DataLifeNameOrder<- order(colnames(Data[0,WhereLifeHistory]))
+  
+  ## Populate life history variables
+  
+  LifeData<- Data[,WhereLifeHistory]
+  
+  LifeData<- LifeData[,DataLifeNameOrder]
+  
+  RegFrame[,WhereToGo]<- LifeData
+  
+  RegFrame$SpeciesCatName<- Data$SpeciesCatName
+  
+  
   
   # Loop Over Fisheries -----------------------------------------------------
   
   Fisheries<- unique(RegFrame[,IdVar])
   
+  SlopeWindow<- 1:6
+  
   for (f in 1:length(Fisheries)) 
   {
     
-    show(paste(round(100*(f/length(Fisheries))),"% Done"))
+    show(paste(round(100*(f/length(Fisheries))),"% Done with Regression Formating",sep=''))
     
     Where<- Data[,IdVar]==Fisheries[f]
     
@@ -56,22 +82,24 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
     
     RegFrame[Where,'TimeToMaxCatch']<- which(TempCatch==MaxCatch)[1] #Create time till max catch
     
-    SlopeWindow<- 1:6
     
     InitialSlope<- NA
     
+    FirstCatch<- which(is.na(ScaledCatch)==F)[1]
+    
     if (sum(is.na(ScaledCatch[1:6]))<5)
     {
-      InitialSlope<- lm(formula=ScaledCatch[1:6] ~  SlopeWindow,na.action='na.omit')$coefficients[2]
+      InitialSlope<- lm(formula=ScaledCatch[FirstCatch:(FirstCatch+5)] ~  SlopeWindow,na.action='na.omit')$coefficients[2]
     }
     RegFrame[Where,'InitialScaledCatchSlope']<- InitialSlope #Create initial slope of scaled catch
     
     BlankCatch<- matrix(NA,nrow=length(ScaledCatch),ncol=1)
     
     MaxFrame<- BlankCatch
-    for (c in 1:length(BlankCatch))
+    
+    for (c in FirstCatch:length(BlankCatch))
     {
-      MaxFrame[c]<- max(TempCatch[1:c],na.rm=T) 
+      MaxFrame[c]<- max(TempCatch[FirstCatch:c],na.rm=T) 
     }
     
     MaxFrame[is.infinite(MaxFrame)]<-  NA
@@ -94,20 +122,6 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
       RegFrame[Where,WhereCol]<- TempLag # Create lagged scaled catches
       
     }
-    
-    ## Populate life history variables
-    
-    WhereLifeHistory<- colnames(Data) %in% LifeHistoryVars
-    
-    WhereToGo<- colnames(RegFrame) %in% LifeHistoryVars
-    
-    LifeData<- Data[Where,WhereLifeHistory]
-    
-    LifeData<- LifeData[,order(colnames(LifeData))]
-    
-    RegFrame[Where,WhereToGo]<- LifeData
-
-    RegFrame$SpeciesCatName[Where]<- Data$SpeciesCatName[Where]
     
     
   }#Close fisheries loop
