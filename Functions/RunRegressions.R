@@ -6,9 +6,9 @@
 RunRegressions<- function(Data,RegList,FigureName)
 {
   
-#   Data<- RegressionData
+#    Data<- RegressionData
 # #   
-#    RegList<- Regressions
+#     RegList<- Regressions
 # #   
   RegNames<- names(RegList)
 #   

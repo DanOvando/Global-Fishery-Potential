@@ -5,7 +5,7 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
   # the structure for a panel regression #
   
   # Create Regression Data Frame --------------------------------------------
-  
+    
   LifeHistoryVars<- sort(LifeHistoryVars)
   
   DependentName<- DependentVariable
@@ -13,7 +13,7 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
   DependentName<- if (IsLog==T){paste('Log',DependentVariable,sep='')}
   
   RegNames<- c(IdVar,DependentName,'ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'TimeToMaxCatch','InitialScaledCatchSlope'
-               ,'MeanScaledCatch','CatchToRollingMax','SpeciesCat',LifeHistoryVars)
+               ,'MeanScaledCatch','CatchToRollingMax','SpeciesCatName',LifeHistoryVars)
   
   RegFrame<- as.data.frame(matrix(NA,nrow=dim(Data)[1],ncol=length(RegNames)))
   
@@ -37,6 +37,8 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
   
   for (f in 1:length(Fisheries)) 
   {
+    
+    show(paste(round(100*(f/length(Fisheries))),"% Done"))
     
     Where<- Data[,IdVar]==Fisheries[f]
     
@@ -105,13 +107,13 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
     
     RegFrame[Where,WhereToGo]<- LifeData
 
-    RegFrame$SpeciesCat[Where]<- Data$SpeciesCat[Where]
+    RegFrame$SpeciesCatName[Where]<- Data$SpeciesCatName[Where]
     
     
   }#Close fisheries loop
   
+  RegFrame$SpeciesCatName<- as.factor( RegFrame$SpeciesCatName)
   
-  RegFrame$SpeciesCat<- as.factor( RegFrame$SpeciesCat)
   return(RegFrame)
   
 }

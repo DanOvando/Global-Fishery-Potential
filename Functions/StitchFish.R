@@ -6,6 +6,8 @@
 StitchFish<- function(Data,IdVar,Groups,GroupSamples,Iterations)
 {
   
+#   Data<- FullData
+  
   if (length(GroupSamples)==1)
   {
     GroupSamples<- rep(GroupSamples,length(Groups)) #Allows for different sample numbers per grouping category
@@ -18,7 +20,7 @@ StitchFish<- function(Data,IdVar,Groups,GroupSamples,Iterations)
   for (g in 1:length(Groups))
   {
     
-    GroupData<- Data[Data$SpeciesCat==Groups[g],]
+    GroupData<- Data[Data$SpeciesCatName==Groups[g],]
     
     GroupIds<- unique(GroupData[,IdVar])
     
@@ -57,7 +59,7 @@ StitchFish<- function(Data,IdVar,Groups,GroupSamples,Iterations)
 
         StitchBio[y]<- sum(SampleData$Biomass[SampleData$Year==SampleYears[y]],na.rm=T)
         
-        StitchBmsy[y]<- sum(SampleData$Bmsy[SampleData$Year==SampleYears[y]],na.rm=T)
+        StitchBmsy[y]<- sum(SampleData$ReferenceBiomass[SampleData$Year==SampleYears[y]],na.rm=T)
         
         
       }
@@ -66,7 +68,7 @@ StitchFish<- function(Data,IdVar,Groups,GroupSamples,Iterations)
         
       TempStitchMat[,IdVar]<- StitchId
 
-      TempStitchMat$SpeciesCat<- Groups[g]
+      TempStitchMat$SpeciesCatName<- Groups[g]
 
      TempStitchMat$Year<- SampleYears
      
