@@ -4,16 +4,18 @@
 # This code executes the steps in the Global Fishery Recovery program
 ######################################
 
-
 # Source Functions --------------------------------------------------------
 
 sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
 
 # Read in and process data ------------------------------------------------------------
 
-# source('Database_Build.r') #Build Tyler's database
+if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))==F)
+{
 
-fulldata<- read.csv(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))
+ source('Database_Build.r') #Build Tyler's database
+
+# fulldata<- read.csv(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))
 
 FullData<- fulldata
 
@@ -25,11 +27,15 @@ DroppedStocks<- CleanedData$DroppedStocks
 
 FullData<- CleanedData$CleanedData
 
+rm(CleanedData)
+
 write.csv(file=paste(ResultFolder,'Raw Compiled Database.csv',sep=''),FullData)
 
 write.csv(file=paste(ResultFolder,'Omitted Stocks.csv',sep=''),DroppedStocks)
-
-rm(CleanedData)
+}
+if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))){FullData<- read.csv(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))}
+  
+# Create synthetic stocks -------------------------------------------------
 
 FullData$SpeciesCatName<- as.factor( FullData$SpeciesCatName)
 
@@ -40,17 +46,13 @@ FullData$Biomass<- as.numeric(FullData$Biomass)
 FullData$BvBmsy<- FullData$Biomass/FullData$ReferenceBiomass
 
 
-# Create synthetic stocks -------------------------------------------------
-
-
-
 RamData<- FullData[FullData$Dbase=='RAM',]
 
 FaoData<- FullData[FullData$Dbase=='FAO',]
 
-FaoIdSample<- sample(unique(FaoData[,IdVar]),1600,replace=FALSE)
-
-FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
+# FaoIdSample<- sample(unique(FaoData[,IdVar]),1600,replace=FALSE)
+# 
+# FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
 
 if (Groups=='All')
 {
@@ -69,10 +71,20 @@ library(proftools)
 
 RamRegressionData<- FormatForRegression(RamData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
 
-FaoRegressionData<- FormatForRegression(FaoData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
-
 SyntheticRegressionData<- FormatForRegression(SyntheticStocks,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
 
+if (file.exists(paste(ResultFolder,'FaoRegressionData.Rdata',sep=''))==F)
+{
+
+FaoRegressionData<- FormatForRegression(FaoData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
+
+save(file=paste(ResultFolder,'FaoRegressionData.Rdata',sep=''),FaoRegressionData)
+}
+if (file.exists(paste(ResultFolder,'FaoRegressionData.Rdata',sep='')))
+{
+  load(paste(ResultFolder,'FaoRegressionData.Rdata',sep=''))
+}
+  
 # Rprof(NULL)
 #  RProfData<- readProfileData('Rprof.out')
 #  flatProfile(RProfData,byTotal=TRUE)
@@ -151,9 +163,33 @@ FaoNeiLevelPredictions[MatchingNeiGroups,m]<- predict(TempModel,FaoNeiLevel[Matc
 
 ##Bind projections together with regression data
 
+
 FaoSpeciesLevel<- cbind(FaoSpeciesLevel,FaoSpeciesLevelPredictions) 
 
+pdf(paste(FigureFolder,'Unassessed Species Level Test Histogram.pdf',sep=''))
+hist(exp(FaoSpeciesLevelPredictions$M6),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks')
+abline(v=median(exp(FaoSpeciesLevelPredictions$M6),na.rm=T))
+dev.off()
+
+pdf(paste(FigureFolder,'Unassessed Species Level Test boxplot.pdf',sep=''))
+boxplot(exp(FaoSpeciesLevelPredictions$M6),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks',outline=F)
+dev.off()
+
+
 FaoNeiLevel<- cbind(FaoNeiLevel,FaoNeiLevelPredictions)
+
+pdf(paste(FigureFolder,'Unassessed Nei Level Test Histogram.pdf',sep=''))
+hist(exp(FaoNeiLevelPredictions$M6),xlab='Predicted Raw B/Bmsy ',main='Nei Level Fao Stocks')
+abline(v=median(exp(FaoNeiLevelPredictions$M6),na.rm=T))
+dev.off()
+
+pdf(paste(FigureFolder,'Unassessed Nei Level Test boxplot.pdf',sep=''))
+boxplot(exp(FaoNeiLevelPredictions$M6),xlab='Predicted Raw B/Bmsy ',main='Nei Level Fao Stocks',outline=F)
+dev.off()
+
+save.image(file=paste(ResultFolder,'Regression Outputs.rdata',sep=''))
+
+file.exists(paste(ResultFolder,'Regression Outputs.rdata',sep=''))
 
 # Create stitched database ------------------------------------------------
 
