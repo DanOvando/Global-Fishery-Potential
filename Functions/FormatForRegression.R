@@ -14,7 +14,7 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
   
   DependentName<- if (IsLog==T){paste('Log',DependentVariable,sep='')}
   
-  RegNames<- c(IdVar,DependentName,'ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'TimeToMaxCatch','InitialScaledCatchSlope'
+  RegNames<- c(IdVar,DependentName,'YearsBack','ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'TimeToMaxCatch','InitialScaledCatchSlope'
                ,'MeanScaledCatch','CatchToRollingMax','SpeciesCatName',LifeHistoryVars)
   
   RegFrame<- as.data.frame(matrix(NA,nrow=dim(Data)[1],ncol=length(RegNames)))
@@ -83,7 +83,8 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
     RegFrame[Where,'MeanScaledCatch']<- mean(ScaledCatch ,na.rm=T)#Create scaled catch
     
     RegFrame[Where,'TimeToMaxCatch']<- which(TempCatch==MaxCatch)[1] #Create time till max catch
-    
+
+    RegFrame[Where,'YearsBack']<-rev(1:length(TempCatch)) #Create time till max catch
     
     InitialSlope<- NA
     

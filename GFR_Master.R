@@ -64,12 +64,12 @@ LifeHistoryVars<- c('MaxLength','AgeMat','VonBertK') #Life history variables to 
 
 IdVar<- 'IdOrig' #Id variable to use in regressions
 
-CatchVariables<- c('ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'TimeToMaxCatch','InitialScaledCatchSlope'
+CatchVariables<- c('YearsBack','ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'TimeToMaxCatch','InitialScaledCatchSlope'
                    ,'MeanScaledCatch','CatchToRollingMax')
 
 # Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCatName'),M6=c(DependentName,CatchVariables,'SpeciesCatName'))  
 
-Regressions<- list(M6=c(DependentName,CatchVariables,'SpeciesCatName'))  
+Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCatName'),M6=c(DependentName,CatchVariables,'SpeciesCatName'),M7=c(DependentName,CatchVariables))  
 
 
 # Synthetic Stock Settings ------------------------------------------------

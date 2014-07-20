@@ -105,7 +105,11 @@ for (m in 1:length(names(Regressions)))
 }
 
 
-NeiModels<- RunRegressions(SyntheticRegressionData,Regressions,'Synthetic Stocks')
+NeiRegressions<- list()
+NeiRegressions$M6<- Regressions$M6
+NeiRegressions$M7<- Regressions$M7
+
+NeiModels<- RunRegressions(SyntheticRegressionData,NeiRegressions,'Synthetic Stocks')
 
 NeiModelFactorLevels<- NULL
 
@@ -117,11 +121,20 @@ for (m in 1:length(names(Regressions)))
 
 # Apply regressions -------------------------------------------------------
 
-FaoNeis<- grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName) #Find unassessed NEIs
+FaoNeis<- (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F #Find unassessed NEIs
+
+WhereFaoMarineFish<- grepl('not identified',FaoData$SpeciesCatName)
 
 FaoSpeciesLevel<- FaoRegressionData[FaoNeis==F,] 
 
 FaoNeiLevel<- FaoRegressionData[FaoNeis,] 
+
+FaoMarineFish<- FaoRegressionData[WhereFaoMarineFish,]
+
+FullFaoMarineFish<- FaoData[WhereFaoMarineFish,]
+
+
+FullFaoNei<- FaoData[FaoNeis,]
 
 ## Only grab fisheries with appropriate species categories at this point
 
@@ -137,7 +150,7 @@ TempLevel<- NULL
 
 TempModel<- NULL
 
-## Apply each regression to the species level of nei level data
+## Apply each regression to the species level or nei level data
 for (m in 1:length(Models))
 {
   
@@ -157,34 +170,45 @@ FaoSpeciesLevelPredictions[MatchingSpeciesGroups,m]<- predict(TempModel,FaoSpeci
 
 eval(parse(text=paste('TempModel<- NeiModels$',TempModelName,sep='')))
 
-FaoNeiLevelPredictions[MatchingNeiGroups,m]<- predict(TempModel,FaoNeiLevel[MatchingNeiGroups,])
+FaoNeiLevelPredictions[MatchingNeiGroups,m]<- predict(NeiModels$M6,FaoNeiLevel[MatchingNeiGroups,])
 
 }
 
+
+NotIdentifiedPredictions<- predict(NeiModels$M7,FaoMarineFish)
 ##Bind projections together with regression data
 
 
 FaoSpeciesLevel<- cbind(FaoSpeciesLevel,FaoSpeciesLevelPredictions) 
 
 pdf(paste(FigureFolder,'Unassessed Species Level Test Histogram.pdf',sep=''))
-hist(exp(FaoSpeciesLevelPredictions$M6),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks')
-abline(v=median(exp(FaoSpeciesLevelPredictions$M6),na.rm=T))
+hist(exp(FaoSpeciesLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks')
+abline(v=median(exp(FaoSpeciesLevelPredictions$M6LogBvBmsy),na.rm=T))
 dev.off()
 
 pdf(paste(FigureFolder,'Unassessed Species Level Test boxplot.pdf',sep=''))
-boxplot(exp(FaoSpeciesLevelPredictions$M6),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks',outline=F)
+boxplot(exp(FaoSpeciesLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks',outline=F)
+dev.off()
+
+pdf(paste(FigureFolder,'Unassessed Species Level Model 1 Test Histogram.pdf',sep=''))
+hist(exp(FaoSpeciesLevelPredictions$M1LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks')
+abline(v=median(exp(FaoSpeciesLevelPredictions$M1LogBvBmsy),na.rm=T))
+dev.off()
+
+pdf(paste(FigureFolder,'Unassessed Species Level Model 1 Test boxplot.pdf',sep=''))
+boxplot(exp(FaoSpeciesLevelPredictions$M1LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks',outline=F)
 dev.off()
 
 
 FaoNeiLevel<- cbind(FaoNeiLevel,FaoNeiLevelPredictions)
 
 pdf(paste(FigureFolder,'Unassessed Nei Level Test Histogram.pdf',sep=''))
-hist(exp(FaoNeiLevelPredictions$M6),xlab='Predicted Raw B/Bmsy ',main='Nei Level Fao Stocks')
-abline(v=median(exp(FaoNeiLevelPredictions$M6),na.rm=T))
+hist(exp(FaoNeiLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Nei Level Fao Stocks')
+abline(v=median(exp(FaoNeiLevelPredictions$M6LogBvBmsy),na.rm=T))
 dev.off()
 
 pdf(paste(FigureFolder,'Unassessed Nei Level Test boxplot.pdf',sep=''))
-boxplot(exp(FaoNeiLevelPredictions$M6),xlab='Predicted Raw B/Bmsy ',main='Nei Level Fao Stocks',outline=F)
+boxplot(exp(FaoNeiLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Nei Level Fao Stocks',outline=F)
 dev.off()
 
 save.image(file=paste(ResultFolder,'Regression Outputs.rdata',sep=''))
