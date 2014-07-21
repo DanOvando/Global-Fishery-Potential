@@ -67,10 +67,7 @@ IdVar<- 'IdOrig' #Id variable to use in regressions
 CatchVariables<- c('YearsBack','ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'TimeToMaxCatch','InitialScaledCatchSlope'
                    ,'MeanScaledCatch','CatchToRollingMax')
 
-# Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCatName'),M6=c(DependentName,CatchVariables,'SpeciesCatName'))  
-
 Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCatName'),M6=c(DependentName,CatchVariables,'SpeciesCatName'),M7=c(DependentName,CatchVariables))  
-
 
 # Synthetic Stock Settings ------------------------------------------------
 
@@ -82,9 +79,6 @@ Iterations<- 10 #Number of synthetic stocks to create within each group
 
 IdVar<- 'IdOrig' #Id variable to use in creating synthetic stocks
 
-#Interpolation etc. 
-
-#Any other basic regression options
 
 
 # Projections -------------------------------------------------------------

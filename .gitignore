@@ -7,5 +7,6 @@
 **/*.Rproj
 **/*.Rdata
 **/*.rdata
+**/*.out
 Results**/*.csv
 Results**/*.*

@@ -35,8 +35,6 @@ write.csv(file=paste(ResultFolder,'Omitted Stocks.csv',sep=''),DroppedStocks)
 }
 if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))){FullData<- read.csv(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))}
   
-# Create synthetic stocks -------------------------------------------------
-
 FullData$SpeciesCatName<- as.factor( FullData$SpeciesCatName)
 
 FullData$ReferenceBiomass[FullData$ReferenceBiomass==0]<- NA
@@ -45,14 +43,15 @@ FullData$Biomass<- as.numeric(FullData$Biomass)
 
 FullData$BvBmsy<- FullData$Biomass/FullData$ReferenceBiomass
 
-
 RamData<- FullData[FullData$Dbase=='RAM',]
 
 FaoData<- FullData[FullData$Dbase=='FAO',]
 
-# FaoIdSample<- sample(unique(FaoData[,IdVar]),1600,replace=FALSE)
+ FaoIdSample<- sample(unique(FaoData[,IdVar]),500,replace=FALSE)
 # 
-# FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
+ FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
+
+# Create synthetic stocks -------------------------------------------------
 
 if (Groups=='All')
 {
@@ -61,7 +60,7 @@ if (Groups=='All')
   Groups<- Groups[is.na(Groups)==F]
 }
 
-SyntheticStocks<- StitchFish(RamData,IdVar,Groups,GroupSamples,Iterations)
+SyntheticData<- StitchFish(RamData,IdVar,Groups,GroupSamples,Iterations)
 
 # Prepare data for regression ---------------------------------------------
 
@@ -69,20 +68,20 @@ library(proftools)
 
 #  Rprof()
 
-RamRegressionData<- FormatForRegression(RamData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
+RamData<- FormatForRegression(RamData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
 
-SyntheticRegressionData<- FormatForRegression(SyntheticStocks,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
+SyntheticData<- FormatForRegression(SyntheticData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
 
-if (file.exists(paste(ResultFolder,'FaoRegressionData.Rdata',sep=''))==F)
+if (file.exists(paste(ResultFolder,'FaoData.Rdata',sep=''))==F)
 {
 
-FaoRegressionData<- FormatForRegression(FaoData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
+FaoData<- FormatForRegression(FaoData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
 
-save(file=paste(ResultFolder,'FaoRegressionData.Rdata',sep=''),FaoRegressionData)
+save(file=paste(ResultFolder,'FaoData.Rdata',sep=''),FaoData)
 }
-if (file.exists(paste(ResultFolder,'FaoRegressionData.Rdata',sep='')))
+if (file.exists(paste(ResultFolder,'FaoData.Rdata',sep='')))
 {
-  load(paste(ResultFolder,'FaoRegressionData.Rdata',sep=''))
+  load(paste(ResultFolder,'FaoData.Rdata',sep=''))
 }
   
 # Rprof(NULL)
@@ -91,50 +90,75 @@ if (file.exists(paste(ResultFolder,'FaoRegressionData.Rdata',sep='')))
 
 # Run regressions ---------------------------------------------------------
 
-RealModels<- RunRegressions(RamRegressionData,Regressions,'Real Stocks')
+RealModels<- RunRegressions(RamData,Regressions,'Real Stocks')
 
 RealModelFactorLevels<- NULL
 
 Models<- names(Regressions)
 
 ## Determine species category levels that were used in each model run
+
+TempOmitted<- NULL
 for (m in 1:length(names(Regressions)))
 {
   Model<- names(Regressions)[m]
   eval(parse(text=paste('RealModelFactorLevels$',Model,'<- RealModels$',Model,'$xlevels$SpeciesCatName',sep='')))
+
+  ##While you're in here, figure out what fisheries were used in regression
+  
+  eval(parse(text=paste('TempOmitted<- na.action(RealModels$',Model,')',sep='')))
+  
+  KeptEntries<- ((1:dim(RamData)[1]) %in% TempOmitted)==F #Identify fisheries used in each model
+
+  eval(parse(text=paste('RamData$',Model,'Marker[KeptEntries]<- TRUE' ,sep='')))
+
+  eval(parse(text=paste('RamData$',Model,'Prediction[KeptEntries]<- RealModels$',Model,'$fitted.values' ,sep='')))
+    
 }
 
-
 NeiRegressions<- list()
+
 NeiRegressions$M6<- Regressions$M6
+
 NeiRegressions$M7<- Regressions$M7
 
-NeiModels<- RunRegressions(SyntheticRegressionData,NeiRegressions,'Synthetic Stocks')
+NeiModels<- RunRegressions(SyntheticData,NeiRegressions,'Synthetic Stocks')
 
 NeiModelFactorLevels<- NULL
 
 for (m in 1:length(names(Regressions)))
 {
   Model<- names(Regressions)[m]
+  
   eval(parse(text=paste('NeiModelFactorLevels$',Model,'<- NeiModels$',Model,'$xlevels$SpeciesCatName',sep='')))
+
+  ##While you're in here, figure out what fisheries were run
+  
+  eval(parse(text=paste('TempOmitted<- na.action(NeiModels$',Model,')',sep='')))
+  
+  KeptEntries<- ((1:dim(SyntheticData)[1]) %in% TempOmitted)==F #Identify fisheries used in each model
+  
+  eval(parse(text=paste('SyntheticData$',Model,'Marker[KeptEntries]<- TRUE' ,sep='')))
+  
+  eval(parse(text=paste('SyntheticData$',Model,'Prediction[KeptEntries]<- NeiModels$',Model,'$fitted.values' ,sep='')))
+  
+
 }
 
-# Apply regressions -------------------------------------------------------
 
-FaoNeis<- (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F #Find unassessed NEIs
+
+# Prepare data for regression application ---------------------------------
+
+
+WhereFaoNeis<- (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F #Find unassessed NEIs
 
 WhereFaoMarineFish<- grepl('not identified',FaoData$SpeciesCatName)
 
-FaoSpeciesLevel<- FaoRegressionData[FaoNeis==F,] 
+FaoSpeciesLevel<- FaoData[WhereFaoNeis==F,] #Fao stocks named to the species level
 
-FaoNeiLevel<- FaoRegressionData[FaoNeis,] 
+FaoNeiLevel<- FaoData[WhereFaoNeis,] #fao species named to the nei or spp level
 
-FaoMarineFish<- FaoRegressionData[WhereFaoMarineFish,]
-
-FullFaoMarineFish<- FaoData[WhereFaoMarineFish,]
-
-
-FullFaoNei<- FaoData[FaoNeis,]
+FaoMarineFish<- FaoData[WhereFaoMarineFish,] #completely unidentified marine goo
 
 ## Only grab fisheries with appropriate species categories at this point
 
@@ -150,7 +174,8 @@ TempLevel<- NULL
 
 TempModel<- NULL
 
-## Apply each regression to the species level or nei level data
+# Apply regressions -------------------------------------------------------
+
 for (m in 1:length(Models))
 {
   
@@ -174,8 +199,8 @@ FaoNeiLevelPredictions[MatchingNeiGroups,m]<- predict(NeiModels$M6,FaoNeiLevel[M
 
 }
 
-
 NotIdentifiedPredictions<- predict(NeiModels$M7,FaoMarineFish)
+
 ##Bind projections together with regression data
 
 
