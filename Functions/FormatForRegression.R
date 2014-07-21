@@ -6,7 +6,7 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
   
   # Create Regression Data Frame --------------------------------------------
   
-#    Data<- FaoData
+#     Data<- RamData
   
   LifeHistoryVars<- sort(LifeHistoryVars)
   
@@ -14,14 +14,11 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
   
   DependentName<- if (IsLog==T){paste('Log',DependentVariable,sep='')}
   
-  RegNames<- c(IdVar,DependentName,'YearsBack','ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'TimeToMaxCatch','InitialScaledCatchSlope'
-               ,'MeanScaledCatch','CatchToRollingMax','SpeciesCatName',LifeHistoryVars)
+  RegNames<- c(DependentName,CatchVariables)
   
   RegFrame<- as.data.frame(matrix(NA,nrow=dim(Data)[1],ncol=length(RegNames)))
   
   colnames(RegFrame)<- RegNames
-  
-  RegFrame[,IdVar]<- Data[,IdVar]
   
   DependentTemp<-  Data[,DependentVariable]
   
@@ -31,33 +28,9 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
   
   RegFrame[,DependentName]<-DependentTemp
   
-  
-  
-  
-  # Populate Life History ---------------------------------------------------
-  
-  
-  WhereLifeHistory<- colnames(Data) %in% LifeHistoryVars
-  
-  WhereToGo<- colnames(RegFrame) %in% LifeHistoryVars
-  
-  DataLifeNameOrder<- order(colnames(Data[0,WhereLifeHistory]))
-  
-  ## Populate life history variables
-  
-  LifeData<- Data[,WhereLifeHistory]
-  
-  LifeData<- LifeData[,DataLifeNameOrder]
-  
-  RegFrame[,WhereToGo]<- LifeData
-  
-  RegFrame$SpeciesCatName<- Data$SpeciesCatName
-  
-  
-  
   # Loop Over Fisheries -----------------------------------------------------
   
-  Fisheries<- unique(RegFrame[,IdVar])
+  Fisheries<- unique(Data[,IdVar])
   
   SlopeWindow<- 1:6
   
@@ -128,6 +101,8 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
     
   }#Close fisheries loop
     
+
+  RegFrame<- cbind(Data,RegFrame)
   return(RegFrame)
   
 }
