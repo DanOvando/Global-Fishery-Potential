@@ -60,7 +60,7 @@ if (Groups=='All')
   Groups<- Groups[is.na(Groups)==F]
 }
 
-SyntheticData<- StitchFish(RamData,IdVar,Groups,GroupSamples,Iterations)
+SyntheticData<- StitchFish(RamData,IdVar,Groups,GroupSamples,Iterations) 
 
 # Prepare data for regression ---------------------------------------------
 
@@ -68,7 +68,7 @@ library(proftools)
 
 #  Rprof()
 
-RamData<- FormatForRegression(RamData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
+RamData<- FormatForRegression(RamData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)#Add resgression data to database
 
 SyntheticData<- FormatForRegression(SyntheticData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
 
