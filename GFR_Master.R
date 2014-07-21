@@ -23,7 +23,6 @@ dir.create(FigureFolder)
 
 dir.create(ResultFolder)
 
-
 #Output storage
 
 #Sections to run/or try and call
@@ -69,17 +68,17 @@ CatchVariables<- c('YearsBack','ScaledCatch',paste('ScaledCatch',1:CatchLags,'Ba
 
 Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCatName'),M6=c(DependentName,CatchVariables,'SpeciesCatName'),M7=c(DependentName,CatchVariables))  
 
+TransbiasBin<- 0.9
+
 # Synthetic Stock Settings ------------------------------------------------
 
-Groups<- 'All'
+GroupMethod<- 'All'
 
 GroupSamples<- 10 #The number of stocks to put in each synthetic nei. This can be a single number, or a vector for each group of interest
 
 Iterations<- 10 #Number of synthetic stocks to create within each group
 
 IdVar<- 'IdOrig' #Id variable to use in creating synthetic stocks
-
-
 
 # Projections -------------------------------------------------------------
 

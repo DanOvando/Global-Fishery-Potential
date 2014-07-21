@@ -43,24 +43,52 @@ FullData$Biomass<- as.numeric(FullData$Biomass)
 
 FullData$BvBmsy<- FullData$Biomass/FullData$ReferenceBiomass
 
+ModelNames<- names(Regressions)
+
+for (m in 1:length(ModelNames))
+{
+  
+  
+  eval(parse(text=paste('FullData$',ModelNames[m],'Marker<- FALSE',sep='')))
+
+  eval(parse(text=paste('FullData$',ModelNames[m],'Prediction<- NA',sep='')))
+  
+}
+
+# SofiaData<-  FullData[FullData$Dbase=='SOFIA',]
+
 RamData<- FullData[FullData$Dbase=='RAM',]
 
 FaoData<- FullData[FullData$Dbase=='FAO',]
 
- FaoIdSample<- sample(unique(FaoData[,IdVar]),500,replace=FALSE)
-# 
- FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
+  FaoIdSample<- sample(unique(FaoData[,IdVar]),500,replace=FALSE)
+# # 
+  FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
 
 # Create synthetic stocks -------------------------------------------------
 
-if (Groups=='All')
+if (GroupMethod=='All')
 {
   Groups<- unique(FullData$SpeciesCatName,na.rm=T)
   
   Groups<- Groups[is.na(Groups)==F]
 }
+if (GroupMethod=='Nei')
+{
+  Groups<- unique(FaoData$SpeciesCatName[ (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F])
+}
 
 SyntheticData<- StitchFish(RamData,IdVar,Groups,GroupSamples,Iterations) 
+
+for (m in 1:length(ModelNames))
+{
+  
+  eval(parse(text=paste('SyntheticData$',ModelNames[m],'Marker<- FALSE',sep='')))
+  
+  eval(parse(text=paste('SyntheticData$',ModelNames[m],'Prediction<- NA',sep='')))
+  
+}
+
 
 # Prepare data for regression ---------------------------------------------
 
@@ -96,6 +124,10 @@ RealModelFactorLevels<- NULL
 
 Models<- names(Regressions)
 
+
+# Process Regressions -----------------------------------------------------
+
+
 ## Determine species category levels that were used in each model run
 
 TempOmitted<- NULL
@@ -103,18 +135,11 @@ for (m in 1:length(names(Regressions)))
 {
   Model<- names(Regressions)[m]
   eval(parse(text=paste('RealModelFactorLevels$',Model,'<- RealModels$',Model,'$xlevels$SpeciesCatName',sep='')))
-
-  ##While you're in here, figure out what fisheries were used in regression
-  
-  eval(parse(text=paste('TempOmitted<- na.action(RealModels$',Model,')',sep='')))
-  
-  KeptEntries<- ((1:dim(RamData)[1]) %in% TempOmitted)==F #Identify fisheries used in each model
-
-  eval(parse(text=paste('RamData$',Model,'Marker[KeptEntries]<- TRUE' ,sep='')))
-
-  eval(parse(text=paste('RamData$',Model,'Prediction[KeptEntries]<- RealModels$',Model,'$fitted.values' ,sep='')))
-    
 }
+
+RamData<- InsertFisheryPredictions(RamData,RealModels) #Add fishery predictions back into main dataframe
+
+RealModelSdevs<- CreateSdevBins(RealModels,RamData,TransbiasBin)
 
 NeiRegressions<- list()
 
@@ -131,24 +156,14 @@ for (m in 1:length(names(Regressions)))
   Model<- names(Regressions)[m]
   
   eval(parse(text=paste('NeiModelFactorLevels$',Model,'<- NeiModels$',Model,'$xlevels$SpeciesCatName',sep='')))
-
-  ##While you're in here, figure out what fisheries were run
   
-  eval(parse(text=paste('TempOmitted<- na.action(NeiModels$',Model,')',sep='')))
-  
-  KeptEntries<- ((1:dim(SyntheticData)[1]) %in% TempOmitted)==F #Identify fisheries used in each model
-  
-  eval(parse(text=paste('SyntheticData$',Model,'Marker[KeptEntries]<- TRUE' ,sep='')))
-  
-  eval(parse(text=paste('SyntheticData$',Model,'Prediction[KeptEntries]<- NeiModels$',Model,'$fitted.values' ,sep='')))
-  
-
 }
 
+SyntheticData<- InsertFisheryPredictions(SyntheticData,NeiModels) #Add fishery predictions back into main dataframe
 
+NeiModelSdevs<- CreateSdevBins(NeiModels,SyntheticData,TransbiasBin)
 
 # Prepare data for regression application ---------------------------------
-
 
 WhereFaoNeis<- (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F #Find unassessed NEIs
 
@@ -158,17 +173,7 @@ FaoSpeciesLevel<- FaoData[WhereFaoNeis==F,] #Fao stocks named to the species lev
 
 FaoNeiLevel<- FaoData[WhereFaoNeis,] #fao species named to the nei or spp level
 
-FaoMarineFish<- FaoData[WhereFaoMarineFish,] #completely unidentified marine goo
-
-## Only grab fisheries with appropriate species categories at this point
-
-FaoSpeciesLevelPredictions<- as.data.frame(matrix(NA,nrow=dim(FaoSpeciesLevel)[1],ncol=length(Models)))
-
-colnames(FaoSpeciesLevelPredictions)<- paste(Models,'LogBvBmsy',sep='')
-
-FaoNeiLevelPredictions<- as.data.frame(matrix(NA,nrow=dim(FaoNeiLevel)[1],ncol=length(Models)))
-
-colnames(FaoNeiLevelPredictions)<- paste(Models,'LogBvBmsy',sep='')
+FaoMarineFishLevel<- FaoData[WhereFaoMarineFish,] #completely unidentified marine goo
 
 TempLevel<- NULL
 
@@ -191,20 +196,32 @@ MatchingNeiGroups<- FaoNeiLevel$SpeciesCatName %in% TempLevel
 
 eval(parse(text=paste('TempModel<- RealModels$',TempModelName,sep='')))
 
-FaoSpeciesLevelPredictions[MatchingSpeciesGroups,m]<- predict(TempModel,FaoSpeciesLevel[MatchingSpeciesGroups,])
+Predictions<- predict(TempModel,FaoSpeciesLevel[MatchingSpeciesGroups,])
+
+eval(parse(text=paste('FaoSpeciesLevel$',TempModelName,'Prediction[MatchingSpeciesGroups]<-Predictions',sep='')))
 
 eval(parse(text=paste('TempModel<- NeiModels$',TempModelName,sep='')))
 
-FaoNeiLevelPredictions[MatchingNeiGroups,m]<- predict(NeiModels$M6,FaoNeiLevel[MatchingNeiGroups,])
+Predictions<- predict(NeiModels$M6,FaoNeiLevel[MatchingNeiGroups,])
+
+eval(parse(text=paste('FaoNeiLevel$',TempModelName,'Prediction[MatchingNeiGroups]<-Predictions',sep='')))
 
 }
 
-NotIdentifiedPredictions<- predict(NeiModels$M7,FaoMarineFish)
+NotIdentifiedPredictions<- predict(NeiModels$M7,FaoMarineFishLevel)
 
-##Bind projections together with regression data
+FaoMarineFishLevel$M7Prediction<- NotIdentifiedPredictions
 
+PredictedData<- rbind(RamData,FaoSpeciesLevel,FaoNeiLevel,FaoMarineFishLevel) #Bind all data back together
 
-FaoSpeciesLevel<- cbind(FaoSpeciesLevel,FaoSpeciesLevelPredictions) 
+BiomassColumns<- grepl('BvBmsy',colnames(PredictedData)) | grepl('Prediction',colnames(PredictedData))
+
+BioNames<- colnames(PredictedData)[BiomassColumns]
+
+HasBiomass<- rowSums(is.na(PredictedData[,BiomassColumns]))<length(BioNames)
+
+BiomassDatabase<- PredictedData[HasBiomass,] #Only store fisheries that have 
+
 
 pdf(paste(FigureFolder,'Unassessed Species Level Test Histogram.pdf',sep=''))
 hist(exp(FaoSpeciesLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks')
