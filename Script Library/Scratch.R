@@ -15,3 +15,5 @@ a<- c(10,10,20)
 b<- c(20,7,10,11,12)
 
 b%in%a
+
+Test<- merge(RamData,RamRegressionData,by=IdVar,sort=FALSE,all=FALSE)

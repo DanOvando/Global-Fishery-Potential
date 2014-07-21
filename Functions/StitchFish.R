@@ -93,6 +93,6 @@ StitchFish<- function(Data,IdVar,Groups,GroupSamples,Iterations)
       } #Close iterations loop
     } #Close if any groups loop
   } #Close groups loop
-  
+  StitchMat<- StitchMat[is.na(StitchMat[,IdVar])==F,]
   return(StitchMat)
 } #Close function

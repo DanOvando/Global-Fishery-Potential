@@ -1,7 +1,8 @@
 FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
 {
   
-  # Format Data For Regression  -------- This code reformats data frames into
+  # Format Data For Regression  -------- 
+  #This code reformats data frames into
   # the structure for a panel regression #
   
   # Create Regression Data Frame --------------------------------------------
