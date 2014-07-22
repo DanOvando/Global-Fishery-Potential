@@ -34,7 +34,7 @@ write.csv(file=paste(ResultFolder,'Raw Compiled Database.csv',sep=''),FullData)
 write.csv(file=paste(ResultFolder,'Omitted Stocks.csv',sep=''),DroppedStocks)
 }
 if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))){FullData<- read.csv(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))}
-  
+
 FullData$SpeciesCatName<- as.factor( FullData$SpeciesCatName)
 
 FullData$ReferenceBiomass[FullData$ReferenceBiomass==0]<- NA
@@ -57,13 +57,18 @@ for (m in 1:length(ModelNames))
 
 # SofiaData<-  FullData[FullData$Dbase=='SOFIA',]
 
+# FullData[FullData[,LifeHistoryVars]==0 & is.na(FullData[,LifeHistoryVars])==F ,LifeHistoryVars]<- NA
+FullData$MaxLength[FullData$MaxLength==0]<- NA
+FullData$AgeMat[FullData$AgeMat==0]<- NA
+FullData$VonBertK[FullData$VonBertK==0]<- NA
+
 RamData<- FullData[FullData$Dbase=='RAM',]
 
 FaoData<- FullData[FullData$Dbase=='FAO',]
 
-  FaoIdSample<- sample(unique(FaoData[,IdVar]),500,replace=FALSE)
-# # 
-  FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
+#   FaoIdSample<- sample(unique(FaoData[,IdVar]),500,replace=FALSE)
+# # # 
+#   FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
 
 # Create synthetic stocks -------------------------------------------------
 
@@ -89,7 +94,6 @@ for (m in 1:length(ModelNames))
   
 }
 
-
 # Prepare data for regression ---------------------------------------------
 
 library(proftools)
@@ -112,6 +116,12 @@ if (file.exists(paste(ResultFolder,'FaoData.Rdata',sep='')))
   load(paste(ResultFolder,'FaoData.Rdata',sep=''))
 }
   
+FaoData$MaxLength[FaoData$MaxLength==0]<- NA
+
+FaoData$AgeMat[FaoData$AgeMat==0]<- NA
+
+FaoData$VonBertK[FaoData$VonBertK==0]<- NA
+
 # Rprof(NULL)
 #  RProfData<- readProfileData('Rprof.out')
 #  flatProfile(RProfData,byTotal=TRUE)
@@ -124,9 +134,7 @@ RealModelFactorLevels<- NULL
 
 Models<- names(Regressions)
 
-
 # Process Regressions -----------------------------------------------------
-
 
 ## Determine species category levels that were used in each model run
 
@@ -243,9 +251,13 @@ for (b in 1:dim(AvailableBio)[1])
 }
 BestBio[BestModel==1]<- log(BestBio[BestModel==1])
 
+BestModelnames<- c('RAM',ModelNames)
+
+BestModelNames<- BestModelnames[unique(BestModel)]
+
 BestModel<- as.factor((BestModel))
                     
-levels(BestModel)<- c('RAM',ModelNames)
+levels(BestModel)<- BestModelNames
 
 BiomassData$BestModel<- BestModel
 
@@ -266,39 +278,61 @@ BiomassData$IdLevel[WhereSpeciesLevel]<- 'Species'
 
 # Analyze Current Status --------------------------------------------------
 
+RawSummary<- ddply(BiomassData,c('Dbase','IdLevel','Year'),summarise,MeanBio=mean(exp(BestBio),na.rm=T),MedianBio=median(exp(BestBio),na.rm=T))
 
-FaoSpeciesData<- BiomassData[BiomassData$IdLevel=='Species' & BiomassData$Dbase=='FAO',]
+FaoSpeciesRetransform<- TransBias(subset(BiomassData,IdLevel=='Species' & Dbase=='FAO'),RealModelSdevs,BinBreak,100)
 
+FaoMiscRetransform<- TransBias(subset(BiomassData,(IdLevel=='Neis' | IdLevel=='Unidentified') & Dbase=='FAO'),NeiModelSdevs,BinBreak,100)
 
-pdf(paste(FigureFolder,'Unassessed Species Level Test Histogram.pdf',sep=''))
-hist(exp(FaoSpeciesLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks')
-abline(v=median(exp(FaoSpeciesLevelPredictions$M6LogBvBmsy),na.rm=T))
-dev.off()
+FaoSpeciesDist<- FaoSpeciesRetransform$TotalDistribution
 
-pdf(paste(FigureFolder,'Unassessed Species Level Test boxplot.pdf',sep=''))
-boxplot(exp(FaoSpeciesLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks',outline=F)
-dev.off()
+FaoMiscDist<- FaoSpeciesRetransform$TotalDistribution
 
-pdf(paste(FigureFolder,'Unassessed Species Level Model 1 Test Histogram.pdf',sep=''))
-hist(exp(FaoSpeciesLevelPredictions$M1LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks')
-abline(v=median(exp(FaoSpeciesLevelPredictions$M1LogBvBmsy),na.rm=T))
-dev.off()
+CatchStatistics<- AnalyzeFisheries(BiomassData,'All Fisheries Catch','ARGH',2009)
 
-pdf(paste(FigureFolder,'Unassessed Species Level Model 1 Test boxplot.pdf',sep=''))
-boxplot(exp(FaoSpeciesLevelPredictions$M1LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks',outline=F)
-dev.off()
+CatchStatistics<- AnalyzeFisheries(BiomassData[BiomassData$Country=='USA',],'USA Fisheries Catch','ARGH',2000:2009)
 
 
-FaoNeiLevel<- cbind(FaoNeiLevel,FaoNeiLevelPredictions)
+#   Data<- subset(BiomassData,IdLevel=='Species' & Dbase=='FAO')
+#   
+#   SdevBins<- RealModelSdevs
+#   
+#   BinBreak<- TransbiasBin
+#   
+#   J<- 100
+#   
 
-pdf(paste(FigureFolder,'Unassessed Nei Level Test Histogram.pdf',sep=''))
-hist(exp(FaoNeiLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Nei Level Fao Stocks')
-abline(v=median(exp(FaoNeiLevelPredictions$M6LogBvBmsy),na.rm=T))
-dev.off()
 
-pdf(paste(FigureFolder,'Unassessed Nei Level Test boxplot.pdf',sep=''))
-boxplot(exp(FaoNeiLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Nei Level Fao Stocks',outline=F)
-dev.off()
+
+# pdf(paste(FigureFolder,'Unassessed Species Level Test Histogram.pdf',sep=''))
+# hist(exp(FaoSpeciesLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks')
+# abline(v=median(exp(FaoSpeciesLevelPredictions$M6LogBvBmsy),na.rm=T))
+# dev.off()
+# 
+# pdf(paste(FigureFolder,'Unassessed Species Level Test boxplot.pdf',sep=''))
+# boxplot(exp(FaoSpeciesLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks',outline=F)
+# dev.off()
+# 
+# pdf(paste(FigureFolder,'Unassessed Species Level Model 1 Test Histogram.pdf',sep=''))
+# hist(exp(FaoSpeciesLevelPredictions$M1LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks')
+# abline(v=median(exp(FaoSpeciesLevelPredictions$M1LogBvBmsy),na.rm=T))
+# dev.off()
+# 
+# pdf(paste(FigureFolder,'Unassessed Species Level Model 1 Test boxplot.pdf',sep=''))
+# boxplot(exp(FaoSpeciesLevelPredictions$M1LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks',outline=F)
+# dev.off()
+# 
+# 
+# FaoNeiLevel<- cbind(FaoNeiLevel,FaoNeiLevelPredictions)
+# 
+# pdf(paste(FigureFolder,'Unassessed Nei Level Test Histogram.pdf',sep=''))
+# hist(exp(FaoNeiLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Nei Level Fao Stocks')
+# abline(v=median(exp(FaoNeiLevelPredictions$M6LogBvBmsy),na.rm=T))
+# dev.off()
+# 
+# pdf(paste(FigureFolder,'Unassessed Nei Level Test boxplot.pdf',sep=''))
+# boxplot(exp(FaoNeiLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Nei Level Fao Stocks',outline=F)
+# dev.off()
 
 save.image(file=paste(ResultFolder,'Regression Outputs.rdata',sep=''))
 
