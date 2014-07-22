@@ -169,7 +169,7 @@ WhereFaoNeis<- (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & 
 
 WhereFaoMarineFish<- grepl('not identified',FaoData$SpeciesCatName)
 
-FaoSpeciesLevel<- FaoData[WhereFaoNeis==F,] #Fao stocks named to the species level
+FaoSpeciesLevel<- FaoData[WhereFaoNeis==F & WhereFaoMarineFish==F ,] #Fao stocks named to the species level
 
 FaoNeiLevel<- FaoData[WhereFaoNeis,] #fao species named to the nei or spp level
 
@@ -210,6 +210,10 @@ eval(parse(text=paste('FaoNeiLevel$',TempModelName,'Prediction[MatchingNeiGroups
 
 NotIdentifiedPredictions<- predict(NeiModels$M7,FaoMarineFishLevel)
 
+
+# Clean and process predictions and data ---------------------------------------
+
+
 FaoMarineFishLevel$M7Prediction<- NotIdentifiedPredictions
 
 PredictedData<- rbind(RamData,FaoSpeciesLevel,FaoNeiLevel,FaoMarineFishLevel) #Bind all data back together
@@ -220,7 +224,50 @@ BioNames<- colnames(PredictedData)[BiomassColumns]
 
 HasBiomass<- rowSums(is.na(PredictedData[,BiomassColumns]))<length(BioNames)
 
-BiomassDatabase<- PredictedData[HasBiomass,] #Only store fisheries that have 
+BiomassData<- PredictedData[HasBiomass,] #Only store fisheries that have some form of biomass estimates
+
+AvailableBio<- (BiomassData[,BiomassColumns])
+
+AvailableBioMarker<- matrix(rep((1:dim(AvailableBio)[2]),dim(AvailableBio)[1]), dim(AvailableBio)[1],dim(AvailableBio)[2],byrow=TRUE)
+
+AvailableBioMarker<- AvailableBioMarker*(is.na(AvailableBio)==F)
+
+AvailableBioMarker[AvailableBioMarker==0]<- NA
+
+BestModel<- apply(AvailableBioMarker,1,min,na.rm=T)
+
+BestBio<- NULL
+for (b in 1:dim(AvailableBio)[1])
+{
+  BestBio[b]<- AvailableBio[b,BestModel[b]]
+}
+BestBio[BestModel==1]<- log(BestBio[BestModel==1])
+
+BestModel<- as.factor((BestModel))
+                    
+levels(BestModel)<- c('RAM',ModelNames)
+
+BiomassData$BestModel<- BestModel
+
+BiomassData$BestBio<- BestBio
+
+WhereNeis<- (grepl('nei',BiomassData$CommName) | grepl('spp',BiomassData$SciName)) & grepl('not identified',BiomassData$SpeciesCatName)==F #Find unassessed NEIs
+
+WhereUnidentified<- grepl('not identified',BiomassData$SpeciesCatName)
+
+WhereSpeciesLevel<- WhereNeis==F & WhereUnidentified==F #Fao stocks named to the species level
+
+BiomassData$IdLevel[WhereNeis]<- 'Neis'
+
+BiomassData$IdLevel[WhereUnidentified]<- 'Unidentified'
+
+BiomassData$IdLevel[WhereSpeciesLevel]<- 'Species'
+ 
+
+# Analyze Current Status --------------------------------------------------
+
+
+FaoSpeciesData<- BiomassData[BiomassData$IdLevel=='Species' & BiomassData$Dbase=='FAO',]
 
 
 pdf(paste(FigureFolder,'Unassessed Species Level Test Histogram.pdf',sep=''))

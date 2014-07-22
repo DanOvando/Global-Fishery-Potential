@@ -101,6 +101,6 @@ save.image(file=paste(BatchFolder,'Controlfile Settings.rdata'))
 
 # Run Analysis ------------------------------------------------------------
 
-source('GFR_Wrapper.R')
+# source('GFR_Wrapper.R')
 
 
