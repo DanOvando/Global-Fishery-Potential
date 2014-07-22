@@ -102,7 +102,7 @@ RAM$Biomass[Whereb]<-RAM$total[Whereb]
 RAM$BiomassMetric[Whereb]<-"B"
 RAM$BiomassUnit[Whereb]<-RAM[Whereb,8]
 
-RAM$Biomass[Nowhere]<-"NA"
+RAM$Biomass[Nowhere]<-NA
 RAM$BiomassMetric[Nowhere]<-"NA"
 RAM$BiomassUnit[Nowhere]<-"NA"
 
