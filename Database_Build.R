@@ -1,52 +1,98 @@
 
 # Database Build ----------------------------------------------------------
 
+##############################################
+####
+#### GLOBAL FISHERY POTENTIAL DATA PROCESSING
+#### DATA RECEIVED ON: 
+####      RAM: 7/23/14
+####      SOFIA: 
+####      FAO: 
+####
+#### BY: TYLER CLAVELLE
+#### 
+#### Script loads, formats, and compiles the RAM, SOFIA, and FAO databases
+
 ############################################################################################################
 
-# Script first creates an example database, then formats the RAM, SOFIA, and FAO databases, and finally stacks the databases
-
-############################################################################################################
-############ CREATE DATABASE COLUMNS ############
-
-ColNames = c("IdOrig","Year","Fmort","Catch","FmortUnit","CatchUnit","SciName","CommName",
-             "Country","RegionFAO","SpeciesCat","SpeciesCatName","Bmsy","SSBmsy","Umsy","Fmsy","Id","Dbase","Biomass","BiomassMetric",
-             "BiomassUnit","FmortMetric","ExploitStatus", "VonBertK","VonBertKUnit","VonBertKSource","Temp","TempUnit",
-             "TempSource","MaxLength","MaxLengthUnit", "MaxLengthSource","AgeMat","AgeMatUnit","AgeMatSource",'ReferenceBiomass','ReferenceBiomassUnits')
+load("Data/DBdata.RData") # Load R data pack
 
 ############################################################################################################
 ############ RAM DATABASE ############
 
-# .csvs from RAM Legacy output
-RAM<-read.csv("Data/Ram Time Series 6_11_14.csv", stringsAsFactors=F) # Time series .csv
-RAM_BioParams<-read.csv("Data/RAM BioParams 6_11_14.csv", stringsAsFactors=F) # Bio parameters .csv
+# build dataset using "timeseries.views.data as base dataset
 
-# drop unwanted columns
-RAM<-subset(RAM, select=c("assessid","tsyear","ssb","total","f","catch_landings","ssb_unit","total_unit",
-                          "f_unit","catch_landings_unit","scientificname","commonname","country",
-                          "bmsy" ,"ssbmsy","umsy","fmsy"))
+ColNames = c("Id","IdOrig","Dbase", "Year","Catch","CatchUnit", "Fmort","FmortUnit","FmortMetric", "SciName","CommName",
+             "Country","RegionFAO","SpeciesCat","SpeciesCatName","Bmsy","SSBmsy","Umsy","Fmsy","Biomass","BiomassMetric",
+             "BiomassUnit","ExploitStatus", "VonBertK","VonBertKUnit","VonBertKSource","Temp","TempUnit",
+             "TempSource","MaxLength","MaxLengthUnit", "MaxLengthSource","AgeMat","AgeMatUnit","AgeMatSource",'ReferenceBiomass','ReferenceBiomassUnits',"BvBmsy")
 
-# rename columns to common format (see ColNames above)
-names(RAM)[1]<-"IdOrig"
-names(RAM)[2]<-"Year"
-names(RAM)[3]<-"ssb"
-names(RAM)[5]<-"Fmort"
-names(RAM)[6]<-"Catch"
-names(RAM)[9]<-"FmortUnit"
-names(RAM)[10]<-"CatchUnit"
-names(RAM)[11]<-"SciName"
-names(RAM)[12]<-"CommName"
-names(RAM)[13]<-"Country"
-names(RAM)[14]<-"Bmsy"
-names(RAM)[15]<-"SSBmsy"
-names(RAM)[16]<-"Umsy"
-names(RAM)[17]<-"Fmsy"
+####### Data Formatting and Subsetting ####### 
 
-# add columns for missing variables
+# convert matrices with column names to dataframes and convert variables to characters/numerics
+bioparams<-as.data.frame(bioparams)
+bioparams$assessid<-as.character(levels(bioparams$assessid))[bioparams$assessid]
+bioparams$bioid<-as.character(levels(bioparams$bioid))[bioparams$bioid]
+bioparams$biovalue<-as.character(levels(bioparams$biovalue))[bioparams$biovalue] # leave as.character until after filling in dataset, then identify values that need adjustment
+
+metadata<-as.data.frame(meta.data)
+metadata$assessid<-as.character(levels(metadata$assessid))[metadata$assessid]
+metadata$scientificname<-as.character(levels(metadata$scientificname))[metadata$scientificname]
+metadata$areaid<-as.character(levels(metadata$areaid))[metadata$areaid]
+
+# add column names to data sets missing names
+colnames(timeseries.views.data)<-c("IdOrig","stockid","CommName","Year","TB", "SSB", "TN", "R",
+                                   "TC", "TL", "Fmort", "ER", "BvBmsyDrop", "SSBvSSBmsy", "FvFmsy", "UvUmsy", "Biomass", "Catch", "Utouse", "BvBmsy", "UvUmsytouse") 
+
+# made following changes to variable names:
+# Btouse -> Biomass
+# Ctouse -> Catch
+# Bmsytouse -> ReferenceBiomass
+# tsyear -> Year
+# F -> Fmort
+# stocklong -> CommName # temporary
+# BvBmsy -> BvBmsyDrop # dropping this variable in favor of Bmsytouse
+# BvBmsytouse -> BvBmsy
+
+colnames(timeseries.views.units)<-c("IdOrig","stockid","stocklong","TB", "SSB", "TN", "R","TC", "TL", "F", "ER")
+
+# For datasets missing variable names, convert to data frame, name variables, and convert to character/numeric as neccessary
+bioparams.views.units<-as.data.frame(bioparams.views.units)
+colnames(bioparams.views.units)<-c("IdOrig","stockid","stocklong","Bmsy", "SSBmsy", "Nmsy", "MSY", "Fmsy", "Umsy", "B0", "SSB0", "M")
+
+bioparams.views.data<-as.data.frame(bioparams.views.data)
+colnames(bioparams.views.data)<-c("IdOrig","stockid","stocklong","Bmsy", "SSBmsy", "Nmsy", "MSY", "Fmsy", "Umsy", "B0", "SSB0", "M", "ReferenceBiomass", "Umsytouse")
+
+bioparams.views.data$IdOrig<-as.character(levels(bioparams.views.data$IdOrig))[bioparams.views.data$IdOrig]
+bioparams.views.data$ReferenceBiomass<-as.numeric(levels(bioparams.views.data$ReferenceBiomass))[bioparams.views.data$ReferenceBiomass]
+bioparams.views.data$SSBmsy<-as.numeric(levels(bioparams.views.data$SSBmsy))[bioparams.views.data$SSBmsy]
+bioparams.views.data$Fmsy<-as.numeric(levels(bioparams.views.data$Fmsy))[bioparams.views.data$Fmsy]
+bioparams.views.data$Umsytouse<-as.numeric(levels(bioparams.views.data$Umsytouse))[bioparams.views.data$Umsytouse]
+bioparams.views.data$Bmsy<-as.numeric(levels(bioparams.views.data$Bmsy))[bioparams.views.data$Bmsy]
+
+# subset out unneeded variables and convert to data frame
+
+RAM<-as.data.frame(timeseries.views.data)
+
+RAM<-(subset(RAM, select=c("IdOrig","CommName","Year","Fmort","BvBmsy","Biomass","Catch")))
+
+# convert variables to character
+RAM$IdOrig<-as.character(levels(RAM$IdOrig))[RAM$IdOrig]
+RAM$CommName<-as.character(levels(RAM$CommName))[RAM$CommName]                  
+
+
+# convert variables to numeric
+RAM$Fmort<-as.numeric(levels(RAM$Fmort))[RAM$Fmort]
+RAM$BvBmsy<-as.numeric(levels(RAM$BvBmsy))[RAM$BvBmsy]
+RAM$Biomass<-as.numeric(levels(RAM$Biomass))[RAM$Biomass]
+RAM$Catch<-as.numeric(levels(RAM$Catch))[RAM$Catch]
+RAM$Year<-as.numeric(levels(RAM$Year))[RAM$Year]
+
+# add missing variables
 RAM$Id=rep(0,nrow(RAM)) # fill in once full database is compiled 
 RAM$Dbase=rep("RAM",nrow(RAM))
-RAM$Biomass=rep(0,nrow(RAM))
-RAM$BiomassMetric=character(length=nrow(RAM))
-RAM$BiomassUnit=character(length=nrow(RAM))
+RAM$BiomassMetric=rep("B",nrow(RAM)) # all Biomass values are either original total biomass values or SSB values that have been scaled to TB
+RAM$BiomassUnit=rep("MT",nrow(RAM)) # all Biomass values reported in metric tons
 RAM$FmortMetric=character(length=nrow(RAM))
 RAM$FmortUnit=character(length=nrow(RAM))
 RAM$ExploitStatus=character(length=nrow(RAM))
@@ -63,130 +109,134 @@ RAM$AgeMat<-as.numeric(rep("",nrow(RAM)))
 RAM$AgeMatSource=character(length=nrow(RAM))
 RAM$AgeMatUnit=character(length=nrow(RAM))
 RAM$SpeciesCatName=character(length=nrow(RAM))
-RAM$RegionFAO=rep(0,nrow(RAM))
-
-RAM$Bmsy[RAM$Bmsy=='SEE NOTES']<- NA
-RAM$Bmsy[RAM$Bmsy=="1,438,000"]<-1438000 # remove commas to preserve number before conversion to numeric
-
-RAM$Bmsy<- as.numeric(RAM$Bmsy)
-
-WhereSSB<- is.na(RAM$Bmsy) & is.na(RAM$SSBmsy)==F
-
-ReferenceBiomass<- RAM$Bmsy
-
-ReferenceBiomass[WhereSSB]<- RAM$SSBmsy[WhereSSB]
-
-ReferenceBiomassUnits<- matrix(NA,nrow=length(ReferenceBiomass),ncol=1)
-
-ReferenceBiomassUnits[is.na(RAM$Bmsy)==F]<- 'Bmsy'
-
-ReferenceBiomassUnits[WhereSSB]<- 'SSBmsy'
-
-RAM$ReferenceBiomass<- ReferenceBiomass
-
-RAM$ReferenceBiomassUnits<- ReferenceBiomassUnits
-
-
-####### Biomass Calculation ####### 
-# calculate biomass variable by either taking "total" if available and ssb otherwise. fill BiomassMetric with B or SSB and BiomassUnit w/ corresponding units
-
-Wheressb<-(is.na(RAM$total) & is.na(RAM$ssb)==F & RAM$ssb>0) # where no biomass but ssb 
-Whereb<-((RAM$total>0) & (is.na(RAM$total)==F))  # where biomass
-Nowhere<-(is.na(RAM$total) & is.na(RAM$ssb)) # where neither biomass or ssb
-
-RAM$Biomass[Wheressb]<- RAM$ssb[Wheressb]
-RAM$BiomassMetric[Wheressb]<- 'SSB'
-RAM$BiomassUnit[Wheressb]<- RAM[Wheressb,7]
-
-RAM$Biomass[Whereb]<-RAM$total[Whereb]
-RAM$BiomassMetric[Whereb]<-"B"
-RAM$BiomassUnit[Whereb]<-RAM[Whereb,8]
-
-RAM$Biomass[Nowhere]<-NA
-RAM$BiomassMetric[Nowhere]<-"NA"
-RAM$BiomassUnit[Nowhere]<-"NA"
-
+RAM$RegionFAO=as.numeric(rep("",nrow(RAM)))
+RAM$Bmsy=as.numeric(rep("",nrow(RAM)))
+RAM$SSBmsy=as.numeric(rep("",nrow(RAM)))
+RAM$Fmsy=as.numeric(rep("",nrow(RAM)))
+RAM$Umsy=as.numeric(rep("",nrow(RAM)))
+RAM$SciName=character(length=nrow(RAM))
+RAM$SpeciesCat=as.numeric(rep("",nrow(RAM)))
+RAM$CatchUnit=rep("MT",nrow(RAM))
+RAM$Country<-NA
 
 ####### Life History ####### 
-# run for loop to match life history parameters by assessid/IdOrig to RAM_BioParams .csv
+# run for loop to match life history paRAMeters by assessid/IdOrig to bioparams .csv
 # Von Bert K value and unit
-RamNames<- unique(RAM$IdOrig)
+RAMNames<- unique(RAM$IdOrig)
 
-for (i in 1:length(RamNames)) 
+for (i in 1:length(RAMNames)) 
 {
   
-  Where<- RAM$IdOrig==RamNames[i]
+  Where<- RAM$IdOrig==RAMNames[i]
   
-  if (sum(RAM_BioParams$assessid==RamNames[i] & grepl("VB-k",RAM_BioParams$bioid))>0)
+  if (sum(bioparams$assessid==RAMNames[i] & grepl("VB-k",bioparams$bioid))>0)
   {
     
     
-    RAM$VonBertK[Where]=RAM_BioParams[RAM_BioParams$assessid==RamNames[i] & grepl("VB-k",RAM_BioParams$bioid),24]
-    RAM$VonBertKUnit[Where]=RAM_BioParams[RAM_BioParams$assessid==RamNames[i]& grepl("VB-k",RAM_BioParams$bioid),23]
+    RAM$VonBertK[Where]=bioparams[bioparams$assessid==RAMNames[i] & grepl("VB-k",bioparams$bioid),5]
+    RAM$VonBertKUnit[Where]=bioparams[bioparams$assessid==RAMNames[i]& grepl("VB-k",bioparams$bioid),4]
     RAM$VonBertKSource[Where]="RAM"
   }
 }
 
 # Max Lenght and Units
 
-for (i in 1:length(RamNames)) 
+for (i in 1:length(RAMNames)) 
 {
   
-  Where<- RAM$IdOrig==RamNames[i]
+  Where<- RAM$IdOrig==RAMNames[i]
   
-  if (sum(RAM_BioParams$assessid==RamNames[i] & grepl("MAX-LEN",RAM_BioParams$bioid))>0)
+  if (sum(bioparams$assessid==RAMNames[i] & grepl("MAX-LEN",bioparams$bioid))>0)
   {
     
     
-    RAM$MaxLength[Where]=RAM_BioParams[RAM_BioParams$assessid==RamNames[i] & grepl("MAX-LEN",RAM_BioParams$bioid),24]
-    RAM$MaxLengthUnit[Where]=RAM_BioParams[RAM_BioParams$assessid==RamNames[i]& grepl("MAX-LEN",RAM_BioParams$bioid),23]
+    RAM$MaxLength[Where]=bioparams[bioparams$assessid==RAMNames[i] & grepl("MAX-LEN",bioparams$bioid),5]
+    RAM$MaxLengthUnit[Where]=bioparams[bioparams$assessid==RAMNames[i]& grepl("MAX-LEN",bioparams$bioid),4]
     RAM$MaxLengthSource[Where]="RAM"
   }
 }
 
 # Age at 50% maturity
 
-for (i in 1:length(RamNames)) ## multiple matches for Age at Mat for some studies, pick one?
+for (i in 1:length(RAMNames)) ## multiple matches for Age at Mat for some studies, pick one?
 {
   
-  Where<- RAM$IdOrig==RamNames[i]
+  Where<- RAM$IdOrig==RAMNames[i]
   
-  if (sum(RAM_BioParams$assessid==RamNames[i] & grepl("A50-yr",RAM_BioParams$bioid))>0)
+  if (sum(bioparams$assessid==RAMNames[i] & grepl("A50-yr",bioparams$bioid))>0)
   {
     
     
-    RAM$AgeMat[Where]=RAM_BioParams[RAM_BioParams$assessid==RamNames[i] & grepl("A50-yr",RAM_BioParams$bioid),24]
-    RAM$AgeMatUnit[Where]=RAM_BioParams[RAM_BioParams$assessid==RamNames[i]& grepl("A50-yr",RAM_BioParams$bioid),23]
+    RAM$AgeMat[Where]=bioparams[bioparams$assessid==RAMNames[i] & grepl("A50-yr",bioparams$bioid),5]
+    RAM$AgeMatUnit[Where]=bioparams[bioparams$assessid==RAMNames[i]& grepl("A50-yr",bioparams$bioid),4]
     RAM$AgeMatSource[Where]="RAM"
   }
 }
 
-# clean up life history values that are non-numeric, convert variables to numeric
-# Von bert
-RAM$VonBertK=gsub("SEE TABLE 5","",RAM$VonBertK)
-RAM$VonBertK=gsub("varies by region","",RAM$VonBertK) # remove "varies by region"
-RAM$VonBertK=gsub("SEE TABLE 5","",RAM$VonBertK) # remove "SEE TABLE 5"
-RAM$VonBertK=gsub("8.30E-02",".083",RAM$VonBertK) # convert "8.30E-02" from scientific notation
-RAM$VonBertK=gsub("0.232/0.161","0.161", RAM$VonBertK) # original value indicates "male/female", select only female entry
-RAM$VonBertK=gsub("0.261/0.213","0.213", RAM$VonBertK) # original value indicates "male/female", select only female entry
+### Clean up character values in life-history parameters and convert to numeric
 
-# Max Length
+# VonBertK
+# "varies by region" will be converted to NA, still finding a "-0.36 value", can't resolve from reference
+
+# MaxLength
 RAM$MaxLength=gsub("26+","26",RAM$MaxLength, fixed=T) # remove + from end of 26
 RAM$MaxLength=gsub("available","",RAM$MaxLength) # remove "available", RAM entry says "varies greatly"
 
-# Age at Maturity
+# AgeMat
 RAM$AgeMat=gsub("7.7+","7.7",RAM$AgeMat,fixed=T) # remove + from end of 7.7 
+RAM$AgeMat=gsub("3+","3",RAM$AgeMat,fixed=T) # remove + from end of 3
 RAM$AgeMat=gsub(" yr","",RAM$AgeMat) # remove yr from end of 2.5 
-RAM$AgeMat=gsub("0-1","0.5",RAM$AgeMat) # average 
-RAM$AgeMat=gsub("1-2","1.5",RAM$AgeMat) # average
-RAM$AgeMat=gsub("2-3","2.5",RAM$AgeMat) # average
-RAM$AgeMat=gsub("3-4","3.5",RAM$AgeMat) # average
-RAM$AgeMat=gsub("4-5","4.5",RAM$AgeMat) # average
-RAM$AgeMat=gsub("6-7","6.5",RAM$AgeMat) # average
-RAM$AgeMat=gsub("7-8","8.5",RAM$AgeMat) # average
-# still have "FOUND AS A TIME SERIES IN FIGURE 10", "AVAILABLE", and "3-Apr" data points. Will be converted to NA
+RAM$AgeMat=gsub("0-1","0.5",RAM$AgeMat) # average
+# still have "FOUND AS A TIME SERIES IN FIGURE 10", "AVAILABLE", and "3-Apr", and "4-Mar" data points. Will be converted to NA
 
-####### Species and Region Codes ####### 
+RAM$VonBertK<-as.numeric(RAM$VonBertK)
+RAM$AgeMat<-as.numeric(RAM$AgeMat)
+RAM$MaxLength<-as.numeric(RAM$MaxLength)
+
+# Add in SciName
+
+for (i in 1:length(RAMNames))
+{
+  Where<-RAM$IdOrig==RAMNames[i]
+  RAM$SciName[Where]<-metadata[RAMNames[i]==metadata$assessid,4]
+}
+
+# Add FmortMetric and Fmort Unit
+
+for (i in 1:length(RAMNames))
+{
+  Wheref<-(RAM$IdOrig==RAMNames[i] & is.na(RAM$Fmort)==F)
+  biop_match<-match(RAMNames[i],timeseries.views.units)
+  
+  RAM$FmortMetric[Wheref]<-"F"
+  RAM$FmortUnit[Wheref]<-timeseries.views.units[biop_match,10]
+}
+
+# Add in reference values (Bmsy,Fmsy,SSBmsy,Umsy)
+
+for (i in 1:length(RAMNames)) 
+{
+  Whereref<-RAM$IdOrig==RAMNames[i]
+  lh_match<-match(RAMNames[i],bioparams.views.data$IdOrig)
+  
+  RAM$Bmsy[Whereref]<-bioparams.views.data[lh_match,13] #Bmsy - taken from Bmsytouse a.k.a ReferenceBiomass
+  RAM$Umsy[Whereref]<-bioparams.views.data[lh_match,14] #Umsy - taken from Umsytouse
+  RAM$Fmsy[Whereref]<-bioparams.views.data[lh_match,8] #Fmsy
+  RAM$SSBmsy[Whereref]<-bioparams.views.data[lh_match,5] #SSBmsy
+  # filling Bmsy with Bmsytouse, which was renamed to ReferenceBiomass. Will be duplicated in ReferenceBiomass column
+}
+
+# Add reference biomass
+RAM$ReferenceBiomass<-RAM$Bmsy # This will be the biomass reference point to use
+
+RAM$ReferenceBiomassUnits<-NA
+
+WhereRefB<-RAM$ReferenceBiomass==RAM$Bmsy
+
+RAM$ReferenceBiomassUnits[WhereRefB]<-"Bmsy"
+
+
+####### Species, Country, and Region Codes ####### 
 # read in .csvs with matched RAM assessids and FAO regions and species scientific names and ISSCAAP codes
 
 Spec_ISSCAAP=read.csv("Data/Species_ASFIS_ISSCAAP.csv") # list of ASFIS scientific names and corressponding ISSCAAP codes 
@@ -198,19 +248,35 @@ Spec_ISSCAAP$Species_AFSIS=as.character(levels(Spec_ISSCAAP$Species_AFSIS))[Spec
 # FAO Region matching
 RegionFAOMatches=unique(Spec_Region_RAM$Assessed.ID)
 
-for (i in 1:length(RamNames)) 
+for (i in 1:length(RAMNames)) # currently only matching 11 of the 17 unique FAO regions in the Spec_Region.csv. Due to stocks in multiple zones? 
 {
   
-  Where1<- RamNames[i]==Spec_Region_RAM$Assessed.ID
-
-  Where2<- RamNames[i]==RAM$IdOrig
+  Where1<- RAMNames[i]==Spec_Region_RAM$Assessed.ID
+  
+  Where2<- RAMNames[i]==RAM$IdOrig
   
   
-  if (sum(Spec_Region_RAM$Assessed.ID==RamNames[i])>0)
+  if (sum(Spec_Region_RAM$Assessed.ID==RAMNames[i])>0)
   {
     RAM$RegionFAO[Where2]<- Spec_Region_RAM[Where1,4][1]
   }
 }
+
+# Country Identification - using first word from "areaid" in metadata data frame
+for (i in 1:length(metadata$areaid)) # loop adds country variable to metadata data frame
+{
+  country<-unlist(strsplit(metadata$areaid[i],split="-",fixed=T))[1]
+  metadata$Country[i]<-country
+} 
+
+for(i in 1:length(RAMNames))# loop adds country variable to RAM
+{
+  whereram<-RAMNames[i]==RAM$IdOrig
+  wheremeta<-RAMNames[i]==metadata$assessid
+  
+  RAM$Country[whereram]<-metadata[wheremeta,12]
+}
+
 
 # ISSCAAP Species Code Matching
 
@@ -240,15 +306,6 @@ for (i in 1:length(GroupNums)) # match group code to group name
   }
 }
 
-# convert Life history columns to numeric *** TEMPORARY - Need to go back and adjust values using references
-RAM$VonBertK=as.numeric(RAM$VonBertK)
-RAM$MaxLength=as.numeric(RAM$MaxLength)
-RAM$AgeMat=as.numeric(RAM$AgeMat)
-
-
-# delete unneeded columns
-RAM<-subset(RAM, select=c(ColNames))
-            
 ############################################################################################################
 ############ SOFIA DATABASE ############
 
@@ -330,8 +387,17 @@ SOFIA$TempUnit=character(length=nrow(SOFIA))
 SOFIA$MaxLengthUnit=character(length=nrow(SOFIA))
 SOFIA$ReferenceBiomass<- NA
 SOFIA$ReferenceBiomassUnits<- NA
+SOFIA$BvBmsy<-NA
 
-  
+# Populate BvBmsy by converting Exploit Status values into numbers, taking the mean of the range of U, F, and O
+underexploit<-SOFIA$ExploitStatus=="U"
+fullyexploit<-SOFIA$ExploitStatus=="F" # identify which assessments are U,F,O
+overexploit<-SOFIA$ExploitStatus=="O"
+
+SOFIA$BvBmsy[underexploit]<-1.6
+SOFIA$BvBmsy[fullyexploit]<-1
+SOFIA$BvBmsy[overexploit]<-0.4
+
 # *** IdOrig, Catch, and Year to be created next for specific reasons***
 
 # create assessment-specfic ID code for SOFIA by combining Dbase, FAO Region, Species Code, and a Sequential Column
@@ -344,6 +410,7 @@ SOFIA$IdOrig=paste(sofiaID,SOFIA$Dbase,SOFIA$RegionFAO,SOFIA$SpeciesCat,sep="-")
 sofia=reshape(SOFIA,varying=8:17,direction="long", v.names="Catch", timevar="Year",times=2000:2009,)
 sofia=subset(sofia, select=c(ColNames)) # subset to remove added column names
 sofia=sofia[order(sofia$IdOrig,sofia$Year),] # sort to make catch records sequential
+sofia=sofia[,c(ColNames)] # order columns according to ColNames
 
 ############################################################################################################
 ############ FAO DATABASE ############
@@ -398,6 +465,7 @@ FAO$TempUnit=character(length=nrow(FAO))
 FAO$MaxLengthUnit=character(length=nrow(FAO))
 FAO$ReferenceBiomass<- NA
 FAO$ReferenceBiomassUnits<- NA
+FAO$BvBmsy<-NA
 
 # create IdOrig for FAO entries. Use same syntax as for SOFIA = 
 FAOID=seq(from=1, to=nrow(FAO))
