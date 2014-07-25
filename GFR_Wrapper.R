@@ -37,11 +37,11 @@ if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))){FullDat
 
 FullData$SpeciesCatName<- as.factor( FullData$SpeciesCatName)
 
-FullData$ReferenceBiomass[FullData$ReferenceBiomass==0]<- NA
+FullData$ReferenceBiomass[FullData$ReferenceBiomass==0]<- NA # remove?
 
-FullData$Biomass<- as.numeric(FullData$Biomass)
+FullData$Biomass<- as.numeric(FullData$Biomass) # remove
 
-FullData$BvBmsy<- FullData$Biomass/FullData$ReferenceBiomass
+FullData$BvBmsy<- FullData$Biomass/FullData$ReferenceBiomass # remove
 
 ModelNames<- names(Regressions)
 
@@ -58,9 +58,9 @@ for (m in 1:length(ModelNames))
 # SofiaData<-  FullData[FullData$Dbase=='SOFIA',]
 
 # FullData[FullData[,LifeHistoryVars]==0 & is.na(FullData[,LifeHistoryVars])==F ,LifeHistoryVars]<- NA
-FullData$MaxLength[FullData$MaxLength==0]<- NA
-FullData$AgeMat[FullData$AgeMat==0]<- NA
-FullData$VonBertK[FullData$VonBertK==0]<- NA
+FullData$MaxLength[FullData$MaxLength==0]<- NA # remove
+FullData$AgeMat[FullData$AgeMat==0]<- NA # remove
+FullData$VonBertK[FullData$VonBertK==0]<- NA # remove
 
 RamData<- FullData[FullData$Dbase=='RAM',]
 
