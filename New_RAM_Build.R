@@ -20,7 +20,9 @@ length(unique(timeseries[,1])) # number of stocks w/ catch timeseries
 ColNames = c("IdOrig","Year","Fmort","Catch","FmortUnit","CatchUnit","SciName","CommName",
              "Country","RegionFAO","SpeciesCat","SpeciesCatName","Bmsy","SSBmsy","Umsy","Fmsy","Id","Dbase","Biomass","BiomassMetric",
              "BiomassUnit","FmortMetric","ExploitStatus", "VonBertK","VonBertKUnit","VonBertKSource","Temp","TempUnit",
-             "TempSource","MaxLength","MaxLengthUnit", "MaxLengthSource","AgeMat","AgeMatUnit","AgeMatSource",'ReferenceBiomass','ReferenceBiomassUnits')
+             "TempSource","MaxLength","MaxLengthUnit", "MaxLengthSource","AgeMat","AgeMatUnit","AgeMatSource",'ReferenceBiomass','ReferenceBiomassUnits',"BvBmsy")
+
+####### Data Formatting and Subsetting ####### 
 
 # convert matrices with column names to dataframes and convert variables to characters/numerics
 bioparams<-as.data.frame(bioparams)
@@ -31,10 +33,11 @@ bioparams$biovalue<-as.character(levels(bioparams$biovalue))[bioparams$biovalue]
 metadata<-as.data.frame(meta.data)
 metadata$assessid<-as.character(levels(metadata$assessid))[metadata$assessid]
 metadata$scientificname<-as.character(levels(metadata$scientificname))[metadata$scientificname]
+metadata$areaid<-as.character(levels(metadata$areaid))[metadata$areaid]
 
 # add column names to data sets missing names
 colnames(timeseries.views.data)<-c("IdOrig","stockid","CommName","Year","TB", "SSB", "TN", "R",
- "TC", "TL", "Fmort", "ER", "BvBmsy", "SSBvSSBmsy", "FvFmsy", "UvUmsy", "Biomass", "Catch", "Utouse", "BvBmsytouse", "UvUmsytouse") 
+ "TC", "TL", "Fmort", "ER", "BvBmsyDrop", "SSBvSSBmsy", "FvFmsy", "UvUmsy", "Biomass", "Catch", "Utouse", "BvBmsy", "UvUmsytouse") 
 
 # made following changes to variable names:
 # Btouse -> Biomass
@@ -43,6 +46,8 @@ colnames(timeseries.views.data)<-c("IdOrig","stockid","CommName","Year","TB", "S
 # tsyear -> Year
 # F -> Fmort
 # stocklong -> CommName # temporary
+# BvBmsy -> BvBmsyDrop # dropping this variable in favor of Bmsytouse
+# BvBmsytouse -> BvBmsy
 
 colnames(timeseries.views.units)<-c("IdOrig","stockid","stocklong","TB", "SSB", "TN", "R","TC", "TL", "F", "ER")
 
@@ -60,35 +65,29 @@ bioparams.views.data$Fmsy<-as.numeric(levels(bioparams.views.data$Fmsy))[biopara
 bioparams.views.data$Umsytouse<-as.numeric(levels(bioparams.views.data$Umsytouse))[bioparams.views.data$Umsytouse]
 bioparams.views.data$Bmsy<-as.numeric(levels(bioparams.views.data$Bmsy))[bioparams.views.data$Bmsy]
 
-# subset out unneeded variables and convert to data fRAMe
+# subset out unneeded variables and convert to data frame
 
 RAM<-as.data.frame(timeseries.views.data)
 
-RAM<-(subset(RAM, select=c("IdOrig","CommName","Year","TB","SSB","TC","TL", "Fmort","BvBmsy","SSBvSSBmsy", 
-                  "BvBmsytouse","Biomass","Catch")))
+RAM<-(subset(RAM, select=c("IdOrig","CommName","Year","Fmort","BvBmsy","Biomass","Catch")))
 
 # convert variables to character
 RAM$IdOrig<-as.character(levels(RAM$IdOrig))[RAM$IdOrig]
 RAM$CommName<-as.character(levels(RAM$CommName))[RAM$CommName]                  
-RAM$Year<-as.character(levels(RAM$Year))[RAM$Year]
+
 
 # convert variables to numeric
-RAM$TB<-as.numeric(levels(RAM$TB))[RAM$TB]
-RAM$SSB<-as.numeric(levels(RAM$SSB))[RAM$SSB]
-RAM$TC<-as.numeric(levels(RAM$TC))[RAM$TC]
-RAM$TL<-as.numeric(levels(RAM$TL))[RAM$TL]
 RAM$Fmort<-as.numeric(levels(RAM$Fmort))[RAM$Fmort]
 RAM$BvBmsy<-as.numeric(levels(RAM$BvBmsy))[RAM$BvBmsy]
-RAM$SSBvSSBmsy<-as.numeric(levels(RAM$SSBvSSBmsy))[RAM$SSBvSSBmsy]
-RAM$BvBmsytouse<-as.numeric(levels(RAM$BvBmsytouse))[RAM$BvBmsytouse]
 RAM$Biomass<-as.numeric(levels(RAM$Biomass))[RAM$Biomass]
 RAM$Catch<-as.numeric(levels(RAM$Catch))[RAM$Catch]
+RAM$Year<-as.numeric(levels(RAM$Year))[RAM$Year]
 
 # add missing variables
 RAM$Id=rep(0,nrow(RAM)) # fill in once full database is compiled 
 RAM$Dbase=rep("RAM",nrow(RAM))
-RAM$BiomassMetric=character(length=nrow(RAM))
-RAM$BiomassUnit=character(length=nrow(RAM))
+RAM$BiomassMetric=rep("B",nrow(RAM)) # all Biomass values are either original total biomass values or SSB values that have been scaled to TB
+RAM$BiomassUnit=rep("MT",nrow(RAM)) # all Biomass values reported in metric tons
 RAM$FmortMetric=character(length=nrow(RAM))
 RAM$FmortUnit=character(length=nrow(RAM))
 RAM$ExploitStatus=character(length=nrow(RAM))
@@ -112,6 +111,8 @@ RAM$Fmsy=as.numeric(rep("",nrow(RAM)))
 RAM$Umsy=as.numeric(rep("",nrow(RAM)))
 RAM$SciName=character(length=nrow(RAM))
 RAM$SpeciesCat=as.numeric(rep("",nrow(RAM)))
+RAM$CatchUnit=rep("MT",nrow(RAM))
+RAM$Country<-NA
 
 ####### Life History ####### 
 # run for loop to match life history paRAMeters by assessid/IdOrig to bioparams .csv
@@ -167,6 +168,26 @@ for (i in 1:length(RAMNames)) ## multiple matches for Age at Mat for some studie
   }
 }
 
+### Clean up character values in life-history parameters and convert to numeric
+
+# VonBertK
+# "varies by region" will be converted to NA, still finding a "-0.36 value", can't resolve from reference
+
+# MaxLength
+RAM$MaxLength=gsub("26+","26",RAM$MaxLength, fixed=T) # remove + from end of 26
+RAM$MaxLength=gsub("available","",RAM$MaxLength) # remove "available", RAM entry says "varies greatly"
+
+# AgeMat
+RAM$AgeMat=gsub("7.7+","7.7",RAM$AgeMat,fixed=T) # remove + from end of 7.7 
+RAM$AgeMat=gsub("3+","3",RAM$AgeMat,fixed=T) # remove + from end of 3
+RAM$AgeMat=gsub(" yr","",RAM$AgeMat) # remove yr from end of 2.5 
+RAM$AgeMat=gsub("0-1","0.5",RAM$AgeMat) # average
+# still have "FOUND AS A TIME SERIES IN FIGURE 10", "AVAILABLE", and "3-Apr", and "4-Mar" data points. Will be converted to NA
+
+RAM$VonBertK<-as.numeric(RAM$VonBertK)
+RAM$AgeMat<-as.numeric(RAM$AgeMat)
+RAM$MaxLength<-as.numeric(RAM$MaxLength)
+
 # Add in SciName
 
 for (i in 1:length(RAMNames))
@@ -200,26 +221,17 @@ for (i in 1:length(RAMNames))
   # filling Bmsy with Bmsytouse, which was renamed to ReferenceBiomass. Will be duplicated in ReferenceBiomass column
 }
 
+# Add reference biomass
 RAM$ReferenceBiomass<-RAM$Bmsy # This will be the biomass reference point to use
 
 RAM$ReferenceBiomassUnits<-NA
 
 WhereRefB<-RAM$ReferenceBiomass==RAM$Bmsy
 
-WhereRefSSB<-RAM$ReferenceBiomass==RAM$SSBmsy
-
 RAM$ReferenceBiomassUnits[WhereRefB]<-"Bmsy"
 
-RAM$ReferenceBiomassUnits[WhereRefSSB]<-"SSBmsy"
 
-# WhereProxyB <- After identifying which Bmsy values are potential proxies, need to indicate 
-
-# Biomass Metric and Units
-# In RAM, it appears that Biomass (taken from Btouse) is either B, SSB, or some proxy. 
-# values are rounded in Biomass and will need to use some form of numerical tolerance for determining matches with B or SSB
-
-
-####### Species and Region Codes ####### 
+####### Species, Country, and Region Codes ####### 
 # read in .csvs with matched RAM assessids and FAO regions and species scientific names and ISSCAAP codes
 
 Spec_ISSCAAP=read.csv("Data/Species_ASFIS_ISSCAAP.csv") # list of ASFIS scientific names and corressponding ISSCAAP codes 
@@ -244,6 +256,22 @@ for (i in 1:length(RAMNames)) # currently only matching 11 of the 17 unique FAO 
     RAM$RegionFAO[Where2]<- Spec_Region_RAM[Where1,4][1]
   }
 }
+
+# Country Identification - using first word from "areaid" in metadata data frame
+for (i in 1:length(metadata$areaid)) # loop adds country variable to metadata data frame
+     {
+  country<-unlist(strsplit(metadata$areaid[i],split="-",fixed=T))[1]
+  metadata$Country[i]<-country
+} 
+
+for(i in 1:length(RAMNames))# loop adds country variable to RAM
+  {
+  whereram<-RAMNames[i]==RAM$IdOrig
+  wheremeta<-RAMNames[i]==metadata$assessid
+  
+  RAM$Country[whereram]<-metadata[wheremeta,12]
+}
+
 
 # ISSCAAP Species Code Matching
 
@@ -273,8 +301,5 @@ for (i in 1:length(GroupNums)) # match group code to group name
   }
 }
 
-
-
-
-### Before continuing, convert remaining datasets to dataframes and convert relevent variables to characters/numeric
+####### END RAM ####### 
 
