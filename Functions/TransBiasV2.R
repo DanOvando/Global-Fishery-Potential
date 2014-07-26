@@ -8,13 +8,13 @@
 TransBias<- function(Data,SdevBins,BinBreak,J)
 {
   
-#   Data<-  subset(BiomassData,(IdLevel=='Neis' | IdLevel=='Unidentified') & Dbase=='FAO')
-#    
-#   SdevBins<- NeiModelSdevs
-#   
-#   BinBreak<- TransbiasBin
-#   
-#   J<- 100
+  Data<-  subset(BiomassData,(IdLevel=='Neis' | IdLevel=='Unidentified') & Dbase=='FAO')
+   
+  SdevBins<- NeiModelSdevs
+  
+  BinBreak<- TransbiasBin
+  
+  J<- 100
   
   core<- Data[,c('IdOrig','BestBio','BestModel','Year')]
   
@@ -42,11 +42,11 @@ TransBias<- function(Data,SdevBins,BinBreak,J)
   
   core$bin<- bt
     
-  indtemp<- matrix(NA,nrow=dim(core)[1],ncol=7) #Matrix for individual fishery results
+  indtemp<- matrix(NA,nrow=dim(core)[1],ncol=8) #Matrix for individual fishery results
   
   indtemp<- as.data.frame(indtemp)
   
-  colnames(indtemp)=c('id','years','median','top','bot','iq75','iq25')
+  colnames(indtemp)=c('id','years','median','mean','top','bot','iq75','iq25')
   
   c<- matrix(NA,nrow=length(years),ncol=6)
   
@@ -296,7 +296,9 @@ TransBias<- function(Data,SdevBins,BinBreak,J)
     
     jtemp<- apply(exp(jstore),2,median,na.rm=T) #calculate median of each column
     
-    itemp<- apply(exp(jstore),1,mean,na.rm=T) #store results for individual fisheries (using MEAN FOR NOW)
+    Meanitemp<- apply(exp(jstore),1,mean,na.rm=T) #store mean results for individual fisheries 
+
+    Medianitemp<- apply(exp(jstore),1,median,na.rm=T) #store median results for individual fisheries 
     
     isort<- t(apply(exp(jstore),1,sort))
     
@@ -310,11 +312,12 @@ TransBias<- function(Data,SdevBins,BinBreak,J)
     
     indtemp[where,1]<- core$id[where]
     indtemp[where,2]<- years[y]
-    indtemp[where,3]<- itemp
-    indtemp[where,4]<- top
-    indtemp[where,5]<- bot
-    indtemp[where,6]<- exp(indbox$stats[4,])
-    indtemp[where,7]<- exp(indbox$stats[2,])
+    indtemp[where,3]<- Medianitemp
+    indtemp[where,4]<- Meanitemp
+    indtemp[where,5]<- top
+    indtemp[where,6]<- bot
+    indtemp[where,7]<- exp(indbox$stats[4,])
+    indtemp[where,8]<- exp(indbox$stats[2,])
     
     
     jsort<- sort(jtemp) #Sort medians
