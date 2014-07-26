@@ -1,6 +1,7 @@
 .Rproj.user
 .Rhistory
 .RData
+~Data**/*.Rdata
 **/*.pdf
 **/*.xlsx
 **/*.xls
