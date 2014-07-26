@@ -1,30 +1,25 @@
-
-# Database Build ----------------------------------------------------------
-
 ##############################################
 ####
-#### GLOBAL FISHERY POTENTIAL DATA PROCESSING
-#### DATA RECEIVED ON: 
-####      RAM: 7/23/14
-####      SOFIA: 
-####      FAO: 
+#### RAM LEGACY DATA PROCESSING
+#### DATA RECEIVED ON: 7/23/14
 ####
-#### BY: TYLER CLAVELLE
-#### 
-#### Script loads, formats, and compiles the RAM, SOFIA, and FAO databases
+##############################################
 
-############################################################################################################
+load("Data/DBdata.RData")
 
-load("Data/DBdata.RData") # Load R data pack
+### DATA SUMMARY ### 
 
-############################################################################################################
-############ RAM DATABASE ############
+length(unique(bioparams[,1])) # number of stocks w/ biopaRAMeters
+length(unique(timeseries[,1])) # number of stocks w/ catch timeseries
+
+
+#### RAM BUILD 2.0 ####
 
 # build dataset using "timeseries.views.data as base dataset
 
-ColNames = c("Id","IdOrig","Dbase", "Year","Catch","CatchUnit", "Fmort","FmortUnit","FmortMetric", "SciName","CommName",
-             "Country","RegionFAO","SpeciesCat","SpeciesCatName","Bmsy","SSBmsy","Umsy","Fmsy","Biomass","BiomassMetric",
-             "BiomassUnit","ExploitStatus", "VonBertK","VonBertKUnit","VonBertKSource","Temp","TempUnit",
+ColNames = c("IdOrig","Year","Fmort","Catch","FmortUnit","CatchUnit","SciName","CommName",
+             "Country","RegionFAO","SpeciesCat","SpeciesCatName","Bmsy","SSBmsy","Umsy","Fmsy","Id","Dbase","Biomass","BiomassMetric",
+             "BiomassUnit","FmortMetric","ExploitStatus", "VonBertK","VonBertKUnit","VonBertKSource","Temp","TempUnit",
              "TempSource","MaxLength","MaxLengthUnit", "MaxLengthSource","AgeMat","AgeMatUnit","AgeMatSource",'ReferenceBiomass','ReferenceBiomassUnits',"BvBmsy")
 
 ####### Data Formatting and Subsetting ####### 
@@ -42,7 +37,7 @@ metadata$areaid<-as.character(levels(metadata$areaid))[metadata$areaid]
 
 # add column names to data sets missing names
 colnames(timeseries.views.data)<-c("IdOrig","stockid","CommName","Year","TB", "SSB", "TN", "R",
-                                   "TC", "TL", "Fmort", "ER", "BvBmsyDrop", "SSBvSSBmsy", "FvFmsy", "UvUmsy", "Biomass", "Catch", "Utouse", "BvBmsy", "UvUmsytouse") 
+ "TC", "TL", "Fmort", "ER", "BvBmsyDrop", "SSBvSSBmsy", "FvFmsy", "UvUmsy", "Biomass", "Catch", "Utouse", "BvBmsy", "UvUmsytouse") 
 
 # made following changes to variable names:
 # Btouse -> Biomass
@@ -264,13 +259,13 @@ for (i in 1:length(RAMNames)) # currently only matching 11 of the 17 unique FAO 
 
 # Country Identification - using first word from "areaid" in metadata data frame
 for (i in 1:length(metadata$areaid)) # loop adds country variable to metadata data frame
-{
+     {
   country<-unlist(strsplit(metadata$areaid[i],split="-",fixed=T))[1]
   metadata$Country[i]<-country
 } 
 
 for(i in 1:length(RAMNames))# loop adds country variable to RAM
-{
+  {
   whereram<-RAMNames[i]==RAM$IdOrig
   wheremeta<-RAMNames[i]==metadata$assessid
   
@@ -306,184 +301,5 @@ for (i in 1:length(GroupNums)) # match group code to group name
   }
 }
 
-############################################################################################################
-############ SOFIA DATABASE ############
+####### END RAM ####### 
 
-SOFIA=read.csv("Data/SOFIA_2011_indiv_stocks_CLEAN.csv", stringsAsFactors=F)
-
-# rename columns to match main database columns as defined by ColNames
-names(SOFIA)[1]="RegionFAO"
-SOFIA$RegionFAO=gsub("Pacific",1,SOFIA$RegionFAO) # change "Pacific" to 1
-SOFIA$RegionFAO=gsub("Atlantic",2,SOFIA$RegionFAO) # change "Atlantic" to 2
-SOFIA$RegionFAO=gsub("Indian",3,SOFIA$RegionFAO) # change "Indian" to 3
-
-names(SOFIA)[7]="CommName"
-names(SOFIA)[12]="SciName"
-names(SOFIA)[13]="Country"
-names(SOFIA)[7]="ExploitStatus"
-names(SOFIA)[4]="SpeciesCat"
-names(SOFIA)[5]="CommName"
-names(SOFIA)[2]="SpeciesCatName"
-
-# Create "trim" function to trim trailing and leading spaces from data name columns
-trim.lead.trail=function (x) gsub("^\\s+|\\s+$","",x)
-SOFIA$CommName=trim.lead.trail(SOFIA$CommName) # reduces unique entries to 335
-SOFIA$SciName=trim.lead.trail(SOFIA$SciName) # reduced to 276
-
-# sub out "/n" and double spaces
-SOFIA$CommName=gsub("\n"," ",SOFIA$CommName) # \n - 321
-SOFIA$SciName=gsub("\n"," ",SOFIA$SciName) # down to 274
-
-SOFIA$CommName=gsub("  "," ",SOFIA$CommName) # double spaces - 303
-SOFIA$SciName=gsub("  "," ",SOFIA$SciName) # - 267 entries
-
-# remove "*" from X1950s variable and convert to numeric
-SOFIA$X1950s=gsub("*","",SOFIA$X1950s)
-SOFIA$X1950s=as.numeric(levels(SOFIA$X1950s))[SOFIA$X1950s]
-
-# remove unwanted columns
-SOFIA$Assessed=NULL
-SOFIA$Gt.10k=NULL
-SOFIA$Avg.Catch=NULL
-SOFIA$Uncertainty=NULL
-SOFIA$My..Class=NULL
-SOFIA$FAO.Region.1=NULL
-SOFIA$state.of.exploitation=NULL
-SOFIA$Avg.Catch.1=NULL
-SOFIA$Size=NULL
-SOFIA$Short.Status=NULL
-SOFIA$X1950s=NULL
-SOFIA$X1960s=NULL
-SOFIA$X1970s=NULL
-SOFIA$X1980s=NULL
-SOFIA$X1990s=NULL
-SOFIA$Region=NULL
-
-# add columns for missing variables
-SOFIA$Id=rep(0,nrow(SOFIA)) # fill in once full database is compiled 
-SOFIA$Dbase=rep("SOFIA",nrow(SOFIA))
-SOFIA$CatchUnit=character(length=nrow(SOFIA))
-SOFIA$Biomass=rep(0,nrow(SOFIA))
-SOFIA$BiomassMetric=character(length=nrow(SOFIA))
-SOFIA$BiomassUnit=character(length=nrow(SOFIA))
-SOFIA$Fmort=rep(0,nrow(SOFIA))
-SOFIA$FmortMetric=character(length=nrow(SOFIA))
-SOFIA$FmortUnit=character(length=nrow(SOFIA))
-SOFIA$Bmsy=as.numeric(rep("",nrow(SOFIA)))
-SOFIA$SSBmsy=as.numeric(rep("",nrow(SOFIA)))
-SOFIA$Fmsy=as.numeric(rep("",nrow(SOFIA)))
-SOFIA$Umsy=as.numeric(rep("",nrow(SOFIA)))
-SOFIA$VonBertK=as.numeric(rep("",nrow(SOFIA)))
-SOFIA$VonBertKSource=character(length=nrow(SOFIA))
-SOFIA$Temp=as.numeric(rep("",nrow(SOFIA)))
-SOFIA$TempSource=character(length=nrow(SOFIA))
-SOFIA$MaxLength=as.numeric(rep("",nrow(SOFIA)))
-SOFIA$MaxLengthSource=character(length=nrow(SOFIA))
-SOFIA$AgeMat=as.numeric(rep("",nrow(SOFIA)))
-SOFIA$AgeMatSource=character(length=nrow(SOFIA))
-SOFIA$AgeMatUnit=character(length=nrow(SOFIA))
-SOFIA$VonBertKUnit=character(length=nrow(SOFIA))
-SOFIA$TempUnit=character(length=nrow(SOFIA))
-SOFIA$MaxLengthUnit=character(length=nrow(SOFIA))
-SOFIA$ReferenceBiomass<- NA
-SOFIA$ReferenceBiomassUnits<- NA
-SOFIA$BvBmsy<-NA
-
-# Populate BvBmsy by converting Exploit Status values into numbers, taking the mean of the range of U, F, and O
-underexploit<-SOFIA$ExploitStatus=="U"
-fullyexploit<-SOFIA$ExploitStatus=="F" # identify which assessments are U,F,O
-overexploit<-SOFIA$ExploitStatus=="O"
-
-SOFIA$BvBmsy[underexploit]<-1.6
-SOFIA$BvBmsy[fullyexploit]<-1
-SOFIA$BvBmsy[overexploit]<-0.4
-
-# *** IdOrig, Catch, and Year to be created next for specific reasons***
-
-# create assessment-specfic ID code for SOFIA by combining Dbase, FAO Region, Species Code, and a Sequential Column
-sofiaID=seq(from=1, to=nrow(SOFIA))
-SOFIA$IdOrig=paste(sofiaID,SOFIA$Dbase,SOFIA$RegionFAO,SOFIA$SpeciesCat,sep="-") # fill with zeroes, will apply for loop to create unique ID  
-
-# transpose SOFIA dataset to vertical entries where each row represents a years catch, then add year variable
-
-# reshape SOFIA to "long" format while creating "Catch" and "Year" variables
-sofia=reshape(SOFIA,varying=8:17,direction="long", v.names="Catch", timevar="Year",times=2000:2009,)
-sofia=subset(sofia, select=c(ColNames)) # subset to remove added column names
-sofia=sofia[order(sofia$IdOrig,sofia$Year),] # sort to make catch records sequential
-sofia=sofia[,c(ColNames)] # order columns according to ColNames
-
-############################################################################################################
-############ FAO DATABASE ############
-
-FAO=read.csv("Data/FAO_Capture_1950to2011.csv",header=T,stringsAsFactors=F,na.strings=c("...","-","0 0")) # convert ... and - to NA in catch record
-FAO[,10:71]=apply(FAO[,10:71],2,function(y) as.numeric(gsub(" F","",y))) # remove " F" from certain data points and convert catch record to numeric
-
-
-# rename Country, FAO area, Measure, ASFIS, ASFIS 1, ISSCAAP group 1
-names(FAO)[1]="Country"
-names(FAO)[8]="RegionFAO"
-names(FAO)[9]="CatchUnit"
-names(FAO)[6]="SpeciesCat"
-names(FAO)[2]="CommName"
-names(FAO)[4]="SciName"
-names(FAO)[5]="SpeciesCatName"
-
-# remove columns for NEI, Region, Max, CUmSum, 2000-2011 average, Has 2011 landings, ISSCAAP group desc, FAO area desc
-FAO$Nei.=NULL
-FAO$Max=NULL
-FAO$CUmSum=NULL
-FAO$Has.2011.Landings=NULL
-FAO$X2000.2011..Average=NULL
-FAO$Fishing.area..FAO.major.fishing.area.=NULL
-
-# add missing columns as per ColNames
-FAO$Id=rep(0,nrow(FAO)) # fill in once full database is compiled 
-FAO$Dbase=rep("FAO",nrow(FAO))
-FAO$Biomass=rep(0,nrow(FAO))
-FAO$BiomassMetric=character(length=nrow(FAO))
-FAO$BiomassUnit=character(length=nrow(FAO))
-FAO$Fmort=rep(0,nrow(FAO))
-FAO$FmortMetric=character(length=nrow(FAO))
-FAO$FmortUnit=character(length=nrow(FAO))
-FAO$Bmsy=as.numeric(rep("",nrow(FAO)))
-FAO$SSBmsy=as.numeric(rep("",nrow(FAO)))
-FAO$Fmsy=as.numeric(rep("",nrow(FAO)))
-FAO$Umsy=as.numeric(rep("",nrow(FAO)))
-FAO$VonBertK=as.numeric(rep("",nrow(FAO)))
-FAO$VonBertKUnit=character(length=nrow(FAO))
-FAO$VonBertKSource=character(length=nrow(FAO))
-FAO$Temp=as.numeric(rep("",nrow(FAO)))
-FAO$TempSource=character(length=nrow(FAO))
-FAO$MaxLength=as.numeric(rep("",nrow(FAO)))
-FAO$MaxLengthSource=character(length=nrow(FAO))
-FAO$AgeMat=as.numeric(rep("",nrow(FAO)))
-FAO$AgeMatSource=character(length=nrow(FAO))
-FAO$AgeMatUnit=character(length=nrow(FAO))
-FAO$ExploitStatus=character(length=nrow(FAO))
-FAO$VonBertKUnit=character(length=nrow(FAO))
-FAO$TempUnit=character(length=nrow(FAO))
-FAO$MaxLengthUnit=character(length=nrow(FAO))
-FAO$ReferenceBiomass<- NA
-FAO$ReferenceBiomassUnits<- NA
-FAO$BvBmsy<-NA
-
-# create IdOrig for FAO entries. Use same syntax as for SOFIA = 
-FAOID=seq(from=1, to=nrow(FAO))
-FAO$IdOrig=paste(FAOID,FAO$Dbase,FAO$RegionFAO,FAO$SpeciesCat,sep="-") # fill with zeroes, will apply for loop to create unique ID  
-
-# transpose dataset to "long" format and add variable for Year and Catch
-fao=reshape(FAO,varying=8:69,direction="long", v.names="Catch", timevar="Year",times=1950:2011,)
-
-# reorder columns 
-fao=subset(fao, select=c(ColNames)) # subset to remove added column names
-fao=fao[,c(ColNames)]
-
-# sort to make catch records sequential
-fao=fao[order(fao$IdOrig,fao$Year),] # *** currently ordering based only on the first digit of the IdOrig
-
-############################################################################################################
-############ BIND COMPLETE DATABASE ############
-
-# RAM and fao
-fulldata=rbind(RAM,fao,sofia)
-write.csv(file=paste(ResultFolder,"fulldata.csv",sep=""),fulldata)
