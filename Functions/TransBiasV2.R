@@ -8,13 +8,13 @@
 TransBias<- function(Data,SdevBins,BinBreak,J)
 {
   
-  Data<-  subset(BiomassData,(IdLevel=='Neis' | IdLevel=='Unidentified') & Dbase=='FAO')
-   
-  SdevBins<- NeiModelSdevs
-  
-  BinBreak<- TransbiasBin
-  
-  J<- 100
+#    Data<-  subset(BiomassData,(IdLevel=='Neis' | IdLevel=='Unidentified') & Dbase=='FAO')
+#    
+#   SdevBins<- NeiModelSdevs
+#   
+#   BinBreak<- TransbiasBin
+#   
+#   J<- 100
   
   core<- Data[,c('IdOrig','BestBio','BestModel','Year')]
   
@@ -46,7 +46,7 @@ TransBias<- function(Data,SdevBins,BinBreak,J)
   
   indtemp<- as.data.frame(indtemp)
   
-  colnames(indtemp)=c('id','years','median','mean','top','bot','iq75','iq25')
+  colnames(indtemp)=c('id','years','raw','mean','top','bot','iq75','iq25')
   
   c<- matrix(NA,nrow=length(years),ncol=6)
   
@@ -310,7 +310,7 @@ TransBias<- function(Data,SdevBins,BinBreak,J)
     
     indbox=boxplot(t(jstore),plot=F)
     
-    indtemp[where,1]<- core$id[where]
+    indtemp[where,1]<- as.character(core$id[where])
     indtemp[where,2]<- years[y]
     indtemp[where,3]<- Medianitemp
     indtemp[where,4]<- Meanitemp
