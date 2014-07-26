@@ -35,11 +35,11 @@ write.csv(file=paste(ResultFolder,'Omitted Stocks.csv',sep=''),DroppedStocks)
 }
 if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))){FullData<- read.csv(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))}
 
-FullData$SpeciesCatName<- as.factor( FullData$SpeciesCatName)
+# FullData$SpeciesCatName<- as.factor( FullData$SpeciesCatName)
 
 FullData$ReferenceBiomass[FullData$ReferenceBiomass==0]<- NA
 
-FullData$Biomass<- as.numeric(FullData$Biomass)
+# FullData$Biomass<- as.numeric(FullData$Biomass)
 
 FullData$BvBmsy<- FullData$Biomass/FullData$ReferenceBiomass
 
@@ -55,12 +55,13 @@ for (m in 1:length(ModelNames))
   
 }
 
-# SofiaData<-  FullData[FullData$Dbase=='SOFIA',]
+# Where<- FullData[,'AgeMat']==0 | is.na(FullData[,'AgeMat'])
+# 
+# FullData[Where,'AgeMat']<- NA
 
-# FullData[FullData[,LifeHistoryVars]==0 & is.na(FullData[,LifeHistoryVars])==F ,LifeHistoryVars]<- NA
-FullData$MaxLength[FullData$MaxLength==0]<- NA
-FullData$AgeMat[FullData$AgeMat==0]<- NA
-FullData$VonBertK[FullData$VonBertK==0]<- NA
+FullData<- FindFishbase(FullData)
+
+# SofiaData<-  FullData[FullData$Dbase=='SOFIA',]
 
 RamData<- FullData[FullData$Dbase=='RAM',]
 
@@ -116,11 +117,6 @@ if (file.exists(paste(ResultFolder,'FaoData.Rdata',sep='')))
   load(paste(ResultFolder,'FaoData.Rdata',sep=''))
 }
   
-FaoData$MaxLength[FaoData$MaxLength==0]<- NA
-
-FaoData$AgeMat[FaoData$AgeMat==0]<- NA
-
-FaoData$VonBertK[FaoData$VonBertK==0]<- NA
 
 # Rprof(NULL)
 #  RProfData<- readProfileData('Rprof.out')
@@ -280,9 +276,9 @@ BiomassData$IdLevel[WhereSpeciesLevel]<- 'Species'
 
 RawSummary<- ddply(BiomassData,c('Dbase','IdLevel','Year'),summarise,MeanBio=mean(exp(BestBio),na.rm=T),MedianBio=median(exp(BestBio),na.rm=T))
 
-FaoSpeciesRetransform<- TransBias(subset(BiomassData,IdLevel=='Species' & Dbase=='FAO'),RealModelSdevs,BinBreak,100)
+FaoSpeciesRetransform<- TransBias(subset(BiomassData,IdLevel=='Species' & Dbase=='FAO'),RealModelSdevs,TransbiasBin,100)
 
-FaoMiscRetransform<- TransBias(subset(BiomassData,(IdLevel=='Neis' | IdLevel=='Unidentified') & Dbase=='FAO'),NeiModelSdevs,BinBreak,100)
+FaoMiscRetransform<- TransBias(subset(BiomassData,(IdLevel=='Neis' | IdLevel=='Unidentified') & Dbase=='FAO'),NeiModelSdevs,TransbiasBin,100)
 
 FaoSpeciesDist<- FaoSpeciesRetransform$TotalDistribution
 

@@ -59,7 +59,7 @@ DependentName<- if (IsLog==T){paste('Log',DependentVariable,sep='')}
 
 CatchLags<- 4 #Number of years of lagged catch to create for regression
 
-LifeHistoryVars<- c('MaxLength','AgeMat','VonBertK') #Life history variables to include for potential regression
+LifeHistoryVars<- c('MaxLength','AgeMat','VonBertK','Temp') #Life history variables to include for potential regression
 
 IdVar<- 'IdOrig' #Id variable to use in regressions
 
@@ -101,6 +101,6 @@ save.image(file=paste(BatchFolder,'Controlfile Settings.rdata'))
 
 # Run Analysis ------------------------------------------------------------
 
- source('GFR_Wrapper.R')
+source('GFR_Wrapper.R')
 
 
