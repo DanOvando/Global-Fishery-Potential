@@ -72,6 +72,12 @@ TransBias<- function(Data,SdevBins,BinBreak,J)
   colnames(collapsed)=c('year','med','bot','top')
   
   collapsed<- as.data.frame(collapsed)
+
+  medians<- matrix(NA,nrow=length(years),ncol=J)
+  
+#   colnames(medians)=c('year','med','bot','top')
+  
+  collapsed<- as.data.frame(collapsed)
   
   under<- matrix(NA,nrow=length(years),ncol=4)
  
@@ -90,7 +96,7 @@ TransBias<- function(Data,SdevBins,BinBreak,J)
   
   # Correct retransformation bias -------------------------------------------
     
-  DistStorage<- array(NA,c(dim(Data)[1],J,length(years)))
+  DistStorage<- as.data.frame(matrix(NA,nrow=0,ncol=J+2))
   
   for (y in 1:length(years)) #loop over years
   {
@@ -194,7 +200,7 @@ TransBias<- function(Data,SdevBins,BinBreak,J)
     } #close loop over models
     
     
-    DistStorage[(1:dim(jstore)[1]),,y]<- jstore 
+    DistStorage<- rbind(DistStorage, data.frame(years[y],as.character(core$id[where]),jstore))
     
     ### Store Results ###
     
@@ -306,6 +312,8 @@ TransBias<- function(Data,SdevBins,BinBreak,J)
     
     bot<- isort[,ceiling(0.025*dim(isort)[2])]
     
+    
+    
     ###Store results for individual fisheries###
     
     indbox=boxplot(t(jstore),plot=F)
@@ -321,6 +329,8 @@ TransBias<- function(Data,SdevBins,BinBreak,J)
     
     
     jsort<- sort(jtemp) #Sort medians
+    
+    medians[y,]<- jsort
     
     bin[,1]<- c(b1med,b1bot,b1top)
     bin[,2]<- c(b2med,b2bot,b2top)
@@ -345,7 +355,7 @@ TransBias<- function(Data,SdevBins,BinBreak,J)
     # }
   }
   
-  output<- list(Median=c,Individuals=indtemp,Collapsed=collapsed,Over=over,Under=under,Bin=bin,MedianDistribution=jsort,DynamicDistribution=DistStorage)
+  output<- list(Median=c,Individuals=indtemp,Collapsed=collapsed,Over=over,Under=under,Bin=bin,MedianDistribution=medians,DynamicDistribution=DistStorage)
   
   return(output)	
 }
