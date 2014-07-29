@@ -9,7 +9,7 @@ library(plyr)
 library(lattice)
 # Basic Controls -------------------------------------------------------------
 
-BatchFolder<- 'Results/Scratch Folder/'
+BatchFolder<- 'Results/Version 1/'
 
 InputFolder<- 'Data/'
 
@@ -34,7 +34,7 @@ dir.create(ResultFolder)
 
 # Data Processing ---------------------------------------------------------
 
-MinimumCatchYears<- 5 #Minimum length of catch history
+MinimumCatchYears<- 10 #Minimum length of catch history
 
 FisheriesToOmit<- 'None' #List of fisheries to manually exclude from analysis 
 
@@ -66,9 +66,12 @@ IdVar<- 'IdOrig' #Id variable to use in regressions
 CatchVariables<- c('YearsBack','ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'TimeToMaxCatch','InitialScaledCatchSlope'
                    ,'MeanScaledCatch','CatchToRollingMax')
 
-Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCatName'),M6=c(DependentName,CatchVariables,'SpeciesCatName'),M7=c(DependentName,CatchVariables))  
+Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCatName'),M2=c(DependentName,CatchVariables,'MaxLength','AgeMat','VonBertK','SpeciesCatName'),
+                   M3=c(DependentName,CatchVariables,'MaxLength','VonBertK','SpeciesCatName'),M4=c(DependentName,CatchVariables,'VonBertK','SpeciesCatName'),M6=c(DependentName,CatchVariables,'SpeciesCatName'),M7=c(DependentName,CatchVariables))  
 
 TransbiasBin<- 0.9
+
+TransbiasIterations<- 1000
 
 # Synthetic Stock Settings ------------------------------------------------
 
