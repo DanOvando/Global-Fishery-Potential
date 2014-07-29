@@ -7,7 +7,7 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
   
   # Create Regression Data Frame --------------------------------------------
   
-#     Data<- RamData
+#         Data<- SofiaData
   
   LifeHistoryVars<- sort(LifeHistoryVars)
   
@@ -38,9 +38,9 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
   for (f in 1:length(Fisheries)) 
   {
     
-#     if (is.integer(f/50)){   }
-     show(paste(round(100*(f/length(Fisheries))),"% Done with Regression Formating",sep=''))  
-# show(Fisheries[f])
+    #     if (is.integer(f/50)){   }
+    show(paste(round(100*(f/length(Fisheries))),"% Done with Regression Formating",sep=''))  
+    # show(Fisheries[f])
     
     Where<- Data[,IdVar]==Fisheries[f]
     
@@ -57,14 +57,14 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
     RegFrame[Where,'MeanScaledCatch']<- mean(ScaledCatch ,na.rm=T)#Create scaled catch
     
     RegFrame[Where,'TimeToMaxCatch']<- which(TempCatch==MaxCatch)[1] #Create time till max catch
-
+    
     RegFrame[Where,'YearsBack']<-rev(1:length(TempCatch)) #Create time till max catch
     
     InitialSlope<- NA
     
     FirstCatch<- which(is.na(ScaledCatch)==F)[1]
     
-    if (sum(is.na(ScaledCatch[1:6]))<5)
+    if ((is.na(FirstCatch)==F))
     {
       InitialSlope<- lm(formula=ScaledCatch[FirstCatch:(FirstCatch+5)] ~  SlopeWindow,na.action='na.omit')$coefficients[2]
     }
@@ -101,8 +101,8 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
     }
     
   }#Close fisheries loop
-    
-
+  
+  
   RegFrame<- cbind(Data,RegFrame)
   return(RegFrame)
   
