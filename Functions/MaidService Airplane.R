@@ -16,7 +16,7 @@ MaidService<- function(Data)
   
   StockStats<- ddply(Data,~IdOrig,summarise,MeanCatch=mean(Catch,na.rm=T),TotalCatch=sum(Catch,na.rm=T),
                      TooFewCatchYears=sum(is.na(Catch)==F)<MinimumCatchYears,
-                     PercentMissingTooHigh=(sum(is.na(Catch))/length(Catch))>=MissingCatchTolerance
+                     PercentMissingTooHigh=(sum(is.na(Catch))/length(Catch))>=MissingCatchTolerance,NoCatch=sum(Catch,na.rm=T)==0
                      ,SpeciesCatName=unique(SpeciesCatName))
   
   StockStats$NoSpeciesCategory<- is.na(StockStats$SpeciesCatName)
@@ -30,7 +30,7 @@ MaidService<- function(Data)
   ## Mark fisheries that need to be dropped 
   StockStats$DropFishery[StockStats$NoSpeciesCategory  | StockStats$WrongSpeciesCategory 
                          | StockStats$NotAllowedIn | StockStats$TooFewCatchYears |
-                           StockStats$PercentMissingTooHigh]<- 1
+                           StockStats$PercentMissingTooHigh | StockStats$NoCatch]<- 1
   
   DroppedStocks<- StockStats[StockStats$DropFishery==1,]
   
