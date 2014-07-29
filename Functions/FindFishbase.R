@@ -6,7 +6,7 @@
 FindFishbase<- function(Data)
 {
     
-#   Data<- FullData
+#    Data<- FullData
   load('Data/mpack.Rdata')
   
  Fishbase<- mpack$lh
@@ -14,15 +14,7 @@ FindFishbase<- function(Data)
  Fishbase[is.na(Fishbase)]= NA
  rm(mpack)
  
- spnames<-as.character(levels((Data$SciName)))[Data$SciName]
-
- spnames<- unique(spnames)
- 
- Data$VonBertKSource<- as.character(levels(Data$VonBertKSource))[Data$VonBertKSource]
-
- Data$AgeMatSource<- as.character(levels(Data$AgeMatSource))[Data$AgeMatSource]
- 
- Data$MaxLengthSource<- as.character(levels(Data$MaxLengthSource))[Data$MaxLengthSource]
+ spnames<- unique((Data$SciName))
  
 for (i in 1:length(spnames)){
   
