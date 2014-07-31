@@ -7,6 +7,15 @@
 RunDynamicOpt2= function(MSY,r,p,c,beta,disc,bvec,tol)
 {
   
+# MSY<- RecentStockData$MSY
+# r<- RecentStockData$r
+# p<- RecentStockData$Price
+# c<- cost
+# beta<- Beta
+# disc<- Discount
+# bvec<- bvec
+# tol<- tol
+#   
   
 delta= 1/(1+disc) #Discount parameter
 t=0
@@ -20,7 +29,6 @@ diff= 10*tol
       t= t+1
       V= Vnew
       oldf1= f1
-      
       for (i in 1:length(bvec))
       {
         b= bvec[i]
@@ -29,7 +37,7 @@ diff= 10*tol
         else
         {guess= f1[i-1]}
         
-        FishOut= optim(par=guess,fn=GFRM_funR,lower=0,upper=1.99,b=b,p=p,MSY=MSY,c=c,r=r,beta=beta,V=V,bvec=bvec,delta=delta,method="L-BFGS-B")
+        FishOut= optim(par=guess,fn=GFRM_funR,lower=0.0001,upper=1.99,b=b,p=p,MSY=MSY,c=c,r=r,beta=beta,V=V,bvec=bvec,delta=delta,method="L-BFGS-B")
 
         Vnew[i]= -FishOut$value
         f1[i]= FishOut$par
@@ -42,6 +50,6 @@ diff= 10*tol
     }# Close while loop
     
 
-  return(list(f1=f1))
+  return(list(Policy=f1))
   
 } #Close function
