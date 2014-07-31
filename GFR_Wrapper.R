@@ -28,12 +28,13 @@ if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))==F)
   FullData<- CleanedData$CleanedData
   
   FullData<- FindFishbase(FullData)
-  
+    
   rm(CleanedData)
   
   write.csv(file=paste(ResultFolder,'Raw Compiled Database.csv',sep=''),FullData)
   
   write.csv(file=paste(ResultFolder,'Omitted Stocks.csv',sep=''),DroppedStocks)
+  
 }
 if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))){FullData<- read.csv(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))}
 
@@ -59,11 +60,18 @@ SofiaData<-  FullData[FullData$Dbase=='SOFIA',]
 
 RamData<- FullData[FullData$Dbase=='RAM',]
 
+RamData$BvBmsy[RamData$BvBmsy>OutlierBvBmsy]<- NA
+
 FaoData<- FullData[FullData$Dbase=='FAO',]
-# 
-# FaoIdSample<- sample(unique(FaoData[,IdVar]),200,replace=FALSE)
+
+FaoData<- LumpFisheries(FaoData,SpeciesCategoriesToLump)
+
+# # 
+# FaoIdSample<- sample(unique(FaoData[,IdVar]),500,replace=FALSE)
 # # # # 
 # FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
+
+show('Raw Data Processed')
 
 # Create synthetic stocks -------------------------------------------------
 
@@ -79,6 +87,10 @@ if (GroupMethod=='Nei')
 }
 
 SyntheticData<- StitchFish(RamData,IdVar,Groups,GroupSamples,Iterations) 
+ 
+SyntheticData$BvBmsy[SyntheticData$BvBmsy>OutlierBvBmsy]<- NA
+
+show('Synthetic Stocks Created')
 
 for (m in 1:length(ModelNames))
 {
@@ -115,6 +127,7 @@ if (file.exists(paste(ResultFolder,'FaoData.Rdata',sep='')))
 {
   load(paste(ResultFolder,'FaoData.Rdata',sep=''))
 }
+show('Data prepared for regression')
 
 
 # Rprof(NULL)
@@ -128,6 +141,8 @@ RealModels<- RunRegressions(RamData,Regressions,'Real Stocks')
 RealModelFactorLevels<- NULL
 
 Models<- names(Regressions)
+
+show('Regressions Run')
 
 # Process Regressions -----------------------------------------------------
 
@@ -182,6 +197,7 @@ TempLevel<- NULL
 
 TempModel<- NULL
 
+show('Regressions Processed')
 
 # Prep for dummy species categories  ----------------------------------------
 
@@ -230,9 +246,13 @@ NotIdentifiedPredictions<- predict(NeiModels$M7,FaoMarineFishLevel) #Apply unide
 
 FaoMarineFishLevel$M7Prediction<- NotIdentifiedPredictions
 
+show('Regressions Applied')
+
 # Clean and process predictions and data ---------------------------------------
 
 PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel,FaoNeiLevel,FaoMarineFishLevel) #Bind all data back together
+
+# PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel) #Bind all data back together
 
 BiomassColumns<- grepl('BvBmsy',colnames(PredictedData)) | grepl('Prediction',colnames(PredictedData))
 
@@ -292,88 +312,85 @@ BiomassData$IdLevel[WhereUnidentified]<- 'Unidentified'
 
 BiomassData$IdLevel[WhereSpeciesLevel]<- 'Species'
 
+show('Results Processed')
+
 # Analyze Current Status --------------------------------------------------
 
-WTF<- BiomassData[WhereNeis,]
+GlobalStatus<- AnalyzeFisheries(BiomassData,'Global Status','Year',2000:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
 
-GlobalStatus<- AnalyzeFisheries(BiomassData,'Global Status','Year',1980:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+USA<- BiomassData[BiomassData$Country=='USA' |BiomassData$Country=='United States of America' ,]
 
-USAStatus<- AnalyzeFisheries(BiomassData[BiomassData$Country=='USA',],'USA Status','Year',1980:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+USAStatus<- AnalyzeFisheries(USA,'USA Status','Year',1980:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
 
 RAMStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='RAM',],'RAM Status','Year',1980:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
 
-FAOStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='FAO',],'FAO Status','Year',1980:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+FAOStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='FAO',],'FAO Status','Year',2000:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
 
 IndonesiaStatus<- AnalyzeFisheries(BiomassData[BiomassData$Country=='Indonesia',],'Indonesia Status','Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
 
 CanadaStatus<- AnalyzeFisheries(BiomassData[BiomassData$Country=='Canada',],'Canada Status','Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
 
-
-# RawSummary<- ddply(BiomassData,c('Dbase','IdLevel','Year'),summarise,MeanBio=mean(exp(BestBio),na.rm=T),MedianBio=median(exp(BestBio),na.rm=T))
-# 
-# FaoSpeciesRetransform<- TransBias(subset(BiomassData,IdLevel=='Species' & Dbase=='FAO'),RealModelSdevs,TransbiasBin,100)
-# 
-# FaoMiscRetransform<- TransBias(subset(BiomassData,(IdLevel=='Neis' | IdLevel=='Unidentified') & Dbase=='FAO'),NeiModelSdevs,TransbiasBin,1000)
-# 
-# FaoSpeciesDist<- FaoSpeciesRetransform$TotalDistribution
-# 
-# FaoMiscDist<- FaoSpeciesRetransform$TotalDistribution
-
-# CatchStatistics<- AnalyzeFisheries(BiomassData,'All Fisheries Catch','ARGH',2009)
-# 
-# CatchStatistics<- AnalyzeFisheries(BiomassData[BiomassData$Country=='USA',],'USA Fisheries Catch','ARGH',1950:2013)
-# 
-
-#   Data<- subset(BiomassData,IdLevel=='Species' & Dbase=='FAO')
-#   
-#   SdevBins<- RealModelSdevs
-#   
-#   BinBreak<- TransbiasBin
-#   
-#   J<- 100
-#   
+# Calculate MSY -----------------------------------------------------------
+sigR<- 0
 
 
+CatchMSYresults<- RunCatchMSY(USAStatus$Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength,0)
 
-# pdf(paste(FigureFolder,'Unassessed Species Level Test Histogram.pdf',sep=''))
-# hist(exp(FaoSpeciesLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks')
-# abline(v=median(exp(FaoSpeciesLevelPredictions$M6LogBvBmsy),na.rm=T))
-# dev.off()
-# 
-# pdf(paste(FigureFolder,'Unassessed Species Level Test boxplot.pdf',sep=''))
-# boxplot(exp(FaoSpeciesLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks',outline=F)
-# dev.off()
-# 
-# pdf(paste(FigureFolder,'Unassessed Species Level Model 1 Test Histogram.pdf',sep=''))
-# hist(exp(FaoSpeciesLevelPredictions$M1LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks')
-# abline(v=median(exp(FaoSpeciesLevelPredictions$M1LogBvBmsy),na.rm=T))
-# dev.off()
-# 
-# pdf(paste(FigureFolder,'Unassessed Species Level Model 1 Test boxplot.pdf',sep=''))
-# boxplot(exp(FaoSpeciesLevelPredictions$M1LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Species Level Fao Stocks',outline=F)
-# dev.off()
-# 
-# 
-# FaoNeiLevel<- cbind(FaoNeiLevel,FaoNeiLevelPredictions)
-# 
-# pdf(paste(FigureFolder,'Unassessed Nei Level Test Histogram.pdf',sep=''))
-# hist(exp(FaoNeiLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Nei Level Fao Stocks')
-# abline(v=median(exp(FaoNeiLevelPredictions$M6LogBvBmsy),na.rm=T))
-# dev.off()
-# 
-# pdf(paste(FigureFolder,'Unassessed Nei Level Test boxplot.pdf',sep=''))
-# boxplot(exp(FaoNeiLevelPredictions$M6LogBvBmsy),xlab='Predicted Raw B/Bmsy ',main='Nei Level Fao Stocks',outline=F)
-# dev.off()
+
+print(histogram( ~ BvBmsy | Year, data = Data,
+                 xlab = "B/Bmsy", type = "density",
+                 panel = function(x, ...) {
+                   panel.histogram(x, ...)
+                   panel.mathdensity(dmath = dnorm, col = "black",
+                                     args = list(mean=mean(x),sd=sd(x)))
+                   panel.abline(v=1,lwd=2)
+                 } ))
+
+MsyData<- CatchMSYresults$Data
+
+MedianWorked<- median(MsyData$BvBmsy[is.na(MsyData$MSY)==F])
+
+MedianFailed<- median(MsyData$BvBmsy[is.na(MsyData$MSY)])
+
+CurrentCatch<- sum(MsyData$Catch[MsyData$Year==2010 & is.na(MsyData$MSY)==F],na.rm=T)
+
+CurrentCatch2<- sum(MsyData$Catch[MsyData$Year==2010],na.rm=T)
+
+MsyData<- MsyData[is.na(MsyData$MSY)==F,]
+
+
+
+Individuals<- MsyData$MSY[MsyData$Year==2010]
+
+MsyData$PercentGain<- 100*(MsyData$MSY/MsyData$Catch-1)
+
+quartz()
+xyplot(log(PercentGain) ~ (BvBmsy),data=MsyData)
+
+FutureMSY<- sum(MsyData$MSY[MsyData$Year==2010],na.rm=T)
+
+GlobalPercentChange<- 100*(FutureMSY/CurrentCatch-1)
+
+IndoCatch<- (PredictedData[PredictedData$Country=='Indonesia',])
+
+ddply(IndoCatch,c('Year'),summarize,sum(Catch,na.rm=T))
+
+CountryMsy<- ddply(MsyData[MsyData$Year==2010,],c('Country'),summarize,CurrentCatch= sum(Catch,na.rm=T),MSY=sum(MSY,na.rm=T),TotalGain=sum(MSY,na.rm=T)-sum(Catch,na.rm=T),
+                   PercGain=(100*(sum(MSY,na.rm=T)/sum(Catch,na.rm=T)-1)),MedianBvBmsy=median(BvBmsy,na.rm=T),PercMissing=100*(sum(is.na(MSY))/length(MSY)))
+
+PercGainOrder<- order(CountryMsy$PercGain,decreasing=T)
+
+CountryMsy<- CountryMsy[PercGainOrder,]
 
 save.image(file=paste(ResultFolder,'Regression Outputs.rdata',sep=''))
 
 file.exists(paste(ResultFolder,'Regression Outputs.rdata',sep=''))
 
-# Create stitched database ------------------------------------------------
-
-# Estimate MSY ------------------------------------------------------------
-
 # Run projection analysis -------------------------------------------------
+MsyData$Price<- 1000
+
+MsyData$BvBmsyOpenAccess<- 0.25
+
 
 # Scale and Analyze Results -----------------------------------------------
 

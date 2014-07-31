@@ -9,7 +9,7 @@ library(plyr)
 library(lattice)
 # Basic Controls -------------------------------------------------------------
 
-BatchFolder<- 'Results/Version 1/'
+BatchFolder<- 'Results/Version 2/'
 
 InputFolder<- 'Data/'
 
@@ -36,6 +36,9 @@ dir.create(ResultFolder)
 
 MinimumCatchYears<- 10 #Minimum length of catch history
 
+
+OutlierBvBmsy<- 2.5 #Maximum BvBmsy that is allowed in the analysis 
+
 FisheriesToOmit<- 'None' #List of fisheries to manually exclude from analysis 
 
 SpeciesCategoriesToOmit<- c('Corals','Frogs and other amphibians','Eared seals, hair seals, walruses',
@@ -43,6 +46,8 @@ SpeciesCategoriesToOmit<- c('Corals','Frogs and other amphibians','Eared seals, 
                             ,'Freshwater crustaceans','Sperm-whales, pilot-whales','Green seaweeds','Red seaweeds',
                             'Brown seaweeds','Sea-squirts and other tunicates','Blue-whales, fin-whales',
                             'Miscellaneous aquatic mammals','Sponges','Krill, planktonic crustaceans')
+
+SpeciesCategoriesToLump<- c('Miscellaneous pelagic fishes','Tunas, bonitos, billfishes','Cods, hakes, haddocks','Marine fishes not identified')
 
 MissingCatchTolerance<- 0.99 #Maximumum percentage of catch years that can be missing
 
@@ -63,7 +68,7 @@ LifeHistoryVars<- c('MaxLength','AgeMat','VonBertK','Temp') #Life history variab
 
 IdVar<- 'IdOrig' #Id variable to use in regressions
 
-CatchVariables<- c('YearsBack','ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'TimeToMaxCatch','InitialScaledCatchSlope'
+CatchVariables<- c('YearsBack','ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'MaxCatch','TimeToMaxCatch','InitialScaledCatchSlope'
                    ,'MeanScaledCatch','CatchToRollingMax')
 
 Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCatName'),M2=c(DependentName,CatchVariables,'MaxLength','AgeMat','VonBertK','SpeciesCatName'),
@@ -83,7 +88,46 @@ Iterations<- 10 #Number of synthetic stocks to create within each group
 
 IdVar<- 'IdOrig' #Id variable to use in creating synthetic stocks
 
+
+# Catch-MSY ---------------------------------------------------------------
+
+ExcludeSmallPelagics<- 1
+
+ErrorSize<- 0.85 #The amount of error to serach over CatchMSY terms
+
+Smooth<- 0 #Marks whether to smooth catch history
+
+Display<- 0 #Display running outputs
+
+runCatchMSY<- 0 #run CatchMSY or rely on saved results
+
+BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
+
+ManualFinalYear<- 0 #Set year you want to run all analyses for
+
+n <- 200  ## number of iterations, e.g. 100000
+
+SampleLength<- 100 # Number of subsampled bootstraps 
+
+NoNEI<- 1 #Set to 1 to omit all nei listing
+
 # Projections -------------------------------------------------------------
+
+ProjectionTime<- 20
+
+CatchSharePrice<- 1.2
+
+CatchShareCost<- 0.8
+
+Beta<- 1.3
+
+Discount<- 0.05
+
+bvec<- seq(0,2,length.out=20)
+
+tol<- 1e-3
+
+
 
 #Time frame
 
