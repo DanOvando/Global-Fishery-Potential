@@ -1,18 +1,18 @@
 ######################################
-#Summarize Results--------------------------------------------------
+#Analyze Fisheries--------------------------------------------------
 # This code produces standard summary tables and figures using the main dataframe
 ######################################
 
 AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,NeiModelSdevs,TransbiasBin,J) 
 {
   
-#    Data<- BiomassData[BiomassData$Dbase=='RAM',]
-# #   
-#    BatchName<- 'Testing'
+#    Data<- BiomassData[BiomassData$Country=='New Zealand',]
+#    
+#    BatchName<- 'New Zealand'
 # #   
 #    GroupingVars<- c('Country','Year')
 # 
-#   Years<- 1980:2010
+#   Years<- 2005:2010
 # 
 # RealModelSdevs<- RealModelSdevs
 # 
@@ -69,19 +69,21 @@ BioStats<- list()
 
 TempBio<- exp(Data$BestBio)
 
+TempBioSd<- NA*TempBio
+
 for (x in 1)
 {
 if (any(Data$Dbase=='FAO' & is.na(Data$BestBio)==F))
 {  
   
-  IdLevels<- unique(Data$IdLevel)
+  IdLevels<- unique(Data$IdLevel[Data$BestModel!='RAM'])
   
   FaoIndividualStocks<- as.data.frame(matrix(NA,nrow=0,ncol=J+2))
   
   for (i in 1:length(IdLevels))
   {
-  
-    Where<- Data$IdLevel==IdLevels[i] & Data$Dbase=='FAO'
+      
+    Where<- Data$IdLevel==IdLevels[i] & Data$BestModel!='RAM'
     
     if (IdLevels[i]=='Species')
     {
@@ -95,6 +97,9 @@ if (any(Data$Dbase=='FAO' & is.na(Data$BestBio)==F))
   TempTransbiasResults<- TransBias(Data[Where,],Sdevs,TransbiasBin,J)
   
   TempBio[Where]<- TempTransbiasResults$Individuals$raw
+
+  TempBioSd[Where]<- TempTransbiasResults$Individuals$logsd
+  
   
   FaoIndividualStocks<- rbind(FaoIndividualStocks,TempTransbiasResults$DynamicDistribution)
   
@@ -158,6 +163,12 @@ else
 }
 }
 
+Data$BvBmsy<- TempBio
+
+Data$BvBmsySD<- TempBioSd
+
+Data$Year<- as.factor(Data$Year)
+
 SummaryStats$IdLevel$Year<- as.factor(SummaryStats$IdLevel$Year)
 
 SummaryStats$DataBases$Year<- as.factor(SummaryStats$DataBases$Year)
@@ -176,9 +187,24 @@ print(dotplot(Dbase~Count | Year,data=SummaryStats$DataBases,xlab='Number of Fis
 # pdf(file=paste(FigureFolder,BatchName,'SpeciesCats.pdf',sep=''))
 print(dotplot(SpeciesCatName~Count | Year,data=SummaryStats$SpeciesCats,xlab='Number of Fisheries',ylab='Species Category'))
 # dev.off()
+
+
+print(histogram( ~ BvBmsy | Year, data = Data,
+           xlab = "B/Bmsy", type = "density",
+           panel = function(x, ...) {
+             panel.histogram(x, ...)
+             panel.mathdensity(dmath = dnorm, col = "black",
+                               args = list(mean=mean(x),sd=sd(x)))
+             panel.abline(v=1,lwd=2)
+           } ))
+
+
 dev.off()
 
-  return(list(CatchStats=CatchStats,Data=Data,BioStats=BioStats,SummaryStats=SummaryStats))
+Data$Year<- as.numeric(levels(Data$Year))[Data$Year]
+
+  
+  return(list(CatchStats=CatchStats,Data=Data,BioStats=BioStats,SummaryStats=SummaryStats,Individuals=Individuals))
   
 } #Close function 
 
