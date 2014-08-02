@@ -28,7 +28,7 @@ if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))==F)
   FullData<- CleanedData$CleanedData
   
   FullData<- FindFishbase(FullData)
-    
+  
   rm(CleanedData)
   
   write.csv(file=paste(ResultFolder,'Raw Compiled Database.csv',sep=''),FullData)
@@ -87,7 +87,7 @@ if (GroupMethod=='Nei')
 }
 
 SyntheticData<- StitchFish(RamData,IdVar,Groups,GroupSamples,Iterations) 
- 
+
 SyntheticData$BvBmsy[SyntheticData$BvBmsy>OutlierBvBmsy]<- NA
 
 show('Synthetic Stocks Created')
@@ -314,37 +314,28 @@ BiomassData$IdLevel[WhereSpeciesLevel]<- 'Species'
 
 show('Results Processed')
 
+BiomassData<- AssignEconomicData(BiomassData)
+
 # Analyze Current Status --------------------------------------------------
 
-GlobalStatus<- AnalyzeFisheries(BiomassData,'Global Status','Year',2000:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+GlobalStatus<- AnalyzeFisheries(BiomassData,'Global Status','Year',1950:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
 
 USA<- BiomassData[BiomassData$Country=='USA' |BiomassData$Country=='United States of America' ,]
 
-USAStatus<- AnalyzeFisheries(USA,'USA Status','Year',1980:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+USAStatus<- AnalyzeFisheries(USA,'USA Status','Year',1950:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
 
-RAMStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='RAM',],'RAM Status','Year',1980:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+RAMStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='RAM',],'RAM Status','Year',1950:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
 
-FAOStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='FAO',],'FAO Status','Year',2000:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
-
-IndonesiaStatus<- AnalyzeFisheries(BiomassData[BiomassData$Country=='Indonesia',],'Indonesia Status','Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
-
-CanadaStatus<- AnalyzeFisheries(BiomassData[BiomassData$Country=='Canada',],'Canada Status','Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+# FAOStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='FAO',],'FAO Status','Year',2000:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+# 
+# IndonesiaStatus<- AnalyzeFisheries(BiomassData[BiomassData$Country=='Indonesia',],'Indonesia Status','Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+# 
+# CanadaStatus<- AnalyzeFisheries(BiomassData[BiomassData$Country=='Canada',],'Canada Status','Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
 
 # Calculate MSY -----------------------------------------------------------
 sigR<- 0
 
-
-CatchMSYresults<- RunCatchMSY(USAStatus$Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength,0)
-
-
-print(histogram( ~ BvBmsy | Year, data = Data,
-                 xlab = "B/Bmsy", type = "density",
-                 panel = function(x, ...) {
-                   panel.histogram(x, ...)
-                   panel.mathdensity(dmath = dnorm, col = "black",
-                                     args = list(mean=mean(x),sd=sd(x)))
-                   panel.abline(v=1,lwd=2)
-                 } ))
+CatchMSYresults<- RunCatchMSY(GlobalStatus$Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength,0)
 
 MsyData<- CatchMSYresults$Data
 
@@ -358,22 +349,13 @@ CurrentCatch2<- sum(MsyData$Catch[MsyData$Year==2010],na.rm=T)
 
 MsyData<- MsyData[is.na(MsyData$MSY)==F,]
 
-
-
-Individuals<- MsyData$MSY[MsyData$Year==2010]
-
 MsyData$PercentGain<- 100*(MsyData$MSY/MsyData$Catch-1)
-
-quartz()
-xyplot(log(PercentGain) ~ (BvBmsy),data=MsyData)
 
 FutureMSY<- sum(MsyData$MSY[MsyData$Year==2010],na.rm=T)
 
 GlobalPercentChange<- 100*(FutureMSY/CurrentCatch-1)
 
 IndoCatch<- (PredictedData[PredictedData$Country=='Indonesia',])
-
-ddply(IndoCatch,c('Year'),summarize,sum(Catch,na.rm=T))
 
 CountryMsy<- ddply(MsyData[MsyData$Year==2010,],c('Country'),summarize,CurrentCatch= sum(Catch,na.rm=T),MSY=sum(MSY,na.rm=T),TotalGain=sum(MSY,na.rm=T)-sum(Catch,na.rm=T),
                    PercGain=(100*(sum(MSY,na.rm=T)/sum(Catch,na.rm=T)-1)),MedianBvBmsy=median(BvBmsy,na.rm=T),PercMissing=100*(sum(is.na(MSY))/length(MSY)))
@@ -382,18 +364,83 @@ PercGainOrder<- order(CountryMsy$PercGain,decreasing=T)
 
 CountryMsy<- CountryMsy[PercGainOrder,]
 
-save.image(file=paste(ResultFolder,'Regression Outputs.rdata',sep=''))
-
-file.exists(paste(ResultFolder,'Regression Outputs.rdata',sep=''))
-
 # Run projection analysis -------------------------------------------------
-MsyData$Price<- 1000
+# 
+# MsyData$Price<- 1000
+# 
+# MsyData$BvBmsyOpenAccess<- 0.25
 
-MsyData$BvBmsyOpenAccess<- 0.25
+BaselineYear<- 2010
 
+MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T)
+
+ProjectionData<- RunProjection(MsyData)
+
+ProjectionData$Country[ProjectionData$Country=='United States of America']<- 'USA'
+
+for (c in 1:length(CountriesToRun))
+{
+  show(CountriesToRun[c])
+  if (CountriesToRun[c]=='Global'){
+    Biomass_CountryLocater<- is.factor(BiomassData$Country)
+    Proj_CountryLocater<- is.factor(ProjectionData$Country)  
+  }
+  else
+  {
+    Biomass_CountryLocater<- BiomassData$Country==CountriesToRun[c] 
+    Proj_CountryLocater<- ProjectionData$Country==CountriesToRun[c] 
+  }
+  
+  
+  BiomassStatus<- AnalyzeFisheries(BiomassData[Biomass_CountryLocater,],paste(CountriesToRun[c],' Status',sep=''),'Year',1980:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+  
+  TempProjectionData<- ProjectionData[Proj_CountryLocater,]
+  
+  Baseline<- ddply(subset(TempProjectionData,Year==BaselineYear & Policy=='Historic'),c('Year','Policy'),summarize,MedianBvBmsy=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),
+                   TotalCatch=sum(Catch,na.rm=T),TotalProfits=sum(Profits,na.rm=T),NumberOfStocks=length(unique(IdOrig)))
+  
+  BaselineMarker<- as.data.frame(matrix(NA,nrow=5,ncol=dim(Baseline)[2]))
+  
+  colnames(BaselineMarker)<- colnames(Baseline)
+  
+  BaselineMarker[,c(1,3:dim(Baseline)[2])]<- Baseline[,c(1,3:dim(Baseline)[2])]
+  
+  BaselineMarker$Policy<- c('CatchShare','CloseDown','Fmsy','Opt','SQ')
+  
+  TimeTrend<- ddply(TempProjectionData,c('Year','Policy'),summarize,MedianBvBmsy=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),
+                    TotalCatch=sum(Catch,na.rm=T),TotalProfits=sum(Profits,na.rm=T),NumberOfStocks=length(unique(IdOrig)))
+  
+  TimeTrend$PercentProfitChange<-100*(TimeTrend$TotalProfits/Baseline$TotalProfits-1)
+
+  TimeTrend$PercentCatchChange<-100*(TimeTrend$TotalCatch/Baseline$TotalCatch-1)
+  
+  
+  write.csv(file=paste(ResultFolder,CountriesToRun[c],' Policy Projections.csv',sep=''),TimeTrend)
+  
+  write.csv(file=paste(ResultFolder,CountriesToRun[c],' Baseline.csv',sep=''),Baseline)
+  
+  write.csv(file=paste(ResultFolder,CountriesToRun[c],' Biomass Status.csv',sep=''),BiomassStatus$Data)
+    
+  pdf(file=paste(FigureFolder,CountriesToRun[c],' Trajectories.pdf',sep='')) 
+  
+  print(xyplot( PercentProfitChange ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=2,auto.key=T,aspect='fill'))
+  
+  print(xyplot( PercentCatchChange ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=2,auto.key=T,aspect='fill'))
+  
+  print(xyplot( MedianBvBmsy ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=2,auto.key=T,aspect='fill'))
+  
+  print(xyplot( MedianFvFmsy ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=2,auto.key=T,aspect='fill'))
+  
+  dev.off()
+  
+} #Close Country Trajectory Analysis 
 
 # Scale and Analyze Results -----------------------------------------------
 
 # Publish in Science ------------------------------------------------------
 
+
+save.image(file=paste(ResultFolder,'Regression Outputs.rdata',sep=''))
+
+file.exists(paste(ResultFolder,'Regression Outputs.rdata',sep=''))
 

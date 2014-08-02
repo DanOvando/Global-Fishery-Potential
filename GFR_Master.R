@@ -9,7 +9,7 @@ library(plyr)
 library(lattice)
 # Basic Controls -------------------------------------------------------------
 
-BatchFolder<- 'Results/Version 2/'
+BatchFolder<- 'Results/Version 3/'
 
 InputFolder<- 'Data/'
 
@@ -32,10 +32,36 @@ dir.create(ResultFolder)
 #Storage
 
 
+# Analysis ----------------------------------------------------------------
+
+CountriesToRun<- c('Global','USA','Indonesia','Philippines','Peru','Chile','Mexico','Japan','Myanmar','Viet Nam') 
+#,'Indonesia','Philippines','Peru')
+
+
+# China
+# - United States
+# - European Union
+# - Indonesia
+# - Philippines
+# - Peru
+# - Chile
+# - Mexico
+# - Parties to the Nauru Agreement
+# - Japan
+# - Myanmar
+# - Viet Nam
+# Papua New Guinea
+# Marshall Islands
+# Solomon Islands
+# Kiribati
+# Federated States of Micronesia
+# Tuvalu
+# Palau
+# Nauru
+
 # Data Processing ---------------------------------------------------------
 
 MinimumCatchYears<- 10 #Minimum length of catch history
-
 
 OutlierBvBmsy<- 2.5 #Maximum BvBmsy that is allowed in the analysis 
 
@@ -119,15 +145,13 @@ CatchSharePrice<- 1.2
 
 CatchShareCost<- 0.8
 
-Beta<- 1.3
+beta<- 1.3
 
 Discount<- 0.05
 
-bvec<- seq(0,2,length.out=20)
+bvec<- seq(0,3,length.out=20)
 
-tol<- 1e-3
-
-
+tol<- 1e-2
 
 #Time frame
 
