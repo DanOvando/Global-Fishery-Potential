@@ -36,11 +36,11 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
 
   SummaryStats$LastYear<- max(Data$Year)
   
-  SummaryStats$DataBases<- ddply(Data,.(Year,Dbase),summarize,Count=length(unique(IdOrig)))
+  SummaryStats$DataBases<- ddply(Data,.(Year,Dbase),summarize,Count=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T))
   
-  SummaryStats$IdLevel<- ddply(Data,.(Year,IdLevel),summarize,Count=length(unique(IdOrig)))
+  SummaryStats$IdLevel<- ddply(Data,.(Year,IdLevel),summarize,Count=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T))
 
-SummaryStats$SpeciesCats<- ddply(Data,.(Year,SpeciesCatName),summarize,Count=length(unique(IdOrig)))
+SummaryStats$SpeciesCats<- ddply(Data,.(Year,SpeciesCatName),summarize,Count=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T))
 
 
   # Analyze Catch Statistics ------------------------------------------------
@@ -139,10 +139,11 @@ BioStats$Median<- data.frame(Years,MeanMedian,Quantiles)
 
 colnames(BioStats$Median)<- c('Year','MeanMedian',paste('Q',100*c(0.025,.25,.75,0.975),sep=''))
 
-plot(BioStats$Median$Year,BioStats$Median$MeanMedian,type='b',lwd=2,xlab='Year',ylab='Median B/Bmsy',pty='m')
+plot(BioStats$Median$Year,BioStats$Median$MeanMedian,type='b',lwd=2,xlab='Year',ylab='Median B/Bmsy',pty='m',ylim=c(0,2))
 polygon(x=c(BioStats$Median$Year,rev(BioStats$Median$Year)),y=c(BioStats$Median$Q97.5,rev(BioStats$Median$Q2.5)),
         col="lightsteelblue2",border=F)
 lines(BioStats$Median$Year,BioStats$Median$MeanMedian,type='b',lwd=2)
+abline(h=1,lty=2,lwd=2)
 legend('topright',legend='95% Confidence Range of Median',fill='lightsteelblue2')
 
 }
@@ -155,10 +156,12 @@ else
   
   plot(BioStats$Median$Year,BioStats$Median$Median,type='b',lwd=2,xlab='Year',ylab='B/Bmsy',pty='m',ylim=c(0,3))
   polygon(x=c(BioStats$Median$Year,rev(BioStats$Median$Year)),y=c(BioStats$Median$Q75,rev(BioStats$Median$Q25)),
-          col="lightsteelblue2",border=F)
-  lines(BioStats$Median$Year,BioStats$Median$Median,type='b',lwd=2)
+          col="lightsteelblue2",border=F,ylim=c(0,3))
+  lines(BioStats$Median$Year,BioStats$Median$Median,type='b',lwd=2,ylim=c(0,3))
+  abline(h=1)
   legend('topright',legend='Interquantile Range',fill='lightsteelblue2')
   
+ Individuals<- Data$BestBio
   
 }
 }
@@ -178,14 +181,22 @@ SummaryStats$SpeciesCats$Year<- as.factor(SummaryStats$SpeciesCats$Year)
 # pdf(file=paste(FigureFolder,BatchName,' IdLevels.pdf',sep=''))
 print(dotplot(IdLevel~Count | Year,data=SummaryStats$IdLevel,xlab='Number of Fisheries',ylab='Identification Level'))
 
+print(dotplot(IdLevel~Catch | Year,data=SummaryStats$IdLevel,xlab='Catch (MT)',ylab='Identification Level'))
+
 # dev.off()
 
 # pdf(file=paste(FigureFolder,BatchName,'Databases.pdf',sep=''))
 print(dotplot(Dbase~Count | Year,data=SummaryStats$DataBases,xlab='Number of Fisheries',ylab='Database'))
+
+print(dotplot(Dbase~Catch | Year,data=SummaryStats$DataBases,xlab='Catch (MT)',ylab='Database'))
+
 # dev.off()
 
 # pdf(file=paste(FigureFolder,BatchName,'SpeciesCats.pdf',sep=''))
 print(dotplot(SpeciesCatName~Count | Year,data=SummaryStats$SpeciesCats,xlab='Number of Fisheries',ylab='Species Category'))
+
+print(dotplot(SpeciesCatName~Catch | Year,data=SummaryStats$SpeciesCats,xlab='Catch (MT)',ylab='Species Category'))
+
 # dev.off()
 
 
