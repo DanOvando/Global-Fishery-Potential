@@ -5,8 +5,76 @@
 
 RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength,NoNei)
 {
+  library(zoo)
   
-  #   Data<- GlobalStatus$Data
+  sraMSY  <-function(theta, N) #CatchMSY guts
+  {
+    # theta=parbound
+    # N=n
+    #This function conducts the stock reduction
+    #analysis for N trials
+    #args:
+    #  theta - a list object containing:
+    #		r (lower and upper bounds for r)
+    #		k (lower and upper bounds for k)
+    #		lambda (limits for current depletion)
+    
+#     theta=parbound
+#     N=n
+#     r=parbound$r
+#     k=parbound$k
+#     lambda=parbound$lambda
+    with(as.list(theta), 
+{
+  # c(0.05,0.5)
+  # ri = exp(runif(N, log(.05), log(0.5)))  ## get N values between r[1] and r[2], assign to ri
+  ri = exp(runif(N, log(r[1]), log(r[2])))  ## get N values between r[1] and r[2], assign to ri
+  ki = exp(runif(N, log(k[1]), log(k[2])))  ## get N values between k[1] and k[2], assing to ki
+  itheta=cbind(r=ri,k=ki, lam1=lambda[1],lam2=lambda[2], sigR=sigR) ## assign ri, ki, and final biomass range to itheta
+  M = apply(itheta,1,.schaefer) ## call Schaefer function with parameters in itheta
+  i=1:N
+  ## prototype objective function
+  get.ell=function(i) M[[i]]$ell
+  ell = sapply(i, get.ell) 
+  return(list(r=ri,k=ki, ell=ell))	
+})
+  }
+  
+.schaefer  <- function(theta) # Schaefer model
+{
+  with(as.list(theta), {  ## for all combinations of ri & ki
+    bt=vector()
+    ell = 0  ## initialize ell
+    for (j in startbt)
+    {
+      if(ell == 0) 
+      {
+        bt[1]=j*k*exp(rnorm(1,0, sigR))  ## set biomass in first year
+        for(i in 1:nyr) ## for all years in the time series
+        {
+          xt=rnorm(1,0, sigR)
+          bt[i+1]=(bt[i]+r*bt[i]*(1-bt[i]/k)-ct[i])*exp(xt) ## calculate biomass as function of previous year's biomass plus net production minus catch
+        }
+        
+        #Bernoulli likelihood, assign 0 or 1 to each combination of r and k
+        ell = 0
+        # show(paste('k is',k))
+        # show(paste('lam1 is',lam1))
+        # show(paste('lam2 is',lam2))
+        if(bt[nyr+1]/k>=lam1 && bt[nyr+1]/k <=lam2 && min(bt,na.rm=T) > 0 && max(bt,na.rm=T) <=k && bt[which(yr==interyr)]/k>=interbio[1] && bt[which(yr==interyr)]/k<=interbio[2]) 
+          ell = 1
+      }  
+    }
+    return(list(ell=ell))
+    
+    
+  })
+}
+
+
+
+#     Data<- USAStatus$Data
+#      Data<- GlobalStatus$Data
   #   
   #   ExcludeSmallPelagics<- 1
   #   
@@ -30,7 +98,7 @@ RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,B
   #   
   #   NoNEI<- 1 #Set to 1 to omit all nei listing
   
-  set.seed(999)  ## for same random sequence
+#   set.seed(999)  ## for same random sequence
   #  require(hacks)
   
   outfile  <- "CatchMSY_Output.csv"
@@ -51,11 +119,7 @@ RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,B
   
   stock_id <- unique((Data[,IdVar])) 
   ## stock_id <- "cod-2224" ## for selecting individual stocks
-  
-  Data$FirstYear<- 0
-  
-  Data$FinalYear<- 0
-  
+    
   TotalResults<- NULL
   
   SampleResults<- NULL
@@ -103,11 +167,13 @@ RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,B
   {	
     stock<- (stock_id[s])
     
+
     Where<- Data[,IdVar]==stock
     
-    show(paste(round(100*(s/length(stock_id)),2),'% done',sep=''))
+    show(paste(round(100*(s/length(stock_id)),2),'% done with CatchMSY',sep=''))
     yr   <- Data$Year[(Data[,IdVar])==stock]
     ct   <- (Data$Catch[(Data[,IdVar])==stock])  ## assumes that catch is given in tonnes, transforms to 1'000 tonnes
+    
     
     FirstCatchYear<- which(is.na(ct)==F)[1]
     
@@ -127,6 +193,7 @@ RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,B
       
       yr<- yr[FirstCatchYear: LastCatchYear]
       ct<- ct[FirstCatchYear: LastCatchYear]
+      ct<- na.approx(ct)
       
       bio<- bio[FirstCatchYear:LastCatchYear]
       
@@ -187,7 +254,6 @@ RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,B
       }
       
       #       sigR        <- 0.0      ## process error; 0 if deterministic model; 0.05 reasonable value? 0.2 is too high
-      
       startbt     <- seq(startbio[1], startbio[2], by = 0.05) ## apply range of start biomass in steps of 0.05	
       parbound <- list(r = start_r, k = start_k, lambda = finalbio, sigR)
       
@@ -205,6 +271,7 @@ RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,B
       flush.console()
       
       ## MAIN
+      
       R1 = sraMSY(parbound, n)  
       
       
@@ -244,6 +311,8 @@ RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,B
         r = R1$r[R1$ell==1]
         k = R1$k[R1$ell==1]
         msy = r * k / 4
+        Fmsy<- r/2
+        
         mean_ln_msy = mean(log(msy))
         
         #         Data$MSY[Where]<- mean(msy,na.rm=T)
