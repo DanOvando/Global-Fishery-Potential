@@ -6,7 +6,7 @@
 RunProjection<- function(Data)
 {
   
-#    Data<- MsyData
+ Data<- MsyData
  
   Data$MarginalCost<- NA
   
@@ -43,9 +43,9 @@ for (s in 1:length(Stocks))
   
   Where<- Data[,IdVar]==Stocks[s]
   
-  c_num <-  Price*MSY*(2-BOA)*BOA
+  c_num <-  Price*(2-BOA)*BOA*MSY*2^beta
   
-  c_den = ((2-BOA)*r/2)^beta
+  c_den = ((2-BOA)*r)^beta
   
   cost = c_num/c_den
   
@@ -67,14 +67,12 @@ for (s in 1:length(Stocks))
 
  CloseDownPolicy[bvec>=1]<- 1 
  
- 
  for (p in 1:length(Policies))
  {
    
-
  eval(parse(text=paste('Policy<-',Policies[p],'Policy',sep=''))) 
    
- Projection<- Sim_Forward(Policy,bvec,BOA,ProjectionTime,Price,MSY,cost,r,beta,delta)
+ Projection<- Sim_Forward(Policy,bvec,RecentStockData$BvBmsy,ProjectionTime,Price,MSY,cost,r,beta,delta)
  
  PolicyMatrix<- as.data.frame(matrix(NA,nrow=ProjectionTime,ncol=dim(TempStockMatrix)[2]))
  
