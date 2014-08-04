@@ -3,30 +3,43 @@
 # This code projects fished populations forward under different policy scenarios 
 ######################################
 
-RunProjection<- function(Data)
+RunProjection<- function(Data,BaselineYear)
 {
   
-#  Data<- MsyData
- 
+#      Data<- MsyData[MsyData$Country=='USA',]
+#  
+#     BaselineYear<- 2010
+    
   Data$MarginalCost<- NA
   
+  Data$Country<- as.character(Data$Country)
+
+  Data$Dbase<- as.character(Data$Dbase)
   
 # Loop over Each Stock ----------------------------------------------------
 
 Policies<- c('Opt','CatchShare','SQ','Fmsy','CloseDown')
 
-Stocks<- unique(Data[,IdVar])
+Stocks<- unique(Data[Data$Year==BaselineYear,IdVar])
 
-TempStockMatrix<- as.data.frame(matrix(NA,nrow=0,ncol=dim(Data)[2]+3))
+TempStockMatrix<- as.data.frame(matrix(NA,nrow=length(Stocks)*ProjectionTime*10,ncol=dim(Data)[2]+3))
 
 colnames(TempStockMatrix)<- c(colnames(Data),'Policy','Profits','FvFmsy')
 
+TempStockMatrix$IdOrig<- as.factor(TempStockMatrix$IdOrig)
+
+levels(TempStockMatrix$IdOrig)<- Stocks
+
+counter<- 1
 
 for (s in 1:length(Stocks))
 {
+    
   show(paste(  round(100*(s/length(Stocks)),2),'% Done with Projections',sep=''))
   
-  Where<- Data[,IdVar]==Stocks[s]
+   Where<- Data[,IdVar]==Stocks[s]
+
+#   Where<- Data[,IdVar]== '11776-FAO-67-31'
   
   StockData<- Data[Where,]
   
@@ -92,19 +105,23 @@ for (s in 1:length(Stocks))
 
  PolicyMatrix$Policy<- Policies[p]
 
- TempStockMatrix<- rbind(TempStockMatrix,PolicyMatrix)
+ TempStockMatrix[counter:(counter+-1+(dim(PolicyMatrix)[1])),]<- I(PolicyMatrix)
+ 
+ counter<- (counter+(dim(PolicyMatrix)[1]))
+ 
  
  } # close policies loop
  
  
 } #Close stocks loop
 
+TempStockMatrix<- TempStockMatrix[1:(counter-1),]
 
 TempStockMatrix[,grepl('Back',colnames(TempStockMatrix))]<- NA
 
-TempStockMatrix$TempStockMatrix<- NA
-
 TempStockMatrix$ScaledCatch<- NA
+
+TempStockMatrix$CatchToRollingMax<- NA
 
 Data$Policy<- NA
 
@@ -128,8 +145,7 @@ Data$MarginalCost[HistoricData]<- Costs
 
 Data$Profits[HistoricData]= Data$Price[HistoricData]*Data$MSY[HistoricData]*Data$FvFmsy[HistoricData]*Data$BvBmsy[HistoricData] -Data$MarginalCost[HistoricData]*(Data$FvFmsy[HistoricData]*Data$r[HistoricData]/2)^beta
 
-
-DataPlus<- rbind(Data,TempStockMatrix)
+DataPlus<- rbind(I(Data),I(TempStockMatrix))
 
 
 return(DataPlus)
