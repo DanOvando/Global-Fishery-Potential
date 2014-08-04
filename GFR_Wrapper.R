@@ -250,9 +250,9 @@ show('Regressions Applied')
 
 # Clean and process predictions and data ---------------------------------------
 
-PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel,FaoNeiLevel,FaoMarineFishLevel) #Bind all data back together
+# PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel,FaoNeiLevel,FaoMarineFishLevel) #Bind all data back together
 
-# PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel) #Bind all data back together
+PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel) #Bind all data back together
 
 BiomassColumns<- grepl('BvBmsy',colnames(PredictedData)) | grepl('Prediction',colnames(PredictedData))
 
@@ -357,12 +357,17 @@ GlobalPercentChange<- 100*(FutureMSY/CurrentCatch-1)
 
 IndoCatch<- (PredictedData[PredictedData$Country=='Indonesia',])
 
+MsyData$Country[MsyData$Country=='United States of America']<- 'USA'
+
+
 CountryMsy<- ddply(MsyData[MsyData$Year==2010,],c('Country'),summarize,CurrentCatch= sum(Catch,na.rm=T),MSY=sum(MSY,na.rm=T),TotalGain=sum(MSY,na.rm=T)-sum(Catch,na.rm=T),
                    PercGain=(100*(sum(MSY,na.rm=T)/sum(Catch,na.rm=T)-1)),MedianBvBmsy=median(BvBmsy,na.rm=T),PercMissing=100*(sum(is.na(MSY))/length(MSY)))
 
 PercGainOrder<- order(CountryMsy$PercGain,decreasing=T)
 
 CountryMsy<- CountryMsy[PercGainOrder,]
+
+write.csv(file=paste(ResultFolder,'Country Rankings.csv',sep=''),CountryMsy)
 
 # Run projection analysis -------------------------------------------------
 # 
@@ -374,16 +379,33 @@ BaselineYear<- 2010
 
 MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T)
 
-ProjectionData<- RunProjection(MsyData)
+ProjectionData<- RunProjection(MsyData,BaselineYear)
 
 ProjectionData$Country[ProjectionData$Country=='United States of America']<- 'USA'
 
+BiomassData$Country[BiomassData$Country=='United States of America']<- 'USA'
+
 for (c in 1:length(CountriesToRun))
 {
+ 
+  BaselineYear<- 2010
+  
   show(CountriesToRun[c])
   if (CountriesToRun[c]=='Global'){
-    Biomass_CountryLocater<- is.factor(BiomassData$Country)
-    Proj_CountryLocater<- is.factor(ProjectionData$Country)  
+    Biomass_CountryLocater<-  1:dim(BiomassData)[1] 
+    Proj_CountryLocater<-1:dim(ProjectionData)[1]
+  }
+  else if (CountriesToRun[c]=='Parties to the Nauru Agreement')
+  {
+    Biomass_CountryLocater<- BiomassData$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Federated States of Micronesia','Tuvalu','Palau','Nauru') 
+    Proj_CountryLocater<- ProjectionData$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Federated States of Micronesia','Tuvalu','Palau','Nauru') 
+        
+  }
+  else if (CountriesToRun[c]=='EU')
+  {
+    Biomass_CountryLocater<- BiomassData$Country %in% EUCountries
+    Proj_CountryLocater<- ProjectionData$Country %in% EUCountries
+    
   }
   else
   {
@@ -391,13 +413,14 @@ for (c in 1:length(CountriesToRun))
     Proj_CountryLocater<- ProjectionData$Country==CountriesToRun[c] 
   }
   
-  
+  if(sum(Biomass_CountryLocater)>0 & sum(Proj_CountryLocater)>0)
+  {
   BiomassStatus<- AnalyzeFisheries(BiomassData[Biomass_CountryLocater,],paste(CountriesToRun[c],' Status',sep=''),'Year',1980:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
   
   TempProjectionData<- ProjectionData[Proj_CountryLocater,]
   
   Baseline<- ddply(subset(TempProjectionData,Year==BaselineYear & Policy=='Historic'),c('Year','Policy'),summarize,MedianBvBmsy=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),
-                   TotalCatch=sum(Catch,na.rm=T),TotalProfits=sum(Profits,na.rm=T),NumberOfStocks=length(unique(IdOrig)))
+                   TotalCatch=sum(Catch,na.rm=T),TotalProfits=sum(Profits,na.rm=T),MedianCatch=median(Catch,na.rm=T),MedianProfits=median(Profits,na.rm=T),NumberOfStocks=length(unique(IdOrig)))
   
   BaselineMarker<- as.data.frame(matrix(NA,nrow=5,ncol=dim(Baseline)[2]))
   
@@ -408,31 +431,46 @@ for (c in 1:length(CountriesToRun))
   BaselineMarker$Policy<- c('CatchShare','CloseDown','Fmsy','Opt','SQ')
   
   TimeTrend<- ddply(TempProjectionData,c('Year','Policy'),summarize,MedianBvBmsy=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),
-                    TotalCatch=sum(Catch,na.rm=T),TotalProfits=sum(Profits,na.rm=T),NumberOfStocks=length(unique(IdOrig)))
+                    TotalCatch=sum(Catch,na.rm=T),TotalProfits=sum(Profits,na.rm=T),MedianCatch=median(Catch,na.rm=T),MedianProfits=median(Profits,na.rm=T),NumberOfStocks=length(unique(IdOrig)))
+  TimeTrend<- rbind(TimeTrend,BaselineMarker)
   
-  TimeTrend$PercentProfitChange<-100*(TimeTrend$TotalProfits/Baseline$TotalProfits-1)
-
-  TimeTrend$PercentCatchChange<-100*(TimeTrend$TotalCatch/Baseline$TotalCatch-1)
+  YearOrder<- order(TimeTrend$Year)
   
+  TimeTrend<- TimeTrend[YearOrder,]
+  
+  TimeTrend$PercChangeTotalProfits<-100*(TimeTrend$TotalProfits/Baseline$TotalProfits-1)
+  
+  TimeTrend$PercChangeTotalCatch<-100*(TimeTrend$TotalCatch/Baseline$TotalCatch-1)
+  
+  TimeTrend$PercChangeMedianProfits<-100*(TimeTrend$MedianProfits/Baseline$MedianProfits-1)
+  
+  TimeTrend$PercChangeMedianCatch<-100*(TimeTrend$MedianCatch/Baseline$MedianCatch-1)
   
   write.csv(file=paste(ResultFolder,CountriesToRun[c],' Policy Projections.csv',sep=''),TimeTrend)
   
   write.csv(file=paste(ResultFolder,CountriesToRun[c],' Baseline.csv',sep=''),Baseline)
   
   write.csv(file=paste(ResultFolder,CountriesToRun[c],' Biomass Status.csv',sep=''),BiomassStatus$Data)
-    
+  
+  BaselineYear<- 2005
+  
   pdf(file=paste(FigureFolder,CountriesToRun[c],' Trajectories.pdf',sep='')) 
   
-  print(xyplot( PercentProfitChange ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=2,auto.key=T,aspect='fill'))
+  print(xyplot( PercChangeTotalProfits ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,ylab='$ Change in Total Profits',type='l',lwd=4,auto.key=T,aspect='fill'))
   
-  print(xyplot( PercentCatchChange ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=2,auto.key=T,aspect='fill'))
+  print(xyplot( PercChangeTotalCatch ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=4,auto.key=T,aspect='fill',ylab='% Change in Total Catch'))
   
-  print(xyplot( MedianBvBmsy ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=2,auto.key=T,aspect='fill'))
+  print(xyplot( PercChangeMedianProfits ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,ylab='% Change in Median Profits',type='l',lwd=4,auto.key=T,aspect='fill'))
   
-  print(xyplot( MedianFvFmsy ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=2,auto.key=T,aspect='fill'))
+  print(xyplot( PercChangeMedianCatch ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=4,auto.key=T,aspect='fill',ylab='% Change in Median Catch'))
+  
+  print(xyplot( MedianBvBmsy ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=4,auto.key=T,aspect='fill',ylab='Median B/Bmsy'))
+  
+  print(xyplot( MedianFvFmsy ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=4,auto.key=T,aspect='fill',ylab='Median F/Fmsy'))
   
   dev.off()
   
+  } #Close if
 } #Close Country Trajectory Analysis 
 
 # Scale and Analyze Results -----------------------------------------------
@@ -440,7 +478,7 @@ for (c in 1:length(CountriesToRun))
 # Publish in Science ------------------------------------------------------
 
 
-save.image(file=paste(ResultFolder,'Regression Outputs.rdata',sep=''))
+save.image(file=paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
 
 file.exists(paste(ResultFolder,'Regression Outputs.rdata',sep=''))
 
