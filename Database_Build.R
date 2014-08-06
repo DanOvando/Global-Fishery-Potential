@@ -219,7 +219,7 @@ for (i in 1:length(RAMNames))
   Whereref<-RAM$IdOrig==RAMNames[i]
   lh_match<-match(RAMNames[i],bioparams.views.data$IdOrig)
   
-  RAM$Bmsy[Whereref]<-bioparams.views.data[lh_match,13] #Bmsy - taken from Bmsytouse a.k.a ReferenceBiomass
+  RAM$Bmsy[Whereref]<-bioparams.views.data[lh_match,13] #Bmsy - taken from Bmsytouse 
   RAM$Umsy[Whereref]<-bioparams.views.data[lh_match,14] #Umsy - taken from Umsytouse
   RAM$Fmsy[Whereref]<-bioparams.views.data[lh_match,8] #Fmsy
   RAM$SSBmsy[Whereref]<-bioparams.views.data[lh_match,5] #SSBmsy
@@ -227,7 +227,7 @@ for (i in 1:length(RAMNames))
 }
 
 # Add reference biomass
-RAM$ReferenceBiomass<-RAM$Bmsy # This will be the biomass reference point to use
+RAM$ReferenceBiomass<-RAM$Bmsy # This will be the biomass reference point to use, is a duplicate of the Bmsy column (see above)
 
 RAM$ReferenceBiomassUnits<-NA
 
@@ -240,25 +240,26 @@ RAM$ReferenceBiomassUnits[WhereRefB]<-"Bmsy"
 # read in .csvs with matched RAM assessids and FAO regions and species scientific names and ISSCAAP codes
 
 Spec_ISSCAAP=read.csv("Data/Species_ASFIS_ISSCAAP.csv") # list of ASFIS scientific names and corressponding ISSCAAP codes 
-Spec_Region_RAM=read.csv("Data/Species_Region_RAM.csv") # list of RAM Assessed IDs previously matched to species code and FAO Region
+Spec_Region_RAM=read.csv("Data/RAM_Regions_72814.csv") # list of RAM Assessed IDs previously matched to species code and FAO Region
 
-Spec_Region_RAM$Assessed.ID=as.character(levels(Spec_Region_RAM$Assessed.ID))[Spec_Region_RAM$Assessed.ID] # convert ID to character
+Spec_Region_RAM$assessid=as.character(levels(Spec_Region_RAM$assessid))[Spec_Region_RAM$assessid] # convert ID to character
+Spec_Region_RAM$RegionFAO=as.character(levels(Spec_Region_RAM$RegionFAO))[Spec_Region_RAM$RegionFAO] # convert region to character
 Spec_ISSCAAP$Species_AFSIS=as.character(levels(Spec_ISSCAAP$Species_AFSIS))[Spec_ISSCAAP$Species_AFSIS] # convert ID to character
 
 # FAO Region matching
-RegionFAOMatches=unique(Spec_Region_RAM$Assessed.ID)
+RegionFAOMatches=unique(Spec_Region_RAM$assessid)
 
 for (i in 1:length(RAMNames)) # currently only matching 11 of the 17 unique FAO regions in the Spec_Region.csv. Due to stocks in multiple zones? 
 {
   
-  Where1<- RAMNames[i]==Spec_Region_RAM$Assessed.ID
+  Where1<- RAMNames[i]==Spec_Region_RAM$assessid
   
   Where2<- RAMNames[i]==RAM$IdOrig
   
   
-  if (sum(Spec_Region_RAM$Assessed.ID==RAMNames[i])>0)
+  if (sum(Spec_Region_RAM$assessid==RAMNames[i])>0)
   {
-    RAM$RegionFAO[Where2]<- Spec_Region_RAM[Where1,4][1]
+    RAM$RegionFAO[Where2]<- Spec_Region_RAM[Where1,15][1]
   }
 }
 
@@ -313,9 +314,11 @@ SOFIA=read.csv("Data/SOFIA_2011_indiv_stocks_CLEAN.csv", stringsAsFactors=F)
 
 # rename columns to match main database columns as defined by ColNames
 names(SOFIA)[1]="RegionFAO"
-SOFIA$RegionFAO=gsub("Pacific",1,SOFIA$RegionFAO) # change "Pacific" to 1
-SOFIA$RegionFAO=gsub("Atlantic",2,SOFIA$RegionFAO) # change "Atlantic" to 2
-SOFIA$RegionFAO=gsub("Indian",3,SOFIA$RegionFAO) # change "Indian" to 3
+
+####### ****DELETE THIS RENAMING SECTION - THESE NUMBERS EXIST FOR INLAND WATERS****
+# SOFIA$RegionFAO=gsub("Pacific",1,SOFIA$RegionFAO) # change "Pacific" to 1
+# SOFIA$RegionFAO=gsub("Atlantic",2,SOFIA$RegionFAO) # change "Atlantic" to 2
+# SOFIA$RegionFAO=gsub("Indian",3,SOFIA$RegionFAO) # change "Indian" to 3
 
 names(SOFIA)[7]="CommName"
 names(SOFIA)[12]="SciName"
@@ -408,6 +411,10 @@ SOFIA$IdOrig=paste(sofiaID,SOFIA$Dbase,SOFIA$RegionFAO,SOFIA$SpeciesCat,sep="-")
 
 # reshape SOFIA to "long" format while creating "Catch" and "Year" variables
 sofia=reshape(SOFIA,varying=8:17,direction="long", v.names="Catch", timevar="Year",times=2000:2009,)
+
+# convert catch from thousands of metric tons to metric tons
+sofia$Catch<-sofia$Catch*1000
+
 sofia=subset(sofia, select=c(ColNames)) # subset to remove added column names
 sofia=sofia[order(sofia$IdOrig,sofia$Year),] # sort to make catch records sequential
 sofia=sofia[,c(ColNames)] # order columns according to ColNames
