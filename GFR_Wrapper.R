@@ -66,10 +66,10 @@ FaoData<- FullData[FullData$Dbase=='FAO',]
 
 FaoData<- LumpFisheries(FaoData,SpeciesCategoriesToLump)
 
-# # 
-# FaoIdSample<- sample(unique(FaoData[,IdVar]),500,replace=FALSE)
-# # # # 
-# FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
+# 
+FaoIdSample<- sample(unique(FaoData[,IdVar]),500,replace=FALSE)
+# # # 
+FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
 
 show('Raw Data Processed')
 

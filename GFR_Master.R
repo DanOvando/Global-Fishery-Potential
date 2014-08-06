@@ -9,7 +9,7 @@ library(plyr)
 library(lattice)
 # Basic Controls -------------------------------------------------------------
 
-BatchFolder<- 'Results/Scratch/'
+BatchFolder<- 'Results/New Scratch/'
 
 InputFolder<- 'Data/'
 
