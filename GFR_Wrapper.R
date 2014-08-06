@@ -480,5 +480,4 @@ for (c in 1:length(CountriesToRun))
 
 save.image(file=paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
 
-file.exists(paste(ResultFolder,'Regression Outputs.rdata',sep=''))
 
