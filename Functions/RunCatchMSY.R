@@ -3,7 +3,7 @@
 #This code runs CatchMSY on fisheries
 ###################################### 
 
-RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength,NoNei)
+RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength)
 {
   library(zoo)
   
