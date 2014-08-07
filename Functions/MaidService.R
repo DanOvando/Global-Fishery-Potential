@@ -6,7 +6,7 @@
 MaidService<- function(Data)
 {
   #For Commiting
-   Data<- FullData
+#     Data<- FullData
   
   Data$SpeciesCatName[Data$SpeciesCatName=='']<- NA
   
@@ -23,10 +23,9 @@ MaidService<- function(Data)
   
   StockStats$WrongSpeciesCategory<- (StockStats$SpeciesCatName %in% SpeciesCategoriesToOmit)
   
+  Overlap<- RemoveOverlap(Data)
   
-  Overlap<- RemoveOverlap(Data)$RamOverlap
-  
-  FisheriesToOmit<- c(FisheriesToOmit,Overlap$FOverlapId[is.na(Overlap$FOverlapId)==F])
+  FisheriesToOmit<- unique(c(FisheriesToOmit,Overlap$RamOverlap$FOverlapId[is.na(Overlap$RamOverlap$FOverlapId)==F],Overlap$SofiaOverlap$OverlapId[is.na(Overlap$SofiaOverlap$OverlapId)==F]))
   
   StockStats$NotAllowedIn<- (StockStats[,IdVar] %in% FisheriesToOmit)
   
