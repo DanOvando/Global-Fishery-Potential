@@ -179,23 +179,23 @@ SummaryStats$DataBases$Year<- as.factor(SummaryStats$DataBases$Year)
 SummaryStats$SpeciesCats$Year<- as.factor(SummaryStats$SpeciesCats$Year)
 
 # pdf(file=paste(FigureFolder,BatchName,' IdLevels.pdf',sep=''))
-print(dotplot(IdLevel~Count | Year,data=SummaryStats$IdLevel,xlab='Number of Fisheries',ylab='Identification Level'))
+print(dotplot(Count ~ IdLevel | Year,data=SummaryStats$IdLevel,ylab='Number of Fisheries',xlab='Identification Level'))
 
-print(dotplot(IdLevel~Catch | Year,data=SummaryStats$IdLevel,xlab='Catch (MT)',ylab='Identification Level'))
+print(dotplot(Catch ~ IdLevel | Year,data=SummaryStats$IdLevel,ylab='Catch (MT)',xlab='Identification Level'))
 
 # dev.off()
 
 # pdf(file=paste(FigureFolder,BatchName,'Databases.pdf',sep=''))
-print(dotplot(Dbase~Count | Year,data=SummaryStats$DataBases,xlab='Number of Fisheries',ylab='Database'))
+print(dotplot(Count~ Dbase | Year,data=SummaryStats$DataBases,ylab='Number of Fisheries',xlab='Database'))
 
-print(dotplot(Dbase~Catch | Year,data=SummaryStats$DataBases,xlab='Catch (MT)',ylab='Database'))
+print(dotplot(Catch~ Dbase | Year,data=SummaryStats$DataBases,ylab='Catch (MT)',xlab='Database'))
 
 # dev.off()
 
 # pdf(file=paste(FigureFolder,BatchName,'SpeciesCats.pdf',sep=''))
-print(dotplot(SpeciesCatName~Count | Year,data=SummaryStats$SpeciesCats,xlab='Number of Fisheries',ylab='Species Category'))
+print(dotplot(Count ~ SpeciesCatName | Year,data=SummaryStats$SpeciesCats,ylab='Number of Fisheries',xlab='Species Category'))
 
-print(dotplot(SpeciesCatName~Catch | Year,data=SummaryStats$SpeciesCats,xlab='Catch (MT)',ylab='Species Category'))
+print(dotplot(Catch ~ SpeciesCatName | Year,data=SummaryStats$SpeciesCats,ylab='Catch (MT)',xlab='Species Category'))
 
 # dev.off()
 
