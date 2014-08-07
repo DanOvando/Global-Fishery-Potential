@@ -4,7 +4,7 @@
 # Outputs: variables over time (f, b, yield (y), profit (pi)--------------------------------------------------
 ######################################
 
-Sim_Forward= function(fpolicy,bvec,b0,T,p,MSY,c,r,beta,delta)
+Sim_Forward= function(Policy,fpolicy,bvec,b0,T,p,MSY,c,r,beta,delta)
 {  
   b = matrix(0,T,1)
   f = b
@@ -12,6 +12,14 @@ Sim_Forward= function(fpolicy,bvec,b0,T,p,MSY,c,r,beta,delta)
   y = b
   
   b[1] = b0;
+  
+  if (Policy=='CatchShare')
+  {
+    p<- p*CatchSharePrice
+    
+    c<- c*CatchShareCost
+  }
+  
   for (t in 1:T)
   {
     f[t] = approx(bvec,fpolicy,b[t])$y
