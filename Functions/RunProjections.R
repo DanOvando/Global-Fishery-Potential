@@ -22,6 +22,8 @@ RunProjection<- function(Data,BaselineYear)
   
   Stocks<- unique(Data[Data$Year==BaselineYear,IdVar])
   
+  Data<- Data[Data$Year<=BaselineYear,]
+  
   TempStockMatrix<- as.data.frame(matrix(NA,nrow=length(Stocks)*ProjectionTime*10,ncol=dim(Data)[2]+3))
   
   colnames(TempStockMatrix)<- c(colnames(Data),'Policy','Profits','FvFmsy')
