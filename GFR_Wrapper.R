@@ -479,14 +479,14 @@ for (c in 1:length(CountriesToRun))
     TimeTrend$PercChangeMedianBiomass<-100*(TimeTrend$MedianBvBmsy/Baseline$MedianBvBmsy-1)
     
     Cumulatives<- ddply(TimeTrend[TimeTrend$Year>BaselineYear,],c('Policy'),summarize,NPV=sum(DiscProfits,na.rm=T),Food=sum(TotalCatch,na.rm=T))
-    
+        
     CumeNumbers<- as.matrix(Cumulatives[,2:3])
     
-    CumeNumbers<- 100*(t(t(CumeNumbers)/CumeNumbers[6,])-1)
+    CumeNumbers<- 100*(t(t(CumeNumbers)/CumeNumbers[which(Cumulatives$Policy=='SQ'),])-1)
     
     Cumulatives[,2:3]<- CumeNumbers
     
-    Cumulatives<- Cumulatives[Cumulatives$Policy!='SQ',]
+    Cumulatives<- Cumulatives[Cumulatives$Policy!='SQ' & Cumulatives$Policy!='Historic',]
     
     FinalYear<- TimeTrend[TimeTrend$Year==max(TimeTrend$Year),]  
     
@@ -542,15 +542,15 @@ for (c in 1:length(CountriesToRun))
     
     pdf(file=paste(FigureFolder,CountriesToRun[c],' Trajectories.pdf',sep='')) 
     
-    print(barchart(NPV ~ Policy,data=Cumulatives,col=terrain.colors(length(Policies)),ylab= ' % Change in NPV from Status Quo'))
+    print(barchart(NPV ~ Policy,data=Cumulatives,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change in NPV from Status Quo'))
     
-    print(barchart(Food ~ Policy,data=Cumulatives,col=terrain.colors(length(Policies)),ylab= ' % Change in Total Food from Status Quo'))
+    print(barchart(Food ~ Policy,data=Cumulatives,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change in Total Food from Status Quo'))
     
-    print( barchart(PercChangeTotalProfits ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),ylab= ' % Change from Current Profits'))
+    print( barchart(PercChangeTotalProfits ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Current Profits'))
     
-    print(barchart(PercChangeTotalCatch ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),ylab= ' % Change from Current Food'))
+    print(barchart(PercChangeTotalCatch ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Current Food'))
     
-    print(barchart(PercChangeMedianBiomass ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),ylab= ' % Change from Current Median Biomass'))
+    print(barchart(PercChangeMedianBiomass ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Current Median Biomass'))
     
     print(xyplot( PercChangeTotalProfits ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,ylab='% Change in Total Profits',type='l',lwd=4,auto.key=T,aspect='fill'))
     

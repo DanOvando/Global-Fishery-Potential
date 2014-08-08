@@ -156,7 +156,7 @@ Discount<- 0.05
 
 bvec<- seq(0,2,length.out=30)
 
-tol<- 1e-2
+tol<- 1e-1
 
 #Time frame
 
