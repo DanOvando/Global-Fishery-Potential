@@ -193,9 +193,9 @@ print(dotplot(Catch~ Dbase | Year,data=SummaryStats$DataBases,ylab='Catch (MT)',
 # dev.off()
 
 # pdf(file=paste(FigureFolder,BatchName,'SpeciesCats.pdf',sep=''))
-print(dotplot(Count ~ SpeciesCatName | Year,data=SummaryStats$SpeciesCats,ylab='Number of Fisheries',xlab='Species Category'))
+print(dotplot(SpeciesCatName ~ Count  | Year,data=SummaryStats$SpeciesCats,ylab='Number of Fisheries',xlab='Species Category'))
 
-print(dotplot(Catch ~ SpeciesCatName | Year,data=SummaryStats$SpeciesCats,ylab='Catch (MT)',xlab='Species Category'))
+print(dotplot(SpeciesCatName ~ Catch  | Year,data=SummaryStats$SpeciesCats,ylab='Catch (MT)',xlab='Species Category'))
 
 # dev.off()
 

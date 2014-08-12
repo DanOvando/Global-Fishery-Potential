@@ -11,8 +11,7 @@ RemoveOverlap<- function(Data)
 # read in compiled dataset
 # Data<-read.csv(paste(ResultFolder,'fulldata.csv',sep=''),stringsAsFactors=F)
 
-Data<- FullData
-
+# Data<- FullData
 Data$Country<- as.character(Data$Country)
 
 # subset out the three datasets
