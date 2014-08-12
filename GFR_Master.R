@@ -7,6 +7,10 @@ rm(list=ls())
 library(car)
 library(plyr)
 library(lattice)
+require(rfishbase)
+require(stringr)
+require(RCurl)
+require(XML)
 # Basic Controls -------------------------------------------------------------
 
 BatchFolder<- 'Results/With NEIs/'
