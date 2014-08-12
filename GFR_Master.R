@@ -13,7 +13,7 @@ require(RCurl)
 require(XML)
 # Basic Controls -------------------------------------------------------------
 
-BatchFolder<- 'Results/With NEIs/'
+BatchFolder<- 'Results/Scratch/'
 
 InputFolder<- 'Data/'
 
