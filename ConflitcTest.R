@@ -13,8 +13,6 @@ Tyler< function(y)
 
 More<- 10
 
-#sdfsd
-
 #More
 
 #Stf
