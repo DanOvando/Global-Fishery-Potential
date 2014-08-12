@@ -9,36 +9,10 @@
 
 GetFbIds<-function(FullData){
 
-install <- 1 ## Change this to 0 after the first intalation!!
-
-if (install == 0)
-{
-  install.packages("rfishbase")
-  install.packages("rfishbase")
-  install.packages("XML")
-  install.packages("stringr")
-  install.packages('RCurl')
-}
-
-# require(rfishbase)
-# require(stringr)
-
-## This source command load the files with the Fish Base functions! 
-# source calls not neccessary once functions added to Function folder on Git
-
-# source(fb.ids.R)
-# source(fb_growth.R)
-# source(fb_maturity.R)
-# source(fb_agesize.R)
-
-## Now, using the 'rfishbase' package, get the list of species to obtain the data from..
-
 data(fishbase)
-## All the species listed in FB that are part of Engraulidae family
-# sp <- which_fish("Engraulidae", using="Family", fish.data) 
-# spList <- fish_names(fish.data[sp]) ## This is a vector with all the scientific names!
 
 spList<-unique(FullData$SciName) # get vector with all scientific names in dataset
+
 # clean species names so that HTML parsing doesn't fail
 spList<-gsub(".","",spList,fixed= T) # remove periods
 spList<-gsub(",","",spList) # remove commas
@@ -55,8 +29,7 @@ ScNames$StockCode <- NA
 ## This loop is to obtain the number used by the FB to identify the fish. This is the number
 ## that is used to call all the links to get the data!
 pb <- txtProgressBar(min = 0, max = 1356, style = 3)
-
-## I'm just doing this example for the first 5 species! 
+ 
 for (i in 1:length(spList))
 {
   ScNames$Genus[i] <- Genus <-  temp[[i]][1]
