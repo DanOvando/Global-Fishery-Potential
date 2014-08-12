@@ -9,7 +9,7 @@ library(plyr)
 library(lattice)
 # Basic Controls -------------------------------------------------------------
 
-BatchFolder<- 'Results/Without NEIs/'
+BatchFolder<- 'Results/With NEIs/'
 
 InputFolder<- 'Data/'
 
@@ -33,6 +33,8 @@ dir.create(ResultFolder)
 
 
 # Analysis ----------------------------------------------------------------
+
+IncludeNEIs<- 1
 
 CountriesToRun<- c('Global','USA','China','Indonesia','Philippines','Peru','Chile','Mexico','Japan','Myanmar','Viet Nam','EU','Parties to the Nauru Agreement') 
 
