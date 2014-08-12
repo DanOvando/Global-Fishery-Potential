@@ -21,6 +21,5 @@ More<- 10
 
 
 # Blah Blah
-# Delete This
 
 # a bunch of junk from tyler
