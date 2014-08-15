@@ -3,7 +3,7 @@
 # This code identifys and removes overlap between RAM, SOFIA, and FAO stocks in the Global Fisheries Recovery Database
 ######################################
 
-RemoveOverlap<- function(Data)
+RemoveOverlap<- function(Data,stringsAsFactors=F)
 {
 
 # FilterOverlap<-function(Data, stringsAsFactors=F){
@@ -18,6 +18,66 @@ Data$Country<- as.character(Data$Country)
 ram<-subset(Data,Dbase=="RAM")
 sofia<-subset(Data,Dbase=="SOFIA")
 fao<-subset(Data,Dbase=="FAO")
+
+# for ram stocks with country but unclear(missing) FAO regions, make a duplicate stock for each possible FAO region
+# identify overlap using country/species/region
+
+# for "multinational" ram stocks, make duplicate stock for each possible fao region in the area (Pacific, Atlantic, etc)
+# identify overlap using just species/region
+
+Spec_Region_RAM=read.csv("Data/RAM_Regions_72814.csv") # list of RAM Assessed IDs previously matched to species code and FAO Region
+
+ramstocks<-Spec_Region_RAM[,c(2,5,9,13,15)] # subset ram to select only info relevant for filtering
+ramstocks$RegionFAO<- gsub("/",",",ramstocks$RegionFAO,fixed=T) # change / to , for use in string parsing later in script
+ramstocks$Country<- gsub("multinational","Multinational",ramstocks$Country)
+
+# make data frame with FAO regions for multinational stock possibilities
+
+regionname<-c( "Atlantic Ocean",                    "Central Western Pacific Ocean",     "Eastern Atlantic",                 
+               "Eastern Pacific",                   "North Pacific Ocean",               "Northern Atlantic",                
+               "Pacific Ocean",                     "South Atlantic",                    "South Pacific Ocean",              
+               "Western and Central North Pacific", "Western Atlantic",                  "Western Pacific Ocean") 
+
+regs<-c("21,27,31,34,41,47,48","71","27,34,47","67,77,87","61,67","21,27","61,67,71,77,81,87,88","41,47","81,87","61,67,71,77","21,31,41","61,71,81")
+
+multiFAOdf<-data.frame(regionname,regs,stringsAsFactors=F)
+
+# run for loop to identify multinational stocks with NAs and fill fao regions based on multiFAOdf
+
+
+for (i in 1:length(ramstocks$assessid)){
+  
+  if(ramstocks$Country[i]=="Multinational" & is.na(ramstocks$RegionFAO[i])==T){
+    
+    regmatch<-match(ramstocks$areaname[i],multiFAOdf$regionname)
+    
+    ramstocks$RegionFAO[i]<-multiFAOdf[regmatch,2]
+  }
+}
+
+# for RAM stocks across multiple regions, create replicates for each possible FAO region. 
+newRam<-data.frame(assessid=NA,scientificname=NA,areaname=NA, Country=NA,RegionFAO=NA)
+
+for (n in 1:length(ramstocks$assessid)){ 
+  
+  RegionFAO<-unlist(strsplit(ramstocks$RegionFAO[n],split=",",fixed=T)) # split apart FAO regions
+  num<-length(RegionFAO) # how many?
+  
+  if(num>0){
+    
+    assessid<-rep(as.character(ramstocks$assessid[n],num)) 
+    scientificname<-rep(as.character(ramstocks$scientificname[n],num)) # duplicate info for all columns 
+    Country<-rep(ramstocks$Country[n],num) 
+    areaname<-rep(as.character(ramstocks$areaname[n],num))
+    
+    newdata<-data.frame(assessid,scientificname,areaname,Country,RegionFAO) # make new data frame with unique rows for each country in the assessment
+    newRam<-rbind(newdata,newRam) # add to new ram dataset      
+    
+  }# close if statement
+}# close loop
+
+colnames(newRam)[2]<-"SciName"
+colnames(newRam)[1]<-"IdOrig"
 
 # get unique stocks from each subset by aggregating to the stock level and calculating total catch
   # this method will not identify stocks that are missing one or more of the 4 aggregating criteria, need to improve
@@ -89,7 +149,7 @@ for (i in 1:nrow(newSofia)){
   RamStocks$SOverlapId[duplicate]<-as.character(newSofia$IdOrig[i])
 }
 
-### Identify FAO stocks covered by RAM assessments (may be partial or full overlap)
+### Identify FAO stocks covered by RAM assessments (national level)
 
 RamStocks$FOverlap<-NA
 RamStocks$FOverlapId<-NA
@@ -101,6 +161,31 @@ for (i in 1:nrow(FaoStocks)){
   RamStocks$FOverlap[duplicate]<-1
   RamStocks$FOverlapId[duplicate]<-as.character(FaoStocks$IdOrig[i])
 }
+
+### Identify FAO stocks covered by RAM assessments (multinational RAM assessments)
+
+multinational<-subset(newRam,Country=="Multinational")
+RamMultiNatOverlap<-NA
+
+
+for (i in 1:nrow(multinational)){
+  
+  duplicate<-multinational$SciName[i]==FaoStocks$SciName & multinational$RegionFAO[i]==FaoStocks$RegionFAO
+  overlapstocks<-FaoStocks$IdOrig[duplicate]
+  
+  num<-length(overlapstocks)
+  
+  if(num>0){
+    
+    RamMultiNatOverlap<-c(RamMultiNatOverlap,overlapstocks)
+  }
+}
+### Join FAO stocks that overlap with national and multinational RAM stocks
+
+natOverlap<-unique(newRam$FOverlapId) # unique FAO stocks that match ram country level assessments
+multiOverlap<-unique(RamMultiNatOverlap) # unique FAO stocks that match ram multinational level assessments
+
+RamOverlap<-unique(c(natOverlap,multiOverlap)) # all possible FAO stocks that overlap with RAM
 
 ### Identify the FAO stocks that match SOFIA stocks for Scientific name, Country, and FAO region
 
@@ -130,7 +215,7 @@ for (i in 1:nrow(RamStocks)){
 
 OverlapS<-unique(RamStocks$SOverlapId)
 
-return(list(RamOverlap=RamStocks,SofiaOverlap=newSofia,SofiaRamOverlap=OverlapS))
+return(list(RamOverlap=RamOverlap,SofiaOverlap=newSofia,SofiaRamOverlap=OverlapS))
 
 }
 # FaoOverlap<-subset(FaoStocks,Overlap==1)

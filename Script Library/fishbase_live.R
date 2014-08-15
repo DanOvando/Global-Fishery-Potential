@@ -8,15 +8,20 @@
 #
 #################################################################
 
+# Currently getting errors in growth and max length loops that appear to be R being weird. e.g., suddenly claiming the data
+# frame created within the function cannot be found. Maturity loop runs without error.
+
 # LhFishbase
 
 ## Load data frame with Fishbase codes found using GetFbIds.R
 
-ScNames <- read.csv(paste(ResultFolder,'FB_IDS.csv',sep=''))
+ScNames <- read.csv(paste(ResultFolder,'FB_IDS.csv',sep=''),stringsAsFactors=F)
+
+ScNames<-subset(ScNames,is.na(idFB)==F)
 
 ### VON BERT and TEMP - Loop to scrape the growth parameters 
-pb <- txtProgressBar(min = 0, max = 5, style = 3)
-for (i in 1:5 ) #length(spList))
+pb <- txtProgressBar(min = 0, max = nrow(ScNames), style = 3)
+for (i in 1:nrow(ScNames))
 {
   temp <-  fb_growth(idFB=ScNames$idFB[i], Genus= ScNames$Genus[i], Species = ScNames$Species[i])
   if (i == 1) 
@@ -24,6 +29,7 @@ for (i in 1:5 ) #length(spList))
   else {Growth <- rbind(Growth, temp)}
   
   setTxtProgressBar(pb, i)
+  print(i)
 }
 
 colnames(Growth)[6]<-"VonBertK" # change colname so R function will recognize variable
@@ -35,13 +41,14 @@ VBK<-aggregate(VonBertK~idFB+Genus+Species,data=Growth,mean) # find mean VBK
 Temp<-aggregate(Temp~idFB+Genus+Species,data=Growth,mean) # find mean Temp
 
 ### MATURITY -  loop to scrape the maturity parameters
-pb <- txtProgressBar(min = 0, max = 5, style = 3)
-for (i in 1:5) #length(spList))
+pb <- txtProgressBar(min = 0, max = nrow(ScNames), style = 3)
+for (i in 1:nrow(ScNames))
 {
   temp <-  fb_maturity(idFB=ScNames$idFB[i], Genus= ScNames$Genus[i], Species = ScNames$Species[i], server= 'http://www.fishbase.us/')
   if (i == 1) { Maturity <- temp }  else {Maturity <- rbind(Maturity, temp)}
   
   setTxtProgressBar(pb, i)
+  print(i)
 }
 
 Maturity$tm<-as.numeric(levels(Maturity$tm))[Maturity$tm] # convert from factor to numeric
@@ -49,18 +56,18 @@ Maturity$tm<-as.numeric(levels(Maturity$tm))[Maturity$tm] # convert from factor 
 AgeMat<-aggregate(tm~idFB+Genus+Species,data=Maturity,mean) # take mean of tm variable
 
 ### MAX LENGTH
-pb <- txtProgressBar(min = 0, max = 5, style = 3)
-for (i in 1:5) #length(spList))
+pb <- txtProgressBar(min = 0, max = nrow(ScNames), style = 3)
+for (i in 1:nrow(ScNames))
 {
   temp <-  fb_agesize(idFB=ScNames$idFB[i], Genus= ScNames$Genus[i], Species = ScNames$Species[i], server= 'http://www.fishbase.us/')
-  if (i == 1) { Agesize <- temp }  else {Agesize <- rbind(Agesize, temp)}
+  if (i == 1) { Age_Size <- temp }  else {Age_Size <- rbind(Age_Size, temp)}
   
   setTxtProgressBar(pb, i)
 }
 
-Agesize$Lmax<-as.numeric(levels(Agesize$Lmax))[Agesize$Lmax]
+Age_Size$Lmax<-as.numeric(levels(Age_Size$Lmax))[Age_Size$Lmax]
 
-MaxLength<-aggregate(Lmax~idFB+Genus+Species,data=Agesize,mean)
+MaxLength<-aggregate(Lmax~idFB+Genus+Species,data=Age_Size,mean)
 
 ### Generate Final Life History Data table
 
