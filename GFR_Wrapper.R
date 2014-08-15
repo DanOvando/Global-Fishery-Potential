@@ -344,6 +344,13 @@ CatchMSYresults<- RunCatchMSY(GlobalStatus$Data,ExcludeSmallPelagics,ErrorSize,s
 
 MsyData<- CatchMSYresults$Data
 
+pdf(file=paste(FigureFolder,'Catch MSY vs PRM BvBmsy predictions.pdf',sep=''))
+xyplot(  CatchMSYBvBmsy ~ BvBmsy | Dbase,data=MsyData,xlab='PRM BvBmsy',ylab='CMSY BvBmsy',panel=function(x,y,...){
+  panel.xyplot(x,y,...)
+  panel.abline(a=0,b=1,lty=2)
+})
+dev.off()
+
 MedianWorked<- median(MsyData$BvBmsy[is.na(MsyData$MSY)==F])
 
 MedianFailed<- median(MsyData$BvBmsy[is.na(MsyData$MSY)])
