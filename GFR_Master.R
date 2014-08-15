@@ -134,7 +134,7 @@ IdVar<- 'IdOrig' #Id variable to use in creating synthetic stocks
 
 ExcludeSmallPelagics<- 0
 
-ErrorSize<- 0.85 #The amount of error to serach over CatchMSY terms
+ErrorSize<- 0.5 #The amount of error to serach over CatchMSY terms
 
 Smooth<- 0 #Marks whether to smooth catch history
 
@@ -146,7 +146,7 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-n <- 200  ## number of iterations, e.g. 100000
+n <- 300  ## number of iterations, e.g. 100000
 
 SampleLength<- 100 # Number of subsampled bootstraps 
 
