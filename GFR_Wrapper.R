@@ -253,11 +253,11 @@ show('Regressions Applied')
 
 if (IncludeNEIs==1)
 {
-PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel,FaoNeiLevel,FaoMarineFishLevel) #Bind all data back together
+  PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel,FaoNeiLevel,FaoMarineFishLevel) #Bind all data back together
 }
 if (IncludeNEIs==0)
 {
-PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel) #Bind all data back together
+  PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel) #Bind all data back together
 }
 BiomassColumns<- grepl('BvBmsy',colnames(PredictedData)) | grepl('Prediction',colnames(PredictedData))
 
@@ -405,6 +405,19 @@ FullData$IdLevel[WhereSpeciesLevel]<- 'Species'
 
 Policies<- unique(ProjectionData$Policy)
 
+## This is where you need to calculate actual biomass for each fishery
+
+ProjectionData$Biomass<- (ProjectionData$BvBmsy* (2* ProjectionData$MSY/ProjectionData$r))
+
+if (OverFishedOnly==1)
+{
+  
+  CurrentlyOverfished<- ProjectionData$IdOrig[ProjectionData$Year==BaselineYear & ProjectionData$BvBmsy<1]
+  ProjectionData<- ProjectionData[ProjectionData$IdOrig %in% CurrentlyOverfished ,]
+  
+}
+
+
 for (c in 1:length(CountriesToRun))
 {
   
@@ -452,7 +465,7 @@ for (c in 1:length(CountriesToRun))
     Baseline<- ddply(subset(TempProjectionData,Year==BaselineYear & Policy=='Historic'),c('Year','Policy'),summarize,MedianBvBmsy=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),
                      TotalCatch=sum(Catch,na.rm=T),TotalProfits=sum(Profits,na.rm=T),
                      MedianCatch=median(Catch,na.rm=T),MedianProfits=median(Profits,na.rm=T),NumberOfStocks=length(unique(IdOrig))
-                     ,DiscProfits=sum(DiscProfits,na.rm=T))
+                     ,DiscProfits=sum(DiscProfits,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),MedianBiomass=median(Biomass,na.rm=T))
     
     BaselineMarker<- as.data.frame(matrix(NA,nrow=length(unique(TempProjectionData$Policy))-1,ncol=dim(Baseline)[2]))
     
@@ -464,7 +477,7 @@ for (c in 1:length(CountriesToRun))
     
     TimeTrend<- ddply(TempProjectionData,c('Year','Policy'),summarize,MedianBvBmsy=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),
                       TotalCatch=sum(Catch,na.rm=T),TotalProfits=sum(Profits,na.rm=T),MedianCatch=median(Catch,na.rm=T),MedianProfits=median(Profits,na.rm=T),
-                      NumberOfStocks=length(unique(IdOrig)),DiscProfits=sum(DiscProfits,na.rm=T))
+                      NumberOfStocks=length(unique(IdOrig)),DiscProfits=sum(DiscProfits,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),MedianBiomass=median(Biomass,na.rm=T))
     
     TimeTrend<- rbind(TimeTrend,BaselineMarker)
     
@@ -476,21 +489,23 @@ for (c in 1:length(CountriesToRun))
     
     TimeTrend$PercChangeTotalCatch<-100*(TimeTrend$TotalCatch/Baseline$TotalCatch-1)
     
+    TimeTrend$PercChangeTotalBiomass<-100*(TimeTrend$TotalBiomass/Baseline$TotalBiomass-1)
+    
     TimeTrend$PercChangeMedianProfits<-100*(TimeTrend$MedianProfits/Baseline$MedianProfits-1)
     
     TimeTrend$PercChangeMedianCatch<-100*(TimeTrend$MedianCatch/Baseline$MedianCatch-1)
     
     TimeTrend$PercChangeMedianBiomass<-100*(TimeTrend$MedianBvBmsy/Baseline$MedianBvBmsy-1)
-
-#     TimeTrend$PercChangeFromSQMedianBiomass<-100*(TimeTrend$MedianBvBmsy/TimeTrend$MedianBvBmsy[TimeTrend$Policy=='SQ']-1)
     
-    Cumulatives<- ddply(TimeTrend[TimeTrend$Year>BaselineYear,],c('Policy'),summarize,NPV=sum(DiscProfits,na.rm=T),Food=sum(TotalCatch,na.rm=T))
-        
-    CumeNumbers<- as.matrix(Cumulatives[,2:3])
+    #     TimeTrend$PercChangeFromSQMedianBiomass<-100*(TimeTrend$MedianBvBmsy/TimeTrend$MedianBvBmsy[TimeTrend$Policy=='SQ']-1)
+    
+    Cumulatives<- ddply(TimeTrend[TimeTrend$Year>BaselineYear,],c('Policy'),summarize,NPV=sum(DiscProfits,na.rm=T),Food=sum(TotalCatch,na.rm=T),Fish=sum(TotalBiomass,na.rm=T))
+    
+    CumeNumbers<- as.matrix(Cumulatives[,2:dim(Cumulatives)[2]])
     
     CumeNumbers<- 100*(t(t(CumeNumbers)/CumeNumbers[which(Cumulatives$Policy=='SQ'),])-1)
     
-    Cumulatives[,2:3]<- CumeNumbers
+    Cumulatives[,2:dim(Cumulatives)[2]]<- CumeNumbers
     
     Cumulatives<- Cumulatives[Cumulatives$Policy!='SQ' & Cumulatives$Policy!='Historic',]
     
@@ -503,11 +518,21 @@ for (c in 1:length(CountriesToRun))
     
     pdf(file=paste(FigureFolder,CountriesToRun[c],' Database Analysis.pdf',sep='')) 
     
-    AccountedForDatabaseTallies<- ddply(TempProjectionData[TempProjectionData$Year==BaselineYear,],c('Year','Dbase'),summarize,Catch=sum(Catch,na.rm=T),Fisheries=length(unique(IdOrig)))
-    
     AvailableDatabaseTallies<- ddply(FullData[FullData_CountryLocater & FullData$Year==BaselineYear,],c('Year','Dbase'),summarize,Catch=sum(Catch,na.rm=T),Fisheries=length(unique(IdOrig)))
     
-    UnaccountedForDatabaseTallies<-  as.data.frame(t(colSums(AvailableDatabaseTallies[,3:4] -AccountedForDatabaseTallies[,3:4])))
+    BlankTallies<- as.data.frame(matrix(0,nrow=length(AvailableDatabaseTallies$Dbase),ncol=4))
+    
+    colnames(BlankTallies)<- c('Year','Dbase','Catch','Fisheries')
+
+    BlankTallies$Year<- BaselineYear
+
+    BlankTallies$Dbase<- AvailableDatabaseTallies$Dbase
+    
+    AccountedForDatabaseTallies<- ddply(TempProjectionData[TempProjectionData$Year==BaselineYear,],c('Year','Dbase'),summarize,Catch=sum(Catch,na.rm=T),Fisheries=length(unique(IdOrig)))
+        
+    BlankTallies[BlankTallies$Dbase %in% AccountedForDatabaseTallies$Dbase,3:4]<- AccountedForDatabaseTallies[,3:4]
+    
+    UnaccountedForDatabaseTallies<-  as.data.frame(t(colSums(AvailableDatabaseTallies[,3:4] -BlankTallies[,3:4])))
     
     AccountedForDatabaseTallies$Used<- 'Analyzed'
     
@@ -522,7 +547,7 @@ for (c in 1:length(CountriesToRun))
     (pie(c(AccountedForDatabaseTallies$Catch,UnaccountedForDatabaseTallies$Catch),labels=c(AccountedForDatabaseTallies$Dbase,'Unknown')))
     
     AccountedForDatabaseTallies<- ddply(TempProjectionData[TempProjectionData$Year==BaselineYear,],c('Year','IdLevel'),summarize,Catch=sum(Catch,na.rm=T),Fisheries=length(unique(IdOrig)))
-    
+        
     AvailableDatabaseTallies<- ddply(FullData[FullData_CountryLocater & FullData$Year==BaselineYear,],c('Year','IdLevel'),summarize,Catch=sum(Catch,na.rm=T),Fisheries=length(unique(IdOrig)))
     
     AccountedForDatabaseTallies$Used<- 'Analyzed'
@@ -547,6 +572,11 @@ for (c in 1:length(CountriesToRun))
     
     write.csv(file=paste(ResultFolder,CountriesToRun[c],' Raw Projection Data.csv',sep=''),TempProjectionData)
     
+    write.csv(file=paste(ResultFolder,CountriesToRun[c],' From Current Year Data.csv',sep=''),FinalYear)
+    
+    write.csv(file=paste(ResultFolder,CountriesToRun[c],' From Business As Usual Data.csv',sep=''),Cumulatives)
+    
+    
     BaselineYear<- 2005
     
     pdf(file=paste(FigureFolder,CountriesToRun[c],' Trajectories.pdf',sep='')) 
@@ -555,21 +585,27 @@ for (c in 1:length(CountriesToRun))
     
     print(barchart(Food ~ Policy,data=Cumulatives,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change in Total Food from Business as Usual'))
     
+    print(barchart(Fish ~ Policy,data=Cumulatives,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change in Total Fish from Business as Usual'))
+    
     print( barchart(PercChangeTotalProfits ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Current Profits'))
     
     print(barchart(PercChangeTotalCatch ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Current Food'))
     
+    print(a<- barchart(PercChangeTotalBiomass ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Current Fish'))
+    
     print(barchart(PercChangeMedianBiomass ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Current Median Biomass'))
-
+    
     print(barchart(PercChangeFromSQMedianBiomass ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Median Biomass'))
     
-    print(xyplot( PercChangeTotalProfits ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,ylab='% Change in Total Profits',type='l',lwd=4,auto.key=T,aspect='fill'))
+    print(xyplot( PercChangeTotalProfits ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,ylab='% Change from Current Total Profits',type='l',lwd=4,auto.key=T,aspect='fill'))
     
-    print(xyplot( PercChangeTotalCatch ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=4,auto.key=T,aspect='fill',ylab='% Change in Total Catch'))
+    print(xyplot( PercChangeTotalCatch ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=4,auto.key=T,aspect='fill',ylab='% Change from Current Total Catch'))
+    
+    print(xyplot( PercChangeTotalBiomass ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=4,auto.key=T,aspect='fill',ylab='% Change from Current Total Biomass'))
     
     print(xyplot( PercChangeMedianProfits ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,ylab='% Change in Median Profits',type='l',lwd=4,auto.key=T,aspect='fill'))
     
-    print(xyplot( PercChangeMedianCatch ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=4,auto.key=T,aspect='fill',ylab='% Change in Median Catch'))
+    print(xyplot( PercChangeMedianCatch ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=4,auto.key=T,aspect='fill',ylab='% Change from Current Median Catch'))
     
     print(xyplot( MedianBvBmsy ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=4,auto.key=T,aspect='fill',ylab='Median B/Bmsy'))
     
