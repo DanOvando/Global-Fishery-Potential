@@ -13,7 +13,7 @@ require(RCurl)
 require(XML)
 # Basic Controls -------------------------------------------------------------
 
-BatchFolder<- 'Results/Scratch/'
+BatchFolder<- 'Results/Without NEIs/'
 
 InputFolder<- 'Data/'
 
@@ -39,6 +39,8 @@ dir.create(ResultFolder)
 # Analysis ----------------------------------------------------------------
 
 IncludeNEIs<- 1
+
+OverFishedOnly<- 0
 
 CountriesToRun<- c('Global','USA','China','Indonesia','Philippines','Peru','Chile','Mexico','Japan','Myanmar','Viet Nam','EU','Parties to the Nauru Agreement') 
 
