@@ -25,7 +25,7 @@ MaidService<- function(Data)
   
   Overlap<- RemoveOverlap(Data)
   
-  FisheriesToOmit<- unique(c(FisheriesToOmit,Overlap$RamOverlap$FOverlapId[is.na(Overlap$RamOverlap$FOverlapId)==F],Overlap$SofiaOverlap$OverlapId[is.na(Overlap$SofiaOverlap$OverlapId)==F]))
+  FisheriesToOmit<- unique(c(FisheriesToOmit,Overlap$RamOverlap,Overlap$SofiaOverlap$OverlapId[is.na(Overlap$SofiaOverlap$OverlapId)==F]))
   
   StockStats$NotAllowedIn<- (StockStats[,IdVar] %in% FisheriesToOmit)
   
