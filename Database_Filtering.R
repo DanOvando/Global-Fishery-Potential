@@ -20,6 +20,8 @@ fao<-subset(Data,Dbase=="FAO")
 # for "multinational" ram stocks, make duplicate stock for each possible fao region in the area (Pacific, Atlantic, etc)
 # identify overlap using just species/region
 
+Spec_Region_RAM=read.csv("Data/RAM_Regions_72814.csv") # list of RAM Assessed IDs previously matched to species code and FAO Region
+
 ramstocks<-Spec_Region_RAM[,c(2,5,9,13,15)] # subset ram to select only info relevant for filtering
 ramstocks$RegionFAO<- gsub("/",",",ramstocks$RegionFAO,fixed=T) # change / to , for use in string parsing later in script
 ramstocks$Country<- gsub("multinational","Multinational",ramstocks$Country)
@@ -33,9 +35,10 @@ regionname<-c( "Atlantic Ocean",                    "Central Western Pacific Oce
 
 regs<-c("21,27,31,34,41,47,48","71","27,34,47","67,77,87","61,67","21,27","61,67,71,77,81,87,88","41,47","81,87","61,67,71,77","21,31,41","61,71,81")
 
+multiFAOdf<-data.frame(regionname,regs,stringsAsFactors=F)
+
 # run for loop to identify multinational stocks with NAs and fill fao regions based on multiFAOdf
 
-multiNAs<-ramstocks$Country=="Multinational" & is.na(ramstocks$RegionFAO)
 
 for (i in 1:length(ramstocks$assessid)){
   
