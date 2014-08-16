@@ -23,7 +23,7 @@ load("Data/DBdata.RData") # Load R data pack
 # build dataset using "timeseries.views.data as base dataset
 
 ColNames = c("Id","IdOrig","Dbase", "Year","Catch","CatchUnit", "Fmort","FmortUnit","FmortMetric", "SciName","CommName",
-             "Country","RegionFAO","SpeciesCat","SpeciesCatName","Bmsy","SSBmsy","Umsy","Fmsy","Biomass","BiomassMetric",
+             "Country","RegionFAO","SpeciesCat","SpeciesCatName","MSY", "Bmsy","SSBmsy","Umsy","Fmsy","Biomass","BiomassMetric",
              "BiomassUnit","ExploitStatus", "VonBertK","VonBertKUnit","VonBertKSource","Temp","TempUnit",
              "TempSource","MaxLength","MaxLengthUnit", "MaxLengthSource","AgeMat","AgeMatUnit","AgeMatSource",'ReferenceBiomass','ReferenceBiomassUnits',"BvBmsy")
 
@@ -69,6 +69,7 @@ bioparams.views.data$SSBmsy<-as.numeric(levels(bioparams.views.data$SSBmsy))[bio
 bioparams.views.data$Fmsy<-as.numeric(levels(bioparams.views.data$Fmsy))[bioparams.views.data$Fmsy]
 bioparams.views.data$Umsytouse<-as.numeric(levels(bioparams.views.data$Umsytouse))[bioparams.views.data$Umsytouse]
 bioparams.views.data$Bmsy<-as.numeric(levels(bioparams.views.data$Bmsy))[bioparams.views.data$Bmsy]
+bioparams.views.data$MSY<-as.numeric(levels(bioparams.views.data$MSY))[bioparams.views.data$MSY]
 
 # subset out unneeded variables and convert to data frame
 
@@ -118,6 +119,7 @@ RAM$SciName=character(length=nrow(RAM))
 RAM$SpeciesCat=as.numeric(rep("",nrow(RAM)))
 RAM$CatchUnit=rep("MT",nrow(RAM))
 RAM$Country<-NA
+RAM$MSY<-NA
 
 ####### Life History ####### 
 # run for loop to match life history paRAMeters by assessid/IdOrig to bioparams .csv
@@ -223,6 +225,7 @@ for (i in 1:length(RAMNames))
   RAM$Umsy[Whereref]<-bioparams.views.data[lh_match,14] #Umsy - taken from Umsytouse
   RAM$Fmsy[Whereref]<-bioparams.views.data[lh_match,8] #Fmsy
   RAM$SSBmsy[Whereref]<-bioparams.views.data[lh_match,5] #SSBmsy
+  RAM$MSY[Whereref]<-bioparams.views.data[lh_match,7] # MSY
   # filling Bmsy with Bmsytouse, which was renamed to ReferenceBiomass. Will be duplicated in ReferenceBiomass column
 }
 
@@ -391,6 +394,7 @@ SOFIA$MaxLengthUnit=character(length=nrow(SOFIA))
 SOFIA$ReferenceBiomass<- NA
 SOFIA$ReferenceBiomassUnits<- NA
 SOFIA$BvBmsy<-NA
+SOFIA$MSY<-NA
 
 # Populate BvBmsy by converting Exploit Status values into numbers, taking the mean of the range of U, F, and O
 underexploit<-SOFIA$ExploitStatus=="U"
@@ -473,6 +477,7 @@ FAO$MaxLengthUnit=character(length=nrow(FAO))
 FAO$ReferenceBiomass<- NA
 FAO$ReferenceBiomassUnits<- NA
 FAO$BvBmsy<-NA
+FAO$MSY<-NA
 
 # create IdOrig for FAO entries. Use same syntax as for SOFIA = 
 FAOID=seq(from=1, to=nrow(FAO))
@@ -489,8 +494,23 @@ fao=fao[,c(ColNames)]
 fao=fao[order(fao$IdOrig,fao$Year),] # *** currently ordering based only on the first digit of the IdOrig
 
 ############################################################################################################
-############ BIND COMPLETE DATABASE ############
+############ BIND AND CLEAN-UP COMPLETE DATABASE ############
 
-# RAM and fao
+# bind
 fulldata=rbind(RAM,fao,sofia)
+
+# clean up names/values for Country, SpeciesCatName, SciName, etc.
+
+# SpeciesCatName
+fulldata$SpeciesCatName<- gsub("^\\s+|\\s+$","",fulldata$SpeciesCatName) # trim leading and trailing space
+fulldata$SpeciesCatName<-gsub("  "," ",fulldata$SpeciesCatName) # change double spaces to single spaces
+fulldata$SpeciesCatName[fulldata$SpeciesCatName=="Miscellaneous costal fishes"]<-"Miscellaneous coastal fishes"
+fulldata$SpeciesCatName[fulldata$SpeciesCatName=="Micellaneous pelagic fishes"]<-"Miscellaneous pelagic fishes"
+fulldata$SpeciesCatName[fulldata$SpeciesCatName=="Flounders halibuts and soles"]<-"Flounders, halibuts, soles"
+
+# convert VonBertK data points recorded in mm/T to cm/T
+WhereVbkMM<-fulldata$VonBertKUnit=="VB-k-mm/T"
+fulldata$VonBertK[WhereVbkMM]<-fulldata$VonBertK[WhereVbkMM]/10
+
+# write .csv file
 write.csv(file=paste(ResultFolder,"fulldata.csv",sep=""),fulldata)
