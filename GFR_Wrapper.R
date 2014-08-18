@@ -68,9 +68,9 @@ FaoData<- FullData[FullData$Dbase=='FAO',]
 FaoData<- LumpFisheries(FaoData,SpeciesCategoriesToLump)
 
 # 
-# FaoIdSample<- sample(unique(FaoData[,IdVar]),500,replace=FALSE)
-# # # # 
-# FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
+FaoIdSample<- sample(unique(FaoData[,IdVar]),500,replace=FALSE)
+# # # 
+FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
 
 show('Raw Data Processed')
 
@@ -360,6 +360,8 @@ CurrentCatch<- sum(MsyData$Catch[MsyData$Year==2010 & is.na(MsyData$MSY)==F],na.
 CurrentCatch2<- sum(MsyData$Catch[MsyData$Year==2010],na.rm=T)
 
 MsyData<- MsyData[is.na(MsyData$MSY)==F,]
+
+MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T)
 
 MsyData$PercentGain<- 100*(MsyData$MSY/MsyData$Catch-1)
 

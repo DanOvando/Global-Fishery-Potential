@@ -13,7 +13,7 @@ require(RCurl)
 require(XML)
 # Basic Controls -------------------------------------------------------------
 
-BatchFolder<- 'Results/Without NEIs/'
+BatchFolder<- 'Results/Scratch/'
 
 InputFolder<- 'Data/'
 
@@ -38,7 +38,7 @@ dir.create(ResultFolder)
 
 # Analysis ----------------------------------------------------------------
 
-IncludeNEIs<- 1
+IncludeNEIs<- 0
 
 OverFishedOnly<- 0
 

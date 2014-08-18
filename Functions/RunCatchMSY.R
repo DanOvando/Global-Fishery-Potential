@@ -82,10 +82,12 @@ RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,B
   })
 }
 
-
-
 #     Data<- USAStatus$Data
-#      Data<- GlobalStatus$Data
+# Data<- GlobalStatus$Data
+
+Data$HasRamMSY<- is.na(Data$MSY)==F
+
+
 #   
 # ExcludeSmallPelagics<- 1
 # 
@@ -128,7 +130,7 @@ if (ExcludeSmallPelagics==1)
 # 
 # Data$Cos_MSY<- 1.78*10^(-.8644+1.0976*log10(Data$MaxCatch)) #Calculate Costello JEM MSY
 
-stock_id <- unique((Data[,IdVar])) 
+stock_id <- unique((Data[,IdVar][Data$HasRamMSY==F])) 
 ## stock_id <- "cod-2224" ## for selecting individual stocks
 
 TotalResults<- NULL
@@ -474,6 +476,9 @@ CountryMsy<- ddply(Data[is.na(Data$MSY)==F,],c('Country','Year'),summarize,Curre
 PercGainOrder<- order(CountryMsy$PercGain,decreasing=T)
 
 CountryMsy<- CountryMsy[PercGainOrder,]
+
+Data$r[is.na(MsyData$r)]<- mean(Data$r,na.rm=T)
+
 
 return(list(Data=Data,CountryMsy=CountryMsy,rMatrix=rMatrix,kMatrix=kMatrix,msyMatrix=msyMatrix,fMatrix=fMatrix,MoreResults=SampleResults)) 
 } #Close function
