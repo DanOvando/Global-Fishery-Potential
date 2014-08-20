@@ -6,7 +6,7 @@
 MaidService<- function(Data)
 {
   #For Commiting
-#     Data<- FullData
+    Data<- FullData
   
   Data$SpeciesCatName[Data$SpeciesCatName=='']<- NA
   
@@ -25,12 +25,21 @@ MaidService<- function(Data)
   
   Overlap<- RemoveOverlap(Data)
   
-  FisheriesToOmit<- unique(c(FisheriesToOmit,Overlap$RamOverlap,Overlap$SofiaOverlap$OverlapId[is.na(Overlap$SofiaOverlap$OverlapId)==F]))
+  OverlapToRemove<- c('Ram','Sofia','SofiaRam')
+  
+#     
+#   Omits<- NULL
+#   for (o in 1:length(OverlapToRemove))
+#   {
+#     
+#     Omits<- cbind(Omits,eval(parse(text=paste('Overlap$',OverlapToRemove[o],'Overlap',sep=''))))
+#     
+#   }
+#   
+#   FisheriesToOmit<- unique(c(FisheriesToOmit,Overlap$RamOverlap,Overlap$SofiaOverlap$OverlapId[is.na(Overlap$SofiaOverlap$OverlapId)==F]))
   
   StockStats$NotAllowedIn<- (StockStats[,IdVar] %in% FisheriesToOmit)
-  
-  StockStats[StockStats$NotAllowedIn==T,]
-  
+    
   StockStats$DropFishery<- 0
   
   ## Mark fisheries that need to be dropped 

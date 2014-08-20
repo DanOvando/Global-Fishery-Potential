@@ -477,7 +477,7 @@ PercGainOrder<- order(CountryMsy$PercGain,decreasing=T)
 
 CountryMsy<- CountryMsy[PercGainOrder,]
 
-Data$r[is.na(MsyData$r)]<- mean(Data$r,na.rm=T)
+Data$r[is.na(Data$r)]<- mean(Data$r,na.rm=T)
 
 
 return(list(Data=Data,CountryMsy=CountryMsy,rMatrix=rMatrix,kMatrix=kMatrix,msyMatrix=msyMatrix,fMatrix=fMatrix,MoreResults=SampleResults)) 
