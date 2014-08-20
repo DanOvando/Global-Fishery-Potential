@@ -10,6 +10,9 @@ sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
 
 # Read in and process data ------------------------------------------------------------
 
+if (RunAnalyses==TRUE)
+{
+
 if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))==F)
 {
   
@@ -68,9 +71,9 @@ FaoData<- FullData[FullData$Dbase=='FAO',]
 FaoData<- LumpFisheries(FaoData,SpeciesCategoriesToLump)
 
 # 
-FaoIdSample<- sample(unique(FaoData[,IdVar]),500,replace=FALSE)
-# # # 
-FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
+# FaoIdSample<- sample(unique(FaoData[,IdVar]),500,replace=FALSE)
+# # # # 
+# FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
 
 show('Raw Data Processed')
 
@@ -394,6 +397,9 @@ MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T)
 
 ProjectionData<- RunProjection(MsyData,BaselineYear)
 
+} #Close RunAnalyses If
+
+
 ProjectionData$Country[ProjectionData$Country=='United States of America']<- 'USA'
 
 BiomassData$Country[BiomassData$Country=='United States of America']<- 'USA'
@@ -417,6 +423,7 @@ Policies<- unique(ProjectionData$Policy)
 ## This is where you need to calculate actual biomass for each fishery
 
 ProjectionData$Biomass<- (ProjectionData$BvBmsy* (2* ProjectionData$MSY/ProjectionData$r))
+
 
 if (OverFishedOnly==1)
 {

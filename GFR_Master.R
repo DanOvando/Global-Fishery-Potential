@@ -13,7 +13,9 @@ require(RCurl)
 require(XML)
 # Basic Controls -------------------------------------------------------------
 
-BatchFolder<- 'Results/Scratch/'
+RunAnalyses<- TRUE
+
+BatchFolder<- 'Results/Complete Run August 20/'
 
 InputFolder<- 'Data/'
 
@@ -27,6 +29,11 @@ dir.create(FigureFolder)
 
 dir.create(ResultFolder)
 
+if (RunAnalyses==FALSE)
+{
+  load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
+}
+
 #Output storage
 
 #Sections to run/or try and call
@@ -38,7 +45,7 @@ dir.create(ResultFolder)
 
 # Analysis ----------------------------------------------------------------
 
-IncludeNEIs<- 0
+IncludeNEIs<- 1
 
 OverFishedOnly<- 0
 
