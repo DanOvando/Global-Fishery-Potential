@@ -15,7 +15,7 @@ require(XML)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'Results/Complete Run August 20/'
+BatchFolder<- 'Results/Aug 20 2014 No Nei Overfished Only Yes Forage Fish/'
 
 InputFolder<- 'Data/'
 
@@ -45,9 +45,9 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-IncludeNEIs<- 1
+IncludeNEIs<- 0
 
-OverFishedOnly<- 0
+OverFishedOnly<- 1
 
 CountriesToRun<- c('Global','USA','China','Indonesia','Philippines','Peru','Chile','Mexico','Japan','Myanmar','Viet Nam','EU','Parties to the Nauru Agreement') 
 
