@@ -30,7 +30,6 @@ if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))==F)
   
   FullData<- CleanedData$CleanedData
   
-  
   FullData<- FindFishbase(FullData)
   
   rm(CleanedData)
@@ -433,6 +432,30 @@ if (OverFishedOnly==1)
   
 }
 
+if (IncludeNEIs==0)
+{
+  ProjectionData<- ProjectionData[ProjectionData$IdLevel=='Species',]
+}
+
+
+ProjectionData$Profits[ProjectionData$Profits<0]<- 0
+
+# FullData$SciName<- as.character(FullData$SciName)
+# 
+# FullData$RegionFAO<- as.character(levels(FullData$RegionFAO))[FullData$RegionFAO]
+
+
+#  Overlap<- RemoveOverlap(FullData)
+# # 
+# #  FisheriesToOmit<- unique(c(Overlap$RamOverlap,Overlap$SofiaOverlap$OverlapId[is.na(Overlap$SofiaOverlap$OverlapId)==F]))
+# # 
+# FisheriesToOmit<- I(Overlap$AllOverlap)
+# 
+#  ProjectionData$RemoveDueToOverlap<- (ProjectionData[,IdVar] %in% FisheriesToOmit)
+#  
+#  ProjectionData<- ProjectionData[ProjectionData$RemoveDueToOverlap==F,]
+# 
+# BiomassData<- BiomassData[BiomassData$IdOrig %in% FisheriesToOmit==F,]
 
 for (c in 1:length(CountriesToRun))
 {
@@ -472,7 +495,7 @@ for (c in 1:length(CountriesToRun))
     
     # Analyze Time Trends  ----------------------------------------------------------
     
-    BiomassStatus<- AnalyzeFisheries(BiomassData[Biomass_CountryLocater,],paste(CountriesToRun[c],' Status',sep=''),'Year',2000:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+    BiomassStatus<- AnalyzeFisheries(BiomassData[Biomass_CountryLocater,],paste(CountriesToRun[c],' Status',sep=''),'Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
     
     TempProjectionData<- ProjectionData[Proj_CountryLocater,]
     
@@ -528,6 +551,10 @@ for (c in 1:length(CountriesToRun))
     FinalYear<- TimeTrend[TimeTrend$Year==max(TimeTrend$Year),]  
     
     FinalYear$PercChangeFromSQMedianBiomass<- 100*(FinalYear$MedianBvBmsy/FinalYear$MedianBvBmsy[FinalYear$Policy=='SQ']-1)
+
+    FinalYear$PercChangeFromSQMedianProfits<- 100*(FinalYear$MedianProfits/FinalYear$MedianProfits[FinalYear$Policy=='SQ']-1)
+
+    FinalYear$PercChangeFromSQMedianCatch<- 100*(FinalYear$MedianCatch/FinalYear$MedianCatch[FinalYear$Policy=='SQ']-1)
     
     
     # Analyze Database Composition --------------------------------------------
@@ -611,7 +638,16 @@ for (c in 1:length(CountriesToRun))
     
     print(barchart(PercChangeMedianBiomass ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Current Median Biomass'))
     
+    print(barchart(PercChangeMedianProfits ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Current Median Profits'))
+
+    print(barchart(PercChangeMedianCatch ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Current Median Catch'))
+    
     print(barchart(PercChangeFromSQMedianBiomass ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Median Biomass'))
+
+    print(barchart(PercChangeFromSQMedianProfits ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Median Profits'))
+
+    print(barchart(PercChangeFromSQMedianCatch ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Median Catch'))
+    
     
     print(xyplot( PercChangeTotalProfits ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,ylab='% Change from Current Total Profits',type='l',lwd=4,auto.key=T,aspect='fill'))
     
