@@ -11,8 +11,8 @@ RemoveOverlap<- function(Data,stringsAsFactors=F)
 # read in compiled dataset
 # Data<-read.csv(paste(ResultFolder,'fulldata.csv',sep=''),stringsAsFactors=F)
 
-# Data<- FullData
-Data$Country<- as.character(Data$Country)
+#    Data<- FullData
+Data$Country<- as.character(levels(Data$Country))[Data$Country]
 
 # subset out the three datasets
 ram<-subset(Data,Dbase=="RAM")
@@ -171,19 +171,23 @@ RamMultiNatOverlap<-NA
 for (i in 1:nrow(multinational)){
   
   duplicate<-multinational$SciName[i]==FaoStocks$SciName & multinational$RegionFAO[i]==FaoStocks$RegionFAO
-  overlapstocks<-FaoStocks$IdOrig[duplicate]
+  overlapstocks<- (FaoStocks$IdOrig[duplicate])
   
   num<-length(overlapstocks)
   
   if(num>0){
     
-    RamMultiNatOverlap<-c(RamMultiNatOverlap,overlapstocks)
+    RamMultiNatOverlap<- (c(RamMultiNatOverlap,as.character(overlapstocks)))
   }
 }
 ### Join FAO stocks that overlap with national and multinational RAM stocks
 
-natOverlap<-unique(newRam$FOverlapId) # unique FAO stocks that match ram country level assessments
-multiOverlap<-unique(RamMultiNatOverlap) # unique FAO stocks that match ram multinational level assessments
+# natOverlap<-unique(newRam$FOverlapId) # unique FAO stocks that match ram country level assessments
+natOverlap<-unique(RamStocks$FOverlapId,na.rm=T) # unique FAO stocks that match ram country level assessments
+
+
+
+multiOverlap<-unique(RamMultiNatOverlap,na.rm=T) # unique FAO stocks that match ram multinational level assessments
 
 RamOverlap<-unique(c(natOverlap,multiOverlap)) # all possible FAO stocks that overlap with RAM
 
@@ -215,7 +219,11 @@ for (i in 1:nrow(RamStocks)){
 
 OverlapS<-unique(RamStocks$SOverlapId)
 
-return(list(RamOverlap=RamOverlap,SofiaOverlap=newSofia,SofiaRamOverlap=OverlapS))
+newSofia$OverlapId[is.na(newSofia$OverlapId)==F]
+
+AllOverlap<- c(RamOverlap,newSofia$OverlapId[is.na(newSofia$OverlapId)==F],OverlapS)
+
+return(list(AllOverlap=AllOverlap,RamOverlap=RamOverlap,SofiaOverlap=newSofia,SofiaRamOverlap=OverlapS))
 
 }
 # FaoOverlap<-subset(FaoStocks,Overlap==1)
