@@ -11,8 +11,8 @@ RemoveOverlap<- function(Data,stringsAsFactors=F)
 # read in compiled dataset
 # Data<-read.csv(paste(ResultFolder,'fulldata.csv',sep=''),stringsAsFactors=F)
 
-#    Data<- FullData
-Data$Country<- as.character(levels(Data$Country))[Data$Country]
+#     Data<- FullData
+# Data$Country<- as.character(levels(Data$Country))[Data$Country]
 
 # subset out the three datasets
 ram<-subset(Data,Dbase=="RAM")
