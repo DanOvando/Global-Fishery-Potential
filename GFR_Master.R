@@ -11,11 +11,13 @@ require(rfishbase)
 require(stringr)
 require(RCurl)
 require(XML)
+require(MASS)
+require(prettyR)
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- TRUE
+RunAnalyses<- FALSE
 
-BatchFolder<- 'Results/Aug 20 2014 No Nei Overfished Only Yes Forage Fish/'
+BatchFolder<- 'Results/August 26 Sofia Trumps Without Forage Fish/'
 
 InputFolder<- 'Data/'
 
@@ -32,22 +34,28 @@ dir.create(ResultFolder)
 if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
+ 
+  BatchFolder<- 'Results/August 26 Sofia Trumps Without Forage Fish/'
+  
+  InputFolder<- 'Data/'
+  
+  FigureFolder<- paste(BatchFolder,'Figures/',sep='')
+  
+  ResultFolder<- paste(BatchFolder,'Data/',sep='')
+  
 }
 
-#Output storage
-
-#Sections to run/or try and call
-
-#Iterations
-
-#Storage
-
+RunAnalyses<- FALSE
 
 # Analysis ----------------------------------------------------------------
 
 IncludeNEIs<- 0
 
+ExcludeSmallPelagics<- 1
+
 OverFishedOnly<- 1
+
+OverlapMode<- 'SofiaTrumps'
 
 CountriesToRun<- c('Global','USA','China','Indonesia','Philippines','Peru','Chile','Mexico','Japan','Myanmar','Viet Nam','EU','Parties to the Nauru Agreement') 
 
@@ -93,7 +101,8 @@ SpeciesCategoriesToOmit<- c('Corals','Frogs and other amphibians','Eared seals, 
                             'Turtles','Pearls, mother-of-pearl, shells','Crocodiles and alligators','Miscellaneous aquatic plants'
                             ,'Freshwater crustaceans','Sperm-whales, pilot-whales','Green seaweeds','Red seaweeds',
                             'Brown seaweeds','Sea-squirts and other tunicates','Blue-whales, fin-whales',
-                            'Miscellaneous aquatic mammals','Sponges','Krill, planktonic crustaceans')
+                            'Miscellaneous aquatic mammals','Sponges','Krill, planktonic crustaceans','Miscellaneous freshwater fishes',
+                            'River eels','Freshwater molluscs')
 
 SpeciesCategoriesToLump<- c('Miscellaneous pelagic fishes','Tunas, bonitos, billfishes','Cods, hakes, haddocks','Marine fishes not identified')
 
@@ -119,8 +128,8 @@ IdVar<- 'IdOrig' #Id variable to use in regressions
 CatchVariables<- c('YearsBack','ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'MaxCatch','TimeToMaxCatch','InitialScaledCatchSlope'
                    ,'MeanScaledCatch','CatchToRollingMax')
 
-Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCatName'),M2=c(DependentName,CatchVariables,'MaxLength','AgeMat','VonBertK','SpeciesCatName'),
-                   M3=c(DependentName,CatchVariables,'MaxLength','VonBertK','SpeciesCatName'),M4=c(DependentName,CatchVariables,'VonBertK','SpeciesCatName'),M6=c(DependentName,CatchVariables,'SpeciesCatName'),M7=c(DependentName,CatchVariables))  
+Regressions<- list(M1=c(DependentName,'Year',CatchVariables,LifeHistoryVars,'SpeciesCatName'),M2=c(DependentName,'Year',CatchVariables,'MaxLength','AgeMat','VonBertK','SpeciesCatName'),
+                   M3=c(DependentName,'Year',CatchVariables,'MaxLength','VonBertK','SpeciesCatName'),M4=c(DependentName,'Year',CatchVariables,'VonBertK','SpeciesCatName'),M6=c(DependentName,'Year',CatchVariables,'SpeciesCatName'),M7=c(DependentName,CatchVariables))  
 
 TransbiasBin<- 0.9
 
@@ -139,7 +148,6 @@ IdVar<- 'IdOrig' #Id variable to use in creating synthetic stocks
 
 # Catch-MSY ---------------------------------------------------------------
 
-ExcludeSmallPelagics<- 0
 
 ErrorSize<- 0.5 #The amount of error to serach over CatchMSY terms
 
@@ -172,17 +180,6 @@ Discount<- 0.05
 bvec<- seq(0,2,length.out=30)
 
 tol<- 1e-1
-
-#Time frame
-
-#Discount Rates
-
-#Fishing Rates
-
-# Filters -----------------------------------------------------------------
-
-# Fisheries to include/not include etc. 
-
 
 # Figures -----------------------------------------------------------------
 
