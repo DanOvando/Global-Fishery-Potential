@@ -3,9 +3,10 @@
 # This code identifys and removes overlap between RAM, SOFIA, and FAO stocks in the Global Fisheries Recovery Database
 ######################################
 
-RemoveOverlap<- function(Data,stringsAsFactors=F)
+RemoveOverlap<- function(Data,OverlapMode,stringsAsFactors=F)
 {
 
+#   Data<- RawData
 # FilterOverlap<-function(Data, stringsAsFactors=F){
 
 # read in compiled dataset
@@ -221,7 +222,15 @@ OverlapS<-unique(RamStocks$SOverlapId)
 
 newSofia$OverlapId[is.na(newSofia$OverlapId)==F]
 
+if (OverlapMode=='SofiaTrumps')
+{
 AllOverlap<- c(RamOverlap,newSofia$OverlapId[is.na(newSofia$OverlapId)==F],OverlapS)
+}
+
+if (OverlapMode=='FaoTrumps')
+{
+  AllOverlap<- c(RamOverlap,newSofia$IdOrig[is.na(newSofia$OverlapId)==F],OverlapS)
+}
 
 return(list(AllOverlap=AllOverlap,RamOverlap=RamOverlap,SofiaOverlap=newSofia,SofiaRamOverlap=OverlapS))
 
