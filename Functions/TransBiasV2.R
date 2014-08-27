@@ -16,7 +16,7 @@ TransBias<- function(Data,SdevBins,BinBreak,J)
 #   
 #   J<- 100
   
-  core<- Data[,c('IdOrig','BestBio','BestModel','Year')]
+  core<- Data[,c('IdOrig','BvBmsy','BestModel','Year')]
   
   colnames(core)<- c('id','bvb','mod','years')
   
