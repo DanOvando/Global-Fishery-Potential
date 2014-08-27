@@ -3,7 +3,7 @@
 # This code performs a number of cleaning and processing steps on the database 
 ######################################
 
-MaidService<- function(Data)
+MaidService<- function(Data,OverlapMode)
 {
   #For Commiting
 #     Data<- FullData
@@ -23,7 +23,7 @@ MaidService<- function(Data)
   
   StockStats$WrongSpeciesCategory<- (StockStats$SpeciesCatName %in% SpeciesCategoriesToOmit)
   
-  Overlap<- RemoveOverlap(Data)
+  Overlap<- RemoveOverlap(Data,OverlapMode)
   
   OverlapToRemove<- c('Ram','Sofia','SofiaRam')
   
