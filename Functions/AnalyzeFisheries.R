@@ -67,13 +67,13 @@ SummaryStats$SpeciesCats<- ddply(Data,.(Year,SpeciesCatName),summarize,Count=len
   
 BioStats<- list()
 
-TempBio<- exp(Data$BestBio)
+TempBio<- exp(Data$BvBmsy)
 
 TempBioSd<- NA*TempBio
 
 for (x in 1)
 {
-if (any(Data$Dbase=='FAO' & is.na(Data$BestBio)==F))
+if (any(Data$Dbase=='FAO' & is.na(Data$BvBmsy)==F))
 {  
   
   IdLevels<- unique(Data$IdLevel[Data$BestModel!='RAM'])
@@ -109,7 +109,7 @@ if (any(Data$Dbase=='FAO' & is.na(Data$BestBio)==F))
   
   colnames(FaoIndividualStocks)<- c('Year','Id',paste('It',1:J,sep=''))
   
-  RamAndSofia<- data.frame(Data$Year[NotFao],Data$IdOrig[NotFao],as.data.frame(matrix(rep(Data$BestBio[NotFao],J),nrow=sum(NotFao),ncol=J,byrow=F)))
+  RamAndSofia<- data.frame(Data$Year[NotFao],Data$IdOrig[NotFao],as.data.frame(matrix(rep(Data$BvBmsy[NotFao],J),nrow=sum(NotFao),ncol=J,byrow=F)))
   
   colnames(RamAndSofia)<- c('Year','Id',paste('It',1:J,sep=''))
   
@@ -150,8 +150,8 @@ legend('topright',legend='95% Confidence Range of Median',fill='lightsteelblue2'
 else
 {
   
-  BioStats$Median<- ddply(Data,.(Year),summarize,Median=median(exp(BestBio)),Q2.5=quantile(exp(BestBio),c(0.025)),Q25=quantile(exp(BestBio),c(0.25)),
-                     Q75=quantile(exp(BestBio),c(0.75)),Q97.5=quantile(exp(BestBio),c(0.975)))
+  BioStats$Median<- ddply(Data,.(Year),summarize,Median=median(exp(BvBmsy)),Q2.5=quantile(exp(BvBmsy),c(0.025)),Q25=quantile(exp(BvBmsy),c(0.25)),
+                     Q75=quantile(exp(BvBmsy),c(0.75)),Q97.5=quantile(exp(BvBmsy),c(0.975)))
   
   
   plot(BioStats$Median$Year,BioStats$Median$Median,type='b',lwd=2,xlab='Year',ylab='B/Bmsy',pty='m',ylim=c(0,3))
@@ -161,7 +161,7 @@ else
   abline(h=1)
   legend('topright',legend='Interquantile Range',fill='lightsteelblue2')
   
- Individuals<- Data$BestBio
+ Individuals<- Data$BvBmsy
   
 }
 }
