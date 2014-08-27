@@ -452,11 +452,10 @@ if (IncludeNEIs==0)
 
 if (ExcludeSmallPelagics==1)
 {
-  ProjectionData<- ProjectionData[ProjectionData$SpeciesCatName!='Herrings, sardines, anchovies',]
+  ProjectionData<- ProjectionData[ProjectionData$SpeciesCatName%in%ForageFish==F,]
 
-  BiomassData<- BiomassData[BiomassData$SpeciesCatName!='Herrings, sardines, anchovies',]  
+  BiomassData<- BiomassData[BiomassData$SpeciesCatName%in%ForageFish==F,]
 }
-
 
 ProjectionData$Profits[ProjectionData$Profits<0]<- 0
 
