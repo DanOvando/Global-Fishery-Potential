@@ -7,7 +7,7 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
   
   # Create Regression Data Frame --------------------------------------------
   
-#         Data<- SofiaData
+#       Data<-RamData
   
   LifeHistoryVars<- sort(LifeHistoryVars)
   
