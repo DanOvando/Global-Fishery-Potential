@@ -25,7 +25,7 @@ load("Data/DBdata.RData") # Load R data pack
 ColNames = c("Id","IdOrig","Dbase", "Year","Catch","CatchUnit", "Fmort","FmortUnit","FmortMetric", "SciName","CommName",
              "Country","RegionFAO","SpeciesCat","SpeciesCatName","MSY", "Bmsy","SSBmsy","Umsy","Fmsy","Biomass","BiomassMetric",
              "BiomassUnit","ExploitStatus", "VonBertK","VonBertKUnit","VonBertKSource","Temp","TempUnit",
-             "TempSource","MaxLength","MaxLengthUnit", "MaxLengthSource","AgeMat","AgeMatUnit","AgeMatSource",'ReferenceBiomass','ReferenceBiomassUnits',"BvBmsy")
+             "TempSource","MaxLength","MaxLengthUnit", "MaxLengthSource","AgeMat","AgeMatUnit","AgeMatSource",'ReferenceBiomass','ReferenceBiomassUnits',"BvBmsy",'UvUmsytouse')
 
 ####### Data Formatting and Subsetting ####### 
 
@@ -74,6 +74,7 @@ bioparams.views.data$MSY<-as.numeric(levels(bioparams.views.data$MSY))[bioparams
 # subset out unneeded variables and convert to data frame
 
 RAM<-as.data.frame(timeseries.views.data)
+UvUmsytouse<- pmax(0,as.numeric(levels(RAM$UvUmsytouse))[RAM$UvUmsytouse])
 
 RAM<-(subset(RAM, select=c("IdOrig","CommName","Year","Fmort","BvBmsy","Biomass","Catch")))
 
@@ -120,6 +121,8 @@ RAM$SpeciesCat=as.numeric(rep("",nrow(RAM)))
 RAM$CatchUnit=rep("MT",nrow(RAM))
 RAM$Country<-NA
 RAM$MSY<-NA
+RAM$UvUmsytouse=as.numeric(rep("",nrow(RAM)))
+RAM$UvUmsytouse[is.na(UvUmsytouse)==F]<-  UvUmsytouse[is.na(UvUmsytouse)==F]
 
 ####### Life History ####### 
 # run for loop to match life history paRAMeters by assessid/IdOrig to bioparams .csv
@@ -395,6 +398,7 @@ SOFIA$ReferenceBiomass<- NA
 SOFIA$ReferenceBiomassUnits<- NA
 SOFIA$BvBmsy<-NA
 SOFIA$MSY<-NA
+SOFIA$UvUmsytouse=as.numeric(rep("",nrow(SOFIA)))
 
 # Populate BvBmsy by converting Exploit Status values into numbers, taking the mean of the range of U, F, and O
 underexploit<-SOFIA$ExploitStatus=="U"
@@ -478,6 +482,7 @@ FAO$ReferenceBiomass<- NA
 FAO$ReferenceBiomassUnits<- NA
 FAO$BvBmsy<-NA
 FAO$MSY<-NA
+FAO$UvUmsytouse=as.numeric(rep("",nrow(FAO)))
 
 # create IdOrig for FAO entries. Use same syntax as for SOFIA = 
 FAOID=seq(from=1, to=nrow(FAO))
