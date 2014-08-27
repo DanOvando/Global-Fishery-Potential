@@ -24,9 +24,9 @@ RunProjection<- function(Data,BaselineYear)
   
   Data<- Data[Data$Year<=BaselineYear,]
   
-  TempStockMatrix<- as.data.frame(matrix(NA,nrow=length(Stocks)*ProjectionTime*10,ncol=dim(Data)[2]+3))
+  TempStockMatrix<- as.data.frame(matrix(NA,nrow=length(Stocks)*ProjectionTime*10,ncol=dim(Data)[2]+2))
   
-  colnames(TempStockMatrix)<- c(colnames(Data),'Policy','Profits','FvFmsy')
+  colnames(TempStockMatrix)<- c(colnames(Data),'Policy','Profits')
   
   TempStockMatrix$IdOrig<- as.factor(TempStockMatrix$IdOrig)
   
@@ -51,8 +51,9 @@ RunProjection<- function(Data,BaselineYear)
     MSY<- RecentStockData$MSY
     BOA<- RecentStockData$BvBmsyOpenAccess
     r<- RecentStockData$r
+    FStatusQuo<- RecentStockData$FvFmsy
     
-    FStatusQuo<- ((RecentStockData$Catch)/MSY)/RecentStockData$BvBmsy
+    #     FStatusQuo<- ((RecentStockData$Catch)/MSY)/RecentStockData$BvBmsy
     
     FStatusQuo[is.na(FStatusQuo)]<- 0
     
@@ -95,7 +96,7 @@ RunProjection<- function(Data,BaselineYear)
       
       PolicyMatrix[,1:dim(RecentStockData)[2]]<- RecentStockData
       
-      colnames(PolicyMatrix)<- c(colnames(RecentStockData),'Policy','Profits','FvFmsy')
+      colnames(PolicyMatrix)<- c(colnames(RecentStockData),'Policy','Profits')
       
       PolicyMatrix$Catch<- Projection$Yields
       
@@ -130,9 +131,7 @@ RunProjection<- function(Data,BaselineYear)
   Data$Policy<- NA
   
   Data$Profits<- NA
-  
-  Data$FvFmsy<- NA
-  
+    
   Data$Policy[is.na(Data$Policy)]<- 'Historic'
   
   HistoricData<- Data$Policy=='Historic'
