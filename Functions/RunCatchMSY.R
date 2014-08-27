@@ -7,7 +7,9 @@ RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,B
 {
   library(zoo)
   
-#   Data<- GlobalStatus$Data
+#    Data<- GlobalStatus$Data
+#   
+#   Data<- Data[Data$Dbase=='FAO',]
   
   sraMSY  <-function(theta, N) #CatchMSY guts
   {
@@ -85,8 +87,11 @@ RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,B
 #     Data<- USAStatus$Data
 # Data<- GlobalStatus$Data
 
-Data$HasRamMSY<- is.na(Data$MSY)==F
+Data$HasRamMSY<-  is.na(Data$MSY)==F
 
+Data$HasRamFvFmsy<- is.na(Data$FvFmsy)==F
+
+RamFvFmsy<- Data$FvFmsy[Data$HasRamFvFmsy]
 
 #   
 # ExcludeSmallPelagics<- 1
@@ -116,12 +121,6 @@ Data$HasRamMSY<- is.na(Data$MSY)==F
 
 #   outfile  <- "CatchMSY_Output.csv"
 #   outfile2  <- "Clean_CatchMSY_Output.csv"
-
-
-if (ExcludeSmallPelagics==1)
-{
-  Data<- Data[Data$SpeciesCatName!='Herrings, sardines, anchovies',]
-}
 
 
 # Data$res<- as.numeric(levels(Data$res))[Data$res]
@@ -325,13 +324,14 @@ for(s in 1:length(stock_id))
       r = R1$r[R1$ell==1]
       k = R1$k[R1$ell==1]
       bvbmsy1<- R1$bvbmsy[,R1$bvbmsyell[1,]==1]
-      mean_bvbmsy<- apply(bvbmsy1,1,function(x) exp(mean(log(x))))
+      mean_bvbmsy<- mean(apply(bvbmsy1,1,function(x) exp(mean(log(x)))))
       LogSD_bvbmsy<- mean(apply(bvbmsy1,1,function(x) (sd(log(x)))))
       
       
       
       msy = r * k / 4
       Fmsy<- r/2
+      
       
       mean_ln_msy = mean(log(msy))
       
@@ -351,6 +351,8 @@ for(s in 1:length(stock_id))
       Data$CatchMSYBvBmsy[Where]<- mean_bvbmsy
 
       Data$CatchMSYBvBmsy_LogSd[Where]<- LogSD_bvbmsy
+      
+      Data$FvFmsy[Where]<- (Data$Catch[Where]/Data$MSY[Where])/Data$BvBmsy[Where]
       
       ## plot MSY over catch data
       par(mfcol=c(2,3))
@@ -479,6 +481,7 @@ CountryMsy<- CountryMsy[PercGainOrder,]
 
 Data$r[is.na(Data$r)]<- mean(Data$r,na.rm=T)
 
+Data$FvFmsy[Data$HasRamFvFmsy==T]<- RamFvFmsy
 
 return(list(Data=Data,CountryMsy=CountryMsy,rMatrix=rMatrix,kMatrix=kMatrix,msyMatrix=msyMatrix,fMatrix=fMatrix,MoreResults=SampleResults)) 
 } #Close function
