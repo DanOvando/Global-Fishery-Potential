@@ -349,7 +349,7 @@ if (RunAnalyses==TRUE)
   # Calculate MSY -----------------------------------------------------------
   sigR<- 0
   
-  CatchMSYresults<- RunCatchMSY(GlobalStatus$Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength)
+  CatchMSYresults<- RunCatchMSY(GlobalStatus$Data,ExcludeForageFish,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength)
   
   MsyData<- CatchMSYresults$Data
   
@@ -420,18 +420,21 @@ if (RunAnalyses==TRUE)
   
 } #Close RunAnalyses If
 
+save.image(file=paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
+
 if (RunAnalyses==F)
 {
-  
-  ProjectionData<- OriginalProjectionData
-  
-  FullData<- OriginalFullData
-  
-  MsyData<- OriginalMsyData
-  
-  BiomassData<- OriginalBiomassData
-}
 
+  FullData<- OriginalFullData #Complete database, post filtering/cleaning etc
+  
+  BiomassData<- OriginalBiomassData #Fisheries that have B/Bmsy
+  
+  MsyData<- OriginalMsyData #Fisheries that have B/Bmsy and MSY
+  
+  ProjectionData<- OriginalProjectionData #Fisheries that have B/Bmsy, MSY, and we've run the projections
+  
+
+}
 
 ProjectionData$Country[ProjectionData$Country=='United States of America']<- 'USA'
 
@@ -471,7 +474,7 @@ if (IncludeNEIs==0)
   ProjectionData<- ProjectionData[ProjectionData$IdLevel=='Species',]
 }
 
-if (ExcludeSmallPelagics==1)
+if (ExcludeForageFish==1)
 {
   ProjectionData<- ProjectionData[ProjectionData$SpeciesCatName%in%ForageFish==F,]
   
@@ -480,7 +483,7 @@ if (ExcludeSmallPelagics==1)
 
 ProjectionData$Profits[ProjectionData$Profits<0]<- 0
 
-for (c in 1:length(CountriesToRun))
+for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
 {
   
   BaselineYear<- 2009
@@ -670,14 +673,10 @@ for (c in 1:length(CountriesToRun))
 } #Close Country Trajectory Analysis 
 
 
-
-
-
 # Scale and Analyze Results -----------------------------------------------
 
 # Publish in Science ------------------------------------------------------
 
 
-save.image(file=paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
 
 

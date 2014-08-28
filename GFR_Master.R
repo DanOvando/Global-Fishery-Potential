@@ -15,7 +15,7 @@ require(MASS)
 require(prettyR)
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- FALSE
+RunAnalyses<- TRUE
 
 BatchFolder<- 'Results/August 26 Sofia Trumps With Forage Fish/'
 
@@ -51,11 +51,11 @@ if (RunAnalyses==FALSE)
 
 IncludeNEIs<- 0
 
-ExcludeSmallPelagics<- 1
+ExcludeForageFish<- 1
 
 OverFishedOnly<- 1
 
-OverlapMode<- 'FaoTrumps'
+OverlapMode<- 'FaoTrumps' #SofiaTrumps, FaoTrumps
 
 CountriesToRun<- c('Global','USA','China','Indonesia','Philippines','Peru','Chile','Mexico','Japan','Myanmar','Viet Nam','EU','Parties to the Nauru Agreement') 
 
