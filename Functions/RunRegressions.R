@@ -18,7 +18,7 @@ RunRegressions<- function(Data,RegList,FigureName)
     
   WhereVars<- colnames(Data) %in% ModelVars
   
-  TempReg<- lm(LogBvBmsy ~. -1, data=Data[,WhereVars])
+  TempReg<- lm(LogBvBmsy ~. , data=Data[,WhereVars])
 
      pdf(file=paste(FigureFolder,FigureName,' ',RegNames[m],' Observed vs Predicted.pdf',sep=''))
     plot(TempReg$fitted.values+TempReg$residuals,TempReg$fitted.values,xlab='Observed Log B/Bmsy',
