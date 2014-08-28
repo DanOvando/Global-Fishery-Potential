@@ -12,405 +12,426 @@ sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
 
 if (RunAnalyses==TRUE)
 {
-
-if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))==F)
-{
   
-  source('Database_Build.r') #Build Tyler's database
+  if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))==F)
+  {
+    
+    source('Database_Build.r') #Build Tyler's database
+    
+    # fulldata<- read.csv(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))
+    
+    RawData<- fulldata
+    
+    FullData<- fulldata
+    
+    FullData$FvFmsy<- FullData$UvUmsytouse
+    
+    rm(fulldata)
+    
+    CleanedData<- MaidService(FullData,OverlapMode)
+    
+    DroppedStocks<- CleanedData$DroppedStocks
+    
+    FullData<- CleanedData$CleanedData
+    
+    FullData<- FindFishbase(FullData)
+    
+    
+    rm(CleanedData)
+    
+    write.csv(file=paste(ResultFolder,'Raw Compiled Database.csv',sep=''),FullData)
+    
+    write.csv(file=paste(ResultFolder,'Omitted Stocks.csv',sep=''),DroppedStocks)
+    
+  }
+  if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))){FullData<- read.csv(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))}
   
-  # fulldata<- read.csv(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))
+  # FullData$SpeciesCatName<- as.factor( FullData$SpeciesCatName)
   
-  RawData<- fulldata
+  FullData$ReferenceBiomass[FullData$ReferenceBiomass==0]<- NA
   
-  FullData<- fulldata
+  ModelNames<- names(Regressions)
   
-  FullData$FvFmsy<- FullData$UvUmsytouse
+  for (m in 1:length(ModelNames))
+  {
+    
+    eval(parse(text=paste('FullData$',ModelNames[m],'Marker<- FALSE',sep='')))
+    
+    eval(parse(text=paste('FullData$',ModelNames[m],'Prediction<- NA',sep='')))
+  }
   
-  rm(fulldata)
+  # Where<- FullData[,'AgeMat']==0 | is.na(FullData[,'AgeMat'])
+  # 
+  # FullData[Where,'AgeMat']<- NA
   
-  CleanedData<- MaidService(FullData,OverlapMode)
+  SofiaData<-  FullData[FullData$Dbase=='SOFIA',]
   
-  DroppedStocks<- CleanedData$DroppedStocks
+  RamData<- FullData[FullData$Dbase=='RAM',]
   
-  FullData<- CleanedData$CleanedData
+  RamData$BvBmsy[RamData$BvBmsy>OutlierBvBmsy]<- NA
   
-  FullData<- FindFishbase(FullData)
+  FaoData<- FullData[FullData$Dbase=='FAO',]
   
-  rm(CleanedData)
+  FaoData<- LumpFisheries(FaoData,SpeciesCategoriesToLump)
   
-  write.csv(file=paste(ResultFolder,'Raw Compiled Database.csv',sep=''),FullData)
+  # FaoIdSample<- sample(unique(FaoData[,IdVar]),500,replace=FALSE)
+  # # # # 
+  # FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
   
-  write.csv(file=paste(ResultFolder,'Omitted Stocks.csv',sep=''),DroppedStocks)
+  show('Raw Data Processed')
   
-}
-if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))){FullData<- read.csv(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))}
-
-# FullData$SpeciesCatName<- as.factor( FullData$SpeciesCatName)
-
-FullData$ReferenceBiomass[FullData$ReferenceBiomass==0]<- NA
-
-ModelNames<- names(Regressions)
-
-for (m in 1:length(ModelNames))
-{
+  # Create synthetic stocks -------------------------------------------------
   
-  eval(parse(text=paste('FullData$',ModelNames[m],'Marker<- FALSE',sep='')))
+  if (GroupMethod=='All')
+  {
+    Groups<- unique(FullData$SpeciesCatName,na.rm=T)
+    
+    Groups<- Groups[is.na(Groups)==F]
+  }
+  if (GroupMethod=='Nei')
+  {
+    Groups<- unique(FaoData$SpeciesCatName[ (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F])
+  }
   
-  eval(parse(text=paste('FullData$',ModelNames[m],'Prediction<- NA',sep='')))
-}
-
-# Where<- FullData[,'AgeMat']==0 | is.na(FullData[,'AgeMat'])
-# 
-# FullData[Where,'AgeMat']<- NA
-
-SofiaData<-  FullData[FullData$Dbase=='SOFIA',]
-
-RamData<- FullData[FullData$Dbase=='RAM',]
-
-RamData$BvBmsy[RamData$BvBmsy>OutlierBvBmsy]<- NA
-
-FaoData<- FullData[FullData$Dbase=='FAO',]
-
-FaoData<- LumpFisheries(FaoData,SpeciesCategoriesToLump)
-
-# FaoIdSample<- sample(unique(FaoData[,IdVar]),500,replace=FALSE)
-# # # # 
-# FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
-
-show('Raw Data Processed')
-
-# Create synthetic stocks -------------------------------------------------
-
-if (GroupMethod=='All')
-{
-  Groups<- unique(FullData$SpeciesCatName,na.rm=T)
+  SyntheticData<- StitchFish(RamData,IdVar,Groups,GroupSamples,Iterations) 
   
-  Groups<- Groups[is.na(Groups)==F]
-}
-if (GroupMethod=='Nei')
-{
-  Groups<- unique(FaoData$SpeciesCatName[ (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F])
-}
-
-SyntheticData<- StitchFish(RamData,IdVar,Groups,GroupSamples,Iterations) 
-
-SyntheticData$BvBmsy[SyntheticData$BvBmsy>OutlierBvBmsy]<- NA
-
-show('Synthetic Stocks Created')
-
-for (m in 1:length(ModelNames))
-{
+  SyntheticData$BvBmsy[SyntheticData$BvBmsy>OutlierBvBmsy]<- NA
   
-  eval(parse(text=paste('SyntheticData$',ModelNames[m],'Marker<- FALSE',sep='')))
+  show('Synthetic Stocks Created')
   
-  eval(parse(text=paste('SyntheticData$',ModelNames[m],'Prediction<- NA',sep='')))
+  for (m in 1:length(ModelNames))
+  {
+    
+    eval(parse(text=paste('SyntheticData$',ModelNames[m],'Marker<- FALSE',sep='')))
+    
+    eval(parse(text=paste('SyntheticData$',ModelNames[m],'Prediction<- NA',sep='')))
+    
+  }
   
-}
-
-# Prepare data for regression ---------------------------------------------
-
-library(proftools)
-
-#  Rprof()
-
-RamData<- FormatForRegression(RamData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)#Add resgression data to database
-
-SyntheticData<- FormatForRegression(SyntheticData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
-
-SofiaData<- SofiaData[is.na(SofiaData$Catch)==F,]
-
-SofiaData<- FormatForRegression(SofiaData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)#Add resgression data to database
-
-
-if (file.exists(paste(ResultFolder,'FaoData.Rdata',sep=''))==F)
-{
+  # Prepare data for regression ---------------------------------------------
   
-  FaoData<- FormatForRegression(FaoData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
+  library(proftools)
   
-  save(file=paste(ResultFolder,'FaoData.Rdata',sep=''),FaoData)
-}
-if (file.exists(paste(ResultFolder,'FaoData.Rdata',sep='')))
-{
-  load(paste(ResultFolder,'FaoData.Rdata',sep=''))
-}
-show('Data prepared for regression')
-
-
-# Rprof(NULL)
-#  RProfData<- readProfileData('Rprof.out')
-#  flatProfile(RProfData,byTotal=TRUE)
-
-# Run regressions ---------------------------------------------------------
-
-RealModels<- RunRegressions(RamData,Regressions,'Real Stocks')
-
-RealModelFactorLevels<- NULL
-
-Models<- names(Regressions)
-
-show('Regressions Run')
-
-# Process Regressions -----------------------------------------------------
-
-## Determine species category levels that were used in each model run
-
-TempOmitted<- NULL
-for (m in 1:length(names(Regressions)))
-{
-  Model<- names(Regressions)[m]
-  eval(parse(text=paste('RealModelFactorLevels$',Model,'<- RealModels$',Model,'$xlevels$SpeciesCatName',sep='')))
-}
-
-RamData<- InsertFisheryPredictions(RamData,RealModels) #Add fishery predictions back into main dataframe
-
-RealModelSdevs<- CreateSdevBins(RealModels,RamData,TransbiasBin)
-
-NeiRegressions<- list()
-
-NeiRegressions$M6<- Regressions$M6
-
-NeiRegressions$M7<- Regressions$M7
-
-NeiModels<- RunRegressions(SyntheticData,NeiRegressions,'Synthetic Stocks')
-
-NeiModelFactorLevels<- NULL
-
-for (m in 1:length(names(Regressions)))
-{
-  Model<- names(Regressions)[m]
+  #  Rprof()
   
-  eval(parse(text=paste('NeiModelFactorLevels$',Model,'<- NeiModels$',Model,'$xlevels$SpeciesCatName',sep='')))
+  RamData<- FormatForRegression(RamData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)#Add resgression data to database
   
-}
-
-SyntheticData<- InsertFisheryPredictions(SyntheticData,NeiModels) #Add fishery predictions back into main dataframe
-
-NeiModelSdevs<- CreateSdevBins(NeiModels,SyntheticData,TransbiasBin)
-
-# Prepare data for regression application ---------------------------------
-
-WhereFaoNeis<- (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F #Find unassessed NEIs
-
-WhereFaoMarineFish<- grepl('not identified',FaoData$SpeciesCatName)
-
-FaoSpeciesLevel<- FaoData[WhereFaoNeis==F & WhereFaoMarineFish==F ,] #Fao stocks named to the species level
-
-FaoNeiLevel<- FaoData[WhereFaoNeis,] #fao species named to the nei or spp level
-
-FaoMarineFishLevel<- FaoData[WhereFaoMarineFish,] #completely unidentified marine goo
-
-TempLevel<- NULL
-
-TempModel<- NULL
-
-show('Regressions Processed')
-
-# Prep for dummy species categories  ----------------------------------------
-
-AllPossible<- unique(data.frame(FullData$SpeciesCatName,FullData$SpeciesCat))
-
-colnames(AllPossible)<- c('SpeciesCatNames','SpeciesCat')
-
-RamPossibleCats<- unique(RamData$SpeciesCatName)
-
-FaoSpeciesPossibleCats<- unique(FaoSpeciesLevel$SpeciesCatName)
-
-FaoNeiPossibleCats<- unique(FaoNeiLevel$SpeciesCatName)
-
-FaoMarineFishPossibleCats<- unique(FaoMarineFishLevel$SpeciesCatName)
-
-
-# Apply regressions -------------------------------------------------------
-
-Models<- Models[Models!='M7']
-
-for (m in 1:length(Models)) #Apply models to species level fisheries
-{
+  SyntheticData<- FormatForRegression(SyntheticData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
   
-  TempModelName<- Models[m]
+  SofiaData<- SofiaData[is.na(SofiaData$Catch)==F,]
   
-  eval(parse(text=paste('TempLevel<- RealModelFactorLevels$',TempModelName,sep='')))
+  SofiaData<- FormatForRegression(SofiaData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)#Add resgression data to database
   
-  eval(parse(text=paste('TempModel<- RealModels$',TempModelName,sep='')))
   
-  ProxyCats<- AssignNearestSpeciesCategory(FaoSpeciesLevel,TempLevel,AllPossible)
+  if (file.exists(paste(ResultFolder,'FaoData.Rdata',sep=''))==F)
+  {
+    
+    FaoData<- FormatForRegression(FaoData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
+    
+    save(file=paste(ResultFolder,'FaoData.Rdata',sep=''),FaoData)
+  }
+  if (file.exists(paste(ResultFolder,'FaoData.Rdata',sep='')))
+  {
+    load(paste(ResultFolder,'FaoData.Rdata',sep=''))
+  }
+  show('Data prepared for regression')
   
-  Predictions<- predict(TempModel,ProxyCats$Data)
   
-  eval(parse(text=paste('FaoSpeciesLevel$',TempModelName,'Prediction<- Predictions',sep='')))    
-}
-
-TempLevel<- NeiModelFactorLevels$M6 
-
-ProxyCats<- AssignNearestSpeciesCategory(FaoNeiLevel,TempLevel,AllPossible)$Data
-
-Predictions<- predict(NeiModels$M6,ProxyCats) #Apply nei model
-
-FaoNeiLevel$M6Prediction<- Predictions
-
-NotIdentifiedPredictions<- predict(NeiModels$M7,FaoMarineFishLevel) #Apply unidentified fish model
-
-FaoMarineFishLevel$M7Prediction<- NotIdentifiedPredictions
-
-show('Regressions Applied')
-
-# Clean and process predictions and data ---------------------------------------
-
-if (IncludeNEIs==1)
-{
-  PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel,FaoNeiLevel,FaoMarineFishLevel) #Bind all data back together
-}
-if (IncludeNEIs==0)
-{
-  PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel) #Bind all data back together
-}
-BiomassColumns<- grepl('BvBmsy',colnames(PredictedData)) | grepl('Prediction',colnames(PredictedData))
-
-BioNames<- colnames(PredictedData)[BiomassColumns]
-
-HasBiomass<- rowSums(is.na(PredictedData[,BiomassColumns]))<length(BioNames)
-
-BiomassData<- PredictedData[HasBiomass,] #Only store fisheries that have some form of biomass estimates
-
-MissingData<- PredictedData[HasBiomass==F & PredictedData$Dbase=='FAO',]
-
-AvailableBio<- (BiomassData[,BiomassColumns])
-
-AvailableBioMarker<- matrix(rep((1:dim(AvailableBio)[2]),dim(AvailableBio)[1]), dim(AvailableBio)[1],dim(AvailableBio)[2],byrow=TRUE)
-
-AvailableBioMarker<- AvailableBioMarker*(is.na(AvailableBio)==F)
-
-AvailableBioMarker[AvailableBioMarker==0]<- NA
-
-BestModel<- apply(AvailableBioMarker,1,min,na.rm=T)
-
-BestBio<- NULL
-for (b in 1:dim(AvailableBio)[1])
-{
-  BestBio[b]<- AvailableBio[b,BestModel[b]]
-}
-
-BestBio[BestModel==1]<- log(BestBio[BestModel==1])
-
-BestModelnames<- c('RAM',ModelNames)
-
-BestModelNames<- BestModelnames[sort(unique(BestModel))]
-
-BestModel<- as.factor((BestModel))
-
-levels(BestModel)<- BestModelNames
-
-BiomassData$BestModel<- BestModel
-
-# BiomassData$BestBio<- BestBio
-
-BiomassData$BvBmsy<- BestBio
-
-
-BiomassData$CommName<- as.character((BiomassData$CommName))
-
-BiomassData$SciName<- as.character((BiomassData$SciName))
-
-BiomassData$SpeciesCatName<- as.character(BiomassData$SpeciesCatName)
-
-WhereNeis<- (grepl('nei',BiomassData$CommName) | grepl('spp',BiomassData$SciName)) & grepl('not identified',BiomassData$SpeciesCatName)==F & (BiomassData$Dbase=='FAO') #Find unassessed NEIs
-
-WhereUnidentified<- grepl('not identified',BiomassData$SpeciesCatName)
-
-WhereSpeciesLevel<- WhereNeis==F & WhereUnidentified==F #Fao stocks named to the species level
-
-BiomassData$IdLevel[WhereNeis]<- 'Neis'
-
-BiomassData$IdLevel[WhereUnidentified]<- 'Unidentified'
-
-BiomassData$IdLevel[WhereSpeciesLevel]<- 'Species'
-
-show('Results Processed')
-
-BiomassData<- AssignEconomicData(BiomassData)
-
-# Analyze Current Status --------------------------------------------------
-
-GlobalStatus<- AnalyzeFisheries(BiomassData,'Baseline Global Status','Year',min(BiomassData$Year):max(BiomassData$Year),RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
-
-# USA<- BiomassData[BiomassData$Country=='USA' |BiomassData$Country=='United States of America' ,]
-# 
-# USAStatus<- AnalyzeFisheries(USA,'USA Status','Year',1950:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
-
-RAMStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='RAM',],'RAM Status','Year',1950:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
-
-# FAOStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='FAO',],'FAO Status','Year',2000:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
-# 
-# IndonesiaStatus<- AnalyzeFisheries(BiomassData[BiomassData$Country=='Indonesia',],'Indonesia Status','Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
-# 
-# CanadaStatus<- AnalyzeFisheries(BiomassData[BiomassData$Country=='Canada',],'Canada Status','Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
-
-# Calculate MSY -----------------------------------------------------------
-sigR<- 0
-
-CatchMSYresults<- RunCatchMSY(GlobalStatus$Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength)
-
-MsyData<- CatchMSYresults$Data
-
-BiomassData$MSY<- MsyData$MSY
-
-BiomassData$FvFmsy[MsyData$HasRamFvFmsy==F]<- MsyData$FvFmsy[MsyData$HasRamFvFmsy==F]
-
-pdf(file=paste(FigureFolder,'Catch MSY vs PRM BvBmsy predictions.pdf',sep=''))
-print(xyplot(  CatchMSYBvBmsy ~ BvBmsy | Dbase,data=MsyData,xlab='PRM BvBmsy',ylab='CMSY BvBmsy',panel=function(x,y,...){
-  panel.xyplot(x,y,...)
-  panel.abline(a=0,b=1,lty=2)
-}))
-dev.off()
-
-MedianWorked<- median(MsyData$BvBmsy[is.na(MsyData$MSY)==F])
-
-MedianFailed<- median(MsyData$BvBmsy[is.na(MsyData$MSY)])
-
-# CurrentCatch<- sum(MsyData$Catch[MsyData$Year==2010 & is.na(MsyData$MSY)==F],na.rm=T)
-# 
-# CurrentCatch2<- sum(MsyData$Catch[MsyData$Year==2010],na.rm=T)
-
-MsyData<- MsyData[is.na(MsyData$MSY)==F,]
-
-MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T)
-
-MsyData$PercentGain<- 100*(MsyData$MSY/MsyData$Catch-1)
-
-# FutureMSY<- sum(MsyData$MSY[MsyData$Year==2010],na.rm=T)
-# 
-# GlobalPercentChange<- 100*(FutureMSY/CurrentCatch-1)
-# 
-# IndoCatch<- (PredictedData[PredictedData$Country=='Indonesia',])
-
-MsyData$Country[MsyData$Country=='United States of America']<- 'USA'
-
-CountryMsy<- ddply(MsyData[MsyData$Year==2010,],c('Country'),summarize,CurrentCatch= sum(Catch,na.rm=T),MSY=sum(MSY,na.rm=T),TotalGain=sum(MSY,na.rm=T)-sum(Catch,na.rm=T),
-                   PercGain=(100*(sum(MSY,na.rm=T)/sum(Catch,na.rm=T)-1)),MedianBvBmsy=median(BvBmsy,na.rm=T),PercMissing=100*(sum(is.na(MSY))/length(MSY)))
-
-PercGainOrder<- order(CountryMsy$PercGain,decreasing=T)
-
-CountryMsy<- CountryMsy[PercGainOrder,]
-
-write.csv(file=paste(ResultFolder,'Country Rankings.csv',sep=''),CountryMsy)
-
-# Run projection analysis -------------------------------------------------
-# 
-# MsyData$Price<- 1000
-# 
-# MsyData$BvBmsyOpenAccess<- 0.25
-
-BaselineYear<- 2009
-
-MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T)
-
-ProjectionData<- RunProjection(MsyData,BaselineYear)
-
+  # Rprof(NULL)
+  #  RProfData<- readProfileData('Rprof.out')
+  #  flatProfile(RProfData,byTotal=TRUE)
+  
+  # Run regressions ---------------------------------------------------------
+  
+  RealModels<- RunRegressions(RamData,Regressions,'Real Stocks')
+  
+  RealModelFactorLevels<- NULL
+  
+  Models<- names(Regressions)
+  
+  show('Regressions Run')
+  
+  # Process Regressions -----------------------------------------------------
+  
+  ## Determine species category levels that were used in each model run
+  
+  TempOmitted<- NULL
+  for (m in 1:length(names(Regressions)))
+  {
+    Model<- names(Regressions)[m]
+    eval(parse(text=paste('RealModelFactorLevels$',Model,'<- RealModels$',Model,'$xlevels$SpeciesCatName',sep='')))
+  }
+  
+  RamData<- InsertFisheryPredictions(RamData,RealModels) #Add fishery predictions back into main dataframe
+  
+  RealModelSdevs<- CreateSdevBins(RealModels,RamData,TransbiasBin)
+  
+  NeiRegressions<- list()
+  
+  NeiRegressions$M6<- Regressions$M6
+  
+  NeiRegressions$M7<- Regressions$M7
+  
+  NeiModels<- RunRegressions(SyntheticData,NeiRegressions,'Synthetic Stocks')
+  
+  NeiModelFactorLevels<- NULL
+  
+  for (m in 1:length(names(Regressions)))
+  {
+    Model<- names(Regressions)[m]
+    
+    eval(parse(text=paste('NeiModelFactorLevels$',Model,'<- NeiModels$',Model,'$xlevels$SpeciesCatName',sep='')))
+    
+  }
+  
+  SyntheticData<- InsertFisheryPredictions(SyntheticData,NeiModels) #Add fishery predictions back into main dataframe
+  
+  NeiModelSdevs<- CreateSdevBins(NeiModels,SyntheticData,TransbiasBin)
+  
+  # Prepare data for regression application ---------------------------------
+  
+  WhereFaoNeis<- (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F #Find unassessed NEIs
+  
+  WhereFaoMarineFish<- grepl('not identified',FaoData$SpeciesCatName)
+  
+  FaoSpeciesLevel<- FaoData[WhereFaoNeis==F & WhereFaoMarineFish==F ,] #Fao stocks named to the species level
+  
+  FaoNeiLevel<- FaoData[WhereFaoNeis,] #fao species named to the nei or spp level
+  
+  FaoMarineFishLevel<- FaoData[WhereFaoMarineFish,] #completely unidentified marine goo
+  
+  TempLevel<- NULL
+  
+  TempModel<- NULL
+  
+  show('Regressions Processed')
+  
+  # Prep for dummy species categories  ----------------------------------------
+  
+  AllPossible<- unique(data.frame(FullData$SpeciesCatName,FullData$SpeciesCat))
+  
+  colnames(AllPossible)<- c('SpeciesCatNames','SpeciesCat')
+  
+  RamPossibleCats<- unique(RamData$SpeciesCatName)
+  
+  FaoSpeciesPossibleCats<- unique(FaoSpeciesLevel$SpeciesCatName)
+  
+  FaoNeiPossibleCats<- unique(FaoNeiLevel$SpeciesCatName)
+  
+  FaoMarineFishPossibleCats<- unique(FaoMarineFishLevel$SpeciesCatName)
+  
+  
+  # Apply regressions -------------------------------------------------------
+  
+  Models<- Models[Models!='M7']
+  
+  for (m in 1:length(Models)) #Apply models to species level fisheries
+  {
+    
+    TempModelName<- Models[m]
+    
+    eval(parse(text=paste('TempLevel<- RealModelFactorLevels$',TempModelName,sep='')))
+    
+    eval(parse(text=paste('TempModel<- RealModels$',TempModelName,sep='')))
+    
+    ProxyCats<- AssignNearestSpeciesCategory(FaoSpeciesLevel,TempLevel,AllPossible)
+    
+    Predictions<- predict(TempModel,ProxyCats$Data)
+    
+    eval(parse(text=paste('FaoSpeciesLevel$',TempModelName,'Prediction<- Predictions',sep='')))    
+  }
+  
+  TempLevel<- NeiModelFactorLevels$M6 
+  
+  ProxyCats<- AssignNearestSpeciesCategory(FaoNeiLevel,TempLevel,AllPossible)$Data
+  
+  Predictions<- predict(NeiModels$M6,ProxyCats) #Apply nei model
+  
+  FaoNeiLevel$M6Prediction<- Predictions
+  
+  NotIdentifiedPredictions<- predict(NeiModels$M7,FaoMarineFishLevel) #Apply unidentified fish model
+  
+  FaoMarineFishLevel$M7Prediction<- NotIdentifiedPredictions
+  
+  show('Regressions Applied')
+  
+  # Clean and process predictions and data ---------------------------------------
+  
+  if (IncludeNEIs==1)
+  {
+    PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel,FaoNeiLevel,FaoMarineFishLevel) #Bind all data back together
+  }
+  if (IncludeNEIs==0)
+  {
+    PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel) #Bind all data back together
+  }
+  BiomassColumns<- grepl('BvBmsy',colnames(PredictedData)) | grepl('Prediction',colnames(PredictedData))
+  
+  BioNames<- colnames(PredictedData)[BiomassColumns]
+  
+  HasBiomass<- rowSums(is.na(PredictedData[,BiomassColumns]))<length(BioNames)
+  
+  BiomassData<- PredictedData[HasBiomass,] #Only store fisheries that have some form of biomass estimates
+  
+  MissingData<- PredictedData[HasBiomass==F & PredictedData$Dbase=='FAO',]
+  
+  AvailableBio<- (BiomassData[,BiomassColumns])
+  
+  AvailableBioMarker<- matrix(rep((1:dim(AvailableBio)[2]),dim(AvailableBio)[1]), dim(AvailableBio)[1],dim(AvailableBio)[2],byrow=TRUE)
+  
+  AvailableBioMarker<- AvailableBioMarker*(is.na(AvailableBio)==F)
+  
+  AvailableBioMarker[AvailableBioMarker==0]<- NA
+  
+  BestModel<- apply(AvailableBioMarker,1,min,na.rm=T)
+  
+  BestBio<- NULL
+  for (b in 1:dim(AvailableBio)[1])
+  {
+    BestBio[b]<- AvailableBio[b,BestModel[b]]
+  }
+  
+  BestBio[BestModel==1]<- log(BestBio[BestModel==1])
+  
+  BestModelnames<- c('RAM',ModelNames)
+  
+  BestModelNames<- BestModelnames[sort(unique(BestModel))]
+  
+  BestModel<- as.factor((BestModel))
+  
+  levels(BestModel)<- BestModelNames
+  
+  BiomassData$BestModel<- BestModel
+  
+  # BiomassData$BestBio<- BestBio
+  
+  BiomassData$BvBmsy<- BestBio
+  
+  
+  BiomassData$CommName<- as.character((BiomassData$CommName))
+  
+  BiomassData$SciName<- as.character((BiomassData$SciName))
+  
+  BiomassData$SpeciesCatName<- as.character(BiomassData$SpeciesCatName)
+  
+  WhereNeis<- (grepl('nei',BiomassData$CommName) | grepl('spp',BiomassData$SciName)) & grepl('not identified',BiomassData$SpeciesCatName)==F & (BiomassData$Dbase=='FAO') #Find unassessed NEIs
+  
+  WhereUnidentified<- grepl('not identified',BiomassData$SpeciesCatName)
+  
+  WhereSpeciesLevel<- WhereNeis==F & WhereUnidentified==F #Fao stocks named to the species level
+  
+  BiomassData$IdLevel[WhereNeis]<- 'Neis'
+  
+  BiomassData$IdLevel[WhereUnidentified]<- 'Unidentified'
+  
+  BiomassData$IdLevel[WhereSpeciesLevel]<- 'Species'
+  
+  show('Results Processed')
+  
+  BiomassData<- AssignEconomicData(BiomassData)
+  
+  # Analyze Current Status --------------------------------------------------
+  
+  GlobalStatus<- AnalyzeFisheries(BiomassData,'Baseline Global Status','Year',min(BiomassData$Year):max(BiomassData$Year),RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+  
+  # USA<- BiomassData[BiomassData$Country=='USA' |BiomassData$Country=='United States of America' ,]
+  # 
+  # USAStatus<- AnalyzeFisheries(USA,'USA Status','Year',1950:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+  
+  RAMStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='RAM',],'RAM Status','Year',1950:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+  
+  # FAOStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='FAO',],'FAO Status','Year',2000:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+  # 
+  # IndonesiaStatus<- AnalyzeFisheries(BiomassData[BiomassData$Country=='Indonesia',],'Indonesia Status','Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+  # 
+  # CanadaStatus<- AnalyzeFisheries(BiomassData[BiomassData$Country=='Canada',],'Canada Status','Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+  
+  # Calculate MSY -----------------------------------------------------------
+  sigR<- 0
+  
+  CatchMSYresults<- RunCatchMSY(GlobalStatus$Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength)
+  
+  MsyData<- CatchMSYresults$Data
+  
+  BiomassData$MSY<- MsyData$MSY
+  
+  BiomassData$FvFmsy[MsyData$HasRamFvFmsy==F]<- MsyData$FvFmsy[MsyData$HasRamFvFmsy==F]
+  
+  pdf(file=paste(FigureFolder,'Catch MSY vs PRM BvBmsy predictions.pdf',sep=''))
+  print(xyplot(  CatchMSYBvBmsy ~ BvBmsy | Dbase,data=MsyData,xlab='PRM BvBmsy',ylab='CMSY BvBmsy',panel=function(x,y,...){
+    panel.xyplot(x,y,...)
+    panel.abline(a=0,b=1,lty=2)
+  }))
+  dev.off()
+  
+  MedianWorked<- median(MsyData$BvBmsy[is.na(MsyData$MSY)==F])
+  
+  MedianFailed<- median(MsyData$BvBmsy[is.na(MsyData$MSY)])
+  
+  # CurrentCatch<- sum(MsyData$Catch[MsyData$Year==2010 & is.na(MsyData$MSY)==F],na.rm=T)
+  # 
+  # CurrentCatch2<- sum(MsyData$Catch[MsyData$Year==2010],na.rm=T)
+  
+  MsyData<- MsyData[is.na(MsyData$MSY)==F,]
+  
+  MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T)
+  
+  MsyData$PercentGain<- 100*(MsyData$MSY/MsyData$Catch-1)
+  
+  # FutureMSY<- sum(MsyData$MSY[MsyData$Year==2010],na.rm=T)
+  # 
+  # GlobalPercentChange<- 100*(FutureMSY/CurrentCatch-1)
+  # 
+  # IndoCatch<- (PredictedData[PredictedData$Country=='Indonesia',])
+  
+  MsyData$Country[MsyData$Country=='United States of America']<- 'USA'
+  
+  CountryMsy<- ddply(MsyData[MsyData$Year==2010,],c('Country'),summarize,CurrentCatch= sum(Catch,na.rm=T),MSY=sum(MSY,na.rm=T),TotalGain=sum(MSY,na.rm=T)-sum(Catch,na.rm=T),
+                     PercGain=(100*(sum(MSY,na.rm=T)/sum(Catch,na.rm=T)-1)),MedianBvBmsy=median(BvBmsy,na.rm=T),PercMissing=100*(sum(is.na(MSY))/length(MSY)))
+  
+  PercGainOrder<- order(CountryMsy$PercGain,decreasing=T)
+  
+  CountryMsy<- CountryMsy[PercGainOrder,]
+  
+  write.csv(file=paste(ResultFolder,'Country Rankings.csv',sep=''),CountryMsy)
+  
+  # Run projection analysis -------------------------------------------------
+  # 
+  # MsyData$Price<- 1000
+  # 
+  # MsyData$BvBmsyOpenAccess<- 0.25
+  
+  BaselineYear<- 2009
+  
+  MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T)
+  
+  ProjectionData<- RunProjection(MsyData,BaselineYear)
+  
+  OriginalProjectionData<- ProjectionData
+  
+  OriginalFullData<- FullData
+  
+  OriginalMsyData<- MsyData
+  
+  OriginalBiomassData<- BiomassData
+  
+  
+  
+  
 } #Close RunAnalyses If
 
-# BiomassData<- join(BiomassData,head(MsyData[,c('IdOrig','MSY')]),by='IdOrig')
+if (RunAnalyses==F)
+{
+  
+  ProjectionData<- OriginalProjectionData
+  
+  FullData<- OriginalFullData
+  
+  MsyData<- OriginalMsyData
+  
+  BiomassData<- OriginalBiomassData
+}
 
-# BiomassData$FvFmsy<- (BiomassData$Catch/BiomassData$MSY)*BiomassData$BvBmsy
 
 ProjectionData$Country[ProjectionData$Country=='United States of America']<- 'USA'
 
@@ -453,7 +474,7 @@ if (IncludeNEIs==0)
 if (ExcludeSmallPelagics==1)
 {
   ProjectionData<- ProjectionData[ProjectionData$SpeciesCatName%in%ForageFish==F,]
-
+  
   BiomassData<- BiomassData[BiomassData$SpeciesCatName%in%ForageFish==F,]
 }
 
@@ -555,59 +576,35 @@ for (c in 1:length(CountriesToRun))
     FinalYear<- TimeTrend[TimeTrend$Year==max(TimeTrend$Year),]  
     
     FinalYear$PercChangeFromSQMedianBiomass<- 100*(FinalYear$MedianBvBmsy/FinalYear$MedianBvBmsy[FinalYear$Policy=='SQ']-1)
-
+    
     FinalYear$PercChangeFromSQMedianProfits<- 100*(FinalYear$MedianProfits/FinalYear$MedianProfits[FinalYear$Policy=='SQ']-1)
-
+    
     FinalYear$PercChangeFromSQMedianCatch<- 100*(FinalYear$MedianCatch/FinalYear$MedianCatch[FinalYear$Policy=='SQ']-1)
-  
+    
     
     # Analyze Database Composition --------------------------------------------
     
+    FullTallies<- ddply(FullData[FullData_CountryLocater,],c('Year','Dbase'),summarize,Fisheries=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T),Source='FullData')
+    
+    BiomassTallies<- ddply(BiomassData[Biomass_CountryLocater,],c('Year','Dbase'),summarize,Fisheries=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T),Source='BiomassData')
+    
+    ProjectionTallies<- ddply(ProjectionData[Proj_CountryLocater,],c('Year','Dbase'),summarize,Fisheries=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T),Source='ProjectionData')
+    
+    Tallies<- rbind(FullTallies,BiomassTallies,ProjectionTallies)
+    
+    
     pdf(file=paste(FigureFolder,CountriesToRun[c],' Database Analysis.pdf',sep='')) 
     
-    AvailableDatabaseTallies<- ddply(FullData[FullData_CountryLocater & FullData$Year==BaselineYear,],c('Year','Dbase'),summarize,Catch=sum(Catch,na.rm=T),Fisheries=length(unique(IdOrig)))
+    print(dotplot(Fisheries ~ Dbase | Source,data=Tallies,subset=Year==BaselineYear,cex=2)  )  
     
-    BlankTallies<- as.data.frame(matrix(0,nrow=length(AvailableDatabaseTallies$Dbase),ncol=4))
+    print(dotplot(Catch ~ Dbase | Source,data=Tallies,subset=Year==BaselineYear,cex=2)   ) 
     
-    colnames(BlankTallies)<- c('Year','Dbase','Catch','Fisheries')
-
-    BlankTallies$Year<- BaselineYear
-
-    BlankTallies$Dbase<- AvailableDatabaseTallies$Dbase
+    print(xyplot(Catch ~ Year | Source,group=Dbase,data=Tallies,subset=Year>=1950 & Year<= BaselineYear,cex=1,type='l',lwd=3,auto.key=T))  
     
-    AccountedForDatabaseTallies<- ddply(TempProjectionData[TempProjectionData$Year==BaselineYear,],c('Year','Dbase'),summarize,Catch=sum(Catch,na.rm=T),Fisheries=length(unique(IdOrig)))
-    
-    BlankTallies[BlankTallies$Dbase %in% AccountedForDatabaseTallies$Dbase,3:4]<- AccountedForDatabaseTallies[,3:4]
-    
-    UnaccountedForDatabaseTallies<-  as.data.frame(t(colSums(AvailableDatabaseTallies[,3:4] -BlankTallies[,3:4])))
-    
-    AccountedForDatabaseTallies$Used<- 'Analyzed'
-    
-    AvailableDatabaseTallies$Used<- 'Available'
-    
-    DatabaseStuff<- rbind(AccountedForDatabaseTallies,AvailableDatabaseTallies)
-    
-    print(dotplot(Catch ~ Dbase | Used,data=DatabaseStuff,cex=2))
-    
-    print(dotplot(Fisheries ~Dbase | Used,data=DatabaseStuff,cex=2))
-    
-#     (pie(c(AccountedForDatabaseTallies$Catch,UnaccountedForDatabaseTallies$Catch),labels=c(AccountedForDatabaseTallies$Dbase,'Unknown')))
-    
-    AccountedForDatabaseTallies<- ddply(TempProjectionData[TempProjectionData$Year==BaselineYear,],c('Year','IdLevel'),summarize,Catch=sum(Catch,na.rm=T),Fisheries=length(unique(IdOrig)))
-        
-    AvailableDatabaseTallies<- ddply(FullData[FullData_CountryLocater & FullData$Year==BaselineYear,],c('Year','IdLevel'),summarize,Catch=sum(Catch,na.rm=T),Fisheries=length(unique(IdOrig)))
-    
-    AccountedForDatabaseTallies$Used<- 'Analyzed'
-    
-    AvailableDatabaseTallies$Used<- 'Available'
-    
-    SpeciesStuff<- rbind(AccountedForDatabaseTallies,AvailableDatabaseTallies)
-    
-    print(dotplot(Catch ~ IdLevel | Used,data=SpeciesStuff,cex=2))
-    
-    print(dotplot( Fisheries ~ IdLevel  | Used,data=SpeciesStuff,cex=2))
+    print(xyplot((Fisheries) ~ Year | Source,group=Dbase,data=Tallies,subset=Year>=1950 & Year<= BaselineYear,cex=1,type='l',lwd=3,auto.key=T))   
     
     dev.off()
+    
     
     # Save and Print Results --------------------------------------------------
     
@@ -643,11 +640,11 @@ for (c in 1:length(CountriesToRun))
     print(barchart(PercChangeMedianProfits ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Current Median Profits'))
     
     print(barchart(PercChangeMedianCatch ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Current Median Catch'))
-
+    
     print(barchart(PercChangeMedianBiomass ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Current Median Fish'))
     
     print(barchart(PercChangeFromSQMedianProfits ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Median Profits'))
-
+    
     print(barchart(PercChangeFromSQMedianCatch ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Median Catch'))
     
     print(barchart(PercChangeFromSQMedianBiomass ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Median Fish'))
