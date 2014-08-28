@@ -17,7 +17,7 @@ require(prettyR)
 
 RunAnalyses<- FALSE
 
-BatchFolder<- 'Results/August 26 Sofia Trumps Without Forage Fish/'
+BatchFolder<- 'Results/August 26 Sofia Trumps With Forage Fish/'
 
 InputFolder<- 'Data/'
 
@@ -35,7 +35,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Results/August 26 Sofia Trumps Without Forage Fish/'
+  BatchFolder<- 'Results/August 26 Sofia Trumps With Forage Fish/'
   
   InputFolder<- 'Data/'
   
@@ -43,9 +43,9 @@ if (RunAnalyses==FALSE)
   
   ResultFolder<- paste(BatchFolder,'Data/',sep='')
   
+  RunAnalyses<- FALSE
+  
 }
-
-RunAnalyses<- FALSE
 
 # Analysis ----------------------------------------------------------------
 
@@ -55,7 +55,7 @@ ExcludeSmallPelagics<- 1
 
 OverFishedOnly<- 1
 
-OverlapMode<- 'SofiaTrumps'
+OverlapMode<- 'FaoTrumps'
 
 CountriesToRun<- c('Global','USA','China','Indonesia','Philippines','Peru','Chile','Mexico','Japan','Myanmar','Viet Nam','EU','Parties to the Nauru Agreement') 
 
@@ -105,6 +105,8 @@ SpeciesCategoriesToOmit<- c('Corals','Frogs and other amphibians','Eared seals, 
                             'River eels','Freshwater molluscs')
 
 SpeciesCategoriesToLump<- c('Miscellaneous pelagic fishes','Tunas, bonitos, billfishes','Cods, hakes, haddocks','Marine fishes not identified')
+
+ForageFish<- c('Herrings, sardines, anchovies')
 
 MissingCatchTolerance<- 0.99 #Maximumum percentage of catch years that can be missing
 
