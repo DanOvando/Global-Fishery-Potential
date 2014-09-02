@@ -13,6 +13,7 @@ require(RCurl)
 require(XML)
 require(MASS)
 require(prettyR)
+require(zoo)
 # Basic Controls -------------------------------------------------------------
 
 RunAnalyses<- TRUE
@@ -49,11 +50,11 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-IncludeNEIs<- 0
+IncludeNEIs<- 1
 
-ExcludeForageFish<- 1
+ExcludeForageFish<- 0
 
-OverFishedOnly<- 1
+OverFishedOnly<- 0
 
 OverlapMode<- 'FaoTrumps' #SofiaTrumps, FaoTrumps
 
