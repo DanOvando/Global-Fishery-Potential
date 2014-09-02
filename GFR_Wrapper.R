@@ -609,7 +609,7 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     dev.off()
     
     
-    # Save and Print Results --------------------------------------------------
+    # Save  Results --------------------------------------------------
     
     write.csv(file=paste(ResultFolder,CountriesToRun[c],' Policy Projections.csv',sep=''),TimeTrend)
     
@@ -654,6 +654,7 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     
     
     print(xyplot( PercChangeTotalProfits ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,ylab='% Change from Current Total Profits',type='l',lwd=4,auto.key=T,aspect='fill'))
+
     
     print(xyplot( PercChangeTotalCatch ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=4,auto.key=T,aspect='fill',ylab='% Change from Current Total Catch'))
     
