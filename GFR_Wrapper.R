@@ -424,15 +424,15 @@ save.image(file=paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep='
 
 if (RunAnalyses==F)
 {
-
-  FullData<- OriginalFullData #Complete database, post filtering/cleaning etc
-  
-  BiomassData<- OriginalBiomassData #Fisheries that have B/Bmsy
-  
-  MsyData<- OriginalMsyData #Fisheries that have B/Bmsy and MSY
-  
-  ProjectionData<- OriginalProjectionData #Fisheries that have B/Bmsy, MSY, and we've run the projections
-  
+# 
+#   FullData<- OriginalFullData #Complete database, post filtering/cleaning etc
+#   
+#   BiomassData<- OriginalBiomassData #Fisheries that have B/Bmsy
+#   
+#   MsyData<- OriginalMsyData #Fisheries that have B/Bmsy and MSY
+#   
+#   ProjectionData<- OriginalProjectionData #Fisheries that have B/Bmsy, MSY, and we've run the projections
+#   
 
 }
 
@@ -583,6 +583,12 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     FinalYear$PercChangeFromSQMedianProfits<- 100*(FinalYear$MedianProfits/FinalYear$MedianProfits[FinalYear$Policy=='SQ']-1)
     
     FinalYear$PercChangeFromSQMedianCatch<- 100*(FinalYear$MedianCatch/FinalYear$MedianCatch[FinalYear$Policy=='SQ']-1)
+    
+    FinalYear$PercChangeFromSQTotalBiomass<- 100*(FinalYear$TotalBiomass/FinalYear$TotalBiomass[FinalYear$Policy=='SQ']-1)
+    
+    FinalYear$PercChangeFromSQTotalProfits<- 100*(FinalYear$TotalProfits/FinalYear$TotalProfits[FinalYear$Policy=='SQ']-1)
+    
+    FinalYear$PercChangeFromSQTotalCatch<- 100*(FinalYear$TotalCatch/FinalYear$TotalCatch[FinalYear$Policy=='SQ']-1)
     
     
     # Analyze Database Composition --------------------------------------------
