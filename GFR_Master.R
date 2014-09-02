@@ -18,7 +18,7 @@ require(zoo)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'Results/August 26 Sofia Trumps With Forage Fish/'
+BatchFolder<- 'Results/Sep 2 Sofia Trumps With Forage Fish/'
 
 InputFolder<- 'Data/'
 
@@ -36,7 +36,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Results/August 26 Sofia Trumps With Forage Fish/'
+  BatchFolder<- 'Results/August 28 Sofia Trumps With Forage Fish/'
   
   InputFolder<- 'Data/'
   
@@ -56,7 +56,7 @@ ExcludeForageFish<- 0
 
 OverFishedOnly<- 0
 
-OverlapMode<- 'FaoTrumps' #SofiaTrumps, FaoTrumps
+OverlapMode<- 'SofiaTrumps' #SofiaTrumps, FaoTrumps
 
 CountriesToRun<- c('Global','USA','China','Indonesia','Philippines','Peru','Chile','Mexico','Japan','Myanmar','Viet Nam','EU','Parties to the Nauru Agreement') 
 
