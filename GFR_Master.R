@@ -14,11 +14,12 @@ require(XML)
 require(MASS)
 require(prettyR)
 require(zoo)
+require(proftools)
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- TRUE
+RunAnalyses<- FALSE
 
-BatchFolder<- 'Results/Sep 2 Sofia Trumps With Forage Fish/'
+BatchFolder<- 'Results/August 28 FAO Trumps With Forage Fish/'
 
 InputFolder<- 'Data/'
 
@@ -36,7 +37,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Results/August 28 Sofia Trumps With Forage Fish/'
+  BatchFolder<- 'Results/August 28 FAO Trumps With Forage Fish/'
   
   InputFolder<- 'Data/'
   
@@ -50,13 +51,13 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-IncludeNEIs<- 1
+IncludeNEIs<- 0
 
 ExcludeForageFish<- 0
 
-OverFishedOnly<- 0
+OverFishedOnly<- 1
 
-OverlapMode<- 'SofiaTrumps' #SofiaTrumps, FaoTrumps
+OverlapMode<- 'FaoTrumps' #SofiaTrumps, FaoTrumps
 
 CountriesToRun<- c('Global','USA','China','Indonesia','Philippines','Peru','Chile','Mexico','Japan','Myanmar','Viet Nam','EU','Parties to the Nauru Agreement') 
 

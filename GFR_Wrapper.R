@@ -424,15 +424,15 @@ save.image(file=paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep='
 
 if (RunAnalyses==F)
 {
-# 
-#   FullData<- OriginalFullData #Complete database, post filtering/cleaning etc
-#   
-#   BiomassData<- OriginalBiomassData #Fisheries that have B/Bmsy
-#   
-#   MsyData<- OriginalMsyData #Fisheries that have B/Bmsy and MSY
-#   
-#   ProjectionData<- OriginalProjectionData #Fisheries that have B/Bmsy, MSY, and we've run the projections
-#   
+
+  FullData<- OriginalFullData #Complete database, post filtering/cleaning etc
+  
+  BiomassData<- OriginalBiomassData #Fisheries that have B/Bmsy
+  
+  MsyData<- OriginalMsyData #Fisheries that have B/Bmsy and MSY
+  
+  ProjectionData<- OriginalProjectionData #Fisheries that have B/Bmsy, MSY, and we've run the projections
+  
 
 }
 
@@ -482,6 +482,20 @@ if (ExcludeForageFish==1)
 }
 
 ProjectionData$Profits[ProjectionData$Profits<0]<- 0
+
+# Build empty version of Chris's database to be populated with FinalYear results. Make separate percent change and absolute change tables then use rbind later
+
+ResultMetricsNames<-c("PercChangeTotalProfits","PercChangeTotalCatch","PercChangeTotalBiomass","PercChangeMedianProfits","PercChangeMedianCatch",
+                      "PercChangeMedianBiomass", "AbsChangeTotalProfits","AbsChangeTotalCatch","AbsChangeTotalBiomass","AbsChangeMedianProfits","AbsChangeMedianCatch",
+                      "AbsChangeMedianBiomass","PercChangeFromSQMedianBiomass",
+                      "PercChangeFromSQMedianProfits","PercChangeFromSQMedianCatch","AbsChangeFromSQMedianBiomass","AbsChangeFromSQMedianProfits","AbsChangeFromSQMedianCatch",
+                      "PercChangeFromSQ_NPV","PercChangeFromSQ_Food","PercChangeFromSQ_Fish")
+
+ResultMetricsBaselineTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=13))
+colnames(ResultMetricsBaselineTable)<-c("Region",ResultMetricsNames[1:12])
+
+ResultMetricsSQTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=10))
+colnames(ResultMetricsSQTable)<-c("Region",ResultMetricsNames[13:21])
 
 for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
 {
@@ -564,13 +578,28 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     
     TimeTrend$PercChangeMedianBiomass<-100*(TimeTrend$MedianBvBmsy/Baseline$MedianBvBmsy-1)
     
+  # add absolute changes
+  
+    TimeTrend$AbsChangeTotalProfits<-TimeTrend$TotalProfits-Baseline$TotalProfits
+  
+    TimeTrend$AbsChangeTotalCatch<-TimeTrend$TotalCatch-Baseline$TotalCatch
+  
+    TimeTrend$AbsChangeTotalBiomass<-TimeTrend$TotalBiomass-Baseline$TotalBiomass
+  
+    TimeTrend$AbsChangeMedianProfits<-TimeTrend$MedianProfits-Baseline$MedianProfits
+  
+    TimeTrend$AbsChangeMedianCatch<-TimeTrend$MedianCatch-Baseline$MedianCatch
+  
+    TimeTrend$AbsChangeMedianBiomass<-TimeTrend$MedianBvBmsy-Baseline$MedianBvBmsy
+  
+    
     #     TimeTrend$PercChangeFromSQMedianBiomass<-100*(TimeTrend$MedianBvBmsy/TimeTrend$MedianBvBmsy[TimeTrend$Policy=='SQ']-1)
     
     Cumulatives<- ddply(TimeTrend[TimeTrend$Year>BaselineYear,],c('Policy'),summarize,NPV=sum(DiscProfits,na.rm=T),Food=sum(TotalCatch,na.rm=T),Fish=sum(TotalBiomass,na.rm=T))
     
     CumeNumbers<- as.matrix(Cumulatives[,2:dim(Cumulatives)[2]])
     
-    CumeNumbers<- 100*(t(t(CumeNumbers)/CumeNumbers[which(Cumulatives$Policy=='SQ'),])-1)
+    CumeNumbers<- 100*(t(t(CumeNumbers)/CumeNumbers[which(Cumulatives$Policy=='SQ'),])-1) # percents
     
     Cumulatives[,2:dim(Cumulatives)[2]]<- CumeNumbers
     
@@ -590,8 +619,34 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     
     FinalYear$PercChangeFromSQTotalCatch<- 100*(FinalYear$TotalCatch/FinalYear$TotalCatch[FinalYear$Policy=='SQ']-1)
     
+    # Add columns to FinalYear for absolute changes
     
-    # Analyze Database Composition --------------------------------------------
+    FinalYear$AbsChangeFromSQMedianBiomass<- FinalYear$MedianBvBmsy-FinalYear$MedianBvBmsy[FinalYear$Policy=='SQ']
+    
+    FinalYear$AbsChangeFromSQMedianProfits<- FinalYear$MedianProfits-FinalYear$MedianProfits[FinalYear$Policy=='SQ']
+    
+    FinalYear$AbsChangeFromSQMedianCatch<- FinalYear$MedianCatch-FinalYear$MedianCatch[FinalYear$Policy=='SQ']
+    
+    FinalYear$AbsChangeFromSQTotalBiomass<- FinalYear$TotalBiomass-FinalYear$TotalBiomass[FinalYear$Policy=='SQ']
+    
+    FinalYear$AbsChangeFromSQTotalProfits<- FinalYear$TotalProfits-FinalYear$TotalProfits[FinalYear$Policy=='SQ']
+    
+    FinalYear$AbsChangeFromSQTotalCatch<- FinalYear$TotalCatch-FinalYear$TotalCatch[FinalYear$Policy=='SQ']
+    
+    # Populate Chris's Data Table
+    
+    ResultMetricsBaselineTable[c,1]<-CountriesToRun[c]
+    ResultMetricsSQTable[c,1]<-CountriesToRun[c]
+  
+    ResultMetricsBaselineTable[c,2:13]<-FinalYear[FinalYear$Policy=="CatchShare",13:24]
+    
+    ResultMetricsSQTable[c,2:4]<-FinalYear[FinalYear$Policy=="CatchShare",25:27]
+    ResultMetricsSQTable[c,5:7]<-FinalYear[FinalYear$Policy=="CatchShare",31:33]
+    ResultMetricsSQTable[c,8:10]<-Cumulatives[Cumulatives$Policy=="CatchShare",2:4]
+  
+    ResultMetricsTable<-merge(ResultMetricsBaselineTable,ResultMetricsSQTable,by = "Region")
+    
+  # Analyze Database Composition --------------------------------------------
     
     FullTallies<- ddply(FullData[FullData_CountryLocater,],c('Year','Dbase'),summarize,Fisheries=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T),Source='FullData')
     
@@ -627,8 +682,7 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     
     write.csv(file=paste(ResultFolder,CountriesToRun[c],' From Current Year Data.csv',sep=''),FinalYear)
     
-    write.csv(file=paste(ResultFolder,CountriesToRun[c],' From Business As Usual Data.csv',sep=''),Cumulatives)
-    
+    write.csv(file=paste(ResultFolder,CountriesToRun[c],' From Business As Usual Data.csv',sep=''),Cumulatives)    
     
     BaselineYear<- 2005
     
@@ -679,6 +733,7 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
   } #Close if
 } #Close Country Trajectory Analysis 
 
+write.csv(file=paste(ResultFolder,'Chris Summary Table Data.csv',sep=''),ResultMetricsTable)
 
 # Scale and Analyze Results -----------------------------------------------
 
