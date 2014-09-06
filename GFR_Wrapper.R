@@ -484,18 +484,28 @@ if (ExcludeForageFish==1)
 ProjectionData$Profits[ProjectionData$Profits<0]<- 0
 
 # Build empty version of Chris's database to be populated with FinalYear results. Make separate percent change and absolute change tables then use rbind later
+# 3 data frames to be merged at end.
+# 1) Policy results relative to baseline values. 2) Policy results relative to Status Quo Policy in Final Year 3) Cumulative Policy results relative to Status Quo
 
-ResultMetricsNames<-c("PercChangeTotalProfits","PercChangeTotalCatch","PercChangeTotalBiomass","PercChangeMedianProfits","PercChangeMedianCatch",
+ResultMetricsBaselineNames<-c("PercChangeTotalProfits","PercChangeTotalCatch","PercChangeTotalBiomass","PercChangeMedianProfits","PercChangeMedianCatch",
                       "PercChangeMedianBiomass", "AbsChangeTotalProfits","AbsChangeTotalCatch","AbsChangeTotalBiomass","AbsChangeMedianProfits","AbsChangeMedianCatch",
-                      "AbsChangeMedianBiomass","PercChangeFromSQMedianBiomass",
-                      "PercChangeFromSQMedianProfits","PercChangeFromSQMedianCatch","AbsChangeFromSQMedianBiomass","AbsChangeFromSQMedianProfits","AbsChangeFromSQMedianCatch",
-                      "PercChangeFromSQ_NPV","PercChangeFromSQ_Food","PercChangeFromSQ_Fish")
+                      "AbsChangeMedianBiomass")
+
+ResultMetricsSQFinalNames<-c("PercChangeFromSQTotalBiomass","PercChangeFromSQTotalProfits","PercChangeFromSQTotalCatch","PercChangeFromSQMedianBiomass", "PercChangeFromSQMedianProfits",
+                      "PercChangeFromSQMedianCatch","AbsChangeFromSQTotalBiomass","AbsChangeFromSQTotalProfits","AbsChangeFromSQTotalCatch", "AbsChangeFromSQMedianBiomass",
+                      "AbsChangeFromSQMedianProfits","AbsChangeFromSQMedianCatch")
+
+ResultMetricsSQCumFinalNames<-c("PercChangeFromSQCum_NPV","PercChangeFromSQCum_Food","PercChangeFromSQCum_Fish","PercChangeFromSQCumMedianProfits","PercChangeFromSQCumMedianCatch","PercChangeFromSQMedianBiomass",
+                           "AbsChangeFromSQCumProfits","AbsChangeFromSQCumFood","AbsChangeFromSQCumFish","AbsChangeFromSQCumMedianProfits","AbsChangeFromSQCumMedianCatch","AbsChangeFromSQCumMedianBiomass")
 
 ResultMetricsBaselineTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=13))
-colnames(ResultMetricsBaselineTable)<-c("Region",ResultMetricsNames[1:12])
+colnames(ResultMetricsBaselineTable)<-c("Region",ResultMetricsBaselineNames)
 
-ResultMetricsSQTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=10))
-colnames(ResultMetricsSQTable)<-c("Region",ResultMetricsNames[13:21])
+ResultMetricsSQFinalTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=13))
+colnames(ResultMetricsSQFinalTable)<-c("Region",ResultMetricsSQFinalNames)
+
+ResultMetricsSQCumFinalTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=13))
+colnames(ResultMetricsSQCumFinalTable)<-c("Region",ResultMetricsSQCumFinalNames)
 
 for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
 {
@@ -576,7 +586,7 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     
     TimeTrend$PercChangeMedianCatch<-100*(TimeTrend$MedianCatch/Baseline$MedianCatch-1)
     
-    TimeTrend$PercChangeMedianBiomass<-100*(TimeTrend$MedianBvBmsy/Baseline$MedianBvBmsy-1)
+    TimeTrend$PercChangeMedianBiomass<-100*(TimeTrend$MedianBvBmsy/Baseline$MedianBvBmsy-1) # should this be % Change in Median Status?
     
   # add absolute changes
   
@@ -595,13 +605,23 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     
     #     TimeTrend$PercChangeFromSQMedianBiomass<-100*(TimeTrend$MedianBvBmsy/TimeTrend$MedianBvBmsy[TimeTrend$Policy=='SQ']-1)
     
-    Cumulatives<- ddply(TimeTrend[TimeTrend$Year>BaselineYear,],c('Policy'),summarize,NPV=sum(DiscProfits,na.rm=T),Food=sum(TotalCatch,na.rm=T),Fish=sum(TotalBiomass,na.rm=T))
+    Cumulatives<- ddply(TimeTrend[TimeTrend$Year>BaselineYear,],c('Policy'),summarize,NPV=sum(DiscProfits,na.rm=T),Food=sum(TotalCatch,na.rm=T),Fish=sum(TotalBiomass,na.rm=T),
+                        MedianProfits=sum(MedianProfits,na.rm=T),MedianCatch=sum(MedianCatch,na.rm=T),MedianBiomass=sum(MedianBvBmsy,na.rm=T))
     
     CumeNumbers<- as.matrix(Cumulatives[,2:dim(Cumulatives)[2]])
     
+    CumeNumbersAbs<- as.matrix(Cumulatives[,2:dim(Cumulatives)[2]])
+    
     CumeNumbers<- 100*(t(t(CumeNumbers)/CumeNumbers[which(Cumulatives$Policy=='SQ'),])-1) # percents
     
-    Cumulatives[,2:dim(Cumulatives)[2]]<- CumeNumbers
+    CumeNumbersAbs<- t(t(CumeNumbersAbs)-CumeNumbersAbs[which(Cumulatives$Policy=='SQ'),]) # absolutes  
+  
+    Cumulatives[,2:dim(Cumulatives)[2]]<- CumeNumbers   
+  
+    Cumulatives[,8:13]<-CumeNumbersAbs
+    colnames(Cumulatives)[8:13]<-paste("Abs",colnames(CumeNumbersAbs),sep="")
+    
+    Cumulatives[,colnames(Cumulatives)=="AbsMedianBiomass"]<-Cumulatives$AbsMedianBiomass/(ProjectionTime)
     
     Cumulatives<- Cumulatives[Cumulatives$Policy!='SQ' & Cumulatives$Policy!='Historic',]
     
@@ -636,15 +656,20 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     # Populate Chris's Data Table
     
     ResultMetricsBaselineTable[c,1]<-CountriesToRun[c]
-    ResultMetricsSQTable[c,1]<-CountriesToRun[c]
+    ResultMetricsSQFinalTable[c,1]<-CountriesToRun[c]
+    ResultMetricsSQCumFinalTable[c,1]<-CountriesToRun[c]
   
     ResultMetricsBaselineTable[c,2:13]<-FinalYear[FinalYear$Policy=="CatchShare",13:24]
     
-    ResultMetricsSQTable[c,2:4]<-FinalYear[FinalYear$Policy=="CatchShare",25:27]
-    ResultMetricsSQTable[c,5:7]<-FinalYear[FinalYear$Policy=="CatchShare",31:33]
-    ResultMetricsSQTable[c,8:10]<-Cumulatives[Cumulatives$Policy=="CatchShare",2:4]
+    ResultMetricsSQFinalTable[c,2:4]<-FinalYear[FinalYear$Policy=="CatchShare",28:30]
+    ResultMetricsSQFinalTable[c,5:7]<-FinalYear[FinalYear$Policy=="CatchShare",25:27]
+    ResultMetricsSQFinalTable[c,8:10]<-FinalYear[FinalYear$Policy=="CatchShare",34:36]
+    ResultMetricsSQFinalTable[c,11:13]<-FinalYear[FinalYear$Policy=="CatchShare",31:33]
   
-    ResultMetricsTable<-merge(ResultMetricsBaselineTable,ResultMetricsSQTable,by = "Region")
+    ResultMetricsSQCumFinalTable[c,2:13]<-Cumulatives[Cumulatives$Policy=="CatchShare",2:dim(Cumulatives)[2]]
+    
+    ResultMetricsTable<-merge(ResultMetricsBaselineTable,ResultMetricsSQFinalTable,by = "Region")
+    ResultMetricsTable<-merge(ResultMetricsTable,ResultMetricsSQCumFinalTable,by = "Region")
     
   # Analyze Database Composition --------------------------------------------
     
@@ -706,6 +731,12 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     
     print(barchart(PercChangeMedianBiomass ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Current Median Fish'))
     
+    print(barchart(PercChangeFromSQTotalProfits ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Total Profits'))
+  
+    print(barchart(PercChangeFromSQTotalCatch ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Total Catch'))
+  
+    print(barchart(PercChangeFromSQTotalBiomass ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Total Fish'))
+  
     print(barchart(PercChangeFromSQMedianProfits ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Median Profits'))
     
     print(barchart(PercChangeFromSQMedianCatch ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Median Catch'))
