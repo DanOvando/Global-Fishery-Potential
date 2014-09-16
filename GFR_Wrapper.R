@@ -442,6 +442,8 @@ BiomassData$Country[BiomassData$Country=='United States of America']<- 'USA'
 
 FullData$Country[FullData$Country=='United States of America']<- 'USA'
 
+FaoNeiLevel$Country[FaoNeiLevel$Country=='United States of America']<- 'USA'
+
 WhereNeis<- (grepl('nei',FullData$CommName) | grepl('spp',FullData$SciName)) & grepl('not identified',FullData$SpeciesCatName)==F #Find unassessed NEIs
 
 WhereUnidentified<- grepl('not identified',FullData$SpeciesCatName)
@@ -508,8 +510,10 @@ ResultMetricsSQCumFinalTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),n
 colnames(ResultMetricsSQCumFinalTable)<-c("Region",ResultMetricsSQCumFinalNames)
 
 # Summarize GlobalStatus Year, FAO Region, and Species Category for assigning values to NEI fisheries (New Method)
+# **Currently taking median status from FAO and not including RAM due to multiple FAO regions for certain RAM stocks. Could use grepl to summarize with RAM?
 
 StatusByRegSpCat<-ddply(GlobalStatus$Data[GlobalStatus$Data$Dbase=="FAO",],c("Year","RegionFAO","SpeciesCatName"),summarize, MedianStatus=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),Fisheries=length(unique(IdOrig)))
+FvFmsyStatusByRegSpCat<-ddply(BiomassData[BiomassData$Dbase=="FAO",],c("Year","RegionFAO","SpeciesCatName"),summarize,MedianFvFmsy=median(FvFmsy,na.rm=T),Fisheries=length(unique(IdOrig)))
 
 for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
 {
@@ -521,7 +525,7 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     FullData_CountryLocater<-  FullData$Country %in% unique(FullData$Country)
     Biomass_CountryLocater<-  BiomassData$Country %in% unique(BiomassData$Country)
     Proj_CountryLocater<- ProjectionData$Country %in% unique(ProjectionData$Country)
-    Nei_CountryLocater<-FaoNeiLevel %in% unique(FaoNeiLevel$Country)
+    Nei_CountryLocater<-FaoNeiLevel$Country %in% unique(FaoNeiLevel$Country)
   
   } else if (CountriesToRun[c]=='Parties to the Nauru Agreement')
   {
@@ -554,7 +558,9 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     BiomassStatus<- AnalyzeFisheries(BiomassData[Biomass_CountryLocater,],paste(CountriesToRun[c],' Status',sep=''),'Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
     
     # subset NEI's and add median values calculated in StatusByRegSpCat at beginning of loop. Add NEI entries to Biomass Status before Kobe Plot 
-    
+  
+    if(sum(Nei_CountryLocater,na.rm=T)>0)
+  {
     CountryNeis<-FaoNeiLevel[Nei_CountryLocater,]
     CountryNeis<-subset(CountryNeis,(Year %in% c(2005:2011))) # just for 2005-2011
     
@@ -565,16 +571,22 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     CountryNeis$BvBmsySD<-NA
     
     # apply median status to nei fisheries in matching year/region/speciescategory 
-    for (i in 1:nrow(CountryNeis)){
+    
+    Combos<-unique(CountryNeis[c("Year","RegionFAO","SpeciesCatName")]) # define unique combinations to loop through
+    
+    for (i in 1:nrow(Combos)){
+        
+      where<-CountryNeis$Year==Combos$Year[i] & CountryNeis$RegionFAO==Combos$RegionFAO[i] & CountryNeis$SpeciesCatName==Combos$SpeciesCatName[i]
       
-      if(length(subset(StatusByRegSpCat,RegionFAO==CountryNeis$RegionFAO[i] & Year==CountryNeis$Year[i] & SpeciesCatName==CountryNeis$SpeciesCatName[i])$MedianStatus)>0){
+      if(length(subset(StatusByRegSpCat,RegionFAO==Combos$RegionFAO[i] & Year==Combos$Year[i] & SpeciesCatName==Combos$SpeciesCatName[i])$MedianStatus)>0){
       
-      CountryNeis$BvBmsy[i]<-subset(StatusByRegSpCat,RegionFAO==CountryNeis$RegionFAO[i] & Year==CountryNeis$Year[i] & SpeciesCatName==CountryNeis$SpeciesCatName[i])$MedianStatus
-      CountryNeis$FvFmsy[i]<-subset(StatusByRegSpCat,RegionFAO==CountryNeis$RegionFAO[i] & Year==CountryNeis$Year[i] & SpeciesCatName==CountryNeis$SpeciesCatName[i])$MedianFvFmsy
+      CountryNeis$BvBmsy[where]<-subset(StatusByRegSpCat,RegionFAO==Combos$RegionFAO[i] & Year==Combos$Year[i] & SpeciesCatName==Combos$SpeciesCatName[i])$MedianStatus
+      CountryNeis$FvFmsy[where]<-subset(FvFmsyStatusByRegSpCat,RegionFAO==Combos$RegionFAO[i] & Year==Combos$Year[i] & SpeciesCatName==Combos$SpeciesCatName[i])$MedianFvFmsy
+      CountryNeis<-subset(CountryNeis,!(SpeciesCatName %in% SpeciesCategoriesToLump))
       }
     }
-    
     BiomassStatus$Data<-rbind(BiomassStatus$Data,CountryNeis)
+  } # close nei loop
     
     MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
     
