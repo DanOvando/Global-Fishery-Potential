@@ -14,7 +14,7 @@ RemoveOverlap<- function(Data,OverlapMode,stringsAsFactors=F)
 
 #     Data<- FullData
 # Data$Country<- as.character(levels(Data$Country))[Data$Country]
-  yrs<-c(1950:1955) # filter only years from 1950-2013
+  yrs<-c(1950:2013) # filter only years from 1950-2013
   
   for (r in 1:length(yrs))
   {
