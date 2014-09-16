@@ -23,10 +23,6 @@ MaidService<- function(Data,OverlapMode)
   
   StockStats$WrongSpeciesCategory<- (StockStats$SpeciesCatName %in% SpeciesCategoriesToOmit)
   
-  Overlap<- RemoveOverlap(Data,OverlapMode)
-  
-  OverlapToRemove<- c('Ram','Sofia','SofiaRam')
-  
 #     
 #   Omits<- NULL
 #   for (o in 1:length(OverlapToRemove))
@@ -36,15 +32,16 @@ MaidService<- function(Data,OverlapMode)
 #     
 #   }
 #   
-   FisheriesToOmit<- unique(c(FisheriesToOmit,Overlap$AllOverlap))
-  
-  StockStats$NotAllowedIn<- (StockStats[,IdVar] %in% FisheriesToOmit)
+#
+#    FisheriesToOmit<- unique(c(FisheriesToOmit,Overlap$AllOverlap)) New remove 
+#   
+#   StockStats$NotAllowedIn<- (StockStats[,IdVar] %in% FisheriesToOmit)
     
   StockStats$DropFishery<- 0
   
   ## Mark fisheries that need to be dropped 
   StockStats$DropFishery[StockStats$NoSpeciesCategory  | StockStats$WrongSpeciesCategory 
-                         | StockStats$NotAllowedIn | StockStats$TooFewCatchYears |
+                          | StockStats$TooFewCatchYears |
                            StockStats$PercentMissingTooHigh | StockStats$NoCatch]<- 1
   
   DroppedStocks<- StockStats[StockStats$DropFishery==1,]
@@ -53,7 +50,15 @@ MaidService<- function(Data,OverlapMode)
   
   Data<- Data[Data$Drop==F,] #Remove unusable fisheries
   
-  return(list(CleanedData=Data,DroppedStocks= DroppedStocks))
+  Overlap<- RemoveOverlap(Data,OverlapMode)
+
+  Data<-Overlap$FilteredData
+
+  AllOverlap<-Overlap$AllOverlapFinal
+
+  OverlapToRemove<- c('Ram','Sofia','SofiaRam')
+
+  return(list(CleanedData=Data,DroppedStocks= DroppedStocks,AllOverlap=AllOverlap))
   
 }
 

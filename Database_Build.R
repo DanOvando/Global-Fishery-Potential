@@ -247,27 +247,12 @@ RAM$ReferenceBiomassUnits[WhereRefB]<-"Bmsy"
 
 Spec_ISSCAAP=read.csv("Data/Species_ASFIS_ISSCAAP.csv") # list of ASFIS scientific names and corressponding ISSCAAP codes 
 Spec_Region_RAM=read.csv("Data/RAM_Regions_72814.csv") # list of RAM Assessed IDs previously matched to species code and FAO Region
+Spec_Region_RAM$RegionFAO<- gsub("/",",",Spec_Region_RAM$RegionFAO,fixed=T) # change / to , for use in string parsing during filtering function
 
 Spec_Region_RAM$assessid=as.character(levels(Spec_Region_RAM$assessid))[Spec_Region_RAM$assessid] # convert ID to character
-Spec_Region_RAM$RegionFAO=as.character(levels(Spec_Region_RAM$RegionFAO))[Spec_Region_RAM$RegionFAO] # convert region to character
+Spec_Region_RAM$areaname<-as.character(levels(Spec_Region_RAM$areaname))[Spec_Region_RAM$areaname]
+
 Spec_ISSCAAP$Species_AFSIS=as.character(levels(Spec_ISSCAAP$Species_AFSIS))[Spec_ISSCAAP$Species_AFSIS] # convert ID to character
-
-# FAO Region matching
-RegionFAOMatches=unique(Spec_Region_RAM$assessid)
-
-for (i in 1:length(RAMNames)) # currently only matching 11 of the 17 unique FAO regions in the Spec_Region.csv. Due to stocks in multiple zones? 
-{
-  
-  Where1<- RAMNames[i]==Spec_Region_RAM$assessid
-  
-  Where2<- RAMNames[i]==RAM$IdOrig
-  
-  
-  if (sum(Spec_Region_RAM$assessid==RAMNames[i])>0)
-  {
-    RAM$RegionFAO[Where2]<- Spec_Region_RAM[Where1,15][1]
-  }
-}
 
 # Country Identification - using first word from "areaid" in metadata data frame
 for (i in 1:length(metadata$areaid)) # loop adds country variable to metadata data frame
@@ -284,6 +269,50 @@ for(i in 1:length(RAMNames))# loop adds country variable to RAM
   RAM$Country[whereram]<-metadata[wheremeta,12]
 }
 
+RAM$Country<- gsub("multinational","Multinational",RAM$Country)
+Spec_Region_RAM$Country<- gsub("multinational","Multinational",Spec_Region_RAM$Country)
+Spec_Region_RAM$Country<- gsub("United States of America","USA",Spec_Region_RAM$Country)
+
+# FAO Region matching
+
+# make data frame with FAO regions for multinational stock possibilities
+
+regionname<-c( "Atlantic Ocean",                    "Central Western Pacific Ocean",     "Eastern Atlantic",                 
+               "Eastern Pacific",                   "North Pacific Ocean",               "Northern Atlantic",                
+               "Pacific Ocean",                     "South Atlantic",                    "South Pacific Ocean",              
+               "Western and Central North Pacific", "Western Atlantic",                  "Western Pacific Ocean", "Indian Ocean") 
+
+regs<-c("21,27,31,34,41,47,48","71","27,34,47","67,77,87","61,67","21,27","61,67,71,77,81,87,88","41,47","81,87","61,67,71,77","21,31,41","61,71,81","57,58")
+
+multiFAOdf<-data.frame(regionname,regs,stringsAsFactors=F)
+
+# run for loop to identify multinational stocks with NAs and fill fao regions based on multiFAOdf
+
+for (i in 1:length(Spec_Region_RAM$assessid)){
+  
+  if(Spec_Region_RAM$Country[i]=="Multinational" & is.na(Spec_Region_RAM$RegionFAO[i])==T){
+    
+    regmatch<-match(Spec_Region_RAM$areaname[i],multiFAOdf$regionname)
+    
+    Spec_Region_RAM$RegionFAO[i]<-multiFAOdf[regmatch,2]
+  }
+}
+
+RegionFAOMatches=unique(Spec_Region_RAM$assessid)
+
+for (i in 1:length(RAMNames)) # currently only matching 11 of the 17 unique FAO regions in the Spec_Region.csv. Due to stocks in multiple zones? 
+{
+  
+  Where1<- RAMNames[i]==Spec_Region_RAM$assessid
+  
+  Where2<- RAMNames[i]==RAM$IdOrig
+  
+  
+  if (sum(Spec_Region_RAM$assessid==RAMNames[i])>0)
+  {
+    RAM$RegionFAO[Where2]<- Spec_Region_RAM[Where1,15]
+  }
+}
 
 # ISSCAAP Species Code Matching
 
@@ -312,6 +341,10 @@ for (i in 1:length(GroupNums)) # match group code to group name
     RAM$SpeciesCatName[Where]<-GroupNames_ISSCAAP[GroupNames_ISSCAAP$ISSCAAP.code==GroupNums[i],2]
   }
 }
+
+
+
+RAM$Country[RAM$Country=="Russia"]<-"Russian Federation"
 
 ############################################################################################################
 ############ SOFIA DATABASE ############
@@ -427,6 +460,30 @@ sofia=subset(sofia, select=c(ColNames)) # subset to remove added column names
 sofia=sofia[order(sofia$IdOrig,sofia$Year),] # sort to make catch records sequential
 sofia=sofia[,c(ColNames)] # order columns according to ColNames
 
+# apply FAO region possibilities from multiFAOdf for Pacific, Atlantic, and Indian SOFIA stocks
+sofia$RegionFAO[sofia$RegionFAO=="Pacific"]<-multiFAOdf[7,2]
+sofia$RegionFAO[sofia$RegionFAO=="Pacific "]<-multiFAOdf[7,2]
+sofia$RegionFAO[sofia$RegionFAO=="Atlantic"]<-multiFAOdf[1,2]
+sofia$RegionFAO[sofia$RegionFAO=="Indian"]<-multiFAOdf[13,2]
+
+# clean up country names
+sofia$Country<-gsub("\n"," ",sofia$Country) # sub out "/n"
+sofia$Country<-gsub("  "," ",sofia$Country) # change double spaces to single spaces
+sofia$Country<-gsub("\\(.*\\)","",sofia$Country) # delete anything within parentheses
+sofia$Country<- gsub("^\\s+|\\s+$","",sofia$Country) # trim leading and trailing space
+
+sofia$Country<-gsub("United States of America","USA",sofia$Country) # convert to USA
+sofia$Country<-gsub("C\xc8te d\x90Ivoire","Ivory Coast",sofia$Country)
+sofia$Country<-gsub("Democratic. People\xfc\xbe\x8c\x83\xa4\xbcs Republic of Korea","Democratic People's Republic of Korea",sofia$Country)
+sofia$Country<-gsub("Democratic People\xfc\xbe\x8c\x83\xa4\xbcs Republic of Korea","Democratic People's Republic of Korea",sofia$Country)
+sofia$Country<-gsub("Saint Vincent/ Grenadines","Saint Vincent/Grenadines",sofia$Country)
+sofia$Country<-gsub("the Democratic Republic of the Congo","Democratic Republic of the Congo",sofia$Country)
+sofia$Country<-gsub("Falkland Islands","Falkland Is.",sofia$Country)
+sofia$Country<-gsub("China, Hong Kong SAR","China Hong Kong SAR",sofia$Country)
+sofia$Country<-gsub("China, Macao SAR","China Macao SAR",sofia$Country)
+sofia$Country<-gsub("Other NEI","Other nei",sofia$Country)
+
+
 ############################################################################################################
 ############ FAO DATABASE ############
 
@@ -497,6 +554,28 @@ fao=fao[,c(ColNames)]
 
 # sort to make catch records sequential
 fao=fao[order(fao$IdOrig,fao$Year),] # *** currently ordering based only on the first digit of the IdOrig
+
+# general fixes to FAO
+
+fao$Country<-gsub("\\(.*\\)","",fao$Country) # delete anything within parentheses
+fao$Country<- gsub("^\\s+|\\s+$","",fao$Country) # trim leading and trailing space
+fao$Country<-gsub("  "," ",fao$Country) # change double spaces to single spaces
+
+fao$Country[fao$Country=="United States of America"]<-"USA"
+fao$Country<-gsub("R\x8eunion","Reunion",fao$Country)
+fao$Country<-gsub("Cura\x8dao","Curacao",fao$Country)
+fao$Country<-gsub("C\x99te d'Ivoire","Ivory Coast",fao$Country)
+fao$Country<-gsub("Saint Barth\x8elemy","Saint Barthelemy",fao$Country)
+fao$Country<-gsub("Korea, Dem. People's Rep", "Democratic People's Republic of Korea",fao$Country)
+fao$Country<-gsub("Korea, Republic of", "Republic of Korea",fao$Country,)
+fao$Country<-gsub("China, Hong Kong SAR", "China Hong Kong SAR",fao$Country)
+fao$Country<-gsub("China, Macao SAR", "China Macao SAR",fao$Country)
+fao$Country<-gsub("Congo, Dem. Rep. of the", "Democratic Republic of the Congo",fao$Country)
+fao$Country<-gsub("Congo, Republic of", "Congo",fao$Country)
+fao$Country<-gsub("Tanzania, United Rep. of","United Republic of Tanzania", fao$Country)
+
+fao$Country<-gsub(",.*$","",fao$Country) # removes everything after a comma, this will shorten names of all countries that only have one entry
+# e.g., Fiji, Republic of becomes just Fiji. This change is done after all standardizing of countries between FAO and SOFIA
 
 ############################################################################################################
 ############ BIND AND CLEAN-UP COMPLETE DATABASE ############

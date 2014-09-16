@@ -14,153 +14,129 @@ RemoveOverlap<- function(Data,OverlapMode,stringsAsFactors=F)
 
 #     Data<- FullData
 # Data$Country<- as.character(levels(Data$Country))[Data$Country]
-
-# subset out the three datasets
-ram<-subset(Data,Dbase=="RAM")
-sofia<-subset(Data,Dbase=="SOFIA")
-fao<-subset(Data,Dbase=="FAO")
-
-# for ram stocks with country but unclear(missing) FAO regions, make a duplicate stock for each possible FAO region
-# identify overlap using country/species/region
-
-# for "multinational" ram stocks, make duplicate stock for each possible fao region in the area (Pacific, Atlantic, etc)
-# identify overlap using just species/region
-
-Spec_Region_RAM=read.csv("Data/RAM_Regions_72814.csv") # list of RAM Assessed IDs previously matched to species code and FAO Region
-
-ramstocks<-Spec_Region_RAM[,c(2,5,9,13,15)] # subset ram to select only info relevant for filtering
-ramstocks$RegionFAO<- gsub("/",",",ramstocks$RegionFAO,fixed=T) # change / to , for use in string parsing later in script
-ramstocks$Country<- gsub("multinational","Multinational",ramstocks$Country)
-
-# make data frame with FAO regions for multinational stock possibilities
-
-regionname<-c( "Atlantic Ocean",                    "Central Western Pacific Ocean",     "Eastern Atlantic",                 
-               "Eastern Pacific",                   "North Pacific Ocean",               "Northern Atlantic",                
-               "Pacific Ocean",                     "South Atlantic",                    "South Pacific Ocean",              
-               "Western and Central North Pacific", "Western Atlantic",                  "Western Pacific Ocean") 
-
-regs<-c("21,27,31,34,41,47,48","71","27,34,47","67,77,87","61,67","21,27","61,67,71,77,81,87,88","41,47","81,87","61,67,71,77","21,31,41","61,71,81")
-
-multiFAOdf<-data.frame(regionname,regs,stringsAsFactors=F)
-
-# run for loop to identify multinational stocks with NAs and fill fao regions based on multiFAOdf
-
-
-for (i in 1:length(ramstocks$assessid)){
+  yrs<-c(1950:2013) # filter only years from 1950-2013
   
-  if(ramstocks$Country[i]=="Multinational" & is.na(ramstocks$RegionFAO[i])==T){
+  for (r in 1:length(yrs))
+  {
     
-    regmatch<-match(ramstocks$areaname[i],multiFAOdf$regionname)
-    
-    ramstocks$RegionFAO[i]<-multiFAOdf[regmatch,2]
-  }
-}
+    FilterData<-Data[Data$Year==yrs[r],]
+  
+  
+# subset out the three datasets
+ramSubset<-subset(FilterData,Dbase=="RAM" & is.na(Catch)==F)
+sofiaSubset<-subset(FilterData,Dbase=="SOFIA" & is.na(Catch)==F)
+faoSubset<-subset(FilterData,Dbase=="FAO" & is.na(Catch)==F)
 
 # for RAM stocks across multiple regions, create replicates for each possible FAO region. 
-newRam<-data.frame(assessid=NA,scientificname=NA,areaname=NA, Country=NA,RegionFAO=NA)
+newRam<-data.frame(IdOrig=NA,SciName=NA,Country=NA,RegionFAO=NA)
 
-for (n in 1:length(ramstocks$assessid)){ 
+ramstocks<-unique(ramSubset[c("IdOrig","RegionFAO","SciName","Country")]) # define unique combinations to loop through # Need to break apart countries
+sofiastocks<-unique(sofiaSubset[c("IdOrig","RegionFAO","SciName","Country")])
+faostocks<-unique(faoSubset[c("IdOrig","RegionFAO","SciName","Country")])
+
+# for ram and sofia, create duplicate stocks for every fao potential fao region for that stock
+
+for (n in 1:length(ramstocks$IdOrig)){ 
   
   RegionFAO<-unlist(strsplit(ramstocks$RegionFAO[n],split=",",fixed=T)) # split apart FAO regions
   num<-length(RegionFAO) # how many?
   
   if(num>0){
     
-    assessid<-rep(as.character(ramstocks$assessid[n],num)) 
-    scientificname<-rep(as.character(ramstocks$scientificname[n],num)) # duplicate info for all columns 
+    IdOrig<-rep(as.character(ramstocks$IdOrig[n],num)) 
+    SciName<-rep(as.character(ramstocks$SciName[n],num)) # duplicate info for all columns 
     Country<-rep(ramstocks$Country[n],num) 
-    areaname<-rep(as.character(ramstocks$areaname[n],num))
     
-    newdata<-data.frame(assessid,scientificname,areaname,Country,RegionFAO) # make new data frame with unique rows for each country in the assessment
+    newdata<-data.frame(IdOrig,SciName,Country,RegionFAO) # make new data frame with unique rows for each country in the assessment
     newRam<-rbind(newdata,newRam) # add to new ram dataset      
     
   }# close if statement
 }# close loop
 
-colnames(newRam)[2]<-"SciName"
-colnames(newRam)[1]<-"IdOrig"
+# convert newRam to character
+newRam$IdOrig<-as.character(levels(newRam$IdOrig))[newRam$IdOrig]
+newRam$SciName<-as.character(levels(newRam$SciName))[newRam$SciName]
+newRam$Country<-as.character(levels(newRam$Country))[newRam$Country]
+newRam$RegionFAO<-as.character(levels(newRam$RegionFAO))[newRam$RegionFAO]
 
-# get unique stocks from each subset by aggregating to the stock level and calculating total catch
-  # this method will not identify stocks that are missing one or more of the 4 aggregating criteria, need to improve
+newSofia<-data.frame(IdOrig=NA,SciName=NA,Country=NA,RegionFAO=NA)
 
-RamStocks<-aggregate(Catch~IdOrig+Country+SciName+RegionFAO,ram,sum) # RegionFAO needs to be updated with revised FAO Region matches
-SofiaStocks<-aggregate(Catch~IdOrig+Country+SciName+RegionFAO,sofia,sum) # Need to break apart countries
-FaoStocks<-aggregate(Catch~IdOrig+Country+SciName+RegionFAO,fao,sum) 
+for (n in 1:length(sofiastocks$IdOrig)){ 
+  
+  RegionFAO<-unlist(strsplit(sofiastocks$RegionFAO[n],split=",",fixed=T)) # split apart FAO regions
+  num<-length(RegionFAO) # how many?
+  
+  if(num>0){
+    
+    IdOrig<-rep(as.character(sofiastocks$IdOrig[n],num)) 
+    SciName<-rep(as.character(sofiastocks$SciName[n],num)) # duplicate info for all columns 
+    Country<-rep(sofiastocks$Country[n],num) 
+    
+    newdata<-data.frame(IdOrig,SciName,Country,RegionFAO) # make new data frame with unique rows for each country in the assessment
+    newSofia<-rbind(newdata,newSofia) # add to new ram dataset      
+    
+  }# close if statement
+}# close loop
+
+newSofia$Country<-as.character(levels(newSofia$Country))[newSofia$Country]
+newSofia$IdOrig<-as.character(levels(newSofia$IdOrig))[newSofia$IdOrig]
+newSofia$SciName<-as.character(levels(newSofia$SciName))[newSofia$SciName]
+newSofia$RegionFAO<-as.character(levels(newSofia$RegionFAO))[newSofia$RegionFAO]
 
 ### break up SOFIA so that there is a unique entry for each country
+newSofia2<-data.frame(IdOrig=NA,SciName=NA,Country=NA,RegionFAO=NA)
 
-newSofia<-data.frame(IdOrig=NA,Country=NA,SciName=NA,RegionFAO=NA)
-
-for (n in 1:length(SofiaStocks$IdOrig)){ 
+for (n in 1:nrow(newSofia)){ 
   
   # loop currently gives following warnings: In strsplit(SofiaStocks$Country[n], split = ", *", fixed = F) :
   # input string 1 is invalid in this locale  
   
-      Country<-unlist(strsplit(SofiaStocks$Country[n],split=", *",fixed=F)) # split apart countries
+      Country<-unlist(strsplit(newSofia$Country[n],split=", *",fixed=F)) # split apart countries
       num<-length(Country) # how many?
       
       if(num>0){ # if countries are listed...
       
-      IdOrig<-rep(SofiaStocks$IdOrig[n],num) 
-      SciName<-rep(SofiaStocks$SciName[n],num) # duplicate info for all columns 
-      RegionFAO<-rep(SofiaStocks$RegionFAO[n],num) 
+      IdOrig<-rep(newSofia$IdOrig[n],num) 
+      SciName<-rep(newSofia$SciName[n],num) # duplicate info for all columns 
+      RegionFAO<-rep(newSofia$RegionFAO[n],num) 
       
       newdata<-data.frame(IdOrig,Country,SciName,RegionFAO,stringsAsFactors=F) # make new data frame with unique rows for each country in the assessment
-      newSofia<-rbind(newdata,newSofia,stringsAsFactors=F) # add to new SOFIA dataset      
+      newSofia2<-rbind(newdata,newSofia2,stringsAsFactors=F) # add to new SOFIA dataset      
 
 }# close if statement
 }# close loop
 
-### Clean up Country names to match for SOFIA/RAM/FAO stocks
+newSofia2$Country<- gsub("^\\s+|\\s+$","",newSofia2$Country) # trim leading and trailing space
 
-# general fixes to SOFIA
-newSofia$Country<-gsub("\n"," ",newSofia$Country) # sub out "/n"
-newSofia$Country<-gsub("  "," ",newSofia$Country) # change double spaces to single spaces
-newSofia$Country<-gsub("\\(.*\\)","",newSofia$Country) # delete anything within parentheses
-newSofia$Country<- gsub("^\\s+|\\s+$","",newSofia$Country) # trim leading and trailing space
-
-# general fixes to FAO
-FaoStocks$Country<-gsub(",.*$","",FaoStocks$Country) # removes everything after a comma, this will combine certain entries like "Korea, Dem. People's Rep" and "Korea, Republic of"
-FaoStocks$Country<-gsub("\\(.*\\)","",FaoStocks$Country) # delete anything within parentheses
-FaoStocks$Country<- gsub("^\\s+|\\s+$","",FaoStocks$Country) # trim leading and trailing space
-FaoStocks$Country<-gsub("  "," ",FaoStocks$Country) # change double spaces to single spaces
-
-# specific fixes to SOFIA
-newSofia$Country[newSofia$Country=="Saint Vincent/ Grenadines"]<- "Saint Vincent/Grenadines"
-newSofia$Country[newSofia$Country=="United States of America"]<- "USA"
-newSofia$Country[newSofia$Country=="the Democratic Republic of the Congo"]<- "Congo"
-newSofia$Country[newSofia$Country=="United Republic of Tanzania"]<- "Tanzania"
-newSofia$Country[newSofia$Country=="Republic of Korea"]<- "Korea"
-
-# specific FAO country fixes
-FaoStocks$Country[FaoStocks$Country=="United States of America"]<- "USA"
-FaoStocks$Country[FaoStocks$Country=="Falkland Is.(Malvinas)"]<- "Falkland Islands"
-
+# find IDs of SOFIA stocks that are missing SciName and Country, and remove these stocks from dataset
+SofiaWithData<-unique(newSofia2$IdOrig)
+SofiaWithoutData<-newSofia[newSofia$SciName=="" & newSofia$Country=="",]
+SofiaWithoutDataIds<-unique(SofiaWithoutData$IdOrig) 
 
 ### Identify SOFIA stocks covered by RAM assessments (may be partial or full overlap)
 
-RamStocks$SOverlap<-NA
-RamStocks$SOverlapId<-NA
+newRam$SOverlap<-NA
+newRam$SOverlapId<-NA
 
-for (i in 1:nrow(newSofia)){
+for (i in 1:nrow(newSofia2)){
   
-  duplicate<- newSofia$SciName[i]==RamStocks$SciName & newSofia$Country[i]==RamStocks$Country & newSofia$RegionFAO[i]==RamStocks$RegionFAO
+  duplicate<- newSofia2$SciName[i]==newRam$SciName & newSofia2$Country[i]==newRam$Country & newSofia2$RegionFAO[i]==newRam$RegionFAO
   
-  RamStocks$SOverlap[duplicate]<-1
-  RamStocks$SOverlapId[duplicate]<-as.character(newSofia$IdOrig[i])
+  newRam$SOverlap[duplicate]<-1
+  newRam$SOverlapId[duplicate]<-as.character(newSofia2$IdOrig[i])
 }
 
 ### Identify FAO stocks covered by RAM assessments (national level)
 
-RamStocks$FOverlap<-NA
-RamStocks$FOverlapId<-NA
+newRam$FOverlap<-NA
+newRam$FOverlapId<-NA
 
-for (i in 1:nrow(FaoStocks)){
+for (i in 1:nrow(faostocks)){
   
-  duplicate<- FaoStocks$SciName[i]==RamStocks$SciName & FaoStocks$Country[i]==RamStocks$Country & FaoStocks$RegionFAO[i]==RamStocks$RegionFAO
+  duplicate<- faostocks$SciName[i]==newRam$SciName & faostocks$Country[i]==newRam$Country & faostocks$RegionFAO[i]==newRam$RegionFAO
   
-  RamStocks$FOverlap[duplicate]<-1
-  RamStocks$FOverlapId[duplicate]<-as.character(FaoStocks$IdOrig[i])
+  newRam$FOverlap[duplicate]<-1
+  newRam$FOverlapId[duplicate]<-as.character(faostocks$IdOrig[i])
 }
 
 ### Identify FAO stocks covered by RAM assessments (multinational RAM assessments)
@@ -171,8 +147,8 @@ RamMultiNatOverlap<-NA
 
 for (i in 1:nrow(multinational)){
   
-  duplicate<-multinational$SciName[i]==FaoStocks$SciName & multinational$RegionFAO[i]==FaoStocks$RegionFAO
-  overlapstocks<- (FaoStocks$IdOrig[duplicate])
+  duplicate<-multinational$SciName[i]==faostocks$SciName & multinational$RegionFAO[i]==faostocks$RegionFAO
+  overlapstocks<- (faostocks$IdOrig[duplicate])
   
   num<-length(overlapstocks)
   
@@ -184,7 +160,7 @@ for (i in 1:nrow(multinational)){
 ### Join FAO stocks that overlap with national and multinational RAM stocks
 
 # natOverlap<-unique(newRam$FOverlapId) # unique FAO stocks that match ram country level assessments
-natOverlap<-unique(RamStocks$FOverlapId,na.rm=T) # unique FAO stocks that match ram country level assessments
+natOverlap<-unique(newRam$FOverlapId,na.rm=T) # unique FAO stocks that match ram country level assessments
 
 
 
@@ -194,45 +170,79 @@ RamOverlap<-unique(c(natOverlap,multiOverlap)) # all possible FAO stocks that ov
 
 ### Identify the FAO stocks that match SOFIA stocks for Scientific name, Country, and FAO region
 
-newSofia$Overlap<-NA
-newSofia$OverlapId<-NA
+newSofia2$Overlap<-NA
+newSofia2$OverlapId<-NA
 
-for (i in 1:nrow(FaoStocks)){
+for (i in 1:nrow(faostocks)){
   
-  duplicate<- FaoStocks$SciName[i]==newSofia$SciName & FaoStocks$Country[i]==newSofia$Country & FaoStocks$RegionFAO[i]==newSofia$RegionFAO
+  duplicate<- faostocks$SciName[i]==newSofia2$SciName & faostocks$Country[i]==newSofia2$Country & faostocks$RegionFAO[i]==newSofia2$RegionFAO
   
-  newSofia$Overlap[duplicate]<-1
-  newSofia$OverlapId[duplicate]<-as.character(FaoStocks$IdOrig[i])
+  newSofia2$Overlap[duplicate]<-1
+  newSofia2$OverlapId[duplicate]<-as.character(faostocks$IdOrig[i])
 }
 
 # Identify which Sofia assessments are only partially covered by RAM (e.g., some but not all countries)
 
-newSofia$ROverlap<-NA
-newSofia$ROverlapId<-NA
+newSofia2$ROverlap<-NA
+newSofia2$ROverlapId<-NA
 
-for (i in 1:nrow(RamStocks)){
+for (i in 1:nrow(newRam)){
   
-  duplicate<- RamStocks$SciName[i]==newSofia$SciName & RamStocks$Country[i]==newSofia$Country & RamStocks$RegionFAO[i]==newSofia$RegionFAO
+  duplicate<- newRam$SciName[i]==newSofia2$SciName & newRam$Country[i]==newSofia2$Country & newRam$RegionFAO[i]==newSofia2$RegionFAO
   
-  newSofia$ROverlap[duplicate]<-1
-  newSofia$ROverlapId[duplicate]<-as.character(RamStocks$IdOrig[i])
+  newSofia2$ROverlap[duplicate]<-1
+  newSofia2$ROverlapId[duplicate]<-as.character(newRam$IdOrig[i])
 }
 
-OverlapS<-unique(RamStocks$SOverlapId)
+OverlapS<-unique(newRam$SOverlapId) # sofia stocks overlapping with ram stocks in yrs[r]
 
-newSofia$OverlapId[is.na(newSofia$OverlapId)==F]
+SofiaOverlap<-newSofia2$OverlapId[is.na(newSofia2$OverlapId)==F] # fao stocks overlapping with sofia in yrs[r]
 
 if (OverlapMode=='SofiaTrumps')
 {
-AllOverlap<- c(RamOverlap,newSofia$OverlapId[is.na(newSofia$OverlapId)==F],OverlapS)
+AllOverlap<- c(RamOverlap,newSofia2$OverlapId[is.na(newSofia2$OverlapId)==F],OverlapS,SofiaWithoutDataIds)
 }
 
 if (OverlapMode=='FaoTrumps')
 {
-  AllOverlap<- c(RamOverlap,newSofia$IdOrig[is.na(newSofia$OverlapId)==F],OverlapS)
+  AllOverlap<- c(RamOverlap,newSofia2$IdOrig[is.na(newSofia2$OverlapId)==F],OverlapS,SofiaWithoutDataIds)
 }
 
-return(list(AllOverlap=AllOverlap,RamOverlap=RamOverlap,SofiaOverlap=newSofia,SofiaRamOverlap=OverlapS))
+FilterData<-FilterData[!(FilterData$IdOrig %in% AllOverlap),]
+
+if(r==1){
+  CleanedData<-FilterData
+  AllOverlapFinal<-paste(c(AllOverlap),yrs[r],sep="_") # paste using underscore in case want to parse apart ID and year later
+  RamOverlapFinal<-paste(c(RamOverlap),yrs[r],sep="_")
+  SofiaOverlapFinal<-paste(c(SofiaOverlap),yrs[r],sep="_")
+  SofiaRamOverlapFinal<-paste(c(OverlapS),yrs[r],sep="_")
+  SofiaWithoutDataIdsFinal<-paste(c(SofiaWithoutDataIds),yrs[r],sep="_")
+  } # close if
+
+if(r>1){
+  
+  CleanedData<-rbind(CleanedData,FilterData) # add year to filtered dataset
+  
+  AllOverlapYr<-paste(c(AllOverlap),yrs[r],sep="_") # add year to list of overlapping stocks
+  RamOverlapYr<-paste(c(RamOverlap),yrs[r],sep="_")
+  SofiaOverlapYr<-paste(c(SofiaOverlap),yrs[r],sep="_")
+  SofiaRamOverlapYr<-paste(c(OverlapS),yrs[r],sep="_")
+  SofiaWithoutDataIdsYr<-paste(c(SofiaWithoutDataIds),yrs[r],sep="_")
+  
+  
+  append(AllOverlapFinal,AllOverlapYr,after=length(AllOverlapFinal)) # add list of IDs and date to final lists
+  append(RamOverlapFinal,RamOverlapYr,after=length(RamOverlapFinal))
+  append(SofiaOverlapFinal,SofiaOverlapYr,after=length(SofiaOverlapFinal)) 
+  append(SofiaRamOverlapFinal,SofiaRamOverlapYr,after=length(SofiaRamOverlapFinal))
+  append(SofiaWithoutDataIdsFinal,SofiaWithoutDataIdsYr,after=length(SofiaWithoutDataIdsFinal))
+  
+  } # close if
+show(yrs[r])
+} # close loop on yrs
+
+CleanedData<-CleanedData[order(CleanedData$IdOrig, CleanedData$Year),] # sort columns to return to sequential order by id
+
+return(list(FilteredData=CleanedData,AllOverlap=AllOverlapFinal,RamOverlap=RamOverlapFinal,SofiaOverlap=SofiaOverlapFinal,SofiaRamOverlap=SofiaRamOverlapFinal,SofiaWithoutDataIds=SofiaWithoutDataIdsFinal))
 
 }
 # FaoOverlap<-subset(FaoStocks,Overlap==1)
