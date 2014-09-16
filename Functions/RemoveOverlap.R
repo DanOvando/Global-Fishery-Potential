@@ -14,7 +14,7 @@ RemoveOverlap<- function(Data,OverlapMode,stringsAsFactors=F)
 
 #     Data<- FullData
 # Data$Country<- as.character(levels(Data$Country))[Data$Country]
-  yrs<-c(1950:2013) # filter only years from 1950-2013
+  yrs<-c(1950:1955) # filter only years from 1950-2013
   
   for (r in 1:length(yrs))
   {
@@ -240,9 +240,9 @@ if(r>1){
 show(yrs[r])
 } # close loop on yrs
 
-CleanedData<-CleanedData[order(CleanedData$IdOrig, CleanedData$Year),] # sort columns to return to sequential order by id
+FinalData<-CleanedData[order(CleanedData$IdOrig, CleanedData$Year),] # sort columns to return to sequential order by id
 
-return(list(FilteredData=CleanedData,AllOverlap=AllOverlapFinal,RamOverlap=RamOverlapFinal,SofiaOverlap=SofiaOverlapFinal,SofiaRamOverlap=SofiaRamOverlapFinal,SofiaWithoutDataIds=SofiaWithoutDataIdsFinal))
+return(list(FilteredData=FinalData,AllOverlap=AllOverlapFinal,RamOverlap=RamOverlapFinal,SofiaOverlap=SofiaOverlapFinal,SofiaRamOverlap=SofiaRamOverlapFinal,SofiaWithoutDataIds=SofiaWithoutDataIdsFinal))
 
 }
 # FaoOverlap<-subset(FaoStocks,Overlap==1)
