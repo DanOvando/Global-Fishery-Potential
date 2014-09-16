@@ -507,6 +507,10 @@ colnames(ResultMetricsSQFinalTable)<-c("Region",ResultMetricsSQFinalNames)
 ResultMetricsSQCumFinalTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=13))
 colnames(ResultMetricsSQCumFinalTable)<-c("Region",ResultMetricsSQCumFinalNames)
 
+# Summarize GlobalStatus Year, FAO Region, and Species Category for assigning values to NEI fisheries (New Method)
+
+StatusByRegSpCat<-ddply(GlobalStatus$Data[GlobalStatus$Data$Dbase=="FAO",],c("Year","RegionFAO","SpeciesCatName"),summarize, MedianStatus=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),Fisheries=length(unique(IdOrig)))
+
 for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
 {
   
@@ -517,27 +521,29 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     FullData_CountryLocater<-  FullData$Country %in% unique(FullData$Country)
     Biomass_CountryLocater<-  BiomassData$Country %in% unique(BiomassData$Country)
     Proj_CountryLocater<- ProjectionData$Country %in% unique(ProjectionData$Country)
-  }
-  else if (CountriesToRun[c]=='Parties to the Nauru Agreement')
+    Nei_CountryLocater<-FaoNeiLevel %in% unique(FaoNeiLevel$Country)
+  
+  } else if (CountriesToRun[c]=='Parties to the Nauru Agreement')
   {
     Biomass_CountryLocater<- BiomassData$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Federated States of Micronesia','Tuvalu','Palau','Nauru') 
     Proj_CountryLocater<- ProjectionData$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Federated States of Micronesia','Tuvalu','Palau','Nauru') 
     FullData_CountryLocater<- FullData$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Federated States of Micronesia','Tuvalu','Palau','Nauru') 
-    
-  }
-  else if (CountriesToRun[c]=='EU')
+    Nei_CountryLocater<-FaoNeiLevel$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Federated States of Micronesia','Tuvalu','Palau','Nauru') 
+  
+  } else if (CountriesToRun[c]=='EU')
   {
     Biomass_CountryLocater<- BiomassData$Country %in% EUCountries
     Proj_CountryLocater<- ProjectionData$Country %in% EUCountries
     FullData_CountryLocater<- FullData$Country %in% EUCountries
-    
-  }
-  else
+    Nei_CountryLocater<-FaoNeiLevel$Country %in% EUCountries
+  
+  } else
   {
     Biomass_CountryLocater<- BiomassData$Country==CountriesToRun[c] 
     Proj_CountryLocater<- ProjectionData$Country==CountriesToRun[c] 
     FullData_CountryLocater<- FullData$Country==CountriesToRun[c] 
-    
+    Nei_CountryLocater<-FaoNeiLevel$Country==CountriesToRun[c]
+  
   }
   
   if(sum(Biomass_CountryLocater,na.rm=T)>0 & sum(Proj_CountryLocater,na.rm=T)>0)
@@ -546,6 +552,29 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     # Analyze Time Trends  ----------------------------------------------------------
     
     BiomassStatus<- AnalyzeFisheries(BiomassData[Biomass_CountryLocater,],paste(CountriesToRun[c],' Status',sep=''),'Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+    
+    # subset NEI's and add median values calculated in StatusByRegSpCat at beginning of loop. Add NEI entries to Biomass Status before Kobe Plot 
+    
+    CountryNeis<-FaoNeiLevel[Nei_CountryLocater,]
+    CountryNeis<-subset(CountryNeis,(Year %in% c(2005:2011))) # just for 2005-2011
+    
+    CountryNeis$BestModel<-"Nei"
+    CountryNeis$IdLevel<-"Nei"
+    CountryNeis$Price<-NA
+    CountryNeis$BvBmsyOpenAccess<-NA
+    CountryNeis$BvBmsySD<-NA
+    
+    # apply median status to nei fisheries in matching year/region/speciescategory 
+    for (i in 1:nrow(CountryNeis)){
+      
+      if(length(subset(StatusByRegSpCat,RegionFAO==CountryNeis$RegionFAO[i] & Year==CountryNeis$Year[i] & SpeciesCatName==CountryNeis$SpeciesCatName[i])$MedianStatus)>0){
+      
+      CountryNeis$BvBmsy[i]<-subset(StatusByRegSpCat,RegionFAO==CountryNeis$RegionFAO[i] & Year==CountryNeis$Year[i] & SpeciesCatName==CountryNeis$SpeciesCatName[i])$MedianStatus
+      CountryNeis$FvFmsy[i]<-subset(StatusByRegSpCat,RegionFAO==CountryNeis$RegionFAO[i] & Year==CountryNeis$Year[i] & SpeciesCatName==CountryNeis$SpeciesCatName[i])$MedianFvFmsy
+      }
+    }
+    
+    BiomassStatus$Data<-rbind(BiomassStatus$Data,CountryNeis)
     
     MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
     
