@@ -19,7 +19,7 @@ require(proftools)
 
 RunAnalyses<- FALSE
 
-BatchFolder<- 'Results/Table Test Sep 2/'
+BatchFolder<- 'Results/NEI Test Sofia With Forage Fish/'
 
 InputFolder<- 'Data/'
 
@@ -37,7 +37,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Results/Table Test Sep 2/'
+  BatchFolder<- 'Results/NEI Test Sofia With Forage Fish/'
   
   InputFolder<- 'Data/'
   
