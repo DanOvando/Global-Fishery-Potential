@@ -17,9 +17,9 @@ require(zoo)
 require(proftools)
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- FALSE
+RunAnalyses<- TRUE
 
-BatchFolder<- 'Results/Table Test Sep 2/'
+BatchFolder<- 'Results/Scratch/'
 
 InputFolder<- 'Data/'
 
@@ -153,7 +153,7 @@ IdVar<- 'IdOrig' #Id variable to use in creating synthetic stocks
 # Catch-MSY ---------------------------------------------------------------
 
 
-ErrorSize<- 0.5 #The amount of error to serach over CatchMSY terms
+ErrorSize<- 0.75 #The amount of error to serach over CatchMSY terms
 
 Smooth<- 0 #Marks whether to smooth catch history
 
@@ -165,9 +165,9 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-n <- 300  ## number of iterations, e.g. 100000
+n <- 2000  ## number of iterations, e.g. 100000
 
-SampleLength<- 100 # Number of subsampled bootstraps 
+SampleLength<- 1000 # Number of subsampled bootstraps 
 
 # Projections -------------------------------------------------------------
 
