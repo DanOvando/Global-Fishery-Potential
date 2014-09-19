@@ -6,6 +6,11 @@
 RunRegressions<- function(Data,RegList,FigureName)
 {
   
+#   Data<- RamData
+#   
+#   RegList<- Regressions
+#   
+#   FigureName<- 'eh'
    
   RegNames<- names(RegList)
   

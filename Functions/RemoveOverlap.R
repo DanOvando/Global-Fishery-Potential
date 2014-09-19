@@ -237,7 +237,7 @@ if(r>1){
   append(SofiaWithoutDataIdsFinal,SofiaWithoutDataIdsYr,after=length(SofiaWithoutDataIdsFinal))
   
   } # close if
-show(yrs[r])
+# show(yrs[r])
 } # close loop on yrs
 
 FinalData<-CleanedData[order(CleanedData$IdOrig, CleanedData$Year),] # sort columns to return to sequential order by id

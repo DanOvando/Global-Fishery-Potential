@@ -14,7 +14,7 @@ LumpFisheries<- function(Data,GroupsToGroup)
   
   colnames(StitchMat)<- colnames(Data)
   
-  CandidateStocks<- Data$SpeciesCatName %in% GroupsToGroup
+  CandidateStocks<- (Data$SpeciesCatName %in% GroupsToGroup) & Data$Dbase=='FAO'
   
   KeepData<- Data[CandidateStocks==F,]
   

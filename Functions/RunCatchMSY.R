@@ -7,7 +7,7 @@ RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,B
 {
   library(zoo)
   
-#    Data<- GlobalStatus$Data
+#     Data<- GlobalStatus$Data
 #   
 #   Data<- Data[Data$Dbase=='FAO',]
   
@@ -159,17 +159,17 @@ TotalResults<- NULL
 
 SampleResults<- NULL
 
-rMatrix<- as.data.frame(matrix(NA,nrow=length(stock_id),ncol=(SampleLength+3)))
-colnames(rMatrix)<- c('stock','bvbmsy','catch',paste('it',1:SampleLength,sep=''))
-
-kMatrix<- as.data.frame(matrix(NA,nrow=length(stock_id),ncol=(SampleLength+3)))
-colnames(kMatrix)<- c('stock','bvbmsy','catch',paste('it',1:SampleLength,sep=''))
-
-msyMatrix<- as.data.frame(matrix(NA,nrow=length(stock_id),ncol=(SampleLength+3)))
-colnames(msyMatrix)<- c('stock','bvbmsy','catch',paste('it',1:SampleLength,sep=''))
-
-fMatrix<- as.data.frame(matrix(NA,nrow=length(stock_id),ncol=(SampleLength+3)))
-colnames(fMatrix)<- c('stock','bvbmsy','catch',paste('it',1:SampleLength,sep=''))
+# rMatrix<- as.data.frame(matrix(NA,nrow=length(stock_id),ncol=(SampleLength+3)))
+# colnames(rMatrix)<- c('stock','bvbmsy','catch',paste('it',1:SampleLength,sep=''))
+# 
+# kMatrix<- as.data.frame(matrix(NA,nrow=length(stock_id),ncol=(SampleLength+3)))
+# colnames(kMatrix)<- c('stock','bvbmsy','catch',paste('it',1:SampleLength,sep=''))
+# 
+# msyMatrix<- as.data.frame(matrix(NA,nrow=length(stock_id),ncol=(SampleLength+3)))
+# colnames(msyMatrix)<- c('stock','bvbmsy','catch',paste('it',1:SampleLength,sep=''))
+# 
+# fMatrix<- as.data.frame(matrix(NA,nrow=length(stock_id),ncol=(SampleLength+3)))
+# colnames(fMatrix)<- c('stock','bvbmsy','catch',paste('it',1:SampleLength,sep=''))
 
 
 pdf(file=paste(FigureFolder,'Catch-MSY Diagnostics.pdf',sep=''))
@@ -195,7 +195,7 @@ for(s in 1:length(stock_id))
   
   
   bio<- pmin(1,Data$BvBmsy[Data[,IdVar]==stock]/2) #pull out bvbmsy (transposed to B/K)
-  
+    
   #     FvFmsy<- Data$FvFmsy[Data[,IdVar]==stock] #RAM fvfmsy is available
   
   #     RAM_MSY<- Data$RAM_MSY[Data[,IdVar]==stock] #RAM MSY if available
@@ -324,6 +324,8 @@ for(s in 1:length(stock_id))
       r = R1$r[R1$ell==1]
       k = R1$k[R1$ell==1]
       bvbmsy1<- R1$bvbmsy[,R1$bvbmsyell[1,]==1]
+      time_bvbmsy<- (apply(bvbmsy1,1,function(x) exp(mean(log(x)))))
+      
       mean_bvbmsy<- mean(apply(bvbmsy1,1,function(x) exp(mean(log(x)))))
       LogSD_bvbmsy<- mean(apply(bvbmsy1,1,function(x) (sd(log(x)))))
       
@@ -348,7 +350,7 @@ for(s in 1:length(stock_id))
       
       Data$KLogSd[Where]<- (sd(log(k),na.rm=T))
       
-      Data$CatchMSYBvBmsy[Where]<- mean_bvbmsy
+      Data$CatchMSYBvBmsy[Where]<- time_bvbmsy
 
       Data$CatchMSYBvBmsy_LogSd[Where]<- LogSD_bvbmsy
       
@@ -433,23 +435,23 @@ for(s in 1:length(stock_id))
       # if (RealRuns>=SampleLength)
       # {
       
-      SampleRuns<- sample(1:RealRuns, SampleLength,replace=T)
-      
-      SampleResults2<- data.frame(rep(stock, SampleLength),rep(bio[length(yr)], SampleLength),rep(yr[length(yr)], SampleLength),1: SampleLength,FvFmsy[SampleRuns],msy[SampleRuns]*1000,r[SampleRuns],k[SampleRuns]*1000,1000*rep(ct[length(ct)], SampleLength))
-      
-      SampleResults<- rbind(SampleResults,SampleResults2)
-      
-      rMatrix[s,1:3]<- data.frame(as.character(stock),bio[length(yr)],1000*ct[length(yr)], stringsAsFactors=FALSE)
-      rMatrix[s,4:dim(rMatrix)[2]]<- r[SampleRuns]
-      
-      kMatrix[s,1:3]<- data.frame(stock,bio[length(yr)],1000*ct[length(yr)],stringsAsFactors=FALSE)
-      kMatrix[s,4:dim(rMatrix)[2]]<- 1000*k[SampleRuns]
-      
-      msyMatrix[s,1:3]<- data.frame(stock,bio[length(yr)],1000*ct[length(yr)],stringsAsFactors=FALSE)
-      msyMatrix[s,4:dim(rMatrix)[2]]<- 1000*msy[SampleRuns]
-      
-      fMatrix[s,1:3]<- data.frame(stock,bio[length(yr)],1000*ct[length(yr)],stringsAsFactors=FALSE)
-      fMatrix[s,4:dim(rMatrix)[2]]<- FvFmsy[SampleRuns]
+#       SampleRuns<- sample(1:RealRuns, SampleLength,replace=T)
+#       
+#       SampleResults2<- data.frame(rep(stock, SampleLength),rep(bio[length(yr)], SampleLength),rep(yr[length(yr)], SampleLength),1: SampleLength,FvFmsy[SampleRuns],msy[SampleRuns]*1000,r[SampleRuns],k[SampleRuns]*1000,1000*rep(ct[length(ct)], SampleLength))
+#       
+#       SampleResults<- rbind(SampleResults,SampleResults2)
+#       
+#       rMatrix[s,1:3]<- data.frame(as.character(stock),bio[length(yr)],1000*ct[length(yr)], stringsAsFactors=FALSE)
+#       rMatrix[s,4:dim(rMatrix)[2]]<- r[SampleRuns]
+#       
+#       kMatrix[s,1:3]<- data.frame(stock,bio[length(yr)],1000*ct[length(yr)],stringsAsFactors=FALSE)
+#       kMatrix[s,4:dim(rMatrix)[2]]<- 1000*k[SampleRuns]
+#       
+#       msyMatrix[s,1:3]<- data.frame(stock,bio[length(yr)],1000*ct[length(yr)],stringsAsFactors=FALSE)
+#       msyMatrix[s,4:dim(rMatrix)[2]]<- 1000*msy[SampleRuns]
+#       
+#       fMatrix[s,1:3]<- data.frame(stock,bio[length(yr)],1000*ct[length(yr)],stringsAsFactors=FALSE)
+#       fMatrix[s,4:dim(rMatrix)[2]]<- FvFmsy[SampleRuns]
       
       # }
       
@@ -460,12 +462,12 @@ for(s in 1:length(stock_id))
 
 dev.off()
 
-HasData<- is.na(rMatrix$stock)==F
-
-rMatrix<- rMatrix[HasData,]
-kMatrix<- kMatrix[HasData,]
-msyMatrix<- msyMatrix[HasData,]
-fMatrix<- fMatrix[HasData,]
+# HasData<- is.na(rMatrix$stock)==F
+# 
+# rMatrix<- rMatrix[HasData,]
+# kMatrix<- kMatrix[HasData,]
+# msyMatrix<- msyMatrix[HasData,]
+# fMatrix<- fMatrix[HasData,]
 #   
 #   colnames(TotalResults)<- c('stock','bvbmsy','finalyear','iteration','fvfmsy','msy','r','K','finalcatch')
 #   
@@ -483,6 +485,6 @@ Data$r[is.na(Data$r)]<- mean(Data$r,na.rm=T)
 
 Data$FvFmsy[Data$HasRamFvFmsy==T]<- RamFvFmsy
 
-return(list(Data=Data,CountryMsy=CountryMsy,rMatrix=rMatrix,kMatrix=kMatrix,msyMatrix=msyMatrix,fMatrix=fMatrix,MoreResults=SampleResults)) 
+return(list(Data=Data,CountryMsy=CountryMsy)) 
 } #Close function
 
