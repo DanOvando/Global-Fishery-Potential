@@ -6,7 +6,7 @@
 MaidService<- function(Data,OverlapMode)
 {
   #For Commiting
-#     Data<- FullData
+  #     Data<- FullData
   
   Data$SpeciesCatName[Data$SpeciesCatName=='']<- NA
   
@@ -23,25 +23,25 @@ MaidService<- function(Data,OverlapMode)
   
   StockStats$WrongSpeciesCategory<- (StockStats$SpeciesCatName %in% SpeciesCategoriesToOmit)
   
-#     
-#   Omits<- NULL
-#   for (o in 1:length(OverlapToRemove))
-#   {
-#     
-#     Omits<- cbind(Omits,eval(parse(text=paste('Overlap$',OverlapToRemove[o],'Overlap',sep=''))))
-#     
-#   }
-#   
-#
-#    FisheriesToOmit<- unique(c(FisheriesToOmit,Overlap$AllOverlap)) New remove 
-#   
-#   StockStats$NotAllowedIn<- (StockStats[,IdVar] %in% FisheriesToOmit)
-    
+  #     
+  #   Omits<- NULL
+  #   for (o in 1:length(OverlapToRemove))
+  #   {
+  #     
+  #     Omits<- cbind(Omits,eval(parse(text=paste('Overlap$',OverlapToRemove[o],'Overlap',sep=''))))
+  #     
+  #   }
+  #   
+  #
+  #    FisheriesToOmit<- unique(c(FisheriesToOmit,Overlap$AllOverlap)) New remove 
+  #   
+  #   StockStats$NotAllowedIn<- (StockStats[,IdVar] %in% FisheriesToOmit)
+  
   StockStats$DropFishery<- 0
   
   ## Mark fisheries that need to be dropped 
   StockStats$DropFishery[StockStats$NoSpeciesCategory  | StockStats$WrongSpeciesCategory 
-                          | StockStats$TooFewCatchYears |
+                         | StockStats$TooFewCatchYears |
                            StockStats$PercentMissingTooHigh | StockStats$NoCatch]<- 1
   
   DroppedStocks<- StockStats[StockStats$DropFishery==1,]
@@ -50,14 +50,20 @@ MaidService<- function(Data,OverlapMode)
   
   Data<- Data[Data$Drop==F,] #Remove unusable fisheries
   
+  Data<- LumpFisheries(Data,SpeciesCategoriesToLump)
+  
+  Data$BvBmsy[Data$BvBmsy>OutlierBvBmsy & Data$Dbase=='RAM']<- NA
+  
+  Data<- FormatForRegression(Data,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)#Add resgression data to database
+  
   Overlap<- RemoveOverlap(Data,OverlapMode)
-
+  
   Data<-Overlap$FilteredData
-
+  
   AllOverlap<-Overlap$AllOverlapFinal
-
+  
   OverlapToRemove<- c('Ram','Sofia','SofiaRam')
-
+  
   return(list(CleanedData=Data,DroppedStocks= DroppedStocks,AllOverlap=AllOverlap))
   
 }

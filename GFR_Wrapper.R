@@ -13,7 +13,7 @@ sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
 if (RunAnalyses==TRUE)
 {
   
-  if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))==F)
+  if (file.exists(paste(ResultFolder,'Cleaned Compiled Database.csv',sep=''))==F)
   {
     
     source('Database_Build.r') #Build Tyler's database
@@ -22,7 +22,13 @@ if (RunAnalyses==TRUE)
     
     RawData<- fulldata
     
+    RawData$FvFmsy<- RawData$UvUmsytouse
+    
     FullData<- fulldata
+    
+    SampleIds<- sample(unique(FullData$IdOrig[FullData$Dbase=='FAO']),20000,replace=FALSE)
+    # # # 
+    FullData<-  FullData[! FullData[,IdVar] %in% SampleIds,]
     
     FullData$FvFmsy<- FullData$UvUmsytouse
     
@@ -36,15 +42,22 @@ if (RunAnalyses==TRUE)
     
     FullData<- FindFishbase(FullData)
     
-    
     rm(CleanedData)
     
-    write.csv(file=paste(ResultFolder,'Raw Compiled Database.csv',sep=''),FullData)
+    write.csv(file=paste(ResultFolder,'Cleaned Compiled Database.csv',sep=''),FullData)
     
     write.csv(file=paste(ResultFolder,'Omitted Stocks.csv',sep=''),DroppedStocks)
     
+    write.csv(file=paste(ResultFolder,'Raw Database.csv',sep=''),RawData)
+    
   }
-  if (file.exists(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))){FullData<- read.csv(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))}
+  else #(file.exists(paste(ResultFolder,'Cleaned Compiled Database.csv',sep='')))
+  {
+    FullData<- read.csv(paste(ResultFolder,'Cleaned Compiled Database.csv',sep=''))
+    
+    RawData<- read.csv(paste(ResultFolder,'Raw Database.csv',sep=''))
+    
+  }
   
   # FullData$SpeciesCatName<- as.factor( FullData$SpeciesCatName)
   
@@ -68,11 +81,9 @@ if (RunAnalyses==TRUE)
   
   RamData<- FullData[FullData$Dbase=='RAM',]
   
-  RamData$BvBmsy[RamData$BvBmsy>OutlierBvBmsy]<- NA
-  
   FaoData<- FullData[FullData$Dbase=='FAO',]
   
-  FaoData<- LumpFisheries(FaoData,SpeciesCategoriesToLump)
+  #   FaoData<- LumpFisheries(FaoData,SpeciesCategoriesToLump)
   
   # FaoIdSample<- sample(unique(FaoData[,IdVar]),500,replace=FALSE)
   # # # # 
@@ -93,7 +104,7 @@ if (RunAnalyses==TRUE)
     Groups<- unique(FaoData$SpeciesCatName[ (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F])
   }
   
-  SyntheticData<- StitchFish(RamData,IdVar,Groups,GroupSamples,Iterations) 
+  SyntheticData<- StitchFish(RawData[RawData$Dbase=='RAM' ,],IdVar,Groups,GroupSamples,Iterations) 
   
   SyntheticData$BvBmsy[SyntheticData$BvBmsy>OutlierBvBmsy]<- NA
   
@@ -114,28 +125,26 @@ if (RunAnalyses==TRUE)
   
   #  Rprof()
   
-  RamData<- FormatForRegression(RamData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)#Add resgression data to database
+  #   RamData<- FormatForRegression(RamData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)#Add resgression data to database
   
   SyntheticData<- FormatForRegression(SyntheticData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
   
-  SofiaData<- SofiaData[is.na(SofiaData$Catch)==F,]
+  #   SofiaData<- SofiaData[is.na(SofiaData$Catch)==F,]
   
-  SofiaData<- FormatForRegression(SofiaData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)#Add resgression data to database
+  #   SofiaData<- FormatForRegression(SofiaData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)#Add resgression data to database
   
-  
-  if (file.exists(paste(ResultFolder,'FaoData.Rdata',sep=''))==F)
-  {
-    
-    FaoData<- FormatForRegression(FaoData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
-    
-    save(file=paste(ResultFolder,'FaoData.Rdata',sep=''),FaoData)
-  }
-  if (file.exists(paste(ResultFolder,'FaoData.Rdata',sep='')))
-  {
-    load(paste(ResultFolder,'FaoData.Rdata',sep=''))
-  }
+  #   if (file.exists(paste(ResultFolder,'FullData.Rdata',sep=''))==F)
+  #   {
+  #     
+  # #     FaoData<- FormatForRegression(FaoData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
+  #     
+  #     save(file=paste(ResultFolder,'FullData.Rdata',sep=''),FullData)
+  #   }
+  #   if (file.exists(paste(ResultFolder,'FullData.Rdata',sep='')))
+  #   {
+  #     load(paste(ResultFolder,'FullData.Rdata',sep=''))
+  #   }
   show('Data prepared for regression')
-  
   
   # Rprof(NULL)
   #  RProfData<- readProfileData('Rprof.out')
@@ -208,7 +217,7 @@ if (RunAnalyses==TRUE)
   
   # Prep for dummy species categories  ----------------------------------------
   
-  AllPossible<- unique(data.frame(FullData$SpeciesCatName,FullData$SpeciesCat))
+  AllPossible<- unique(data.frame(I(FullData$SpeciesCatName),I(FullData$SpeciesCat)))
   
   colnames(AllPossible)<- c('SpeciesCatNames','SpeciesCat')
   
@@ -424,7 +433,7 @@ save.image(file=paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep='
 
 if (RunAnalyses==F)
 {
-
+  
   FullData<- OriginalFullData #Complete database, post filtering/cleaning etc
   
   BiomassData<- OriginalBiomassData #Fisheries that have B/Bmsy
@@ -433,7 +442,7 @@ if (RunAnalyses==F)
   
   ProjectionData<- OriginalProjectionData #Fisheries that have B/Bmsy, MSY, and we've run the projections
   
-
+  
 }
 
 ProjectionData$Country[ProjectionData$Country=='United States of America']<- 'USA'
@@ -483,22 +492,25 @@ if (ExcludeForageFish==1)
   BiomassData<- BiomassData[BiomassData$SpeciesCatName%in%ForageFish==F,]
 }
 
-ProjectionData$Profits[ProjectionData$Profits<0]<- 0
+ProjectionData$Profits[ProjectionData$Profits<0]<- 0.0001
+
+ProjectionData$Catch[ProjectionData$Catch==0]<- 0.0001
+
 
 # Build empty version of Chris's database to be populated with FinalYear results. Make separate percent change and absolute change tables then use rbind later
 # 3 data frames to be merged at end.
 # 1) Policy results relative to baseline values. 2) Policy results relative to Status Quo Policy in Final Year 3) Cumulative Policy results relative to Status Quo
 
 ResultMetricsBaselineNames<-c("PercChangeTotalProfits","PercChangeTotalCatch","PercChangeTotalBiomass","PercChangeMedianProfits","PercChangeMedianCatch",
-                      "PercChangeMedianBiomass", "AbsChangeTotalProfits","AbsChangeTotalCatch","AbsChangeTotalBiomass","AbsChangeMedianProfits","AbsChangeMedianCatch",
-                      "AbsChangeMedianBiomass")
+                              "PercChangeMedianBiomass", "AbsChangeTotalProfits","AbsChangeTotalCatch","AbsChangeTotalBiomass","AbsChangeMedianProfits","AbsChangeMedianCatch",
+                              "AbsChangeMedianBiomass")
 
 ResultMetricsSQFinalNames<-c("PercChangeFromSQTotalBiomass","PercChangeFromSQTotalProfits","PercChangeFromSQTotalCatch","PercChangeFromSQMedianBiomass", "PercChangeFromSQMedianProfits",
-                      "PercChangeFromSQMedianCatch","AbsChangeFromSQTotalBiomass","AbsChangeFromSQTotalProfits","AbsChangeFromSQTotalCatch", "AbsChangeFromSQMedianBiomass",
-                      "AbsChangeFromSQMedianProfits","AbsChangeFromSQMedianCatch")
+                             "PercChangeFromSQMedianCatch","AbsChangeFromSQTotalBiomass","AbsChangeFromSQTotalProfits","AbsChangeFromSQTotalCatch", "AbsChangeFromSQMedianBiomass",
+                             "AbsChangeFromSQMedianProfits","AbsChangeFromSQMedianCatch")
 
 ResultMetricsSQCumFinalNames<-c("PercChangeFromSQCum_NPV","PercChangeFromSQCum_Food","PercChangeFromSQCum_Fish","PercChangeFromSQCumMedianProfits","PercChangeFromSQCumMedianCatch","PercChangeFromSQMedianBiomass",
-                           "AbsChangeFromSQCumProfits","AbsChangeFromSQCumFood","AbsChangeFromSQCumFish","AbsChangeFromSQCumMedianProfits","AbsChangeFromSQCumMedianCatch","AbsChangeFromSQCumMedianBiomass")
+                                "AbsChangeFromSQCumProfits","AbsChangeFromSQCumFood","AbsChangeFromSQCumFish","AbsChangeFromSQCumMedianProfits","AbsChangeFromSQCumMedianCatch","AbsChangeFromSQCumMedianBiomass")
 
 ResultMetricsBaselineTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=13))
 colnames(ResultMetricsBaselineTable)<-c("Region",ResultMetricsBaselineNames)
@@ -526,28 +538,28 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     Biomass_CountryLocater<-  BiomassData$Country %in% unique(BiomassData$Country)
     Proj_CountryLocater<- ProjectionData$Country %in% unique(ProjectionData$Country)
     Nei_CountryLocater<-FaoNeiLevel$Country %in% unique(FaoNeiLevel$Country)
-  
+    
   } else if (CountriesToRun[c]=='Parties to the Nauru Agreement')
   {
     Biomass_CountryLocater<- BiomassData$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Federated States of Micronesia','Tuvalu','Palau','Nauru') 
     Proj_CountryLocater<- ProjectionData$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Federated States of Micronesia','Tuvalu','Palau','Nauru') 
     FullData_CountryLocater<- FullData$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Federated States of Micronesia','Tuvalu','Palau','Nauru') 
     Nei_CountryLocater<-FaoNeiLevel$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Federated States of Micronesia','Tuvalu','Palau','Nauru') 
-  
+    
   } else if (CountriesToRun[c]=='EU')
   {
     Biomass_CountryLocater<- BiomassData$Country %in% EUCountries
     Proj_CountryLocater<- ProjectionData$Country %in% EUCountries
     FullData_CountryLocater<- FullData$Country %in% EUCountries
     Nei_CountryLocater<-FaoNeiLevel$Country %in% EUCountries
-  
+    
   } else
   {
     Biomass_CountryLocater<- BiomassData$Country==CountriesToRun[c] 
     Proj_CountryLocater<- ProjectionData$Country==CountriesToRun[c] 
     FullData_CountryLocater<- FullData$Country==CountriesToRun[c] 
     Nei_CountryLocater<-FaoNeiLevel$Country==CountriesToRun[c]
-  
+    
   }
   
   if(sum(Biomass_CountryLocater,na.rm=T)>0 & sum(Proj_CountryLocater,na.rm=T)>0)
@@ -558,35 +570,35 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     BiomassStatus<- AnalyzeFisheries(BiomassData[Biomass_CountryLocater,],paste(CountriesToRun[c],' Status',sep=''),'Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
     
     # subset NEI's and add median values calculated in StatusByRegSpCat at beginning of loop. Add NEI entries to Biomass Status before Kobe Plot 
-  
+    
     if(sum(Nei_CountryLocater,na.rm=T)>0)
-  {
-    CountryNeis<-FaoNeiLevel[Nei_CountryLocater,]
-    CountryNeis<-subset(CountryNeis,(Year %in% c(2005:2011))) # just for 2005-2011
-    
-    CountryNeis$BestModel<-"Nei"
-    CountryNeis$IdLevel<-"Nei"
-    CountryNeis$Price<-NA
-    CountryNeis$BvBmsyOpenAccess<-NA
-    CountryNeis$BvBmsySD<-NA
-    
-    # apply median status to nei fisheries in matching year/region/speciescategory 
-    
-    Combos<-unique(CountryNeis[c("Year","RegionFAO","SpeciesCatName")]) # define unique combinations to loop through
-    
-    for (i in 1:nrow(Combos)){
+    {
+      CountryNeis<-FaoNeiLevel[Nei_CountryLocater,]
+      CountryNeis<-subset(CountryNeis,(Year %in% c(2005:2011))) # just for 2005-2011
+      
+      CountryNeis$BestModel<-"Nei"
+      CountryNeis$IdLevel<-"Nei"
+      CountryNeis$Price<-NA
+      CountryNeis$BvBmsyOpenAccess<-NA
+      CountryNeis$BvBmsySD<-NA
+      
+      # apply median status to nei fisheries in matching year/region/speciescategory 
+      
+      Combos<-unique(CountryNeis[c("Year","RegionFAO","SpeciesCatName")]) # define unique combinations to loop through
+      
+      for (i in 1:nrow(Combos)){
         
-      where<-CountryNeis$Year==Combos$Year[i] & CountryNeis$RegionFAO==Combos$RegionFAO[i] & CountryNeis$SpeciesCatName==Combos$SpeciesCatName[i]
-      
-      if(length(subset(StatusByRegSpCat,RegionFAO==Combos$RegionFAO[i] & Year==Combos$Year[i] & SpeciesCatName==Combos$SpeciesCatName[i])$MedianStatus)>0){
-      
-      CountryNeis$BvBmsy[where]<-subset(StatusByRegSpCat,RegionFAO==Combos$RegionFAO[i] & Year==Combos$Year[i] & SpeciesCatName==Combos$SpeciesCatName[i])$MedianStatus
-      CountryNeis$FvFmsy[where]<-subset(FvFmsyStatusByRegSpCat,RegionFAO==Combos$RegionFAO[i] & Year==Combos$Year[i] & SpeciesCatName==Combos$SpeciesCatName[i])$MedianFvFmsy
-      CountryNeis<-subset(CountryNeis,!(SpeciesCatName %in% SpeciesCategoriesToLump))
+        where<-CountryNeis$Year==Combos$Year[i] & CountryNeis$RegionFAO==Combos$RegionFAO[i] & CountryNeis$SpeciesCatName==Combos$SpeciesCatName[i]
+        
+        if(length(subset(StatusByRegSpCat,RegionFAO==Combos$RegionFAO[i] & Year==Combos$Year[i] & SpeciesCatName==Combos$SpeciesCatName[i])$MedianStatus)>0){
+          
+          CountryNeis$BvBmsy[where]<-subset(StatusByRegSpCat,RegionFAO==Combos$RegionFAO[i] & Year==Combos$Year[i] & SpeciesCatName==Combos$SpeciesCatName[i])$MedianStatus
+          CountryNeis$FvFmsy[where]<-subset(FvFmsyStatusByRegSpCat,RegionFAO==Combos$RegionFAO[i] & Year==Combos$Year[i] & SpeciesCatName==Combos$SpeciesCatName[i])$MedianFvFmsy
+          CountryNeis<-subset(CountryNeis,!(SpeciesCatName %in% SpeciesCategoriesToLump))
+        }
       }
-    }
-    BiomassStatus$Data<-rbind(BiomassStatus$Data,CountryNeis)
-  } # close nei loop
+      BiomassStatus$Data<-rbind(BiomassStatus$Data,CountryNeis)
+    } # close nei loop
     
     MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
     
@@ -629,20 +641,20 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     
     TimeTrend$PercChangeMedianBiomass<-100*(TimeTrend$MedianBvBmsy/Baseline$MedianBvBmsy-1) # should this be % Change in Median Status?
     
-  # add absolute changes
-  
+    # add absolute changes
+    
     TimeTrend$AbsChangeTotalProfits<-TimeTrend$TotalProfits-Baseline$TotalProfits
-  
+    
     TimeTrend$AbsChangeTotalCatch<-TimeTrend$TotalCatch-Baseline$TotalCatch
-  
+    
     TimeTrend$AbsChangeTotalBiomass<-TimeTrend$TotalBiomass-Baseline$TotalBiomass
-  
+    
     TimeTrend$AbsChangeMedianProfits<-TimeTrend$MedianProfits-Baseline$MedianProfits
-  
+    
     TimeTrend$AbsChangeMedianCatch<-TimeTrend$MedianCatch-Baseline$MedianCatch
-  
+    
     TimeTrend$AbsChangeMedianBiomass<-TimeTrend$MedianBvBmsy-Baseline$MedianBvBmsy
-  
+    
     
     #     TimeTrend$PercChangeFromSQMedianBiomass<-100*(TimeTrend$MedianBvBmsy/TimeTrend$MedianBvBmsy[TimeTrend$Policy=='SQ']-1)
     
@@ -656,9 +668,9 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     CumeNumbers<- 100*(t(t(CumeNumbers)/CumeNumbers[which(Cumulatives$Policy=='SQ'),])-1) # percents
     
     CumeNumbersAbs<- t(t(CumeNumbersAbs)-CumeNumbersAbs[which(Cumulatives$Policy=='SQ'),]) # absolutes  
-  
+    
     Cumulatives[,2:dim(Cumulatives)[2]]<- CumeNumbers   
-  
+    
     Cumulatives[,8:13]<-CumeNumbersAbs
     colnames(Cumulatives)[8:13]<-paste("Abs",colnames(CumeNumbersAbs),sep="")
     
@@ -699,20 +711,20 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     ResultMetricsBaselineTable[c,1]<-CountriesToRun[c]
     ResultMetricsSQFinalTable[c,1]<-CountriesToRun[c]
     ResultMetricsSQCumFinalTable[c,1]<-CountriesToRun[c]
-  
+    
     ResultMetricsBaselineTable[c,2:13]<-FinalYear[FinalYear$Policy=="CatchShare",13:24]
     
     ResultMetricsSQFinalTable[c,2:4]<-FinalYear[FinalYear$Policy=="CatchShare",28:30]
     ResultMetricsSQFinalTable[c,5:7]<-FinalYear[FinalYear$Policy=="CatchShare",25:27]
     ResultMetricsSQFinalTable[c,8:10]<-FinalYear[FinalYear$Policy=="CatchShare",34:36]
     ResultMetricsSQFinalTable[c,11:13]<-FinalYear[FinalYear$Policy=="CatchShare",31:33]
-  
+    
     ResultMetricsSQCumFinalTable[c,2:13]<-Cumulatives[Cumulatives$Policy=="CatchShare",2:dim(Cumulatives)[2]]
     
     ResultMetricsTable<-merge(ResultMetricsBaselineTable,ResultMetricsSQFinalTable,by = "Region")
     ResultMetricsTable<-merge(ResultMetricsTable,ResultMetricsSQCumFinalTable,by = "Region")
     
-  # Analyze Database Composition --------------------------------------------
+    # Analyze Database Composition --------------------------------------------
     
     FullTallies<- ddply(FullData[FullData_CountryLocater,],c('Year','Dbase'),summarize,Fisheries=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T),Source='FullData')
     
@@ -773,11 +785,11 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     print(barchart(PercChangeMedianBiomass ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Current Median Fish'))
     
     print(barchart(PercChangeFromSQTotalProfits ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Total Profits'))
-  
+    
     print(barchart(PercChangeFromSQTotalCatch ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Total Catch'))
-  
+    
     print(barchart(PercChangeFromSQTotalBiomass ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Total Fish'))
-  
+    
     print(barchart(PercChangeFromSQMedianProfits ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Median Profits'))
     
     print(barchart(PercChangeFromSQMedianCatch ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Median Catch'))
@@ -786,7 +798,7 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     
     
     print(xyplot( PercChangeTotalProfits ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,ylab='% Change from Current Total Profits',type='l',lwd=4,auto.key=T,aspect='fill'))
-
+    
     
     print(xyplot( PercChangeTotalCatch ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=4,auto.key=T,aspect='fill',ylab='% Change from Current Total Catch'))
     

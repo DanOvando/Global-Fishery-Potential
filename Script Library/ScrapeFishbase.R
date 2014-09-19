@@ -4,18 +4,22 @@
 # Adapted by Tyler Clavelle
 #
 # Purpose: Function takes Fishbase codes found using GetFbIds.R function and creates data table of Life History Values for each species.
-#          Output data table will be used by FindFishbase function for finding
+#          Output data table will be used by FindFishbase function for inserting lh values
 #
 #################################################################
 
-# Currently getting errors in growth and max length loops that appear to be R being weird. e.g., suddenly claiming the data
-# frame created within the function cannot be found. Maturity loop runs without error.
-
-# LhFishbase
+# Currently getting errors if running on UCSB wireless. Runs error-free otherwise
 
 ## Load data frame with Fishbase codes found using GetFbIds.R
 
-ScNames <- read.csv(paste(ResultFolder,'FB_IDS.csv',sep=''),stringsAsFactors=F)
+# For testing:
+# TestData<-as.character(sample(unique(RawData$IdOrig),500,replace=FALSE))
+# TestData<-RawData[(RawData$IdOrig %in% TestData),]
+
+ScrapeFishbase<-function(Data,FbIds)
+{
+
+if(exists("ScNames")==F){ScNames <- read.csv(paste(ResultFolder,'FB_IDS.csv',sep=''),stringsAsFactors=F)}
 
 ScNames<-subset(ScNames,is.na(idFB)==F)
 
@@ -74,3 +78,11 @@ MaxLength<-aggregate(Lmax~idFB+Genus+Species,data=Age_Size,mean)
 FBLifeHistory<-merge(VBK,Temp, by = c("idFB","Genus","Species"), all.x=T)
 FBLifeHistory<-merge(FBLifeHistory,AgeMat, by = c("idFB","Genus","Species"), all.x=T)
 FBLifeHistory<-merge(FBLifeHistory,MaxLength, by = c("idFB","Genus","Species"), all.x=T)
+
+FBLifeHistory$SciName<-paste(FBLifeHistory$Genus,FBLifeHistory$Species,sep=" ") # Recreate SciName
+
+write.csv(file=paste(ResultFolder,"FBLifeHistory.csv",sep=""),FBLifeHistory)
+
+return(FBLifeHistory)
+
+} # close function
