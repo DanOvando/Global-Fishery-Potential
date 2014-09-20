@@ -274,7 +274,7 @@ if (RunAnalyses==TRUE)
   {
     PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel) #Bind all data back together
   }
-  BiomassColumns<- grepl('BvBmsy',colnames(PredictedData)) | grepl('Prediction',colnames(PredictedData))
+  BiomassColumns<- (grepl('BvBmsy',colnames(PredictedData)) | grepl('Prediction',colnames(PredictedData))) & grepl('LogBvBmsy',colnames(PredictedData))==F
   
   BioNames<- colnames(PredictedData)[BiomassColumns]
   
