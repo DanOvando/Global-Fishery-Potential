@@ -547,6 +547,7 @@ colnames(ResultMetricsSQCumFinalTable)<-c("Region",ResultMetricsSQCumFinalNames)
 StatusByRegSpCat<-ddply(GlobalStatus$Data[GlobalStatus$Data$Dbase=="FAO",],c("Year","RegionFAO","SpeciesCatName"),summarize, MedianStatus=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),Fisheries=length(unique(IdOrig)))
 FvFmsyStatusByRegSpCat<-ddply(BiomassData[BiomassData$Dbase=="FAO",],c("Year","RegionFAO","SpeciesCatName"),summarize,MedianFvFmsy=median(FvFmsy,na.rm=T),Fisheries=length(unique(IdOrig)))
 
+
 for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
 {
   
