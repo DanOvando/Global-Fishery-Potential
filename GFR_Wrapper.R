@@ -553,6 +553,13 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     FullData_CountryLocater<- FullData$Country %in% EUCountries
     Nei_CountryLocater<-FaoNeiLevel$Country %in% EUCountries
     
+  } else if (CountriesToRun[c]=='China')
+  {
+    Biomass_CountryLocater<- BiomassData$Country %in% c("China","China Hong Kong SAR","China Macao SAR")
+    Proj_CountryLocater<- ProjectionData$Country %in% c("China","China Hong Kong SAR","China Macao SAR")
+    FullData_CountryLocater<- FullData$Country %in% c("China","China Hong Kong SAR","China Macao SAR")
+    Nei_CountryLocater<-FaoNeiLevel$Country %in% c("China","China Hong Kong SAR","China Macao SAR")
+    
   } else
   {
     Biomass_CountryLocater<- BiomassData$Country==CountriesToRun[c] 
