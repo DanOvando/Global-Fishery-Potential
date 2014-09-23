@@ -429,7 +429,7 @@ if (RunAnalyses==TRUE)
   
 ProjectionData$BvBmsy[ProjectionData$IdLevel %in% c('Unidentified','Neis')]<- NA
 
-ProjectionData$Catch[ProjectionData$IdLevel %in% c('Unidentified','Neis')]<- NA
+# ProjectionData$Catch[ProjectionData$IdLevel %in% c('Unidentified','Neis')]<- NA
 
 ProjectionData$Profits[ProjectionData$IdLevel %in% c('Unidentified','Neis')]<- NA
 
