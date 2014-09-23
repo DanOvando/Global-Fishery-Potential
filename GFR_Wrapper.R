@@ -20,7 +20,7 @@ if (RunAnalyses==TRUE)
     
     # fulldata<- read.csv(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))
     
-    fulldata$SpeciesCatName<- as.character(levels(fulldata$SpeciesCatName))[ fulldata$SpeciesCatName] 
+#     fulldata$SpeciesCatName<- as.character(levels(fulldata$SpeciesCatName))[ fulldata$SpeciesCatName] 
     
     RawData<- fulldata
     
