@@ -260,17 +260,17 @@ if (RunAnalyses==TRUE)
   
   Predictions<- predict(NeiModels$M6,ProxyCats) #Apply nei model
   
-#   FaoNeiLevel$M6Prediction<- Predictions
-
+  #   FaoNeiLevel$M6Prediction<- Predictions
+  
   FaoNeiLevel$M6Prediction<- 999
   
   
-#   NotIdentifiedPredictions<- predict(NeiModels$M7,FaoMarineFishLevel) #Apply unidentified fish model
+  #   NotIdentifiedPredictions<- predict(NeiModels$M7,FaoMarineFishLevel) #Apply unidentified fish model
   
-#   FaoMarineFishLevel$M7Prediction<- NotIdentifiedPredictions
-
-FaoMarineFishLevel$M7Prediction<- 999
-
+  #   FaoMarineFishLevel$M7Prediction<- NotIdentifiedPredictions
+  
+  FaoMarineFishLevel$M7Prediction<- 999
+  
   show('Regressions Applied')
   
   # Clean and process predictions and data ---------------------------------------
@@ -351,6 +351,8 @@ FaoMarineFishLevel$M7Prediction<- 999
   # Analyze Current Status --------------------------------------------------
   
   GlobalStatus<- AnalyzeFisheries(BiomassData,'Baseline Global Status','Year',min(BiomassData$Year):max(BiomassData$Year),RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+  
+#   GlobalStatus$Data$BvBmsy[is.infinite(GlobalStatus$Data$BvBmsy)==T]<- NA
   
   # USA<- BiomassData[BiomassData$Country=='USA' |BiomassData$Country=='United States of America' ,]
   # 
