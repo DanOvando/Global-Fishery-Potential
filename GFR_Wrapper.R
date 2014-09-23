@@ -427,6 +427,15 @@ if (RunAnalyses==TRUE)
   
   ProjectionData<- RunProjection(MsyData,BaselineYear)
   
+ProjectionData$BvBmsy[ProjectionData$IdLevel %in% c('Unidentified','Neis')]<- NA
+
+ProjectionData$Catch[ProjectionData$IdLevel %in% c('Unidentified','Neis')]<- NA
+
+ProjectionData$Profits[ProjectionData$IdLevel %in% c('Unidentified','Neis')]<- NA
+
+ProjectionData$Biomass[ProjectionData$IdLevel %in% c('Unidentified','Neis')]<- NA
+
+
   OriginalProjectionData<- ProjectionData
   
   OriginalFullData<- FullData
