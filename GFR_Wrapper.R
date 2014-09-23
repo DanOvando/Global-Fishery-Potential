@@ -20,9 +20,12 @@ if (RunAnalyses==TRUE)
     
     # fulldata<- read.csv(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))
     
+    fulldata$SpeciesCatName<- as.character(levels(fulldata$SpeciesCatName))[ fulldata$SpeciesCatName] 
+    
     RawData<- fulldata
     
     RawData$FvFmsy<- RawData$UvUmsytouse
+    
     
     FullData<- fulldata
     
@@ -103,6 +106,7 @@ if (RunAnalyses==TRUE)
   {
     Groups<- unique(FaoData$SpeciesCatName[ (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F])
   }
+  
   
   SyntheticData<- StitchFish(RawData[RawData$Dbase=='RAM' ,],IdVar,Groups,GroupSamples,Iterations) 
   
@@ -256,12 +260,17 @@ if (RunAnalyses==TRUE)
   
   Predictions<- predict(NeiModels$M6,ProxyCats) #Apply nei model
   
-  FaoNeiLevel$M6Prediction<- Predictions
+#   FaoNeiLevel$M6Prediction<- Predictions
+
+  FaoNeiLevel$M6Prediction<- 999
   
-  NotIdentifiedPredictions<- predict(NeiModels$M7,FaoMarineFishLevel) #Apply unidentified fish model
   
-  FaoMarineFishLevel$M7Prediction<- NotIdentifiedPredictions
+#   NotIdentifiedPredictions<- predict(NeiModels$M7,FaoMarineFishLevel) #Apply unidentified fish model
   
+#   FaoMarineFishLevel$M7Prediction<- NotIdentifiedPredictions
+
+FaoMarineFishLevel$M7Prediction<- 999
+
   show('Regressions Applied')
   
   # Clean and process predictions and data ---------------------------------------
