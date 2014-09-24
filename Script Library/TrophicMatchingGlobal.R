@@ -8,30 +8,45 @@
 # 
 # Steps:
 # 1) Subset nei stocks from Data
-# 2) Find column indexes for BvBmsy, FvFmsy, Msy, Catch, and Profits
+# 2) Find column indexes for BvBmsy, FvFmsy, Msy, r, k, Price, and MarginalCost
 # In Loop:
 # 3) Determine taxonomic level of each nei stock
 # 4) Use the CommName, taxonomic level, and which_fish function to identify all species names of lower taxonomic level
 # 5) Subset Data to contain comparison stocks using the above names and FAO region of the nei stock
 # 6) Use ddply to find medians of comparison stocks in Years defined by "Years" variable
 # 7) Use column indexes to take median status values from comparison stocks and apply to NEI stock
+# In Loop:
+# 8) Calculate MSY for each nei stock using catch in the baseline year and BvBmsy and FvFmsy from above steps
+# 9) Project catch for each nei stock using catch in the baseline year and MSY calculated in step 8
+# Final Step/Return:
+# 10) Return an NEI only dataframe which is then to be bound to the Species-Level ProjectionData from before this function
 
 
 # Step 1
 
-function(Data,BaselineYear)
+MatchNEIs<- function(Data,ProjData,BaselineYear)
+{
 
-# data(fishbase)  
+  Data<- MsyData
+  
+  ProjData<- ProjectionData
+  
+data(fishbase)  
+
 # Data<-ProjectionData  
 
   #     SampleIds<- sample(unique(MsyData$IdOrig[MsyData$Dbase=='FAO']),1000,replace=FALSE)
   #     # # # 
   #     ProjectTestData<-  MsyData[! MsyData[,IdVar] %in% SampleIds,]  
   #     ProjectTestData<-RunProjection(ProjectTestData,BaselineYear)
-  
-NEIs<-Data[(grepl("nei",Data$CommName,ignore.case=T)) | (grepl("nei",Data$CommName,ignore.case=T) & (is.infinite(Data$BvBmsy)==T | Data$BvBmsy==999)) | (grepl("spp",Data$SciName) & grepl("not identified",Data$SpeciesCatName) & Data$Dbase=="FAO"),]
 
-SpeciesLevel<-Data[!(Data$IdOrig %in% NEIs$IdOrig),] 
+# Step 1
+  
+NEIs<-Data[Data$Dbase!='RAM' & Data$RanCatchMSY==F & ((grepl("nei",Data$CommName,ignore.case=T)) | (grepl("nei",Data$CommName,ignore.case=T) & (is.infinite(Data$BvBmsy)==T | Data$BvBmsy==999)) | (grepl("spp",Data$SciName) & grepl("not identified",Data$SpeciesCatName) & Data$Dbase=="FAO")),]
+
+SpeciesLevel<-ProjData[!(ProjData$IdOrig %in% unique(NEIs$IdOrig)),] 
+
+# Step 2
 
 VarsToFill<-c("BvBmsy","FvFmsy", "r", "k","Price","MarginalCost")
 
@@ -43,14 +58,14 @@ NeiStats$SciName<-gsub(",.*$","",NeiStats$SciName) # delete anything after a com
 
 NeiSciNames<-unique(NeiStats$SciName)
 
-# Step 1
+# Step 3
 
 for (j in 1:length(NeiSciNames))
 {
   
   where<-NeiStats$SciName==NeiSciNames[j]
   
-  if(grepl("spp",as.character(NeiSciNames[j]))==T) # revisit and clean up SciNames to remove things within parentheses and after commas
+  if(grepl("spp",as.character(NeiSciNames[j]))==T) 
   {NeiStats$TaxonLevel[where]<-"Genus"
    
   } else if(length(unique(which_fish(as.character(NeiSciNames[j]),using=c("Genus"))))==2) 
@@ -66,9 +81,9 @@ for (j in 1:length(NeiSciNames))
   {NeiStats$TaxonLevel[where]<-"Order"}
 
   show(j)
-}
+} # close NeiSciNames loop
 
-# Step 2 (write steps 2:5 as a function for use with Taxon DF and consider using lapply to return median estimates)
+# Step 4-7 
 
 NeiStats<-NeiStats[is.na(NeiStats$TaxonLevel)==F,]
 
@@ -132,3 +147,4 @@ for(h in 1:nrow(NEIs))
 show(h)
 }
 
+}
