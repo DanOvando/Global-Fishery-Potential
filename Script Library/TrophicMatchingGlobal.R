@@ -50,7 +50,7 @@ SpeciesLevel<-ProjData[!(ProjData$IdOrig %in% unique(NEIs$IdOrig)),]
 
 VarsToFill<-c("BvBmsy","FvFmsy", "r", "k","Price","MarginalCost")
 
-NeiStats<-unique(NEIs[c("SciName","RegionFAO")]) # find unique combinations of nei stocks  
+NeiStats<-unique(NEIs[c("SciName","RegionFAO","SpeciesCatName")]) # find unique combinations of nei stocks  
 NeiStats$TaxonLevel<-NA
 
 NeiStats$SciName<-gsub("\\(.*\\)","",NeiStats$SciName) # delete anything within parentheses in SciName
@@ -82,6 +82,14 @@ for (j in 1:length(NeiSciNames))
 
   show(j)
 } # close NeiSciNames loop
+
+# subset out non-fish nei stocks
+
+NonFishNeis<-c( "Miscellaneous marine molluscs"   ,    "Squids, cuttlefishes, octopuses"   ,  "Miscellaneous marine crustaceans" ,  
+                "Miscellaneous aquatic invertebrates" ,"Crabs, sea-spiders"   ,  "Sea-urchins and other echinoderms" , 
+                "Shrimps, prawns"      ,               "Lobsters, spiny-rock lobsters")
+
+NonFish<-NeiStats[(NeiStats$SpeciesCatName %in% NonFishNeis),]
 
 # Step 4-7 
 
@@ -119,12 +127,28 @@ for (m in 1:nrow(NeiStats))
     WhereNei<-NEIs$SciName==NeiStats$SciName[m] & NEIs$RegionFAO==NeiStats$RegionFAO[m] & NEIs$Year==results$Year[b]
     
     NEIs[WhereNei,VarsToFill]<-results[b,c("MedianBvBmsy", "MedianFvFmsy", "MedianR", "MedianK","MedianPrice", "MedianCost")]
-    
     }
   }
-  show(m)
-  
+  show(m)  
 } # close NeiStats loop
+
+# repeat process of finding comparable stocks for NonFish  nei stocks
+
+for (m in 1:nrow(NonFish))
+{
+  NonFishCompStocks<-SpeciesLevel[SpeciesLevel$SpeciesCatName==NonFish$SpeciesCatName[m] & SpeciesLevel$RegionFAO==NonFish$RegionFAO[m],]
+  
+  NonFishResults<-ddply(NonFishCompStocks,c("Year"),summarize, MedianBvBmsy=median(BvBmsy,na.rm=T), MedianFvFmsy=median(FvFmsy,na.rm=T),
+                        MedianR=median(r,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T),MedianCost=median(MarginalCost,na.rm=T),JStocks=length(unique(IdOrig)))
+  
+  for (b in 1:nrow(NonFishResults))
+  {
+    WhereNei<-NEIs$SciName==NonFish$SciName[m] & NEIs$RegionFAO==NonFish$RegionFAO[m] & NEIs$Year==NonFishResults$Year[b]
+    
+    NEIs[WhereNei,VarsToFill]<-results[b,c("MedianBvBmsy", "MedianFvFmsy", "MedianR", "MedianK","MedianPrice", "MedianCost")]
+    
+  } # close results loop
+} # close NonFish loop
 
 # loop over NEIs and calculate MSY using catch in the BaselineYear and the median BvBmsy and FvFmsy values from above
 # then calculate projected catch using this MSY value and the same BvBmsy and FvFmsy values
@@ -142,9 +166,9 @@ for(h in 1:nrow(NEIs))
   if(NEIs$Year[h]>BaselineYear)
   {
     NEIs$Catch[h]<-msy*(NEIs$BvBmsy[h]*NEIs$FvFmsy[h])
-  }
-}
+  } # close second if
+} # close first if
 show(h)
-}
+} # close loop
 
-}
+} # close function
