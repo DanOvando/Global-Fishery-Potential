@@ -3,7 +3,7 @@
 #This code runs CatchMSY on fisheries
 ###################################### 
 
-RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength)
+RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength,CatchMSYTrumps)
 {
   library(zoo)
   
@@ -87,6 +87,8 @@ RunCatchMSY<- function(Data,ExcludeSmallPelagics,ErrorSize,sigR,Smooth,Display,B
 #     Data<- USAStatus$Data
 # Data<- GlobalStatus$Data
 
+Data$RanCatchMSY<- FALSE
+
 Data$HasRamMSY<-  is.na(Data$MSY)==F
 
 Data$HasRamFvFmsy<- is.na(Data$FvFmsy)==F
@@ -129,7 +131,7 @@ RamFvFmsy<- Data$FvFmsy[Data$HasRamFvFmsy]
 # 
 # Data$Cos_MSY<- 1.78*10^(-.8644+1.0976*log10(Data$MaxCatch)) #Calculate Costello JEM MSY
 
-stock_id <- unique((Data[,IdVar][Data$HasRamMSY==F])) 
+stock_id <- unique((Data[,IdVar][Data$HasRamMSY==F & Data$BvBmsy!=999 & is.infinite(Data$BvBmsy)==F])) 
 ## stock_id <- "cod-2224" ## for selecting individual stocks
 
 TotalResults<- NULL
@@ -338,6 +340,9 @@ for(s in 1:length(stock_id))
       mean_ln_msy = mean(log(msy))
       
       #         Data$MSY[Where]<- mean(msy,na.rm=T)
+      
+      Data$RanCatchMSY[Where]<- TRUE
+      
       Data$MSY[Where]<- exp(mean(log(msy)))
       
       Data$r[Where]<- exp(mean(log(r),na.rm=T))
@@ -352,6 +357,11 @@ for(s in 1:length(stock_id))
       
       Data$CatchMSYBvBmsy[Where]<- time_bvbmsy
 
+      if (CatchMSYTrumps==T)
+      {
+      Data$BvBmsy[Where]<- time_bvbmsy
+      }
+      
       Data$CatchMSYBvBmsy_LogSd[Where]<- LogSD_bvbmsy
       
       Data$FvFmsy[Where]<- (Data$Catch[Where]/Data$MSY[Where])/Data$BvBmsy[Where]
@@ -481,7 +491,7 @@ PercGainOrder<- order(CountryMsy$PercGain,decreasing=T)
 
 CountryMsy<- CountryMsy[PercGainOrder,]
 
-Data$r[is.na(Data$r)]<- mean(Data$r,na.rm=T)
+# Data$r[is.na(Data$r)]<- mean(Data$r,na.rm=T)
 
 Data$FvFmsy[Data$HasRamFvFmsy==T]<- RamFvFmsy
 

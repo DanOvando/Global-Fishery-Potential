@@ -6,7 +6,7 @@
 MaidService<- function(Data,OverlapMode)
 {
   #For Commiting
-  #     Data<- FullData
+#        Data<- FullData
   
   Data$SpeciesCatName[Data$SpeciesCatName=='']<- NA
   
@@ -53,6 +53,11 @@ MaidService<- function(Data,OverlapMode)
   Data<- LumpFisheries(Data,SpeciesCategoriesToLump)
   
   Data$BvBmsy[Data$BvBmsy>OutlierBvBmsy & Data$Dbase=='RAM']<- NA
+  
+  if (CommonFinalYear==T)
+  {
+    Data<- ExtendTimeSeries(Data,BaselineYear)
+  }
   
   Data<- FormatForRegression(Data,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)#Add resgression data to database
   

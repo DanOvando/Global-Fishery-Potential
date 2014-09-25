@@ -6,15 +6,15 @@
 RunProjection<- function(Data,BaselineYear)
 {
   
-  #      Data<- MsyData[MsyData$Country=='USA',]
-  #  
-  #     BaselineYear<- 2010
+#  Data<-  MsyData[MsyData$CanProject==T,]
+#   #  
+#        BaselineYear<- 2011
   
   Data$MarginalCost<- NA
   
-  Data$Country<- as.character(Data$Country)
-  
-  Data$Dbase<- as.character(Data$Dbase)
+#   Data$Country<- as.character(Data$Country)
+#   
+#   Data$Dbase<- as.character(Data$Dbase)
   
   # Loop over Each Stock ----------------------------------------------------
   
@@ -109,6 +109,8 @@ RunProjection<- function(Data,BaselineYear)
       PolicyMatrix$Profits<- Projection$Profits
       
       PolicyMatrix$Policy<- Policies[p]
+
+      PolicyMatrix$MarginalCost<- cost
       
       TempStockMatrix[counter:(counter+-1+(dim(PolicyMatrix)[1])),]<- I(PolicyMatrix)
       
@@ -146,10 +148,11 @@ RunProjection<- function(Data,BaselineYear)
   
   Data$MarginalCost[HistoricData]<- Costs
   
-  Data$Profits[HistoricData]= Data$Price[HistoricData]*Data$MSY[HistoricData]*Data$FvFmsy[HistoricData]*Data$BvBmsy[HistoricData] -Data$MarginalCost[HistoricData]*(Data$FvFmsy[HistoricData]*Data$r[HistoricData]/2)^beta
+  Data$Profits[HistoricData]= Data$Price[HistoricData]*Data$MSY[HistoricData]*Data$FvFmsy[HistoricData]*Data$BvBmsy[HistoricData] - Data$MarginalCost[HistoricData]*(Data$FvFmsy[HistoricData]*Data$r[HistoricData]/2)^beta
   
-  DataPlus<- rbind(I(Data),I(TempStockMatrix))
+  DataPlus<- rbind((Data),(TempStockMatrix))
   
+  is.data.frame(DataPlus)
   
   return(DataPlus)
   # Stack results -----------------------------------------------------------

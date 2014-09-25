@@ -18,7 +18,7 @@ FindFishbase<- function(Data)
  
 for (i in 1:length(spnames)){
   
-  show(paste(100*(round(i/length(spnames),2)),'% Done',sep=''))
+  show(paste(100*(round(i/length(spnames),2)),'% Done With Fishbase Matching',sep=''))
   
   lh_match=grepl(spnames[i],Fishbase$sname) #find if species name name matches FB data, locate row
  
