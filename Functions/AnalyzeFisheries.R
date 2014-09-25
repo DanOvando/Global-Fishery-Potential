@@ -22,6 +22,8 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
 # 
 # J<- TransbiasIterations
 
+#   NeiData<- Data[Data$BvBmsy==-999,]
+  
   Data<- Data[Data$Year %in% Years,]
   
   CatchStats<- list()
@@ -77,7 +79,7 @@ if (any(Data$Dbase=='FAO' & is.na(Data$BvBmsy)==F))
 {  
   
   IdLevels<- unique(Data$IdLevel[Data$BestModel!='RAM'])
-  
+
   FaoIndividualStocks<- as.data.frame(matrix(NA,nrow=0,ncol=J+2))
   
   for (i in 1:length(IdLevels))
