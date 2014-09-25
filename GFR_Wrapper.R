@@ -20,7 +20,7 @@ if (RunAnalyses==TRUE)
     
     # fulldata<- read.csv(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))
     
-#     fulldata$SpeciesCatName<- as.character(levels(fulldata$SpeciesCatName))[ fulldata$SpeciesCatName] 
+    #     fulldata$SpeciesCatName<- as.character(levels(fulldata$SpeciesCatName))[ fulldata$SpeciesCatName] 
     
     RawData<- fulldata
     
@@ -29,9 +29,9 @@ if (RunAnalyses==TRUE)
     
     FullData<- fulldata
     
-    SampleIds<- sample(unique(FullData$IdOrig[FullData$Dbase=='FAO']),20000,replace=FALSE)
-    # # # 
-    FullData<-  FullData[! FullData[,IdVar] %in% SampleIds,]
+#     SampleIds<- sample(unique(FullData$IdOrig[FullData$Dbase=='FAO']),20000,replace=FALSE)
+#     # # # 
+#     FullData<-  FullData[! FullData[,IdVar] %in% SampleIds,]
     
     FullData$FvFmsy<- FullData$UvUmsytouse
     
@@ -352,7 +352,7 @@ if (RunAnalyses==TRUE)
   
   GlobalStatus<- AnalyzeFisheries(BiomassData,'Baseline Global Status','Year',min(BiomassData$Year):max(BiomassData$Year),RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
   
-#   GlobalStatus$Data$BvBmsy[is.infinite(GlobalStatus$Data$BvBmsy)==T]<- NA
+  #   GlobalStatus$Data$BvBmsy[is.infinite(GlobalStatus$Data$BvBmsy)==T]<- NA
   
   # USA<- BiomassData[BiomassData$Country=='USA' |BiomassData$Country=='United States of America' ,]
   # 
@@ -369,7 +369,7 @@ if (RunAnalyses==TRUE)
   # Calculate MSY -----------------------------------------------------------
   sigR<- 0
   
-  CatchMSYresults<- RunCatchMSY(GlobalStatus$Data,ExcludeForageFish,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength)
+  CatchMSYresults<- RunCatchMSY(GlobalStatus$Data,ExcludeForageFish,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength,CatchMSYTrumps)
   
   MsyData<- CatchMSYresults$Data
   
@@ -384,58 +384,39 @@ if (RunAnalyses==TRUE)
   }))
   dev.off()
   
-  MedianWorked<- median(MsyData$BvBmsy[is.na(MsyData$MSY)==F])
   
-  MedianFailed<- median(MsyData$BvBmsy[is.na(MsyData$MSY)])
+  #   MsyData<- MsyData[is.na(MsyData$MSY)==F,]
   
-  # CurrentCatch<- sum(MsyData$Catch[MsyData$Year==2010 & is.na(MsyData$MSY)==F],na.rm=T)
-  # 
-  # CurrentCatch2<- sum(MsyData$Catch[MsyData$Year==2010],na.rm=T)
-  
-  MsyData<- MsyData[is.na(MsyData$MSY)==F,]
-  
-  MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T)
+  #   MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T)
   
   MsyData$PercentGain<- 100*(MsyData$MSY/MsyData$Catch-1)
   
-  # FutureMSY<- sum(MsyData$MSY[MsyData$Year==2010],na.rm=T)
-  # 
-  # GlobalPercentChange<- 100*(FutureMSY/CurrentCatch-1)
-  # 
-  # IndoCatch<- (PredictedData[PredictedData$Country=='Indonesia',])
-  
   MsyData$Country[MsyData$Country=='United States of America']<- 'USA'
   
-  CountryMsy<- ddply(MsyData[MsyData$Year==2010,],c('Country'),summarize,CurrentCatch= sum(Catch,na.rm=T),MSY=sum(MSY,na.rm=T),TotalGain=sum(MSY,na.rm=T)-sum(Catch,na.rm=T),
-                     PercGain=(100*(sum(MSY,na.rm=T)/sum(Catch,na.rm=T)-1)),MedianBvBmsy=median(BvBmsy,na.rm=T),PercMissing=100*(sum(is.na(MSY))/length(MSY)))
-  
-  PercGainOrder<- order(CountryMsy$PercGain,decreasing=T)
-  
-  CountryMsy<- CountryMsy[PercGainOrder,]
-  
-  write.csv(file=paste(ResultFolder,'Country Rankings.csv',sep=''),CountryMsy)
-  
   # Run projection analysis -------------------------------------------------
-  # 
-  # MsyData$Price<- 1000
-  # 
-  # MsyData$BvBmsyOpenAccess<- 0.25
-  
-  BaselineYear<- 2009
   
   MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T)
   
-  ProjectionData<- RunProjection(MsyData,BaselineYear)
+  MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T) #FIX THIS XXX
   
-ProjectionData$BvBmsy[ProjectionData$IdLevel %in% c('Unidentified','Neis')]<- NA
+  MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$r)==F
+  
+  ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear)
+  
+  
+  NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear)
+  
+  
+  ProjectionData<- rbind(ProjectionData,NeiData$ProjNeis)
 
-# ProjectionData$Catch[ProjectionData$IdLevel %in% c('Unidentified','Neis')]<- NA
-
-ProjectionData$Profits[ProjectionData$IdLevel %in% c('Unidentified','Neis')]<- NA
-
-ProjectionData$Biomass[ProjectionData$IdLevel %in% c('Unidentified','Neis')]<- NA
-
-
+  BiomassData<- BiomassData[BiomassData$BvBmsy!=999,]
+  
+  BiomassData<- rbind(BiomassData,NeiData$BiomassNeis)
+  
+  MsyData<- MsyData[is.na(MsyData$MSY)==F,]
+  
+  ProjectionData<- ProjectionData[ProjectionData$CanProject==T,]
+  
   OriginalProjectionData<- ProjectionData
   
   OriginalFullData<- FullData
@@ -444,12 +425,10 @@ ProjectionData$Biomass[ProjectionData$IdLevel %in% c('Unidentified','Neis')]<- N
   
   OriginalBiomassData<- BiomassData
   
-  
-  
+  save.image(file=paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
   
 } #Close RunAnalyses If
 
-save.image(file=paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
 
 if (RunAnalyses==F)
 {
@@ -486,8 +465,6 @@ FullData$IdLevel[WhereUnidentified]<- 'Unidentified'
 FullData$IdLevel[WhereSpeciesLevel]<- 'Species'
 
 Policies<- unique(ProjectionData$Policy)
-
-## This is where you need to calculate actual biomass for each fishery
 
 ProjectionData$Biomass<- (ProjectionData$BvBmsy* (2* ProjectionData$MSY/ProjectionData$r))
 
@@ -551,7 +528,7 @@ FvFmsyStatusByRegSpCat<-ddply(BiomassData[BiomassData$Dbase=="FAO",],c("Year","R
 for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
 {
   
-  BaselineYear<- 2009
+  #   BaselineYear<- 2009
   
   show(CountriesToRun[c])
   if (CountriesToRun[c]=='Global'){
@@ -596,37 +573,6 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     # Analyze Time Trends  ----------------------------------------------------------
     
     BiomassStatus<- AnalyzeFisheries(BiomassData[Biomass_CountryLocater,],paste(CountriesToRun[c],' Status',sep=''),'Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
-    
-    # subset NEI's and add median values calculated in StatusByRegSpCat at beginning of loop. Add NEI entries to Biomass Status before Kobe Plot 
-    
-    if(sum(Nei_CountryLocater,na.rm=T)>0)
-    {
-      CountryNeis<-FaoNeiLevel[Nei_CountryLocater,]
-      CountryNeis<-subset(CountryNeis,(Year %in% c(2005:2011))) # just for 2005-2011
-      
-      CountryNeis$BestModel<-"Nei"
-      CountryNeis$IdLevel<-"Nei"
-      CountryNeis$Price<-NA
-      CountryNeis$BvBmsyOpenAccess<-NA
-      CountryNeis$BvBmsySD<-NA
-      
-      # apply median status to nei fisheries in matching year/region/speciescategory 
-      
-      Combos<-unique(CountryNeis[c("Year","RegionFAO","SpeciesCatName")]) # define unique combinations to loop through
-      
-      for (i in 1:nrow(Combos)){
-        
-        where<-CountryNeis$Year==Combos$Year[i] & CountryNeis$RegionFAO==Combos$RegionFAO[i] & CountryNeis$SpeciesCatName==Combos$SpeciesCatName[i]
-        
-        if(length(subset(StatusByRegSpCat,RegionFAO==Combos$RegionFAO[i] & Year==Combos$Year[i] & SpeciesCatName==Combos$SpeciesCatName[i])$MedianStatus)>0){
-          
-          CountryNeis$BvBmsy[where]<-subset(StatusByRegSpCat,RegionFAO==Combos$RegionFAO[i] & Year==Combos$Year[i] & SpeciesCatName==Combos$SpeciesCatName[i])$MedianStatus
-          CountryNeis$FvFmsy[where]<-subset(FvFmsyStatusByRegSpCat,RegionFAO==Combos$RegionFAO[i] & Year==Combos$Year[i] & SpeciesCatName==Combos$SpeciesCatName[i])$MedianFvFmsy
-          CountryNeis<-subset(CountryNeis,!(SpeciesCatName %in% SpeciesCategoriesToLump))
-        }
-      }
-      BiomassStatus$Data<-rbind(BiomassStatus$Data,CountryNeis)
-    } # close nei loop
     
     MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
     
@@ -790,7 +736,7 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     
     write.csv(file=paste(ResultFolder,CountriesToRun[c],' From Business As Usual Data.csv',sep=''),Cumulatives)    
     
-    BaselineYear<- 2005
+    #     BaselineYear<- 2005
     
     pdf(file=paste(FigureFolder,CountriesToRun[c],' Trajectories.pdf',sep='')) 
     
