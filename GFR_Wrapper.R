@@ -24,9 +24,9 @@ if (RunAnalyses==TRUE)
     
     FullData<- fulldata
     
-    #     SampleIds<- sample(unique(FullData$IdOrig[FullData$Dbase=='FAO']),20000,replace=FALSE)
-    #     # # # 
-    #     FullData<-  FullData[! FullData[,IdVar] %in% SampleIds,]
+#         SampleIds<- sample(unique(FullData$IdOrig[FullData$Dbase=='FAO']),20000,replace=FALSE)
+#         # # # 
+#         FullData<-  FullData[! FullData[,IdVar] %in% SampleIds,]
     
     FullData$FvFmsy<- FullData$UvUmsytouse
     
@@ -39,6 +39,8 @@ if (RunAnalyses==TRUE)
     FullData<- CleanedData$CleanedData
     
     FullData<- FindFishbase(FullData)
+    
+    FullData<-FindResilience(FullData)
     
     rm(CleanedData)
     
