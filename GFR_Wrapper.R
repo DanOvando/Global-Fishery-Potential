@@ -18,26 +18,21 @@ if (RunAnalyses==TRUE)
     
     source('Database_Build.r') #Build Tyler's database
     
-    # fulldata<- read.csv(paste(ResultFolder,'Raw Compiled Database.csv',sep=''))
-    
-    #     fulldata$SpeciesCatName<- as.character(levels(fulldata$SpeciesCatName))[ fulldata$SpeciesCatName] 
-    
     RawData<- fulldata
     
     RawData$FvFmsy<- RawData$UvUmsytouse
     
-    
     FullData<- fulldata
     
-#     SampleIds<- sample(unique(FullData$IdOrig[FullData$Dbase=='FAO']),20000,replace=FALSE)
-#     # # # 
-#     FullData<-  FullData[! FullData[,IdVar] %in% SampleIds,]
+    #     SampleIds<- sample(unique(FullData$IdOrig[FullData$Dbase=='FAO']),20000,replace=FALSE)
+    #     # # # 
+    #     FullData<-  FullData[! FullData[,IdVar] %in% SampleIds,]
     
     FullData$FvFmsy<- FullData$UvUmsytouse
     
     rm(fulldata)
     
-    CleanedData<- MaidService(FullData,OverlapMode)
+    CleanedData<- MaidService(FullData,OverlapMode) #Filter out unusable stocks, prepare data for regression and use
     
     DroppedStocks<- CleanedData$DroppedStocks
     
@@ -54,7 +49,7 @@ if (RunAnalyses==TRUE)
     write.csv(file=paste(ResultFolder,'Raw Database.csv',sep=''),RawData)
     
   }
-  else #(file.exists(paste(ResultFolder,'Cleaned Compiled Database.csv',sep='')))
+  else 
   {
     FullData<- read.csv(paste(ResultFolder,'Cleaned Compiled Database.csv',sep=''))
     
@@ -62,11 +57,9 @@ if (RunAnalyses==TRUE)
     
   }
   
-  # FullData$SpeciesCatName<- as.factor( FullData$SpeciesCatName)
-  
   FullData$ReferenceBiomass[FullData$ReferenceBiomass==0]<- NA
   
-  ModelNames<- names(Regressions)
+  ModelNames<- names(Regressions) #Create columns to store the results of each PRM
   
   for (m in 1:length(ModelNames))
   {
@@ -76,21 +69,11 @@ if (RunAnalyses==TRUE)
     eval(parse(text=paste('FullData$',ModelNames[m],'Prediction<- NA',sep='')))
   }
   
-  # Where<- FullData[,'AgeMat']==0 | is.na(FullData[,'AgeMat'])
-  # 
-  # FullData[Where,'AgeMat']<- NA
-  
   SofiaData<-  FullData[FullData$Dbase=='SOFIA',]
   
   RamData<- FullData[FullData$Dbase=='RAM',]
   
   FaoData<- FullData[FullData$Dbase=='FAO',]
-  
-  #   FaoData<- LumpFisheries(FaoData,SpeciesCategoriesToLump)
-  
-  # FaoIdSample<- sample(unique(FaoData[,IdVar]),500,replace=FALSE)
-  # # # # 
-  # FaoData<- FaoData[FaoData[,IdVar] %in% FaoIdSample,]
   
   show('Raw Data Processed')
   
@@ -106,7 +89,6 @@ if (RunAnalyses==TRUE)
   {
     Groups<- unique(FaoData$SpeciesCatName[ (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F])
   }
-  
   
   SyntheticData<- StitchFish(RawData[RawData$Dbase=='RAM' ,],IdVar,Groups,GroupSamples,Iterations) 
   
@@ -127,27 +109,8 @@ if (RunAnalyses==TRUE)
   
   library(proftools)
   
-  #  Rprof()
-  
-  #   RamData<- FormatForRegression(RamData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)#Add resgression data to database
-  
   SyntheticData<- FormatForRegression(SyntheticData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
   
-  #   SofiaData<- SofiaData[is.na(SofiaData$Catch)==F,]
-  
-  #   SofiaData<- FormatForRegression(SofiaData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)#Add resgression data to database
-  
-  #   if (file.exists(paste(ResultFolder,'FullData.Rdata',sep=''))==F)
-  #   {
-  #     
-  # #     FaoData<- FormatForRegression(FaoData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
-  #     
-  #     save(file=paste(ResultFolder,'FullData.Rdata',sep=''),FullData)
-  #   }
-  #   if (file.exists(paste(ResultFolder,'FullData.Rdata',sep='')))
-  #   {
-  #     load(paste(ResultFolder,'FullData.Rdata',sep=''))
-  #   }
   show('Data prepared for regression')
   
   # Rprof(NULL)
@@ -273,7 +236,7 @@ if (RunAnalyses==TRUE)
   
   show('Regressions Applied')
   
-  # Clean and process predictions and data ---------------------------------------
+  # Assign and identify best predicted biomass to stocks  ---------------------------------------
   
   if (IncludeNEIs==1)
   {
@@ -321,10 +284,7 @@ if (RunAnalyses==TRUE)
   
   BiomassData$BestModel<- BestModel
   
-  # BiomassData$BestBio<- BestBio
-  
   BiomassData$BvBmsy<- BestBio
-  
   
   BiomassData$CommName<- as.character((BiomassData$CommName))
   
@@ -344,39 +304,28 @@ if (RunAnalyses==TRUE)
   
   BiomassData$IdLevel[WhereSpeciesLevel]<- 'Species'
   
+  BiomassData<- AssignEconomicData(BiomassData) #Assign price and cost data to each stock
+  
   show('Results Processed')
   
-  BiomassData<- AssignEconomicData(BiomassData)
-  
-  # Analyze Current Status --------------------------------------------------
+  # Run First Analisis of Current Status --------------------------------------------------
   
   GlobalStatus<- AnalyzeFisheries(BiomassData,'Baseline Global Status','Year',min(BiomassData$Year):max(BiomassData$Year),RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
   
-  #   GlobalStatus$Data$BvBmsy[is.infinite(GlobalStatus$Data$BvBmsy)==T]<- NA
-  
-  # USA<- BiomassData[BiomassData$Country=='USA' |BiomassData$Country=='United States of America' ,]
-  # 
-  # USAStatus<- AnalyzeFisheries(USA,'USA Status','Year',1950:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
-  
-  RAMStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='RAM',],'RAM Status','Year',1950:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
-  
-  # FAOStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='FAO',],'FAO Status','Year',2000:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
-  # 
-  # IndonesiaStatus<- AnalyzeFisheries(BiomassData[BiomassData$Country=='Indonesia',],'Indonesia Status','Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
-  # 
-  # CanadaStatus<- AnalyzeFisheries(BiomassData[BiomassData$Country=='Canada',],'Canada Status','Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+  #   RAMStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='RAM',],'RAM Status','Year',1950:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
   
   # Calculate MSY -----------------------------------------------------------
-  sigR<- 0
   
+  sigR<- 0
   CatchMSYresults<- RunCatchMSY(GlobalStatus$Data,ExcludeForageFish,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength,CatchMSYTrumps)
   
   MsyData<- CatchMSYresults$Data
   
-  BiomassData$MSY<- MsyData$MSY
+  BiomassData$MSY<- MsyData$MSY #Assign MSY back to BiomassData estimates
   
   BiomassData$FvFmsy[MsyData$HasRamFvFmsy==F]<- MsyData$FvFmsy[MsyData$HasRamFvFmsy==F]
   
+  #Run quick diagnostic of CatchMSY results
   pdf(file=paste(FigureFolder,'Catch MSY vs PRM BvBmsy predictions.pdf',sep=''))
   print(xyplot(  CatchMSYBvBmsy ~ BvBmsy | Dbase,data=MsyData,xlab='PRM BvBmsy',ylab='CMSY BvBmsy',panel=function(x,y,...){
     panel.xyplot(x,y,...)
@@ -385,30 +334,27 @@ if (RunAnalyses==TRUE)
   dev.off()
   
   
-  #   MsyData<- MsyData[is.na(MsyData$MSY)==F,]
-  
-  #   MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T)
-  
   MsyData$PercentGain<- 100*(MsyData$MSY/MsyData$Catch-1)
   
-  MsyData$Country[MsyData$Country=='United States of America']<- 'USA'
+  #   MsyData$Country[MsyData$Country=='United States of America']<- 'USA'
   
   # Run projection analysis -------------------------------------------------
   
-  MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T)
   
-  MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T) #FIX THIS XXX
+  MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T) #Apply mean price to fisheries with no price
   
-  MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$r)==F
+  MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T) #FIX THIS XXX Apply mean r to fisheries with no r
   
-  ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear)
+  MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$r)==F #Identify disheries that have both MSY and r
   
+  ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear) #Run projections on MSY data that can be projected
   
-  NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear)
+  NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear) #Run Nearest Neighbor NEI analysis
   
+  #Put NEI stocks back in the appropriate dataframes, remove stocks still missing data
   
   ProjectionData<- rbind(ProjectionData,NeiData$ProjNeis)
-
+  
   BiomassData<- BiomassData[BiomassData$BvBmsy!=999,]
   
   BiomassData<- rbind(BiomassData,NeiData$BiomassNeis)
@@ -430,7 +376,7 @@ if (RunAnalyses==TRUE)
 } #Close RunAnalyses If
 
 
-if (RunAnalyses==F)
+if (RunAnalyses==F) #Load baseline versions of key dataframes for analysis after complete runs
 {
   
   FullData<- OriginalFullData #Complete database, post filtering/cleaning etc
@@ -441,16 +387,11 @@ if (RunAnalyses==F)
   
   ProjectionData<- OriginalProjectionData #Fisheries that have B/Bmsy, MSY, and we've run the projections
   
-  
 }
 
-ProjectionData$Country[ProjectionData$Country=='United States of America']<- 'USA'
 
-BiomassData$Country[BiomassData$Country=='United States of America']<- 'USA'
+# Assign labels and prepare results for analysis --------------------------
 
-FullData$Country[FullData$Country=='United States of America']<- 'USA'
-
-FaoNeiLevel$Country[FaoNeiLevel$Country=='United States of America']<- 'USA'
 
 WhereNeis<- (grepl('nei',FullData$CommName) | grepl('spp',FullData$SciName)) & grepl('not identified',FullData$SpeciesCatName)==F #Find unassessed NEIs
 
@@ -468,30 +409,36 @@ Policies<- unique(ProjectionData$Policy)
 
 ProjectionData$Biomass<- (ProjectionData$BvBmsy* (2* ProjectionData$MSY/ProjectionData$r))
 
-
-if (OverFishedOnly==1)
+if (OverFishedOnly==1) #Remove projections for underfished stocks if desired
 {
   
   CurrentlyOverfished<- ProjectionData$IdOrig[ProjectionData$Year==BaselineYear & ProjectionData$BvBmsy<1]
+  
   ProjectionData<- ProjectionData[ProjectionData$IdOrig %in% CurrentlyOverfished ,]
   
 }
 
-if (IncludeNEIs==0)
+if (IncludeNEIs==0) #Remove NEIs if desired 
 {
   ProjectionData<- ProjectionData[ProjectionData$IdLevel=='Species',]
 }
 
-if (ExcludeForageFish==1)
+if (ExcludeForageFish==1) #Remove forage fish species if desired 
 {
   ProjectionData<- ProjectionData[ProjectionData$SpeciesCatName%in%ForageFish==F,]
   
   BiomassData<- BiomassData[BiomassData$SpeciesCatName%in%ForageFish==F,]
 }
 
-ProjectionData$Profits[ProjectionData$Profits<0]<- 0.0001
+#Reframe 0 profits/catch to prevent infinites and NANs in 
+
+ProjectionData$Profits[ProjectionData$Profits<0]<- 0.0001 #Reframe 0 profits/catch to prevent infinites and NANs in 
 
 ProjectionData$Catch[ProjectionData$Catch==0]<- 0.0001
+
+
+
+# Prepare summary tables --------------------------------------------------
 
 
 # Build empty version of Chris's database to be populated with FinalYear results. Make separate percent change and absolute change tables then use rbind later
@@ -524,11 +471,8 @@ colnames(ResultMetricsSQCumFinalTable)<-c("Region",ResultMetricsSQCumFinalNames)
 StatusByRegSpCat<-ddply(GlobalStatus$Data[GlobalStatus$Data$Dbase=="FAO",],c("Year","RegionFAO","SpeciesCatName"),summarize, MedianStatus=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),Fisheries=length(unique(IdOrig)))
 FvFmsyStatusByRegSpCat<-ddply(BiomassData[BiomassData$Dbase=="FAO",],c("Year","RegionFAO","SpeciesCatName"),summarize,MedianFvFmsy=median(FvFmsy,na.rm=T),Fisheries=length(unique(IdOrig)))
 
-
-for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
+for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
 {
-  
-  #   BaselineYear<- 2009
   
   show(CountriesToRun[c])
   if (CountriesToRun[c]=='Global'){
@@ -570,15 +514,19 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
   if(sum(Biomass_CountryLocater,na.rm=T)>0 & sum(Proj_CountryLocater,na.rm=T)>0)
   {
     
-    # Analyze Time Trends  ----------------------------------------------------------
+    # Analyze Current Status/Kobe Plot Trends  ----------------------------------------------------------
     
     BiomassStatus<- AnalyzeFisheries(BiomassData[Biomass_CountryLocater,],paste(CountriesToRun[c],' Status',sep=''),'Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
     
     MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
     
+    # Analyze Projections -----------------------------------------------------
+    
     TempProjectionData<- ProjectionData[Proj_CountryLocater,]
     
     TempProjectionData$DiscProfits<- TempProjectionData$Profits * (1+Discount)^-(TempProjectionData$Year-BaselineYear)
+    
+    #Calculate baseline metrics values 
     
     Baseline<- ddply(subset(TempProjectionData,Year==BaselineYear & Policy=='Historic'),c('Year','Policy'),summarize,MedianBvBmsy=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),
                      TotalCatch=sum(Catch,na.rm=T),TotalProfits=sum(Profits,na.rm=T),
@@ -593,6 +541,7 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     
     BaselineMarker$Policy<- Policies[Policies!='Historic']
     
+    #Analyze time trends in metrics
     TimeTrend<- ddply(TempProjectionData,c('Year','Policy'),summarize,MedianBvBmsy=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),
                       TotalCatch=sum(Catch,na.rm=T),TotalProfits=sum(Profits,na.rm=T),MedianCatch=median(Catch,na.rm=T),MedianProfits=median(Profits,na.rm=T),
                       NumberOfStocks=length(unique(IdOrig)),DiscProfits=sum(DiscProfits,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),MedianBiomass=median(Biomass,na.rm=T))
@@ -603,34 +552,35 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     
     TimeTrend<- TimeTrend[YearOrder,]
     
-    TimeTrend$PercChangeTotalProfits<-100*(TimeTrend$TotalProfits/Baseline$TotalProfits-1)
-    
-    TimeTrend$PercChangeTotalCatch<-100*(TimeTrend$TotalCatch/Baseline$TotalCatch-1)
-    
-    TimeTrend$PercChangeTotalBiomass<-100*(TimeTrend$TotalBiomass/Baseline$TotalBiomass-1)
-    
-    TimeTrend$PercChangeMedianProfits<-100*(TimeTrend$MedianProfits/Baseline$MedianProfits-1)
-    
-    TimeTrend$PercChangeMedianCatch<-100*(TimeTrend$MedianCatch/Baseline$MedianCatch-1)
-    
-    TimeTrend$PercChangeMedianBiomass<-100*(TimeTrend$MedianBvBmsy/Baseline$MedianBvBmsy-1) # should this be % Change in Median Status?
-    
-    # add absolute changes
-    
-    TimeTrend$AbsChangeTotalProfits<-TimeTrend$TotalProfits-Baseline$TotalProfits
-    
-    TimeTrend$AbsChangeTotalCatch<-TimeTrend$TotalCatch-Baseline$TotalCatch
-    
-    TimeTrend$AbsChangeTotalBiomass<-TimeTrend$TotalBiomass-Baseline$TotalBiomass
-    
-    TimeTrend$AbsChangeMedianProfits<-TimeTrend$MedianProfits-Baseline$MedianProfits
-    
-    TimeTrend$AbsChangeMedianCatch<-TimeTrend$MedianCatch-Baseline$MedianCatch
-    
-    TimeTrend$AbsChangeMedianBiomass<-TimeTrend$MedianBvBmsy-Baseline$MedianBvBmsy
+    # Calculate Upside Metrics -----------------------------------------------------
     
     
-    #     TimeTrend$PercChangeFromSQMedianBiomass<-100*(TimeTrend$MedianBvBmsy/TimeTrend$MedianBvBmsy[TimeTrend$Policy=='SQ']-1)
+    TimeTrend$PercChangeTotalProfits<-100*(TimeTrend$TotalProfits/Baseline$TotalProfits-1) #Percent change in total profits from current
+    
+    TimeTrend$PercChangeTotalCatch<-100*(TimeTrend$TotalCatch/Baseline$TotalCatch-1) #Percent change in total catch from current
+    
+    TimeTrend$PercChangeTotalBiomass<-100*(TimeTrend$TotalBiomass/Baseline$TotalBiomass-1) #Percent change in total biomass from current
+    
+    TimeTrend$PercChangeMedianProfits<-100*(TimeTrend$MedianProfits/Baseline$MedianProfits-1) #Percent change in median profits from current
+    
+    TimeTrend$PercChangeMedianCatch<-100*(TimeTrend$MedianCatch/Baseline$MedianCatch-1) #Percent change in median catch from current
+    
+    TimeTrend$PercChangeMedianBiomass<-100*(TimeTrend$MedianBvBmsy/Baseline$MedianBvBmsy-1) #Percent change in median B/Bmsy from current
+    
+    TimeTrend$AbsChangeTotalProfits<-TimeTrend$TotalProfits-Baseline$TotalProfits #absolute change in total profits from current
+    
+    TimeTrend$AbsChangeTotalCatch<-TimeTrend$TotalCatch-Baseline$TotalCatch #Percent change in total catch from current
+    
+    TimeTrend$AbsChangeTotalBiomass<-TimeTrend$TotalBiomass-Baseline$TotalBiomass #Percent change in total biomass from current
+    
+    TimeTrend$AbsChangeMedianProfits<-TimeTrend$MedianProfits-Baseline$MedianProfits #Absolute change in median profits from current
+    
+    TimeTrend$AbsChangeMedianCatch<-TimeTrend$MedianCatch-Baseline$MedianCatch #Percent change in median catch from current
+    
+    TimeTrend$AbsChangeMedianBiomass<-TimeTrend$MedianBvBmsy-Baseline$MedianBvBmsy #Percent change in median B/Bmsy from current
+    
+    
+    # Calculate cumulative changes in metrics ------ 
     
     Cumulatives<- ddply(TimeTrend[TimeTrend$Year>BaselineYear,],c('Policy'),summarize,NPV=sum(DiscProfits,na.rm=T),Food=sum(TotalCatch,na.rm=T),Fish=sum(TotalBiomass,na.rm=T),
                         MedianProfits=sum(MedianProfits,na.rm=T),MedianCatch=sum(MedianCatch,na.rm=T),MedianBiomass=sum(MedianBvBmsy,na.rm=T))
@@ -639,75 +589,89 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     
     CumeNumbersAbs<- as.matrix(Cumulatives[,2:dim(Cumulatives)[2]])
     
-    CumeNumbers<- 100*(t(t(CumeNumbers)/CumeNumbers[which(Cumulatives$Policy=='SQ'),])-1) # percents
+    CumeNumbers<- 100*(t(t(CumeNumbers)/CumeNumbers[which(Cumulatives$Policy=='SQ'),])-1) # Calculate % Change cumulative metrics
     
-    CumeNumbersAbs<- t(t(CumeNumbersAbs)-CumeNumbersAbs[which(Cumulatives$Policy=='SQ'),]) # absolutes  
+    CumeNumbersAbs<- t(t(CumeNumbersAbs)-CumeNumbersAbs[which(Cumulatives$Policy=='SQ'),]) # Calculate absolute change in cumulative metrics  
     
     Cumulatives[,2:dim(Cumulatives)[2]]<- CumeNumbers   
     
     Cumulatives[,8:13]<-CumeNumbersAbs
+    
     colnames(Cumulatives)[8:13]<-paste("Abs",colnames(CumeNumbersAbs),sep="")
     
     Cumulatives[,colnames(Cumulatives)=="AbsMedianBiomass"]<-Cumulatives$AbsMedianBiomass/(ProjectionTime)
     
     Cumulatives<- Cumulatives[Cumulatives$Policy!='SQ' & Cumulatives$Policy!='Historic',]
     
+    # Calculate  metrics in final year -----------------------------------------------------
+    
     FinalYear<- TimeTrend[TimeTrend$Year==max(TimeTrend$Year),]  
     
-    FinalYear$PercChangeFromSQMedianBiomass<- 100*(FinalYear$MedianBvBmsy/FinalYear$MedianBvBmsy[FinalYear$Policy=='SQ']-1)
+    FinalYear$AbsChangeFromSQTotalProfits<- FinalYear$TotalProfits-FinalYear$TotalProfits[FinalYear$Policy=='SQ'] # Absolute change in total profits relative to BAU
     
-    FinalYear$PercChangeFromSQMedianProfits<- 100*(FinalYear$MedianProfits/FinalYear$MedianProfits[FinalYear$Policy=='SQ']-1)
+    FinalYear$AbsChangeFromSQTotalCatch<- FinalYear$TotalCatch-FinalYear$TotalCatch[FinalYear$Policy=='SQ'] # Absolute change in total catch relative to BAU
     
-    FinalYear$PercChangeFromSQMedianCatch<- 100*(FinalYear$MedianCatch/FinalYear$MedianCatch[FinalYear$Policy=='SQ']-1)
+    FinalYear$AbsChangeFromSQTotalBiomass<- FinalYear$TotalBiomass-FinalYear$TotalBiomass[FinalYear$Policy=='SQ'] # Absolute change in total biomass relative to BAU
     
-    FinalYear$PercChangeFromSQTotalBiomass<- 100*(FinalYear$TotalBiomass/FinalYear$TotalBiomass[FinalYear$Policy=='SQ']-1)
+    FinalYear$PercChangeFromSQTotalProfits<- 100*(FinalYear$TotalProfits/FinalYear$TotalProfits[FinalYear$Policy=='SQ']-1) # Percent change in total profits relative to BAU
     
-    FinalYear$PercChangeFromSQTotalProfits<- 100*(FinalYear$TotalProfits/FinalYear$TotalProfits[FinalYear$Policy=='SQ']-1)
+    FinalYear$PercChangeFromSQTotalCatch<- 100*(FinalYear$TotalCatch/FinalYear$TotalCatch[FinalYear$Policy=='SQ']-1) # Percent change in total catch relative to BAU
     
-    FinalYear$PercChangeFromSQTotalCatch<- 100*(FinalYear$TotalCatch/FinalYear$TotalCatch[FinalYear$Policy=='SQ']-1)
+    FinalYear$PercChangeFromSQTotalBiomass<- 100*(FinalYear$TotalBiomass/FinalYear$TotalBiomass[FinalYear$Policy=='SQ']-1) # Percent change in total biomass relative to BAU
     
-    # Add columns to FinalYear for absolute changes
+    FinalYear$PercChangeFromSQMedianProfits<- 100*(FinalYear$MedianProfits/FinalYear$MedianProfits[FinalYear$Policy=='SQ']-1) # Percent change in median profits relative to BAU
     
-    FinalYear$AbsChangeFromSQMedianBiomass<- FinalYear$MedianBvBmsy-FinalYear$MedianBvBmsy[FinalYear$Policy=='SQ']
+    FinalYear$PercChangeFromSQMedianCatch<- 100*(FinalYear$MedianCatch/FinalYear$MedianCatch[FinalYear$Policy=='SQ']-1) # Percent change in median catch relative to BAU
     
-    FinalYear$AbsChangeFromSQMedianProfits<- FinalYear$MedianProfits-FinalYear$MedianProfits[FinalYear$Policy=='SQ']
+    FinalYear$PercChangeFromSQMedianBiomass<- 100*(FinalYear$MedianBvBmsy/FinalYear$MedianBvBmsy[FinalYear$Policy=='SQ']-1) # Percent change in median B/Bmsy relative to BAU
     
-    FinalYear$AbsChangeFromSQMedianCatch<- FinalYear$MedianCatch-FinalYear$MedianCatch[FinalYear$Policy=='SQ']
+    FinalYear$AbsChangeFromSQMedianProfits<- FinalYear$MedianProfits-FinalYear$MedianProfits[FinalYear$Policy=='SQ']  # Absolute change in median profits relative to BAU
     
-    FinalYear$AbsChangeFromSQTotalBiomass<- FinalYear$TotalBiomass-FinalYear$TotalBiomass[FinalYear$Policy=='SQ']
+    FinalYear$AbsChangeFromSQMedianCatch<- FinalYear$MedianCatch-FinalYear$MedianCatch[FinalYear$Policy=='SQ'] # Absolute change in median catch relative to BAU
     
-    FinalYear$AbsChangeFromSQTotalProfits<- FinalYear$TotalProfits-FinalYear$TotalProfits[FinalYear$Policy=='SQ']
+    FinalYear$AbsChangeFromSQMedianBiomass<- FinalYear$MedianBvBmsy-FinalYear$MedianBvBmsy[FinalYear$Policy=='SQ'] # Absolute change in median B/Bmsy relative to BAU
     
-    FinalYear$AbsChangeFromSQTotalCatch<- FinalYear$TotalCatch-FinalYear$TotalCatch[FinalYear$Policy=='SQ']
-    
-    # Populate Chris's Data Table
+    # Populate summary table of results  -----------------------------------------------------
     
     ResultMetricsBaselineTable[c,1]<-CountriesToRun[c]
+    
     ResultMetricsSQFinalTable[c,1]<-CountriesToRun[c]
+    
     ResultMetricsSQCumFinalTable[c,1]<-CountriesToRun[c]
     
     ResultMetricsBaselineTable[c,2:13]<-FinalYear[FinalYear$Policy=="CatchShare",13:24]
     
     ResultMetricsSQFinalTable[c,2:4]<-FinalYear[FinalYear$Policy=="CatchShare",28:30]
+   
     ResultMetricsSQFinalTable[c,5:7]<-FinalYear[FinalYear$Policy=="CatchShare",25:27]
+    
     ResultMetricsSQFinalTable[c,8:10]<-FinalYear[FinalYear$Policy=="CatchShare",34:36]
+    
     ResultMetricsSQFinalTable[c,11:13]<-FinalYear[FinalYear$Policy=="CatchShare",31:33]
     
     ResultMetricsSQCumFinalTable[c,2:13]<-Cumulatives[Cumulatives$Policy=="CatchShare",2:dim(Cumulatives)[2]]
     
     ResultMetricsTable<-merge(ResultMetricsBaselineTable,ResultMetricsSQFinalTable,by = "Region")
+    
     ResultMetricsTable<-merge(ResultMetricsTable,ResultMetricsSQCumFinalTable,by = "Region")
     
-    # Analyze Database Composition --------------------------------------------
+    # Calculate data coverage statistics --------------------------------------------
     
+    # Tallies of catch and fisheries in  FullData
     FullTallies<- ddply(FullData[FullData_CountryLocater,],c('Year','Dbase'),summarize,Fisheries=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T),Source='FullData')
+    
+    # Tallies of catch and fisheries in  BiomassData
     
     BiomassTallies<- ddply(BiomassData[Biomass_CountryLocater,],c('Year','Dbase'),summarize,Fisheries=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T),Source='BiomassData')
     
+    # Tallies of catch and fisheries in ProjectionData
+    
     ProjectionTallies<- ddply(ProjectionData[Proj_CountryLocater,],c('Year','Dbase'),summarize,Fisheries=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T),Source='ProjectionData')
+    
     
     Tallies<- rbind(FullTallies,BiomassTallies,ProjectionTallies)
     
+    # Plot data coverage statistics
     
     pdf(file=paste(FigureFolder,CountriesToRun[c],' Database Analysis.pdf',sep='')) 
     
@@ -722,7 +686,7 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     dev.off()
     
     
-    # Save  Results --------------------------------------------------
+    # Save .csvs of results --------------------------------------------------
     
     write.csv(file=paste(ResultFolder,CountriesToRun[c],' Policy Projections.csv',sep=''),TimeTrend)
     
@@ -736,7 +700,8 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     
     write.csv(file=paste(ResultFolder,CountriesToRun[c],' From Business As Usual Data.csv',sep=''),Cumulatives)    
     
-    #     BaselineYear<- 2005
+
+    # Plot results --------------------------------------------------
     
     pdf(file=paste(FigureFolder,CountriesToRun[c],' Trajectories.pdf',sep='')) 
     
@@ -770,9 +735,7 @@ for (c in 1:length(CountriesToRun)) #Workhorse analysis loop
     
     print(barchart(PercChangeFromSQMedianBiomass ~ Policy,data=FinalYear,col=terrain.colors(length(Policies)),origin=0,ylab= ' % Change from Business as Usual Median Fish'))
     
-    
     print(xyplot( PercChangeTotalProfits ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,ylab='% Change from Current Total Profits',type='l',lwd=4,auto.key=T,aspect='fill'))
-    
     
     print(xyplot( PercChangeTotalCatch ~ Year,data=TimeTrend[TimeTrend$Year>=BaselineYear,],groups=Policy,type='l',lwd=4,auto.key=T,aspect='fill',ylab='% Change from Current Total Catch'))
     
