@@ -245,14 +245,13 @@ RAM$ReferenceBiomassUnits[WhereRefB]<-"Bmsy"
 ####### Species, Country, and Region Codes ####### 
 # read in .csvs with matched RAM assessids and FAO regions and species scientific names and ISSCAAP codes
 
-Spec_ISSCAAP=read.csv("Data/Species_ASFIS_ISSCAAP.csv") # list of ASFIS scientific names and corressponding ISSCAAP codes 
+Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes 
 Spec_Region_RAM=read.csv("Data/RAM_Regions_72814.csv") # list of RAM Assessed IDs previously matched to species code and FAO Region
 Spec_Region_RAM$RegionFAO<- gsub("/",",",Spec_Region_RAM$RegionFAO,fixed=T) # change / to , for use in string parsing during filtering function
 
 Spec_Region_RAM$assessid=as.character(levels(Spec_Region_RAM$assessid))[Spec_Region_RAM$assessid] # convert ID to character
 Spec_Region_RAM$areaname<-as.character(levels(Spec_Region_RAM$areaname))[Spec_Region_RAM$areaname]
 
-Spec_ISSCAAP$Species_AFSIS=as.character(levels(Spec_ISSCAAP$Species_AFSIS))[Spec_ISSCAAP$Species_AFSIS] # convert ID to character
 
 # Country Identification - using first word from "areaid" in metadata data frame
 for (i in 1:length(metadata$areaid)) # loop adds country variable to metadata data frame
@@ -324,9 +323,9 @@ for (i in 1:length(SpecNames)) # match species name to group code
 {
   Where<-RAM$SciName==SpecNames[i]
   
-  if (sum(Spec_ISSCAAP$Species_AFSIS==SpecNames[i])>0)
+  if (sum(Spec_ISSCAAP$Species_AFSIS==SpecNames[i],na.rm=T)>0)
   {
-    RAM$SpeciesCat[Where]<-Spec_ISSCAAP[Spec_ISSCAAP$Species_AFSIS==SpecNames[i],2]
+    RAM$SpeciesCat[Where]<-Spec_ISSCAAP[Spec_ISSCAAP$Species_AFSIS==SpecNames[i],1]
   }
 }
 
@@ -341,8 +340,6 @@ for (i in 1:length(GroupNums)) # match group code to group name
     RAM$SpeciesCatName[Where]<-GroupNames_ISSCAAP[GroupNames_ISSCAAP$ISSCAAP.code==GroupNums[i],2]
   }
 }
-
-
 
 RAM$Country[RAM$Country=="Russia"]<-"Russian Federation"
 
