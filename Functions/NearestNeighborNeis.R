@@ -5,48 +5,30 @@
 ##
 ######################################################
 
-# 
-# Steps:
-# 1) Subset nei stocks from Data
-# 2) Find column indexes for BvBmsy, FvFmsy, Msy, r, k, Price, and MarginalCost
-# In Loop:
-# 3) Determine taxonomic level of each nei stock
-# 4) Use the CommName, taxonomic level, and which_fish function to identify all species names of lower taxonomic level
-# 5) Subset Data to contain comparison stocks using the above names and FAO region of the nei stock
-# 6) Use ddply to find medians of comparison stocks in Years defined by "Years" variable
-# 7) Use column indexes to take median status values from comparison stocks and apply to NEI stock
-# In Loop:
-# 8) Calculate MSY for each nei stock using catch in the baseline year and BvBmsy and FvFmsy from above steps
-# 9) Project catch for each nei stock using catch in the baseline year and MSY calculated in step 8
-# Final Step/Return:
-# 10) Return an NEI only dataframe which is then to be bound to the Species-Level ProjectionData from before this function
-
-
-# Step 1
-
 NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
 {
   
 #     Data<- MsyData
-# #   
+  
 #     ProjData<- ProjectionData
   
+#   MsyData<- RamMsy
+  
+#   ProjData<- RamProj
+  
+#   BaselineYear<- 2011
+#   
   data(fishbase)  
-  
-#    Data<-ProjectionData  
-  
-  #     SampleIds<- sample(unique(MsyData$IdOrig[MsyData$Dbase=='FAO']),1000,replace=FALSE)
-  #     # # # 
-  #     ProjectTestData<-  MsyData[! MsyData[,IdVar] %in% SampleIds,]  
-  #     ProjectTestData<-RunProjection(ProjectTestData,BaselineYear)
-  
-  # Step 1
-  
+   
+  #Pull out NEI fisheries
   NEIs<-MsyData[MsyData$Dbase!='RAM' & MsyData$RanCatchMSY==F & ((grepl("nei",MsyData$CommName,ignore.case=T)) | (grepl("nei",MsyData$CommName,ignore.case=T) & (is.infinite(MsyData$BvBmsy)==T | MsyData$BvBmsy==999)) | (grepl("spp",MsyData$SciName) & grepl("not identified",MsyData$SpeciesCatName) & MsyData$Dbase=="FAO")),]
   
   FinalYear<- ddply(NEIs,c('IdOrig'),summarize,MaxYear=max(Year,na.rm=T))
   
-  DropIt<- FinalYear$IdOrig[FinalYear$MaxYear<2011]
+  DropIt<- FinalYear$IdOrig[FinalYear$MaxYear<BaselineYear]
+  
+  
+  # Prepare NEI data for nearest neighbot analysis --------------------------
   
   NEIs<- NEIs[(NEIs$IdOrig %in% DropIt)==F,]
   
@@ -87,7 +69,7 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   
   SpeciesLevel<-ProjData[!(ProjData$IdOrig %in% unique(NEIs$IdOrig)),] 
   
-  # Step 2
+  # Find comparison stocks --------------------------
   
   VarsToFill<-c("BvBmsy","FvFmsy", "r", "k","Price","MarginalCost")
   
@@ -98,11 +80,11 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   NeiStats$SciName<-gsub(",.*$","",NeiStats$SciName) # delete anything after a comma in SciName
   
   NeiSciNames<-unique(NeiStats$SciName)
-  
-  # Step 3
-  
+    
   for (j in 1:length(NeiSciNames))
   {
+    
+    show(paste( round(100*(j/length(NeiSciNames))), '% Done with NeiSciNames',sep=''))
     
     where<- NeiStats$SciName==NeiSciNames[j]
     
@@ -130,13 +112,15 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
                   "Shrimps, prawns"      ,               "Lobsters, spiny-rock lobsters")
   
   NonFish<-NeiStats[(NeiStats$SpeciesCatName %in% NonFishNeis),]
-  
-  # Step 4-7 
-  
+    
   NeiStats<-NeiStats[is.na(NeiStats$TaxonLevel)==F,]
-  
+#   Rprof()
   for (m in 1:nrow(NeiStats))
   {
+    
+    show(paste( round(100*(m/nrow(NeiStats))), '% Done with NeiStats',sep=''))
+    
+    
     if(NeiStats$TaxonLevel[m]=="Genus")
     {
       Genus<-unlist(str_split(NeiStats$SciName[m],pattern=" "))[1]
@@ -158,16 +142,9 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
         results<-ddply(ComparisonStocks[ComparisonStocks$Policy==LongPols[p],],c("Year"),summarize,MedianBvBmsy=median(BvBmsy,na.rm=T), MedianFvFmsy=median(FvFmsy,na.rm=T),
                        MedianR=median(r,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T),MedianCost=median(MarginalCost,na.rm=T),JStocks=length(unique(IdOrig)))
         
-        # for msy, find last year with real catch data (should be 2009 or "baseline year"), calculate msy based on method dan and i discussed
-        # fill BvBmsy,FvFmsy, r, k, Price, and Marginal Cost for all combinations of nei category and fao region in NeiStats loop
-        # in new loop, fill in MSY and catch for each fishery using IdLevel variable
-        # for median catch, catch in first year will be real catch and may need to loop to calculate future median catch using below method?
-        # once msy is calculated for baseline year, calculate catch by MSY * (medianFvFmsy * medianBvMsy for the given year)
-        
-        
         for (b in 1:nrow(results))
         {
-          WhereNei<- NEIs$SciName==NeiStats$SciName[m] & grepl((NeiStats$RegionFAO[m]),NEIs$RegionFAO ) & NEIs$Year==results$Year[b] & NEIs$Policy==LongPols[p]
+          WhereNei<- NEIs$SciName==NeiStats$SciName[m] & grepl((NeiStats$RegionFAO[m]),NEIs$RegionFAO ) & NEIs$Year==results$Year[b]  & is.na(SpeciesLevel$RegionFAO)==F & NEIs$Policy==LongPols[p]
           
           NEIs[WhereNei,VarsToFill]<-results[b,c("MedianBvBmsy", "MedianFvFmsy", "MedianR", "MedianK","MedianPrice", "MedianCost")]
           NEIs$CanProject[WhereNei]<- TRUE
@@ -177,10 +154,18 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
     }
   } # close NeiStats loop
   
+# Rprof(NULL)
+#  RProfData<- readProfileData('Rprof.out')
+#  flatProfile(RProfData,byTotal=TRUE)
+
+
   # repeat process of finding comparable stocks for NonFish  nei stocks
   
   for (m in 1:nrow(NonFish))
   {
+    
+    show(paste( round(100*(m/nrow(NonFish))), '% Done with NonFish',sep=''))
+    
     NonFishCompStocks<-SpeciesLevel[SpeciesLevel$SpeciesCatName==NonFish$SpeciesCatName[m] &  grepl((NeiStats$RegionFAO[m]),SpeciesLevel$RegionFAO ) & is.na(SpeciesLevel$RegionFAO)==F,]
     
     if(nrow(NonFishCompStocks)>0)
@@ -210,8 +195,11 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   
   for (p in 1:length(Pols))
   {
-    for(s in 1:length(Stocks))
+    
+    
+    for( s in 1:length(Stocks))
     {
+      show(paste( round(100*(p/length(Pols))), '% Done with Policy Loop-  ', round(100*(s/length(Stocks))), '% Done with Stocks in Policies Loop',sep=''))
       
       Where<- NEIs$IdOrig==Stocks[s] & NEIs$Policy==Pols[p]
       
