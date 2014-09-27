@@ -144,7 +144,7 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
         
         for (b in 1:nrow(results))
         {
-          WhereNei<- NEIs$SciName==NeiStats$SciName[m] & grepl((NeiStats$RegionFAO[m]),NEIs$RegionFAO ) & NEIs$Year==results$Year[b]  & is.na(SpeciesLevel$RegionFAO)==F & NEIs$Policy==LongPols[p]
+          WhereNei<- NEIs$SciName==NeiStats$SciName[m] & grepl((NeiStats$RegionFAO[m]),NEIs$RegionFAO ) & NEIs$Year==results$Year[b]  & is.na(NeiStats$RegionFAO)==F & NEIs$Policy==LongPols[p]
           
           NEIs[WhereNei,VarsToFill]<-results[b,c("MedianBvBmsy", "MedianFvFmsy", "MedianR", "MedianK","MedianPrice", "MedianCost")]
           NEIs$CanProject[WhereNei]<- TRUE
@@ -159,36 +159,36 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
 #  flatProfile(RProfData,byTotal=TRUE)
 
 
-  # repeat process of finding comparable stocks for NonFish  nei stocks
-  
-  for (m in 1:nrow(NonFish))
-  {
-    
-    show(paste( round(100*(m/nrow(NonFish))), '% Done with NonFish',sep=''))
-    
-    NonFishCompStocks<-SpeciesLevel[SpeciesLevel$SpeciesCatName==NonFish$SpeciesCatName[m] &  grepl((NeiStats$RegionFAO[m]),SpeciesLevel$RegionFAO ) & is.na(SpeciesLevel$RegionFAO)==F,]
-    
-    if(nrow(NonFishCompStocks)>0)
-    {
-      for (p in 1:length(LongPols))
-      {
-        NonFishResults<-ddply(NonFishCompStocks[NonFishCompStocks$Policy==LongPols[p],],c("Year"),summarize, MedianBvBmsy=median(BvBmsy,na.rm=T), MedianFvFmsy=median(FvFmsy,na.rm=T),
-                              MedianR=median(r,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T),MedianCost=median(MarginalCost,na.rm=T),JStocks=length(unique(IdOrig)))
-        
-        for (b in 1:nrow(NonFishResults))
-        {
-          WhereNei<- NEIs$SciName==NonFish$SciName[m] &  grepl((NonFish$RegionFAO[m]),NEIs$RegionFAO ) & is.na(NEIs$RegionFAO)==F & NEIs$Year==NonFishResults$Year[b] & NEIs$Policy==LongPols[p]
-          
-          NEIs[WhereNei,VarsToFill]<- results[b,c("MedianBvBmsy", "MedianFvFmsy", "MedianR", "MedianK","MedianPrice", "MedianCost")] 
-          
-          NEIs$CanProject[WhereNei]<- TRUE
-        } # close results loop
-      }
-    } # close NonFish loop
-  }
-  # loop over NEIs and calculate MSY using catch in the BaselineYear and the median BvBmsy and FvFmsy values from above
-  # then calculate projected catch using this MSY value and the same BvBmsy and FvFmsy values
-  
+#   # repeat process of finding comparable stocks for NonFish  nei stocks
+#   
+#   for (m in 1:nrow(NonFish))
+#   {
+#     
+#     show(paste( round(100*(m/nrow(NonFish))), '% Done with NonFish',sep=''))
+#     
+#     NonFishCompStocks<-SpeciesLevel[SpeciesLevel$SpeciesCatName==NonFish$SpeciesCatName[m] &  grepl((NeiStats$RegionFAO[m]),SpeciesLevel$RegionFAO ) & is.na(SpeciesLevel$RegionFAO)==F,]
+#     
+#     if(nrow(NonFishCompStocks)>0)
+#     {
+#       for (p in 1:length(LongPols))
+#       {
+#         NonFishResults<-ddply(NonFishCompStocks[NonFishCompStocks$Policy==LongPols[p],],c("Year"),summarize, MedianBvBmsy=median(BvBmsy,na.rm=T), MedianFvFmsy=median(FvFmsy,na.rm=T),
+#                               MedianR=median(r,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T),MedianCost=median(MarginalCost,na.rm=T),JStocks=length(unique(IdOrig)))
+#         
+#         for (b in 1:nrow(NonFishResults))
+#         {
+#           WhereNei<- NEIs$SciName==NonFish$SciName[m] &  grepl((NonFish$RegionFAO[m]),NEIs$RegionFAO ) & is.na(NonFish$RegionFAO)==F & NEIs$Year==NonFishResults$Year[b] & NEIs$Policy==LongPols[p]
+#           
+#           NEIs[WhereNei,VarsToFill]<- results[b,c("MedianBvBmsy", "MedianFvFmsy", "MedianR", "MedianK","MedianPrice", "MedianCost")] 
+#           
+#           NEIs$CanProject[WhereNei]<- TRUE
+#         } # close results loop
+#       }
+#     } # close NonFish loop
+#   }
+#   # loop over NEIs and calculate MSY using catch in the BaselineYear and the median BvBmsy and FvFmsy values from above
+#   # then calculate projected catch using this MSY value and the same BvBmsy and FvFmsy values
+#   
   NEIs<- NEIs[NEIs$CanProject==T,]
   
   Stocks<- unique(NEIs$IdOrig)
