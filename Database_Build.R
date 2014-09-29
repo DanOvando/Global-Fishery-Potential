@@ -371,6 +371,8 @@ SOFIA$SciName=trim.lead.trail(SOFIA$SciName) # reduced to 276
 
 # sub out "/n" and double spaces
 SOFIA$CommName=gsub("\n"," ",SOFIA$CommName) # \n - 321
+SOFIA$CommName=gsub("\x90s", "",SOFIA$CommName)
+
 SOFIA$SciName=gsub("\n"," ",SOFIA$SciName) # down to 274
 
 SOFIA$CommName=gsub("  "," ",SOFIA$CommName) # double spaces - 303
