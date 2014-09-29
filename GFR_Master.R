@@ -19,7 +19,7 @@ require(proftools)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'Results/9_25_14 Full Run/'
+BatchFolder<- 'Results/9_26_14 Full Run/'
 
 InputFolder<- 'Data/'
 
@@ -37,7 +37,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Results/Scratch/'
+  BatchFolder<- 'Results/9_26_14 Full Run/'
   
   InputFolder<- 'Data/'
   
@@ -173,7 +173,7 @@ ManualFinalYear<- 0 #Set year you want to run all analyses for
 
 n <- 3000  ## number of iterations, e.g. 100000
 
-SampleLength<- 100 # Number of subsampled bootstraps 
+SampleLength<- 3000 # Number of subsampled bootstraps 
 
 # Projections -------------------------------------------------------------
 
