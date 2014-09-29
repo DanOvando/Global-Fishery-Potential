@@ -19,7 +19,7 @@ require(proftools)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'Results/9_26_14 Full Run/'
+BatchFolder<- 'Results/Scratch/'
 
 InputFolder<- 'Data/'
 
@@ -37,7 +37,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Results/9_26_14 Full Run/'
+  BatchFolder<- 'Results/Scratch/'
   
   InputFolder<- 'Data/'
   
@@ -51,11 +51,13 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-IncludeNEIs<- 1
+SubSample<- 0.85
 
-ExcludeForageFish<- 0
+IncludeNEIs<- TRUE
 
-OverFishedOnly<- 1
+IncludeForageFish<- TRUE
+
+IncludeOverfished<- TRUE
 
 OverlapMode<- 'SofiaTrumps' #SofiaTrumps, FaoTrumps
 
