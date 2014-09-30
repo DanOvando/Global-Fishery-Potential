@@ -175,7 +175,7 @@ ManualFinalYear<- 0 #Set year you want to run all analyses for
 
 n <- 200  ## number of iterations, e.g. 100000
 
-SampleLength<- 100 # Number of subsampled bootstraps 
+SampleLength<- 3000 # Number of subsampled bootstraps 
 
 # Projections -------------------------------------------------------------
 
