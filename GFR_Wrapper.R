@@ -24,10 +24,15 @@ if (RunAnalyses==TRUE)
     
     FullData<- fulldata
     
-#         SampleIds<- sample(unique(FullData$IdOrig[FullData$Dbase=='FAO']),20000,replace=FALSE)
-#         # # # 
-#         FullData<-  FullData[! FullData[,IdVar] %in% SampleIds,]
-    
+    if (SubSample>0)
+    {
+     
+      FaoIds<- unique(FullData$IdOrig[FullData$Dbase=='FAO'])
+      
+      SampleIds<- sample(FaoIds,SubSample*length(FaoIds),replace=FALSE)
+        # # # 
+        FullData<-  FullData[! FullData[,IdVar] %in% SampleIds,]
+    }
     FullData$FvFmsy<- FullData$UvUmsytouse
     
     rm(fulldata)
@@ -240,11 +245,11 @@ if (RunAnalyses==TRUE)
   
   # Assign and identify best predicted biomass to stocks  ---------------------------------------
   
-  if (IncludeNEIs==1)
+  if (IncludeNEIs==TRUE)
   {
     PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel,FaoNeiLevel,FaoMarineFishLevel) #Bind all data back together
   }
-  if (IncludeNEIs==0)
+  if (IncludeNEIs==FALSE)
   {
     PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel) #Bind all data back together
   }
@@ -319,7 +324,7 @@ if (RunAnalyses==TRUE)
   # Calculate MSY -----------------------------------------------------------
   
   sigR<- 0
-  CatchMSYresults<- RunCatchMSY(GlobalStatus$Data,ExcludeForageFish,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength,CatchMSYTrumps)
+  CatchMSYresults<- RunCatchMSY(GlobalStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength,CatchMSYTrumps)
   
   MsyData<- CatchMSYresults$Data
   
@@ -411,7 +416,7 @@ Policies<- unique(ProjectionData$Policy)
 
 ProjectionData$Biomass<- (ProjectionData$BvBmsy* (2* ProjectionData$MSY/ProjectionData$r))
 
-if (OverFishedOnly==1) #Remove projections for underfished stocks if desired
+if (IncludeOverfished==FALSE) #Remove projections for underfished stocks if desired
 {
   
   CurrentlyOverfished<- ProjectionData$IdOrig[ProjectionData$Year==BaselineYear & ProjectionData$BvBmsy<1]
@@ -420,12 +425,12 @@ if (OverFishedOnly==1) #Remove projections for underfished stocks if desired
   
 }
 
-if (IncludeNEIs==0) #Remove NEIs if desired 
+if (IncludeNEIs==FALSE) #Remove NEIs if desired 
 {
   ProjectionData<- ProjectionData[ProjectionData$IdLevel=='Species',]
 }
 
-if (ExcludeForageFish==1) #Remove forage fish species if desired 
+if (IncludeForageFish==FALSE) #Remove forage fish species if desired 
 {
   ProjectionData<- ProjectionData[ProjectionData$SpeciesCatName%in%ForageFish==F,]
   
@@ -492,10 +497,14 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
   } else if (CountriesToRun[c]=='EU')
   {
-    Biomass_CountryLocater<- BiomassData$Country %in% EUCountries
-    Proj_CountryLocater<- ProjectionData$Country %in% EUCountries
-    FullData_CountryLocater<- FullData$Country %in% EUCountries
-    Nei_CountryLocater<-FaoNeiLevel$Country %in% EUCountries
+   
+    EuStocks<- Spec_Region_RAM$assessid[Spec_Region_RAM$region=='European Union']
+    
+    
+    Biomass_CountryLocater<- BiomassData$Country %in% EUCountries | BiomassData$IdOrig %in% EuStocks
+    Proj_CountryLocater<- ProjectionData$Country %in% EUCountries | ProjectionData$IdOrig %in% EuStocks
+    FullData_CountryLocater<- FullData$Country %in% EUCountries | FullData$IdOrig %in% EuStocks
+    Nei_CountryLocater<-FaoNeiLevel$Country %in% EUCountries | FaoNeiLevel$IdOrig %in% EuStocks
     
   } else if (CountriesToRun[c]=='China')
   {
