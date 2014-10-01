@@ -1,7 +1,7 @@
 ExtendTimeSeries<- function(Data,BaselineYear)
 {
 #   
-#    Data<- NEIs
+#     Data<- RawData
 #   
 #    BaselineYear<- 2026
   
@@ -21,6 +21,12 @@ ExtendTimeSeries<- function(Data,BaselineYear)
     TempStock<- Data[Where,]
     
     MaxYear<- max(TempStock$Year[is.na(TempStock$Catch)==F],na.rm=T)
+    
+    if (any(Data$Dbase[Where]=='RAM') | any(Data$Dbase[Where]=='SOFIA'))
+    {
+      MaxYear<- max(TempStock$Year[is.na(TempStock$Catch)==F & is.na(TempStock$BvBmsy)==F],na.rm=T)
+       
+    }
     
     TempStock<- TempStock[1:which(TempStock$Year==MaxYear),]
     

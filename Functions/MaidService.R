@@ -6,43 +6,31 @@
 MaidService<- function(Data,OverlapMode)
 {
   #For Commiting
-#        Data<- FullData
+#          Data<- FullData
   
   Data$SpeciesCatName[Data$SpeciesCatName=='']<- NA
   
   Data$Keep<- 1
+  
+  Data$BvBmsy[Data$BvBmsy>OutlierBvBmsy & Data$Dbase=='RAM']<- NA
   
   # Assess catch and life history information in each stock -----------------
   
   StockStats<- ddply(Data,~IdOrig,summarise,MeanCatch=mean(Catch,na.rm=T),TotalCatch=sum(Catch,na.rm=T),
                      TooFewCatchYears=sum(is.na(Catch)==F)<MinimumCatchYears,
                      PercentMissingTooHigh=(sum(is.na(Catch))/length(Catch))>=MissingCatchTolerance,NoCatch=sum(Catch,na.rm=T)==0
-                     ,SpeciesCatName=unique(SpeciesCatName))
+                     ,SpeciesCatName=unique(SpeciesCatName),NoRamOrSofiaBiomass=(as.numeric(any(Dbase=='RAM') | any(Dbase=='SOFIA'))*as.numeric(sum(is.na(BvBmsy)==F)==0))==1)
   
   StockStats$NoSpeciesCategory<- is.na(StockStats$SpeciesCatName)
   
   StockStats$WrongSpeciesCategory<- (StockStats$SpeciesCatName %in% SpeciesCategoriesToOmit)
-  
-  #     
-  #   Omits<- NULL
-  #   for (o in 1:length(OverlapToRemove))
-  #   {
-  #     
-  #     Omits<- cbind(Omits,eval(parse(text=paste('Overlap$',OverlapToRemove[o],'Overlap',sep=''))))
-  #     
-  #   }
-  #   
-  #
-  #    FisheriesToOmit<- unique(c(FisheriesToOmit,Overlap$AllOverlap)) New remove 
-  #   
-  #   StockStats$NotAllowedIn<- (StockStats[,IdVar] %in% FisheriesToOmit)
   
   StockStats$DropFishery<- 0
   
   ## Mark fisheries that need to be dropped 
   StockStats$DropFishery[StockStats$NoSpeciesCategory  | StockStats$WrongSpeciesCategory 
                          | StockStats$TooFewCatchYears |
-                           StockStats$PercentMissingTooHigh | StockStats$NoCatch]<- 1
+                           StockStats$PercentMissingTooHigh | StockStats$NoCatch | StockStats$NoRamOrSofiaBiomass==T]<- 1
   
   DroppedStocks<- StockStats[StockStats$DropFishery==1,]
   
@@ -52,7 +40,6 @@ MaidService<- function(Data,OverlapMode)
   
   Data<- LumpFisheries(Data,SpeciesCategoriesToLump)
   
-  Data$BvBmsy[Data$BvBmsy>OutlierBvBmsy & Data$Dbase=='RAM']<- NA
   
   if (CommonFinalYear==T)
   {

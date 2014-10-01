@@ -15,6 +15,9 @@ require(MASS)
 require(prettyR)
 require(zoo)
 require(proftools)
+require(snowfall)
+
+
 # Basic Controls -------------------------------------------------------------
 
 RunAnalyses<- TRUE
@@ -51,7 +54,7 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0.85
+SubSample<- 0.95
 
 IncludeNEIs<- TRUE
 
@@ -173,13 +176,13 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-n <- 3000  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 200  ## number of iterations, e.g. 100000
 
-SampleLength<- 3000 # Number of subsampled bootstraps 
+NumCPUs<- 4 #Number of CPUs to use for parallel computing of CatchMSY
 
 # Projections -------------------------------------------------------------
 
-ProjectionTime<- 15
+ProjectionTime<- 10
 
 CatchSharePrice<- 1.2
 
@@ -189,7 +192,7 @@ beta<- 1.3
 
 Discount<- 0.05
 
-bvec<- seq(0,2,length.out=30)
+bvec<- seq(0,2.5,length.out=30)
 
 tol<- 1e-1
 

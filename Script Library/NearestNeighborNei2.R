@@ -107,7 +107,7 @@ for(a in 1:nrow(NeiStats))
   
   if(length(compstocks)>0)
   {
-  ComparisonStocks<-SpeciesLevel[SpeciesLevel$SciName %in% compstocks & SpeciesLevel$Year>(BaselineYear-1) &
+  ComparisonStocks<-SpeciesLevel[SpeciesLevel$SciName %in% compstocks  &
                                    grepl((NeiStats$RegionFAO[a]),SpeciesLevel$RegionFAO ) & is.na(SpeciesLevel$RegionFAO)==F,]
   
   if(nrow(ComparisonStocks)>0)
@@ -120,7 +120,7 @@ for(a in 1:nrow(NeiStats))
       
       for (b in 1:nrow(results))
       {
-        WhereNei<- NEIs$SciName==NeiStats$SciName[a] & grepl((NeiStats$RegionFAO[a]),NEIs$RegionFAO ) & NEIs$Year==results$Year[b]  & is.na(NeiStats$RegionFAO)==F & NEIs$Policy==LongPols[p]
+        WhereNei<- NEIs$SciName==NeiStats$SciName[a] & grepl((NeiStats$RegionFAO[a]),NEIs$RegionFAO ) & NEIs$Year==results$Year[b]  & is.na(NEIs$RegionFAO)==F & NEIs$Policy==LongPols[p]
         
         NEIs[WhereNei,VarsToFill]<-results[b,c("MedianBvBmsy", "MedianFvFmsy", "MedianR", "MedianK","MedianPrice", "MedianCost")]
         NEIs$CanProject[WhereNei]<- TRUE
