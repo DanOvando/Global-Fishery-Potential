@@ -63,7 +63,6 @@ for (m in 1:nrow(NeiStats))
   } else {WhereFish<-which_fish(as.character(NeiStats$SciName[m]),using=NeiStats$TaxonLevel[m])}
   
   SubsetNames<-fish_names(fish.data[WhereFish], name=c("ScientificName")) # create a vector of matched names
-  SubsetNames<-c(SubsetNames,NeiStats$SciName[m]) # add the name of the nei stock to include other similarly named nei stocks
   
   ComparisonStocks<-MsyData[(MsyData$SciName %in% SubsetNames) & MsyData$Year==NeiStats$Year[m] &
                            MsyData$RegionFAO==as.character(NeiStats$RegionFAO[m]),]
