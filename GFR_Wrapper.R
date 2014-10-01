@@ -324,9 +324,10 @@ if (RunAnalyses==TRUE)
   # Calculate MSY -----------------------------------------------------------
   
   sigR<- 0
-  CatchMSYresults<- RunCatchMSY(GlobalStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,SampleLength,CatchMSYTrumps)
   
-  MsyData<- CatchMSYresults$Data
+  CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
+  
+  MsyData<- CatchMSYresults
   
   BiomassData$MSY<- MsyData$MSY #Assign MSY back to BiomassData estimates
   
@@ -355,7 +356,7 @@ if (RunAnalyses==TRUE)
   MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$r)==F #Identify disheries that have both MSY and r
   
   ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear) #Run projections on MSY data that can be projected
-  
+    
   NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear) #Run Nearest Neighbor NEI analysis
   
   #Put NEI stocks back in the appropriate dataframes, remove stocks still missing data

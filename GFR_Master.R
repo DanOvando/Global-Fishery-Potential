@@ -15,6 +15,9 @@ require(MASS)
 require(prettyR)
 require(zoo)
 require(proftools)
+require(snowfall)
+
+
 # Basic Controls -------------------------------------------------------------
 
 RunAnalyses<- TRUE
@@ -173,9 +176,9 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-n <- 200  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 200  ## number of iterations, e.g. 100000
 
-SampleLength<- 3000 # Number of subsampled bootstraps 
+NumCPUs<- 4 #Number of CPUs to use for parallel computing of CatchMSY
 
 # Projections -------------------------------------------------------------
 
