@@ -7,22 +7,22 @@ rm(list=ls())
 library(car)
 library(plyr)
 library(lattice)
-require(rfishbase)
-require(stringr)
-require(RCurl)
-require(XML)
-require(MASS)
-require(prettyR)
-require(zoo)
-require(proftools)
-require(snowfall)
+library(rfishbase)
+library(stringr)
+library(RCurl)
+library(XML)
+library(MASS)
+library(prettyR)
+library(zoo)
+library(proftools)
+library(snowfall)
 
 
 # Basic Controls -------------------------------------------------------------
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'Results/Scratch/'
+BatchFolder<- 'Results/Oct 2 2014 Complete Run Without NEIs/'
 
 InputFolder<- 'Data/'
 
@@ -54,13 +54,13 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0.95
+SubSample<- 0
 
-IncludeNEIs<- TRUE
+IncludeNEIs<- FALSE
 
 IncludeForageFish<- TRUE
 
-IncludeOverfished<- TRUE
+IncludeUnderfished<- TRUE
 
 OverlapMode<- 'SofiaTrumps' #SofiaTrumps, FaoTrumps
 
@@ -148,7 +148,7 @@ Regressions<- list(M1=c(DependentName,'Year',CatchVariables,LifeHistoryVars,'Spe
 
 TransbiasBin<- 0.9
 
-TransbiasIterations<- 1000
+TransbiasIterations<- 500
 
 # Synthetic Stock Settings ------------------------------------------------
 
@@ -164,7 +164,7 @@ IdVar<- 'IdOrig' #Id variable to use in creating synthetic stocks
 # Catch-MSY ---------------------------------------------------------------
 
 
-ErrorSize<- 0.75 #The amount of error to serach over CatchMSY terms
+ErrorSize<- 0.85 #The amount of error to serach over CatchMSY terms
 
 Smooth<- 0 #Marks whether to smooth catch history
 
@@ -176,13 +176,15 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-NumCatchMSYIterations <- 200  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 2000  ## number of iterations, e.g. 100000
 
-NumCPUs<- 4 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 30 #Number of CPUs to use for parallel computing of CatchMSY
+
+Parel<- TRUE #Run SNOWFALL in parallel?
 
 # Projections -------------------------------------------------------------
 
-ProjectionTime<- 10
+ProjectionTime<- 15
 
 CatchSharePrice<- 1.2
 
@@ -192,7 +194,7 @@ beta<- 1.3
 
 Discount<- 0.05
 
-bvec<- seq(0,2.5,length.out=30)
+bvec<- seq(0,2.5,length.out=50)
 
 tol<- 1e-1
 

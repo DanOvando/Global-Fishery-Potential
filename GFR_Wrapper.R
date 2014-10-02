@@ -16,7 +16,7 @@ if (RunAnalyses==TRUE)
   if (file.exists(paste(ResultFolder,'Cleaned Compiled Database.csv',sep=''))==F)
   {
     
-    source('Database_Build.r') #Build Tyler's database
+    source('Database_Build.R') #Build Tyler's database
     
     RawData<- fulldata
     
@@ -37,7 +37,7 @@ if (RunAnalyses==TRUE)
     
     rm(fulldata)
     
-    CleanedData<- MaidService(FullData,OverlapMode) #Filter out unusable stocks, prepare data for regression and use
+    CleanedData<- MaidService(FullData,OverlapMode,BaselineYear) #Filter out unusable stocks, prepare data for regression and use
     
     DroppedStocks<- CleanedData$DroppedStocks
     
@@ -116,7 +116,21 @@ if (RunAnalyses==TRUE)
   
   library(proftools)
   
-  SyntheticData<- FormatForRegression(SyntheticData,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
+  sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SyntheticRegressionFormatProgress.txt" )
+  
+  Fisheries<- (unique(SyntheticData$IdOrig))
+  
+  Data<- SyntheticData
+  
+  sfExport('Data','Fisheries','DependentVariable','CatchVariables','CatchLags','LifeHistoryVars','IsLog','IdVar')
+  
+  SyntheticFormatRegressionResults <- (sfClusterApplyLB(1:(length(Fisheries)), FormatForRegression))      
+  
+  sfStop()
+  
+  rm(Data)
+  
+  SyntheticData <- ldply (SyntheticFormatRegressionResults, data.frame)
   
   show('Data prepared for regression')
   
@@ -324,9 +338,10 @@ if (RunAnalyses==TRUE)
   # Calculate MSY -----------------------------------------------------------
   
   sigR<- 0
-  
+
   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
-  
+
+  show("Completed CatchMSY")
   MsyData<- CatchMSYresults
   
   BiomassData$MSY<- MsyData$MSY #Assign MSY back to BiomassData estimates
@@ -355,17 +370,22 @@ if (RunAnalyses==TRUE)
   
   MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$r)==F #Identify disheries that have both MSY and r
   
-  ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear) #Run projections on MSY data that can be projected
+  ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs) #Run projections on MSY data that can be projected
     
+  show("Completed Projections")
+  
+  if (IncludeNEIs==TRUE)
+  {
   NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear) #Run Nearest Neighbor NEI analysis
   
   #Put NEI stocks back in the appropriate dataframes, remove stocks still missing data
   
   ProjectionData<- rbind(ProjectionData,NeiData$ProjNeis)
   
-  BiomassData<- BiomassData[BiomassData$BvBmsy!=999,]
-  
   BiomassData<- rbind(BiomassData,NeiData$BiomassNeis)
+  
+  }
+  BiomassData<- BiomassData[BiomassData$BvBmsy!=999,]
   
   MsyData<- MsyData[is.na(MsyData$MSY)==F,]
   
@@ -417,7 +437,7 @@ Policies<- unique(ProjectionData$Policy)
 
 ProjectionData$Biomass<- (ProjectionData$BvBmsy* (2* ProjectionData$MSY/ProjectionData$r))
 
-if (IncludeOverfished==FALSE) #Remove projections for underfished stocks if desired
+if (IncludeUnderfished==FALSE) #Remove projections for underfished stocks if desired
 {
   
   CurrentlyOverfished<- ProjectionData$IdOrig[ProjectionData$Year==BaselineYear & ProjectionData$BvBmsy<1]
@@ -491,10 +511,10 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
   } else if (CountriesToRun[c]=='Parties to the Nauru Agreement')
   {
-    Biomass_CountryLocater<- BiomassData$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Federated States of Micronesia','Tuvalu','Palau','Nauru') 
-    Proj_CountryLocater<- ProjectionData$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Federated States of Micronesia','Tuvalu','Palau','Nauru') 
-    FullData_CountryLocater<- FullData$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Federated States of Micronesia','Tuvalu','Palau','Nauru') 
-    Nei_CountryLocater<-FaoNeiLevel$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Federated States of Micronesia','Tuvalu','Palau','Nauru') 
+    Biomass_CountryLocater<- BiomassData$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Micronesia','Tuvalu','Palau','Nauru') 
+    Proj_CountryLocater<- ProjectionData$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Micronesia','Tuvalu','Palau','Nauru') 
+    FullData_CountryLocater<- FullData$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Micronesia','Tuvalu','Palau','Nauru') 
+    Nei_CountryLocater<-FaoNeiLevel$Country %in% c('Papua New Guinea','Marshall Islands', 'Solomon Islands', 'Kiribati','Micronesia','Tuvalu','Palau','Nauru') 
     
   } else if (CountriesToRun[c]=='EU')
   {
