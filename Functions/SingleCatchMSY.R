@@ -3,8 +3,7 @@
 #This code runs CatchMSY on fisheries
 ###################################### 
 
-  SnowCatchMSY<- function(s)
-#  SnowCatchMSY<- function(s,Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,NumCPUs,CatchMSYTrumps,stock_id,IdVar)    
+    SingleCatchMSY<- function(s,Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,NumCPUs,CatchMSYTrumps,stock_id,IdVar)    
 {
   
   RanCMSY<- FALSE
@@ -18,7 +17,7 @@
     #analysis for N trials
     #args:
     #  theta - a list object containing:
-    #  	r (lower and upper bounds for r)
+    #    r (lower and upper bounds for r)
     #		k (lower and upper bounds for k)
     #		lambda (limits for current depletion)
     
@@ -115,9 +114,9 @@ bio<- pmin(1,Data$BvBmsy[Data[,IdVar]==stock]/2) #pull out bvbmsy (transposed to
 if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct) >1)
 {
   
-
+  
   ct<- na.approx(ct)
-      
+  
   if(Smooth==1){ct<- runmed(ct,3)}
   
   res  <- (Data$Res[(Data[,IdVar])==stock])[1] ## resilience from FishBase, if needed, enable in PARAMETER SECTION
@@ -267,35 +266,35 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
     ## plot MSY over catch data
     if (NumCPUs==1)
     {
-    par(mfcol=c(2,3))
-    plot(yr, ct, type="l", ylim = c(0, max(ct)), xlab = "Year", ylab = "Catch (MT)", main = stock)
-    abline(h=exp(mean(log(msy))),col="red", lwd=2)
-    abline(h=exp(mean_ln_msy - 2 * sd(log(msy))),col="red")
-    abline(h=exp(mean_ln_msy + 2 * sd(log(msy))),col="red")
-    
-    hist(r, freq=F, xlim=c(0, 1.2 * max(r)), main = "")
-    abline(v=exp(mean(log(r))),col="red",lwd=2)
-    abline(v=exp(mean(log(r))-2*sd(log(r))),col="red")
-    abline(v=exp(mean(log(r))+2*sd(log(r))),col="red")
-    
-    plot(r1, k1, xlim = start_r, ylim = start_k, xlab="r", ylab="k (MT)")
-    
-    hist(k, freq=F, xlim=c(0, 1.2 * max(k)), xlab="k (MT)", main = "")
-    abline(v=exp(mean(log(k))),col="red", lwd=2)	
-    abline(v=exp(mean(log(k))-2*sd(log(k))),col="red")
-    abline(v=exp(mean(log(k))+2*sd(log(k))),col="red")
-    
-    plot(log(r), log(k),xlab="ln(r)",ylab="ln(k)")
-    abline(v=mean(log(r)))
-    abline(h=mean(log(k)))
-    abline(mean(log(msy))+log(4),-1, col="red",lwd=2)
-    abline(mean(log(msy))-2*sd(log(msy))+log(4),-1, col="red")
-    abline(mean(log(msy))+2*sd(log(msy))+log(4),-1, col="red")
-    
-    hist(msy, freq=F, xlim=c(0, 1.2 * max(c(msy))), xlab="MSY (MT)",main = "")
-    abline(v=exp(mean(log(msy))),col="red", lwd=2)
-    abline(v=exp(mean_ln_msy - 2 * sd(log(msy))),col="red")
-    abline(v=exp(mean_ln_msy + 2 * sd(log(msy))),col="red")
+      par(mfcol=c(2,3))
+      plot(yr, ct, type="l", ylim = c(0, max(ct)), xlab = "Year", ylab = "Catch (MT)", main = stock)
+      abline(h=exp(mean(log(msy))),col="red", lwd=2)
+      abline(h=exp(mean_ln_msy - 2 * sd(log(msy))),col="red")
+      abline(h=exp(mean_ln_msy + 2 * sd(log(msy))),col="red")
+      
+      hist(r, freq=F, xlim=c(0, 1.2 * max(r)), main = "")
+      abline(v=exp(mean(log(r))),col="red",lwd=2)
+      abline(v=exp(mean(log(r))-2*sd(log(r))),col="red")
+      abline(v=exp(mean(log(r))+2*sd(log(r))),col="red")
+      
+      plot(r1, k1, xlim = start_r, ylim = start_k, xlab="r", ylab="k (MT)")
+      
+      hist(k, freq=F, xlim=c(0, 1.2 * max(k)), xlab="k (MT)", main = "")
+      abline(v=exp(mean(log(k))),col="red", lwd=2)	
+      abline(v=exp(mean(log(k))-2*sd(log(k))),col="red")
+      abline(v=exp(mean(log(k))+2*sd(log(k))),col="red")
+      
+      plot(log(r), log(k),xlab="ln(r)",ylab="ln(k)")
+      abline(v=mean(log(r)))
+      abline(h=mean(log(k)))
+      abline(mean(log(msy))+log(4),-1, col="red",lwd=2)
+      abline(mean(log(msy))-2*sd(log(msy))+log(4),-1, col="red")
+      abline(mean(log(msy))+2*sd(log(msy))+log(4),-1, col="red")
+      
+      hist(msy, freq=F, xlim=c(0, 1.2 * max(c(msy))), xlab="MSY (MT)",main = "")
+      abline(v=exp(mean(log(msy))),col="red", lwd=2)
+      abline(v=exp(mean_ln_msy - 2 * sd(log(msy))),col="red")
+      abline(v=exp(mean_ln_msy + 2 * sd(log(msy))),col="red")
     }
     if (Display==1)
     {
@@ -335,5 +334,6 @@ if (any(Data$HasRamFvFmsy))
 # }
 return(list(CatchMSY=Data,RanCatchMSY=RanCMSY)) 
 } #Close function
+
 
 
