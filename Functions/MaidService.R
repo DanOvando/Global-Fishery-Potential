@@ -3,10 +3,9 @@
 # This code performs a number of cleaning and processing steps on the database 
 ######################################
 
-MaidService<- function(Data,OverlapMode)
+MaidService<- function(Data,OverlapMode,BaselineYear)
 {
-  #For Commiting
-#          Data<- FullData
+#   Data<- FullData
   
   Data$SpeciesCatName[Data$SpeciesCatName=='']<- NA
   
@@ -40,14 +39,42 @@ MaidService<- function(Data,OverlapMode)
   
   Data<- LumpFisheries(Data,SpeciesCategoriesToLump)
   
+  Parel<- FALSE
+  if (NumCPUs>1)
+  {
+    Parel<- TRUE
+    
+  }
   
   if (CommonFinalYear==T)
   {
-    Data<- ExtendTimeSeries(Data,BaselineYear)
+    
+ 
+    sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="ExtendTimeSeriesProgress.txt" )
+    
+    sfExport('Data','BaselineYear')
+    
+    Stocks<- (unique(Data$IdOrig))
+    ExtendResults <- (sfClusterApplyLB(1:(length(Stocks)), ExtendTimeSeries))      
+    sfStop()
+    
+    Data <- ldply (ExtendResults, data.frame)
+    
   }
   
-  Data<- FormatForRegression(Data,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)#Add resgression data to database
   
+  sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="RegressionFormatProgress.txt" )
+  
+  Fisheries<- (unique(Data$IdOrig))
+  
+  sfExport('Data','Fisheries','DependentVariable','CatchVariables','CatchLags','LifeHistoryVars','IsLog','IdVar')
+  
+  FormatRegressionResults <- (sfClusterApplyLB(1:(length(Fisheries)), FormatForRegression))      
+  
+  sfStop()
+  
+  Data <- ldply (FormatRegressionResults, data.frame)
+
   Overlap<- RemoveOverlap(Data,OverlapMode)
   
   Data<-Overlap$FilteredData

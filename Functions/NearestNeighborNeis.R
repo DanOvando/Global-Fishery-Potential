@@ -10,7 +10,7 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   
   #     Data<- MsyData
   
-#         ProjData<- ProjectionData
+  #         ProjData<- ProjectionData
   
   #   MsyData<- RamMsy
   
@@ -30,7 +30,7 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   DropItProj<- FinalProjYear$IdOrig[FinalProjYear$MaxYear<BaselineYear]
   
   DropIt<- FinalYear$IdOrig[FinalYear$MaxYear<(BaselineYear)]
-
+  
   # Prepare NEI data for nearest neighbot analysis --------------------------
   
   NEIs<- NEIs[(NEIs$IdOrig %in% DropIt)==F,]
@@ -45,7 +45,22 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   
   ShortNEIs$Policy<- 'Historic'
   
-  NEIs<- ExtendTimeSeries(NEIs,max(ProjData$Year))
+  
+  sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="NeiExtendTimeSeriesProgress.txt" )
+  
+  BaselineYear<- max(ProjData$Year,na.rm=T)
+  
+  Data<- NEIs
+  sfExport('Data','BaselineYear')
+  
+  Stocks<- (unique(NEIs$IdOrig))
+  ExtendResults <- (sfClusterApplyLB(1:(length(Stocks)), ExtendTimeSeries))      
+  sfStop()
+  rm(Data)
+  
+  NEIs <- ldply (ExtendResults, data.frame)
+  
+  #   NEIs<- ExtendTimeSeries(NEIs,max(ProjData$Year))
   
   Pols<- unique(ProjData$Policy)
   

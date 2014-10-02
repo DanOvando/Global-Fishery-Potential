@@ -6,7 +6,7 @@
 RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,NumCPUs,CatchMSYTrumps)
 {
   
-  #     Data<- GlobalStatus$Data
+  #        Data<- GlobalStatus$Data
   
   Data$RanCatchMSY<- FALSE
   
@@ -37,21 +37,23 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   
   if (NumCPUs>1)
   {
-    sfInit( parallel=TRUE, cpus=NumCPUs )
+    sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SnowfallMSY_Progress.txt" )
+    
     sfExport('Data','ErrorSize','sigR','Smooth','Display','BestValues','ManualFinalYear','n','NumCPUs','CatchMSYTrumps','stock_id','IdVar')
     
-    
-    CMSYResults <- (sfClusterApplyLB(1:length(stock_id), SnowCatchMSY))
+    CMSYResults <- (sfClusterApplyLB(1:(length(stock_id)), SnowCatchMSY))
     sfStop()
   }
   if (NumCPUs==1)
   {
     pdf(file=paste(FigureFolder,'Catch-MSY Diagnostics.pdf',sep=''))
-    
-    
-    CMSYResults<- lapply(1:length(stock_id),SnowCatchMSY)
+    CMSYResults<- lapply(1:(length(stock_id)/10),SingleCatchMSY,stock_id=stock_id,Data=Data,ErrorSize=ErrorSize,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
+                         CatchMSYTrumps=CatchMSYTrumps,IdVar=IdVar)                
     dev.off()
   }
+  
+  
+  
   
   CmsyStore<- as.data.frame(matrix(NA,nrow=0,ncol=dim(CMSYResults[[1]]$CatchMSY)[2]))
   for (l in 1:length(CMSYResults))

@@ -1,4 +1,4 @@
-FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,IsLog,IdVar)
+FormatForRegression<- function(f) 
 {
   
   # Format Data For Regression  -------- 
@@ -7,7 +7,13 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
   
   # Create Regression Data Frame --------------------------------------------
   
-#       Data<-RamData
+  #       Data<-RamData
+    
+  Where<- Data[,IdVar]==Fisheries[f]
+  
+  TempFrame<- Data[Where,]
+ 
+  Where<- TempFrame$IdOrig==Fisheries[f]
   
   LifeHistoryVars<- sort(LifeHistoryVars)
   
@@ -17,11 +23,11 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
   
   RegNames<- c(DependentName,CatchVariables)
   
-  RegFrame<- as.data.frame(matrix(NA,nrow=dim(Data)[1],ncol=length(RegNames)))
+  RegFrame<- as.data.frame(matrix(NA,nrow=dim(TempFrame)[1],ncol=length(RegNames)))
   
   colnames(RegFrame)<- RegNames
   
-  DependentTemp<-  Data[,DependentVariable]
+  DependentTemp<-  TempFrame[,DependentVariable]
   
   if (IsLog==T){DependentTemp<- log(DependentTemp)}
   
@@ -31,82 +37,79 @@ FormatForRegression<- function(Data,DependentVariable,CatchLags,LifeHistoryVars,
   
   # Loop Over Fisheries -----------------------------------------------------
   
-  Fisheries<- unique(Data[,IdVar])
   
   SlopeWindow<- 1:6
   
-  for (f in 1:length(Fisheries)) 
+  #   for (f in 1:length(Fisheries)) 
+  #   {
+  
+  #     if (is.integer(f/50)){   }
+  show(paste(round(100*(f/length(Fisheries))),"% Done with Regression Formating",sep=''))  
+  # show(Fisheries[f])
+  
+  
+  
+  MaxCatch<- max(TempFrame$Catch,na.rm=T)
+  
+  TempCatch<- TempFrame$Catch
+  
+  ScaledCatch<-  TempCatch/MaxCatch
+  
+  RegFrame[Where,'ScaledCatch']<- ScaledCatch #Create scaled catch
+  
+  RegFrame[Where,'MaxCatch']<- MaxCatch #Maximum recorded catch
+  
+  RegFrame[Where,'MeanScaledCatch']<- mean(ScaledCatch ,na.rm=T)#Create scaled catch
+  
+  RegFrame[Where,'TimeToMaxCatch']<- which(TempCatch==MaxCatch)[1] #Create time till max catch
+  
+  RegFrame[Where,'YearsBack']<-rev(1:length(TempCatch)) #Create time till max catch
+  
+  
+  InitialSlope<- NA
+  
+  FirstCatch<- which(is.na(ScaledCatch)==F)[1]
+  
+  if ((is.na(FirstCatch)==F))
+  {
+    InitialSlope<- lm(formula=ScaledCatch[FirstCatch:(FirstCatch+5)] ~  SlopeWindow,na.action='na.omit')$coefficients[2]
+  }
+  RegFrame[Where,'InitialScaledCatchSlope']<- InitialSlope #Create initial slope of scaled catch
+  
+  BlankCatch<- matrix(NA,nrow=length(ScaledCatch),ncol=1)
+  
+  MaxFrame<- BlankCatch
+  
+  for (c in FirstCatch:length(BlankCatch))
+  {
+    MaxFrame[c]<- max(TempCatch[FirstCatch:c],na.rm=T) 
+  }
+  
+  MaxFrame[is.infinite(MaxFrame)]<-  NA
+  
+  RegFrame[Where,'CatchToRollingMax']<- TempCatch/MaxFrame #Create rolling scaled catch
+  
+  ## Populate lagged catches ##
+  
+  for (l in 1:CatchLags)
   {
     
-    #     if (is.integer(f/50)){   }
-    show(paste(round(100*(f/length(Fisheries))),"% Done with Regression Formating",sep=''))  
-    # show(Fisheries[f])
+    TempLag<- BlankCatch
     
-    Where<- Data[,IdVar]==Fisheries[f]
+    LagIndex<- pmax(0,(1:length(BlankCatch))-l)
     
-    TempFrame<- Data[Where,]
+    TempLag[(1+l):length(BlankCatch)]<- ScaledCatch[LagIndex]
     
-    MaxCatch<- max(TempFrame$Catch,na.rm=T)
+    WhereCol<- colnames(RegFrame)==paste('ScaledCatch',l,'Back',sep='')
     
-    TempCatch<- TempFrame$Catch
+    RegFrame[Where,WhereCol]<- TempLag # Create lagged scaled catches
     
-    ScaledCatch<-  TempCatch/MaxCatch
-    
-    RegFrame[Where,'ScaledCatch']<- ScaledCatch #Create scaled catch
-    
-    RegFrame[Where,'MaxCatch']<- MaxCatch #Maximum recorded catch
-    
-    RegFrame[Where,'MeanScaledCatch']<- mean(ScaledCatch ,na.rm=T)#Create scaled catch
-    
-    RegFrame[Where,'TimeToMaxCatch']<- which(TempCatch==MaxCatch)[1] #Create time till max catch
-    
-    RegFrame[Where,'YearsBack']<-rev(1:length(TempCatch)) #Create time till max catch
-
-    
-    InitialSlope<- NA
-    
-    FirstCatch<- which(is.na(ScaledCatch)==F)[1]
-    
-    if ((is.na(FirstCatch)==F))
-    {
-      InitialSlope<- lm(formula=ScaledCatch[FirstCatch:(FirstCatch+5)] ~  SlopeWindow,na.action='na.omit')$coefficients[2]
-    }
-    RegFrame[Where,'InitialScaledCatchSlope']<- InitialSlope #Create initial slope of scaled catch
-    
-    BlankCatch<- matrix(NA,nrow=length(ScaledCatch),ncol=1)
-    
-    MaxFrame<- BlankCatch
-    
-    for (c in FirstCatch:length(BlankCatch))
-    {
-      MaxFrame[c]<- max(TempCatch[FirstCatch:c],na.rm=T) 
-    }
-    
-    MaxFrame[is.infinite(MaxFrame)]<-  NA
-    
-    RegFrame[Where,'CatchToRollingMax']<- TempCatch/MaxFrame #Create rolling scaled catch
-    
-    ## Populate lagged catches ##
-    
-    for (l in 1:CatchLags)
-    {
-      
-      TempLag<- BlankCatch
-      
-      LagIndex<- pmax(0,(1:length(BlankCatch))-l)
-      
-      TempLag[(1+l):length(BlankCatch)]<- ScaledCatch[LagIndex]
-      
-      WhereCol<- colnames(RegFrame)==paste('ScaledCatch',l,'Back',sep='')
-      
-      RegFrame[Where,WhereCol]<- TempLag # Create lagged scaled catches
-      
-    }
-    
-  }#Close fisheries loop
+  }
+  
+  #   }#Close fisheries loop
   
   
-  RegFrame<- cbind(Data,RegFrame)
+  RegFrame<- cbind(TempFrame,RegFrame)
   return(RegFrame)
   
 }

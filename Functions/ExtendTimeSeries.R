@@ -1,9 +1,8 @@
-ExtendTimeSeries<- function(Data,BaselineYear)
+ExtendTimeSeries<- function(s)
 {
-#   
-#     Data<- RawData
-#   
-#    BaselineYear<- 2026
+  
+
+  source('Functions/RepMat.R')
   
   VarNames<- colnames(Data)
   
@@ -13,31 +12,31 @@ ExtendTimeSeries<- function(Data,BaselineYear)
   
   Stocks<- (unique(Data$IdOrig))
   
-  for (s in 1:length(Stocks))
+  #   for (s in 1:length(Stocks))
+  #   {
+  #     
+  Where<- Data$IdOrig==Stocks[s]
+  
+  TempStock<- Data[Where,]
+  
+  MaxYear<- max(TempStock$Year[is.na(TempStock$Catch)==F],na.rm=T)
+  
+  if (any(Data$Dbase[Where]=='RAM') | any(Data$Dbase[Where]=='SOFIA'))
   {
+    MaxYear<- max(TempStock$Year[is.na(TempStock$Catch)==F & is.na(TempStock$BvBmsy)==F],na.rm=T)
     
-    Where<- Data$IdOrig==Stocks[s]
-    
-    TempStock<- Data[Where,]
-    
-    MaxYear<- max(TempStock$Year[is.na(TempStock$Catch)==F],na.rm=T)
-    
-    if (any(Data$Dbase[Where]=='RAM') | any(Data$Dbase[Where]=='SOFIA'))
-    {
-      MaxYear<- max(TempStock$Year[is.na(TempStock$Catch)==F & is.na(TempStock$BvBmsy)==F],na.rm=T)
-       
-    }
-    
-    TempStock<- TempStock[1:which(TempStock$Year==MaxYear),]
-    
-    TempStock$ExtendedTime<- FALSE
-    
-    MissingYears<- max(0,(BaselineYear-MaxYear))
-    
-    
+  }
+  
+  TempStock<- TempStock[1:which(TempStock$Year==MaxYear),]
+  
+  TempStock$ExtendedTime<- FALSE
+  
+  MissingYears<- max(0,(BaselineYear-MaxYear))
+  
+  for (i in 1)
     if (MissingYears>0)
     {
-     
+      
       ReppedData<- RepMat(TempStock[TempStock$Year==MaxYear,],MissingYears,'Rows')
       
       ReppedData$Year<- MaxYear+(1:(MissingYears))
@@ -47,14 +46,14 @@ ExtendTimeSeries<- function(Data,BaselineYear)
       NewData<- rbind(NewData,rbind(TempStock,ReppedData))
       
     }   
-    else
-    {
-      NewData<- rbind(NewData,TempStock)
-    }
-    
-    show(paste(round(100*(s/length(Stocks))), '% Done With Time Series Extension',sep=''))
+  else
+  {
+    NewData<- rbind(NewData,TempStock)
   }
-  
+
+
+show(paste(round(100*(s/length(Stocks))), '% Done With Time Series Extension',sep=''))
+
 #   colnames(NewData)<- c(VarNames,'ExtendedTime')
-  return(NewData)
+return(NewData)
 }
