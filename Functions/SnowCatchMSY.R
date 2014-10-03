@@ -97,6 +97,8 @@ LastCatchYear<- which(Data$Year==max(CatchYears,na.rm=T))[1]
 
 Data<- Data[FirstCatchYear:LastCatchYear,]
 
+
+
 if (any(Data$HasRamFvFmsy))
 {
   RamFvFmsy<- Data$FvFmsy
@@ -111,6 +113,10 @@ yr   <- Data$Year[(Data[,IdVar])==stock]
 ct   <- (Data$Catch[(Data[,IdVar])==stock])  ## assumes that catch is given in tonnes, transforms to 1'000 tonnes
 
 bio<- pmin(1,Data$BvBmsy[Data[,IdVar]==stock]/2) #pull out bvbmsy (transposed to B/K)
+
+bioerror<- Data$BvBmsySD[Where]/2
+
+bioerror[is.na(bioerror)]<- CommonError/2
 
 if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct) >1)
 {
@@ -140,7 +146,11 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   
   start_k     <- c(max(ct,na.rm=T),50*max(ct,na.rm=T)) ## default for upper k e.g. 100 * max catch
   ## startbio 	<- c(0.8,1)   ## assumed biomass range at start of time series, as fraction of k
-  startbio    <- pmin(1,c((1-ErrorSize)*bio[1],(1+ErrorSize)*bio[1]))
+
+  startbio    <- pmin(1,pmax(0,c(qnorm(0.25,bio[1],bioerror[1]),qnorm(0.75,bio[1],bioerror[1]))))
+  
+  
+#   startbio    <- pmin(1,c((1-ErrorSize)*bio[1],(1+ErrorSize)*bio[1]))
   
   if (is.na(bio[1]) | bio[1]==0)
   {
@@ -149,16 +159,22 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   
   interyr 	<- median(1:length(yr))   ## interim year within time series for which biomass estimate is available; set to yr[2] if no estimates are available #SUB IN INTERMIN YEAR
   
-  interbio 	<- pmin(1,c((1-ErrorSize)*bio[interyr],(1+ErrorSize)*bio[interyr])) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
-  if (is.na(bio[interyr]) | bio[interyr]==0)
+#   interbio 	<- pmin(1,c((1-ErrorSize)*bio[interyr],(1+ErrorSize)*bio[interyr])) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
+
+interbio   <-  pmin(1,pmax(0,c(qnorm(0.25,bio[interyr],bioerror[interyr]),qnorm(0.75,bio[interyr],bioerror[interyr])))) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
+
+
+if (is.na(bio[interyr]) | bio[interyr]==0)
   {
     interbio 	<- c(0, 1) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
   }
   
   interyr<- yr[interyr]
   
-  finalbio    <- pmin(1,c((1-ErrorSize)*bio[nyr],(1+ErrorSize)*bio[nyr]))
-  
+#   finalbio    <- pmin(1,c((1-ErrorSize)*bio[nyr],(1+ErrorSize)*bio[nyr]))
+
+finalbio    <- pmin(1,pmax(0,c(qnorm(0.25,bio[nyr],bioerror[nyr]),qnorm(0.75,bio[nyr],bioerror[nyr]))))
+
   if (is.na(bio[nyr]) | bio[nyr]==0)
   {
     finalbio    <- if(ct[nyr]/max(ct,na.rm=T) > 0.5) {c(0.3,0.7)} else {c(0.01,0.4)} ## use for batch processing #SET TO KNOWN B/BMSY RANGE

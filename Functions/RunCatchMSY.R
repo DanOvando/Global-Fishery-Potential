@@ -6,13 +6,15 @@
 RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,NumCPUs,CatchMSYTrumps)
 {
   
-  #        Data<- GlobalStatus$Data
+#         Data<- GlobalStatus$Data
   
   Data$RanCatchMSY<- FALSE
   
   Data$HasRamMSY<-  is.na(Data$MSY)==F
   
   Data$HasRamFvFmsy<- is.na(Data$FvFmsy)==F
+
+  Data$HasRamBvBmsy<- is.na(Data$BvBmsy)==F & Data$Dbase=='RAM'
   
   MsyData<- Data
   
@@ -30,6 +32,7 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   
   MsyData$CatchMSYBvBmsy_LogSd<- NA
   
+  CommonError<- mean(MsyData$BvBmsySD,na.rm=T)
   
   stock_id <- unique((Data[,IdVar][Data$HasRamMSY==F & Data$BvBmsy!=999 & is.infinite(Data$BvBmsy)==F])) 
   
@@ -39,7 +42,7 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   {
     sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SnowfallMSY_Progress.txt" )
     
-    sfExport('Data','ErrorSize','sigR','Smooth','Display','BestValues','ManualFinalYear','n','NumCPUs','CatchMSYTrumps','stock_id','IdVar')
+    sfExport('Data','ErrorSize','CommonError','sigR','Smooth','Display','BestValues','ManualFinalYear','n','NumCPUs','CatchMSYTrumps','stock_id','IdVar')
     
     CMSYResults <- (sfClusterApplyLB(1:(length(stock_id)), SnowCatchMSY))
     sfStop()
