@@ -346,7 +346,10 @@ if (RunAnalyses==TRUE)
   
   BiomassData$MSY<- MsyData$MSY #Assign MSY back to BiomassData estimates
   
-  BiomassData$FvFmsy[MsyData$HasRamFvFmsy==F]<- MsyData$FvFmsy[MsyData$HasRamFvFmsy==F]
+  BiomassData$FvFmsy[MsyData$RanCatchMSY==T]<- MsyData$FvFmsy[MsyData$RanCatchMSY==T]
+
+  BiomassData$BvBmsy[MsyData$RanCatchMSY==T]<- log(MsyData$BvBmsy[MsyData$RanCatchMSY==T])
+  
   
   #Run quick diagnostic of CatchMSY results
   pdf(file=paste(FigureFolder,'Catch MSY vs PRM BvBmsy predictions.pdf',sep=''))
