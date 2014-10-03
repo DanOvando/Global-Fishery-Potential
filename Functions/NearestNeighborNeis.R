@@ -102,6 +102,8 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
     
     rm(compstocks)
     
+    Stocks<-NA # fill this vector with the number of Jstocks for each nei fishery 
+    
     show(paste( round(100*(a/nrow(NeiStats))), '% Done with NeiStats',sep=''))
     
     if(NeiStats$TaxonLevel[a]=="Genus") # find scientific names for all genus level nei stocks
@@ -136,16 +138,19 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
     
     if(exists('compstocks'))
     {
-      ComparisonStocks<-SpeciesLevel[SpeciesLevel$SciName %in% compstocks  &
-                                       grepl((NeiStats$RegionFAO[a]),SpeciesLevel$RegionFAO ) & is.na(SpeciesLevel$RegionFAO)==F,]
       
+      ComparisonStocks<-SpeciesLevel[SpeciesLevel$SciName %in% compstocks,] # pulling comparable stocks from the globe
+                                         
+#       ComparisonStocks<-SpeciesLevel[SpeciesLevel$SciName %in% compstocks  &
+#                                        grepl((NeiStats$RegionFAO[a]),SpeciesLevel$RegionFAO ) & is.na(SpeciesLevel$RegionFAO)==F,]
+#       
       if(nrow(ComparisonStocks)>0)
       {
         
         for (p in 1:length(LongPols))
         {
           results<-ddply(ComparisonStocks[ComparisonStocks$Policy==LongPols[p],],c("Year"),summarize,MedianBvBmsy=median(BvBmsy,na.rm=T), MedianFvFmsy=median(FvFmsy,na.rm=T),
-                         MedianR=median(r,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T),MedianCost=median(MarginalCost,na.rm=T),JStocks=length(unique(IdOrig)))
+                         MedianR=median(r,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T),MedianCost=median(MarginalCost,na.rm=T),JStocks=length(unique(IdOrig),Variance=var(BvBmsy,na.rm=T)))
           
           for (b in 1:nrow(results))
           {
@@ -155,7 +160,9 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
             NEIs$CanProject[WhereNei]<- TRUE
           } 
         } # Close Policy loop
-      } # Close ComparisonStocks if
+      
+        Stocks[a]<-unique(results$JStocks)
+        } # Close ComparisonStocks if
     } # Close compstocks if
   } # Close NeiStats loop
   
@@ -163,5 +170,5 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   
   Biomass$BvBmsy<- log(Biomass$BvBmsy)
   
-  return(list(ProjNeis=NEIs,BiomassNeis=Biomass))
+  return(list(ProjNeis=NEIs,BiomassNeis=Biomass,JStocks=Stocks))
 } # close function
