@@ -20,7 +20,7 @@ library(snowfall)
 
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- TRUE
+RunAnalyses<- FALSE
 
 BatchFolder<- 'Results/Oct 2 2014 Complete Run Without NEIs/'
 
@@ -40,8 +40,8 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Results/Scratch/'
-  
+  BatchFolder<- 'Results/Oct 2 2014 Complete Run Without NEIs/'
+    
   InputFolder<- 'Data/'
   
   FigureFolder<- paste(BatchFolder,'Figures/',sep='')
@@ -60,9 +60,9 @@ IncludeNEIs<- FALSE
 
 IncludeForageFish<- TRUE
 
-IncludeUnderfished<- TRUE
+IncludeUnderfished<- FALSE
 
-OverlapMode<- 'SofiaTrumps' #SofiaTrumps, FaoTrumps
+OverlapMode<- 'FaoTrumps' #SofiaTrumps, FaoTrumps
 
 CatchMSYTrumps<- TRUE
 
