@@ -147,7 +147,7 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   start_k     <- c(max(ct,na.rm=T),50*max(ct,na.rm=T)) ## default for upper k e.g. 100 * max catch
   ## startbio 	<- c(0.8,1)   ## assumed biomass range at start of time series, as fraction of k
 
-  startbio    <- pmin(1,pmax(0,c(qnorm(0.25,bio[1],bioerror[1]),qnorm(0.75,bio[1],bioerror[1]))))
+  startbio    <- pmin(1,pmax(0,c(qnorm(0.025,bio[1],bioerror[1]),qnorm(0.975,bio[1],bioerror[1]))))
   
   
 #   startbio    <- pmin(1,c((1-ErrorSize)*bio[1],(1+ErrorSize)*bio[1]))
@@ -161,7 +161,7 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   
 #   interbio 	<- pmin(1,c((1-ErrorSize)*bio[interyr],(1+ErrorSize)*bio[interyr])) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
 
-interbio   <-  pmin(1,pmax(0,c(qnorm(0.25,bio[interyr],bioerror[interyr]),qnorm(0.75,bio[interyr],bioerror[interyr])))) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
+interbio   <-  pmin(1,pmax(0,c(qnorm(0.025,bio[interyr],bioerror[interyr]),qnorm(0.975,bio[interyr],bioerror[interyr])))) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
 
 
 if (is.na(bio[interyr]) | bio[interyr]==0)
@@ -173,7 +173,7 @@ if (is.na(bio[interyr]) | bio[interyr]==0)
   
 #   finalbio    <- pmin(1,c((1-ErrorSize)*bio[nyr],(1+ErrorSize)*bio[nyr]))
 
-finalbio    <- pmin(1,pmax(0,c(qnorm(0.25,bio[nyr],bioerror[nyr]),qnorm(0.75,bio[nyr],bioerror[nyr]))))
+finalbio    <- pmin(1,pmax(0,c(qnorm(0.025,bio[nyr],bioerror[nyr]),qnorm(0.975,bio[nyr],bioerror[nyr]))))
 
   if (is.na(bio[nyr]) | bio[nyr]==0)
   {

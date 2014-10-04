@@ -20,9 +20,9 @@ library(snowfall)
 
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- FALSE
+RunAnalyses<- TRUE
 
-BatchFolder<- 'Results/Oct 2 2014 Complete Run Without NEIs/'
+BatchFolder<- 'Results/Oct 3 2014 Complete Run FAO Trumps With NEIs/'
 
 InputFolder<- 'Data/'
 
@@ -56,7 +56,7 @@ if (RunAnalyses==FALSE)
 
 SubSample<- 0
 
-IncludeNEIs<- FALSE
+IncludeNEIs<- TRUE
 
 IncludeForageFish<- TRUE
 
@@ -176,7 +176,7 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-NumCatchMSYIterations <- 2000  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 6000  ## number of iterations, e.g. 100000
 
 NumCPUs<- 30 #Number of CPUs to use for parallel computing of CatchMSY
 
