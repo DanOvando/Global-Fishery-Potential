@@ -57,8 +57,8 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
     Stocks<- (unique(Data$IdOrig))
     ExtendResults <- (sfClusterApplyLB(1:(length(Stocks)), ExtendTimeSeries))      
     sfStop()
-    
     Data <- ldply (ExtendResults, data.frame)
+    show('Timeseries extended')
     
   }
   
