@@ -40,7 +40,7 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   
   if (NumCPUs>1)
   {
-    sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SnowfallMSY_Progress.txt" )
+    sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SnowfallMSY_ProgressWorkPlease.txt" )
     
     sfExport('Data','ErrorSize','CommonError','sigR','Smooth','Display','BestValues','ManualFinalYear','n','NumCPUs','CatchMSYTrumps','stock_id','IdVar')
     
