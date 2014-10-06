@@ -452,6 +452,13 @@ if (IncludeUnderfished==FALSE) #Remove projections for underfished stocks if des
 if (IncludeNEIs==FALSE) #Remove NEIs if desired 
 {
   ProjectionData<- ProjectionData[ProjectionData$IdLevel=='Species',]
+
+  BiomassData<- BiomassData[BiomassData$IdLevel=='Species',]
+
+  MsyData<- MsyData[MsyData$IdLevel=='Species',]
+  
+  
+  
 }
 
 if (IncludeForageFish==FALSE) #Remove forage fish species if desired 
