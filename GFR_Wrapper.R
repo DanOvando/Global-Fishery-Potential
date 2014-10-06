@@ -18,6 +18,8 @@ if (RunAnalyses==TRUE)
     
     source('Database_Build.R') #Build Tyler's database
     
+    show('Done building raw database')
+    
     RawData<- fulldata
     
     RawData$FvFmsy<- RawData$UvUmsytouse
