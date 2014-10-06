@@ -6,13 +6,13 @@
 AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,NeiModelSdevs,TransbiasBin,J) 
 {
   
-#    Data<- BiomassData[BiomassData$Country=='New Zealand',]
+#    Data<- BiomassData
 #    
-#    BatchName<- 'New Zealand'
+#    BatchName<- 'Test'
 # #   
-#    GroupingVars<- c('Country','Year')
+#    GroupingVars<- c('Year')
 # 
-#   Years<- 2005:2010
+#   Years<- 1950:2013
 # 
 # RealModelSdevs<- RealModelSdevs
 # 
@@ -72,16 +72,15 @@ BioStats<- list()
 TempBio<- exp(Data$BvBmsy)
 
 TempBioSd<- NA*TempBio
-
 for (x in 1)
 {
 if (any(Data$Dbase=='FAO' & is.na(Data$BvBmsy)==F))
 {  
   
-  IdLevels<- unique(Data$IdLevel[Data$BestModel!='RAM'])
+  IdLevels<- unique(Data$IdLevel[Data$BestModel!='RAM' & Data$IdLevel=='Species'])
 
   FaoIndividualStocks<- as.data.frame(matrix(NA,nrow=0,ncol=J+2))
-  
+
   for (i in 1:length(IdLevels))
   {
       
@@ -95,9 +94,7 @@ if (any(Data$Dbase=='FAO' & is.na(Data$BvBmsy)==F))
     {
       Sdevs<- NeiModelSdevs
     }
-    
   TempTransbiasResults<- TransBias(Data[Where,],Sdevs,TransbiasBin,J)
-  
   TempBio[Where]<- TempTransbiasResults$Individuals$raw
 
   TempBioSd[Where]<- TempTransbiasResults$Individuals$logsd
@@ -122,7 +119,6 @@ if (any(Data$Dbase=='FAO' & is.na(Data$BvBmsy)==F))
   MedianSeries<- as.data.frame(matrix(NA,nrow=length(Years),ncol=J))
   for (y in 1:length(Years) )
   {
-    
     Where<- Individuals$Year==Years[y]    
 #     Argh<- (Individuals[1:3,1:(dim(Individuals)[2])])
 #     quartz()
