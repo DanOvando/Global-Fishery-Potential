@@ -9,7 +9,7 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
 #         Data<- GlobalStatus$Data
   
   Data$RanCatchMSY<- FALSE
-  
+
   Data$HasRamMSY<-  is.na(Data$MSY)==F
   
   Data$HasRamFvFmsy<- is.na(Data$FvFmsy)==F
@@ -33,7 +33,12 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   MsyData$CatchMSYBvBmsy_LogSd<- NA
   
   CommonError<- mean(MsyData$BvBmsySD,na.rm=T)
-  
+
+  if (is.na(CommonError))
+  {
+    CommonError<- ErrorSize
+  }
+
   stock_id <- unique((Data[,IdVar][Data$HasRamMSY==F & Data$BvBmsy!=999 & is.infinite(Data$BvBmsy)==F])) 
   
   
