@@ -28,12 +28,12 @@ if (RunAnalyses==TRUE)
     
     if (SubSample>0)
     {
-     
+      
       FaoIds<- unique(FullData$IdOrig[FullData$Dbase=='FAO'])
       
       SampleIds<- sample(FaoIds,SubSample*length(FaoIds),replace=FALSE)
-        # # # 
-        FullData<-  FullData[! FullData[,IdVar] %in% SampleIds,]
+      # # # 
+      FullData<-  FullData[! FullData[,IdVar] %in% SampleIds,]
     }
     FullData$FvFmsy<- FullData$UvUmsytouse
     
@@ -329,6 +329,8 @@ if (RunAnalyses==TRUE)
   
   BiomassData<- AssignEconomicData(BiomassData) #Assign price and cost data to each stock
   
+  BiomassData$RanCatchMSY<- F
+  
   show('Results Processed')
   
   # Run First Analisis of Current Status --------------------------------------------------
@@ -340,22 +342,22 @@ if (RunAnalyses==TRUE)
   # Calculate MSY -----------------------------------------------------------
   
   sigR<- 0
-
+  
   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
-
-#   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data[GlobalStatus$Data$IdOrig=='10041-FAO-41-44',],ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   
+  #   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data[GlobalStatus$Data$IdOrig=='10041-FAO-41-44',],ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   
-
   show("Completed CatchMSY")
+  
   MsyData<- CatchMSYresults
   
   BiomassData$MSY<- MsyData$MSY #Assign MSY back to BiomassData estimates
   
   BiomassData$FvFmsy[MsyData$RanCatchMSY==T]<- MsyData$FvFmsy[MsyData$RanCatchMSY==T]
-
-  BiomassData$BvBmsy[MsyData$RanCatchMSY==T]<- log(MsyData$BvBmsy[MsyData$RanCatchMSY==T])
   
+  BiomassData$BvBmsy[MsyData$RanCatchMSY==T]<- log(MsyData$BvBmsy[MsyData$RanCatchMSY==T])
+
+  BiomassData$RanCatchMSY[MsyData$RanCatchMSY==T]<- TRUE
   
   #Run quick diagnostic of CatchMSY results
   pdf(file=paste(FigureFolder,'Catch MSY vs PRM BvBmsy predictions.pdf',sep=''))
@@ -380,19 +382,18 @@ if (RunAnalyses==TRUE)
   MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$r)==F #Identify disheries that have both MSY and r
   
   ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs) #Run projections on MSY data that can be projected
-    
+  
   show("Completed Projections")
   
   if (IncludeNEIs==TRUE)
   {
-  NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear) #Run Nearest Neighbor NEI analysis
-  
-  #Put NEI stocks back in the appropriate dataframes, remove stocks still missing data
-  
-  ProjectionData<- rbind(ProjectionData,NeiData$ProjNeis)
-  
-  BiomassData<- rbind(BiomassData,NeiData$BiomassNeis)
-  
+    NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear) #Run Nearest Neighbor NEI analysis
+    
+    #Put NEI stocks back in the appropriate dataframes, remove stocks still missing data
+    
+    ProjectionData<- rbind(ProjectionData,NeiData$ProjNeis)
+    
+    BiomassData<- rbind(BiomassData,NeiData$BiomassNeis)
   }
   BiomassData<- BiomassData[BiomassData$BvBmsy!=999 | is.infinite(BiomassData$BvBmsy)!=TRUE,]
   
@@ -458,12 +459,10 @@ if (IncludeUnderfished==FALSE) #Remove projections for underfished stocks if des
 if (IncludeNEIs==FALSE) #Remove NEIs if desired 
 {
   ProjectionData<- ProjectionData[ProjectionData$IdLevel=='Species',]
-
+  
   BiomassData<- BiomassData[BiomassData$IdLevel=='Species',]
-
+  
   MsyData<- MsyData[MsyData$IdLevel=='Species',]
-  
-  
   
 }
 
@@ -512,6 +511,8 @@ colnames(ResultMetricsSQCumFinalTable)<-c("Region",ResultMetricsSQCumFinalNames)
 
 # CountriesToRun<-c("Global","USA","China","Indonesia","Philippines","Peru","Chile","Mexico","Japan","Myanmar","Viet Nam","EU","Parties to the Nauru Agreement",EUCountries)
 
+CountriesToRun<- CountriesToRun[grepl('Grenadines',(CountriesToRun))]
+
 for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
 {
   
@@ -531,7 +532,7 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
   } else if (CountriesToRun[c]=='EU')
   {
-   
+    
     EuStocks<- Spec_Region_RAM$assessid[Spec_Region_RAM$region=='European Union']
     
     
@@ -561,13 +562,12 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
   {
     
     # Analyze Current Status/Kobe Plot Trends  ----------------------------------------------------------
-    
+        
     BiomassStatus<- AnalyzeFisheries(BiomassData[Biomass_CountryLocater,],paste(CountriesToRun[c],' Status',sep=''),'Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
-    
     
     if (BiomassStatus$CatchStats$Catch$NumberOfStocks>5)
     {
-    MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
+      MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
     }
     # Analyze Projections -----------------------------------------------------
     
@@ -653,10 +653,10 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     Cumulatives<- Cumulatives[Cumulatives$Policy!='SQ' & Cumulatives$Policy!='Historic',]
     
     Cumulatives$Country<-CountriesToRun[c]
-
+    
     if(c==1){CumulativesFinal<-Cumulatives} 
     if(c>1){CumulativesFinal<-rbind(CumulativesFinal,Cumulatives)}
-
+    
     # Calculate  metrics in final year -----------------------------------------------------
     
     FinalYear<- TimeTrend[TimeTrend$Year==max(TimeTrend$Year),]  
@@ -696,7 +696,7 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     ResultMetricsBaselineTable[c,2:13]<-FinalYear[FinalYear$Policy=="CatchShare",13:24]
     
     ResultMetricsSQFinalTable[c,2:4]<-FinalYear[FinalYear$Policy=="CatchShare",28:30]
-   
+    
     ResultMetricsSQFinalTable[c,5:7]<-FinalYear[FinalYear$Policy=="CatchShare",25:27]
     
     ResultMetricsSQFinalTable[c,8:10]<-FinalYear[FinalYear$Policy=="CatchShare",34:36]
@@ -754,7 +754,7 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
     write.csv(file=paste(ResultFolder,CountriesToRun[c],' From Business As Usual Data.csv',sep=''),Cumulatives)    
     
-
+    
     # Plot results --------------------------------------------------
     
     pdf(file=paste(FigureFolder,CountriesToRun[c],' Trajectories.pdf',sep='')) 
