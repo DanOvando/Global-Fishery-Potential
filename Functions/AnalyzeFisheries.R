@@ -6,21 +6,21 @@
 AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,NeiModelSdevs,TransbiasBin,J) 
 {
   
-  #    Data<- BiomassData
-  #    
-  #    BatchName<- 'Test'
-  # #   
-  #    GroupingVars<- c('Year')
-  # 
-  #   Years<- 1950:2013
-  # 
-  # RealModelSdevs<- RealModelSdevs
-  # 
-  # NeiModelSdevs<- NeiModelSdevs
-  # 
-  # TransbiasBin<- TransbiasBin
-  # 
-  # J<- TransbiasIterations
+#       Data<- BiomassData[Biomass_CountryLocater,]
+     
+     BatchName<- 'Test'
+  #   
+     GroupingVars<- c('Year')
+  
+    Years<- 1950:2013
+  
+  RealModelSdevs<- RealModelSdevs
+  
+  NeiModelSdevs<- NeiModelSdevs
+  
+  TransbiasBin<- TransbiasBin
+  
+  J<- TransbiasIterations
   
   #   NeiData<- Data[Data$BvBmsy==-999,]
   
@@ -76,7 +76,7 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
 
     for (x in 1)
     {
-      if (any(Data$Dbase=='FAO' & is.na(Data$BvBmsy)==F & Data$IdLevel=='Species'))
+      if (any(Data$Dbase=='FAO' & is.na(Data$BvBmsy)==F & Data$IdLevel=='Species' & Data$RanCatchMSY==F))
       {  
         
         IdLevels<- unique(Data$IdLevel[Data$BestModel!='RAM' & Data$IdLevel=='Species' & Data$RanCatchMSY==F])
