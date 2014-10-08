@@ -390,7 +390,7 @@ if (RunAnalyses==TRUE)
   BiomassData<- rbind(BiomassData,NeiData$BiomassNeis)
   
   }
-  BiomassData<- BiomassData[BiomassData$BvBmsy!=999,]
+  BiomassData<- BiomassData[BiomassData$BvBmsy!=999 | is.infinite(BiomassData$BvBmsy)!=TRUE,]
   
   MsyData<- MsyData[is.na(MsyData$MSY)==F,]
   
@@ -505,11 +505,8 @@ colnames(ResultMetricsSQFinalTable)<-c("Region",ResultMetricsSQFinalNames)
 ResultMetricsSQCumFinalTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=13))
 colnames(ResultMetricsSQCumFinalTable)<-c("Region",ResultMetricsSQCumFinalNames)
 
-# Summarize GlobalStatus Year, FAO Region, and Species Category for assigning values to NEI fisheries (New Method)
-# **Currently taking median status from FAO and not including RAM due to multiple FAO regions for certain RAM stocks. Could use grepl to summarize with RAM?
 
-StatusByRegSpCat<-ddply(GlobalStatus$Data[GlobalStatus$Data$Dbase=="FAO",],c("Year","RegionFAO","SpeciesCatName"),summarize, MedianStatus=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),Fisheries=length(unique(IdOrig)))
-FvFmsyStatusByRegSpCat<-ddply(BiomassData[BiomassData$Dbase=="FAO",],c("Year","RegionFAO","SpeciesCatName"),summarize,MedianFvFmsy=median(FvFmsy,na.rm=T),Fisheries=length(unique(IdOrig)))
+# CountriesToRun<-c("Global","USA","China","Indonesia","Philippines","Peru","Chile","Mexico","Japan","Myanmar","Viet Nam","EU","Parties to the Nauru Agreement",EUCountries)
 
 for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
 {
@@ -647,6 +644,11 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
     Cumulatives<- Cumulatives[Cumulatives$Policy!='SQ' & Cumulatives$Policy!='Historic',]
     
+    Cumulatives$Country<-CountriesToRun[c]
+
+    if(c==1){CumulativesFinal<-Cumulatives} 
+    if(c>1){CumulativesFinal<-rbind(CumulativesFinal,Cumulatives)}
+
     # Calculate  metrics in final year -----------------------------------------------------
     
     FinalYear<- TimeTrend[TimeTrend$Year==max(TimeTrend$Year),]  
