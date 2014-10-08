@@ -343,6 +343,10 @@ if (RunAnalyses==TRUE)
 
   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
 
+#   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data[GlobalStatus$Data$IdOrig=='10041-FAO-41-44',],ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
+  
+  
+
   show("Completed CatchMSY")
   MsyData<- CatchMSYresults
   
@@ -555,15 +559,19 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
   }
   
-  if(sum(Biomass_CountryLocater,na.rm=T)>0 & sum(Proj_CountryLocater,na.rm=T)>0)
+  NumStocks<- length(unique(BiomassData$IdOrig[Biomass_CountryLocater]))
+  if(sum(Biomass_CountryLocater,na.rm=T)>0 & sum(Proj_CountryLocater,na.rm=T)>0 & NumStocks>1)
   {
     
     # Analyze Current Status/Kobe Plot Trends  ----------------------------------------------------------
     
     BiomassStatus<- AnalyzeFisheries(BiomassData[Biomass_CountryLocater,],paste(CountriesToRun[c],' Status',sep=''),'Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
     
-    MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
     
+    if (BiomassStatus$CatchStats$Catch$NumberOfStocks>5)
+    {
+    MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
+    }
     # Analyze Projections -----------------------------------------------------
     
     TempProjectionData<- ProjectionData[Proj_CountryLocater,]
