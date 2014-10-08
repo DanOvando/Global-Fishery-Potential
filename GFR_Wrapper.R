@@ -810,7 +810,11 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
   } #Close if
 } #Close Country Trajectory Analysis 
 
-write.csv(file=paste(ResultFolder,'Chris Summary Table Data.csv',sep=''),ResultMetricsTable)
+UpsidePlot(CumulativesFinal,"CatchShare")
+
+write.csv(file=paste(ResultFolder,"Percent Upside From Business As Usual Data.csv",sep=''),CumulativesFinal)
+
+# write.csv(file=paste(ResultFolder,'Chris Summary Table Data.csv',sep=''),ResultMetricsTable)
 
 # Scale and Analyze Results -----------------------------------------------
 
