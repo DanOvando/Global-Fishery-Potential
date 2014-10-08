@@ -497,7 +497,7 @@ ResultMetricsSQFinalNames<-c("PercChangeFromSQTotalBiomass","PercChangeFromSQTot
                              "AbsChangeFromSQMedianProfits","AbsChangeFromSQMedianCatch")
 
 ResultMetricsSQCumFinalNames<-c("PercChangeFromSQCum_NPV","PercChangeFromSQCum_Food","PercChangeFromSQCum_Fish","PercChangeFromSQCumMedianProfits","PercChangeFromSQCumMedianCatch","PercChangeFromSQMedianBiomass",
-                                "AbsChangeFromSQCumProfits","AbsChangeFromSQCumFood","AbsChangeFromSQCumFish","AbsChangeFromSQCumMedianProfits","AbsChangeFromSQCumMedianCatch","AbsChangeFromSQCumMedianBiomass")
+                                "AbsChangeFromSQCumProfits","AbsChangeFromSQCumFood","AbsChangeFromSQCumFish","AbsChangeFromSQCumMedianProfits","AbsChangeFromSQCumMedianCatch","AbsChangeFromSQCumMedianBiomass",'Country')
 
 ResultMetricsBaselineTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=13))
 colnames(ResultMetricsBaselineTable)<-c("Region",ResultMetricsBaselineNames)
@@ -505,13 +505,15 @@ colnames(ResultMetricsBaselineTable)<-c("Region",ResultMetricsBaselineNames)
 ResultMetricsSQFinalTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=13))
 colnames(ResultMetricsSQFinalTable)<-c("Region",ResultMetricsSQFinalNames)
 
-ResultMetricsSQCumFinalTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=13))
+ResultMetricsSQCumFinalTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=14))
 colnames(ResultMetricsSQCumFinalTable)<-c("Region",ResultMetricsSQCumFinalNames)
 
 
 # CountriesToRun<-c("Global","USA","China","Indonesia","Philippines","Peru","Chile","Mexico","Japan","Myanmar","Viet Nam","EU","Parties to the Nauru Agreement",EUCountries)
 
-CountriesToRun<- CountriesToRun[grepl('Grenadines',(CountriesToRun))]
+CountriesToRun<- CountriesToRun[!grepl('Grenadines',(CountriesToRun))]
+
+#  BiomassData$RanCatchMSY<- TRUE
 
 for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
 {
@@ -703,7 +705,7 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
     ResultMetricsSQFinalTable[c,11:13]<-FinalYear[FinalYear$Policy=="CatchShare",31:33]
     
-    ResultMetricsSQCumFinalTable[c,2:13]<-Cumulatives[Cumulatives$Policy=="CatchShare",2:dim(Cumulatives)[2]]
+    ResultMetricsSQCumFinalTable[c,2:14]<-Cumulatives[Cumulatives$Policy=="CatchShare",2:dim(Cumulatives)[2]]
     
     ResultMetricsTable<-merge(ResultMetricsBaselineTable,ResultMetricsSQFinalTable,by = "Region")
     
