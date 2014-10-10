@@ -118,21 +118,23 @@ if (RunAnalyses==TRUE)
   
   library(proftools)
   
-  sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SyntheticRegressionFormatProgress.txt" )
-  
   Fisheries<- (unique(SyntheticData$IdOrig))
-  
-  Data<- SyntheticData
-  
-  sfExport('Data','Fisheries','DependentVariable','CatchVariables','CatchLags','LifeHistoryVars','IsLog','IdVar')
-  
-  SyntheticFormatRegressionResults <- (sfClusterApplyLB(1:(length(Fisheries)), FormatForRegression))      
-  
-  sfStop()
-  
-  rm(Data)
+    
+  SyntheticFormatRegressionResults<- mclapply(1:(length(Fisheries)), FormatForRegression,mc.cores=NumCPUs,Data=SyntheticData,Fisheries=Fisheries,DependentVariable=DependentVariable,CatchVariables=CatchVariables,CatchLags=CatchLags,LifeHistoryVars=LifeHistoryVars,IsLog=IsLog,IdVar=IdVar) 
   
   SyntheticData <- ldply (SyntheticFormatRegressionResults, data.frame)
+  
+#   sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SyntheticRegressionFormatProgress.txt" )
+#   
+#   
+#   
+#   sfExport('Data','Fisheries','DependentVariable','CatchVariables','CatchLags','LifeHistoryVars','IsLog','IdVar')
+#   
+#   SyntheticFormatRegressionResults <- (sfClusterApplyLB(1:(length(Fisheries)), FormatForRegression))      
+#   
+#   sfStop()
+#   
+#   rm(Data)
   
   show('Data prepared for regression')
   
@@ -245,22 +247,28 @@ if (RunAnalyses==TRUE)
   ProxyCats<- AssignNearestSpeciesCategory(FaoNeiLevel,TempLevel,AllPossible)$Data
   
   Predictions<- predict(NeiModels$M6,ProxyCats) #Apply nei model
-  
-  #   FaoNeiLevel$M6Prediction<- Predictions
-  
+    
   FaoNeiLevel$M6Prediction<- 999
-  
-  
-  #   NotIdentifiedPredictions<- predict(NeiModels$M7,FaoMarineFishLevel) #Apply unidentified fish model
-  
-  #   FaoMarineFishLevel$M7Prediction<- NotIdentifiedPredictions
-  
+
   FaoMarineFishLevel$M7Prediction<- 999
   
   show('Regressions Applied')
   
   # Assign and identify best predicted biomass to stocks  ---------------------------------------
-  
+
+
+HasAllRefs<- ddply(RamData,c('IdOrig'),summarize,HasAllBFM=any(is.na(BvBmsy)==F & is.na(FvFmsy)==F & is.na(MSY)==F))
+
+RamData<- RamData[RamData$IdOrig %in% HasAllRefs$IdOrig[HasAllRefs$HasAllBFM==T],]
+
+# Arg<- ddply(RamData,c('IdOrig'),summarize,HasFinalF=any(is.na(FvFmsy)==F & is.na(BvBmsy)==F & is.na(MSY)==F & Year==2011))
+
+MissingF<- is.na(RamData$FvFmsy) & RamData$Year==BaselineYear 
+
+RamData$FvFmsy[MissingF]<- (RamData$Catch[MissingF]/RamData$MSY[MissingF])/RamData$BvBmsy[MissingF]
+
+#For now, solve for F/Fmsy in BaselineYear, ask Hiveley about this though. Check whether you always have B/Bmsy and MSY and Catch in BaselineYear
+
   if (IncludeNEIs==TRUE)
   {
     PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel,FaoNeiLevel,FaoMarineFishLevel) #Bind all data back together
