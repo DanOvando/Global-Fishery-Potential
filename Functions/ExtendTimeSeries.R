@@ -1,4 +1,4 @@
-ExtendTimeSeries<- function(s)
+ExtendTimeSeries<- function(s,Data,BaselineYear)
 {
   
 
@@ -52,7 +52,10 @@ ExtendTimeSeries<- function(s)
   }
 
 
-show(paste(round(100*(s/length(Stocks))), '% Done With Time Series Extension',sep=''))
+  
+# show(paste(round(100*(s/length(Stocks))), '% Done With Time Series Extension',sep=''))
+write.table(paste(round(100*(s/length(Stocks))), '% Done With Time Series Extension',sep=''), file = 'ExtendTimeSeriesProgress.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
+
 
 #   colnames(NewData)<- c(VarNames,'ExtendedTime')
 return(NewData)
