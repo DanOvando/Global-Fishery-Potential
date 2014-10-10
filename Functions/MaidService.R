@@ -5,7 +5,7 @@
 
 MaidService<- function(Data,OverlapMode,BaselineYear)
 {
-#   Data<- FullData
+  #   Data<- FullData
   
   Data$SpeciesCatName[Data$SpeciesCatName=='']<- NA
   
@@ -39,42 +39,51 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
   
   Data<- LumpFisheries(Data,SpeciesCategoriesToLump)
   
-  Parel<- FALSE
-  if (NumCPUs>1)
-  {
-    Parel<- TRUE
-    
-  }
+  Stocks<- (unique(Data$IdOrig))
+  
   
   if (CommonFinalYear==T)
   {
     
- 
-    sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="ExtendTimeSeriesProgress.txt" )
-    
-    sfExport('Data','BaselineYear')
-    
-    Stocks<- (unique(Data$IdOrig))
-    ExtendResults <- (sfClusterApplyLB(1:(length(Stocks)), ExtendTimeSeries))      
-    sfStop()
+    if(Sys.info()[1]!='Windows')
+    {
+      ExtendResults <- (mclapply(1:(length(Stocks)), ExtendTimeSeries,mc.cores=NumCPUs,Data,BaselineYear))      
+    }
+    if(Sys.info()[1]=='Windows')
+    {
+      
+      sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="ExtendTimeSeriesProgress.txt" )
+      
+      sfExport('Data','BaselineYear')
+      
+      ExtendResults <- (sfClusterApplyLB(1:(length(Stocks)), ExtendTimeSeries))      
+      sfStop()
+    }
+   
     Data <- ldply (ExtendResults, data.frame)
+    
+    
     show('Timeseries extended')
     
   }
   
+    Fisheries<- (unique(Data$IdOrig))
   
-  sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="RegressionFormatProgress.txt" )
   
-  Fisheries<- (unique(Data$IdOrig))
+  FormatRegressionResults<- mclapply(1:(length(Fisheries)), FormatForRegression,mc.cores=NumCPUs,Data=Data,Fisheries=Fisheries,DependentVariable=DependentVariable,CatchVariables=CatchVariables,CatchLags=CatchLags,LifeHistoryVars=LifeHistoryVars,IsLog=IsLog,IdVar=IdVar) 
   
-  sfExport('Data','Fisheries','DependentVariable','CatchVariables','CatchLags','LifeHistoryVars','IsLog','IdVar')
-  
-  FormatRegressionResults <- (sfClusterApplyLB(1:(length(Fisheries)), FormatForRegression))      
-  
-  sfStop()
+#   sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="RegressionFormatProgress.txt" )
+#   
+#   Fisheries<- (unique(Data$IdOrig))
+#   
+#   sfExport('Data','Fisheries','DependentVariable','CatchVariables','CatchLags','LifeHistoryVars','IsLog','IdVar')
+#   
+#   FormatRegressionResults <- (sfClusterApplyLB(1:(length(Fisheries)), FormatForRegression))      
+#   
+#   sfStop()
   
   Data <- ldply (FormatRegressionResults, data.frame)
-
+  
   Overlap<- RemoveOverlap(Data,OverlapMode)
   
   Data<-Overlap$FilteredData
