@@ -6,7 +6,9 @@
 RunProjection<- function(Data,BaselineYear,NumCPUs)
 {
   
-  Data<-  MsyData[MsyData$CanProject==T,]
+ # Data<-  MsyData[MsyData$CanProject==T,]
+#   Data<- MsyData[MsyData$CanProject==T & MsyData$IdOrig=='AFSC-REYEROCKBSAI-1974-2011-STACHURA',]
+  
   #   #  
   #        BaselineYear<- 2011
   
@@ -37,13 +39,19 @@ RunProjection<- function(Data,BaselineYear,NumCPUs)
   
   if (NumCPUs>1)
   {
-    sfInit( parallel=TRUE, cpus=NumCPUs )
-    sfExport('Data','BaselineYear','Stocks','IdVar','bvec','Discount','tol','beta','CatchSharePrice','CatchShareCost','Policies','ProjectionTime','TempStockMatrix')
-    #   sfExportAll()
     
+    Projections <- (mclapply(1:(length(Stocks)), SnowProjections,mc.cores=NumCPUs,
+                             Data=Data,BaselineYear=BaselineYear,Stocks=Stocks,IdVar=IdVar,bvec=bvec,
+                             Discount=Discount,tol=tol,beta=beta,CatchSharePrice=CatchSharePrice,CatchShareCost=CatchShareCost,
+                             Policies=Policies,ProjectionTime=ProjectionTime,TempStockMatrix=TempStockMatrix))
     
-    Projections <- (sfClusterApplyLB(1:(length(Stocks)), SnowProjections))
-    sfStop()
+#     sfInit( parallel=TRUE, cpus=NumCPUs )
+#     sfExport('Data','BaselineYear','Stocks','IdVar','bvec','Discount','tol','beta','CatchSharePrice','CatchShareCost','Policies','ProjectionTime','TempStockMatrix')
+#     #   sfExportAll()
+#     
+#     
+#     Projections <- (sfClusterApplyLB(1:(length(Stocks)), SnowProjections))
+#     sfStop()
   }
   if (NumCPUs==1)
   {
@@ -60,9 +68,11 @@ RunProjection<- function(Data,BaselineYear,NumCPUs)
   
   Data$Policy[is.na(Data$Policy)]<- 'Historic'
   
-  HistoricData<- Data$Policy=='Historic'
-  
-  Data$FvFmsy[HistoricData]<- (Data$Catch[HistoricData]/Data$MSY[HistoricData])/Data$BvBmsy[HistoricData]
+  HistoricData<- Data$Policy=='Historic' 
+
+  HistoricFData<- Data$Policy=='Historic' & Data$HasRamFvFmsy==F #FIX THIS
+
+  Data$FvFmsy[HistoricFData]<- (Data$Catch[HistoricFData]/Data$MSY[HistoricFData])/Data$BvBmsy[HistoricFData]
   
   c_num<- Data$Price[HistoricData]* Data$MSY[HistoricData]*  (2-Data$BvBmsyOpenAccess[HistoricData]) * Data$BvBmsyOpenAccess[HistoricData]
   
