@@ -8,19 +8,19 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
   
 #       Data<- BiomassData[Biomass_CountryLocater,]
      
-     BatchName<- 'Test'
-  #   
-     GroupingVars<- c('Year')
-  
-    Years<- 1950:2013
-  
-  RealModelSdevs<- RealModelSdevs
-  
-  NeiModelSdevs<- NeiModelSdevs
-  
-  TransbiasBin<- TransbiasBin
-  
-  J<- TransbiasIterations
+#      BatchName<- 'Test'
+#   #   
+#      GroupingVars<- c('Year')
+#   
+#     Years<- 1950:2013
+#   
+#   RealModelSdevs<- RealModelSdevs
+#   
+#   NeiModelSdevs<- NeiModelSdevs
+#   
+#   TransbiasBin<- TransbiasBin
+#   
+#   J<- TransbiasIterations
   
   #   NeiData<- Data[Data$BvBmsy==-999,]
   
