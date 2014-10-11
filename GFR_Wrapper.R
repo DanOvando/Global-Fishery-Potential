@@ -405,7 +405,7 @@ if (RunAnalyses==TRUE)
     
     BiomassData<- rbind(BiomassData,NeiData$BiomassNeis)
   }
-  BiomassData<- BiomassData[BiomassData$BvBmsy!=999 | is.infinite(BiomassData$BvBmsy)!=TRUE,]
+  BiomassData<- BiomassData[BiomassData$BvBmsy!=999 & is.infinite(BiomassData$BvBmsy)==FALSE & is.na(BiomassData$BvBmsy)==F,]
   
   MsyData<- MsyData[is.na(MsyData$MSY)==F,]
   
