@@ -577,6 +577,8 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
     BiomassStatus<- AnalyzeFisheries(BiomassData[Biomass_CountryLocater,],paste(CountriesToRun[c],' Status',sep=''),'Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
     
+#     if(CountriesToRun=="Global"){saveRDS(BiomassStatus$Data,"BetaApp/data/KobeAppData.rds")} # For updating Shiny Kobe Plot Data
+    
     if (BiomassStatus$CatchStats$Catch$NumberOfStocks>5)
     {
       MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
@@ -820,7 +822,13 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
   } #Close if
 } #Close Country Trajectory Analysis 
 
-write.csv(file=paste(ResultFolder,'Chris Summary Table Data.csv',sep=''),ResultMetricsTable)
+# saveRDS(CumulativesFinal,"UpsideApp/data/UpsideAppData.rds") # For saving cumulatives data for UpsideApp
+
+UpsidePlot(CumulativesFinal,"CatchShare")
+
+write.csv(file=paste(ResultFolder,"Percent Upside From Business As Usual Data.csv",sep=''),CumulativesFinal)
+
+# write.csv(file=paste(ResultFolder,'Chris Summary Table Data.csv',sep=''),ResultMetricsTable)
 
 # Scale and Analyze Results -----------------------------------------------
 
