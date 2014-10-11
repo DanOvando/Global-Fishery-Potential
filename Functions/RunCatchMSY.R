@@ -45,12 +45,18 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   
   if (NumCPUs>1)
   {
-    sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SnowfallMSY_ProgressWorkPlease.txt" )
     
-    sfExport('Data','ErrorSize','CommonError','sigR','Smooth','Display','BestValues','ManualFinalYear','n','NumCPUs','CatchMSYTrumps','stock_id','IdVar')
     
-    CMSYResults <- (sfClusterApplyLB(1:(length(stock_id)), SnowCatchMSY))
-    sfStop()
+    CMSYResults <- (mclapply(1:(length(stock_id)), SnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
+                             CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
+
+#     
+#     sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SnowfallMSY_ProgressWorkPlease.txt" )
+#     
+#     sfExport('Data','ErrorSize','CommonError','sigR','Smooth','Display','BestValues','ManualFinalYear','n','NumCPUs','CatchMSYTrumps','stock_id','IdVar')
+#     
+#     CMSYResults <- (sfClusterApplyLB(1:(length(stock_id)), SnowCatchMSY))
+#     sfStop()
   }
   if (NumCPUs==1)
   {
@@ -59,7 +65,6 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
                          CatchMSYTrumps=CatchMSYTrumps,IdVar=IdVar)                
     dev.off()
   }
-  
   
   
   

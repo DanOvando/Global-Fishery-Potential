@@ -3,8 +3,8 @@
 #This code runs CatchMSY on fisheries
 ###################################### 
 
-  SnowCatchMSY<- function(s)
-#  SnowCatchMSY<- function(s,Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,NumCPUs,CatchMSYTrumps,stock_id,IdVar)    
+#   SnowCatchMSY<- function(s)
+ SnowCatchMSY<- function(s,Data,CommonError,sigR,Smooth,Display,BestValues,ManualFinalYear,n,NumCPUs,CatchMSYTrumps,stock_id,IdVar)    
 {
   
   RanCMSY<- FALSE
@@ -106,7 +106,11 @@ if (any(Data$HasRamFvFmsy))
 
 Where<- Data[,IdVar]==stock
 
-show(paste(round(100*(s/length(stock_id)),2),'% done with CatchMSY',sep=''))
+# (paste(round(100*(s/length(stock_id)),2),'% done with CatchMSY',sep=''))
+
+write.table((paste(round(100*(s/length(stock_id)),2),'% done with CatchMSY',sep='')), file = 'CatchMSY Progress.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
+
+
 
 yr   <- Data$Year[(Data[,IdVar])==stock]
 
