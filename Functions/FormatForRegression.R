@@ -1,4 +1,5 @@
-FormatForRegression<- function(f) 
+FormatForRegression<- function(f, Data,Fisheries,DependentVariable,CatchVariables,CatchLags,LifeHistoryVars,IsLog,IdVar)
+
 {
   
   # Format Data For Regression  -------- 
@@ -44,10 +45,8 @@ FormatForRegression<- function(f)
   #   {
   
   #     if (is.integer(f/50)){   }
-  show(paste(round(100*(f/length(Fisheries))),"% Done with Regression Formating",sep=''))  
-  # show(Fisheries[f])
   
-  
+  write.table(paste(round(100*(f/length(Fisheries))),"% Done with Regression Formating",sep=''), file = 'Regression Formatting Progress.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
   
   MaxCatch<- max(TempFrame$Catch,na.rm=T)
   
