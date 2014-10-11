@@ -351,7 +351,7 @@ if (RunAnalyses==TRUE)
   
   sigR<- 0
   
-  GlobalStatus$BvBmsySD[GlobalStatus$Data$Dbase=='SOFIA',]<- 0.1
+  GlobalStatus$BvBmsySD[GlobalStatus$Data$Dbase=='SOFIA']<- 0.1
   
   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   
