@@ -70,7 +70,7 @@ RunProjection<- function(Data,BaselineYear,NumCPUs)
   
   HistoricData<- Data$Policy=='Historic' 
 
-  HistoricFData<- Data$Policy=='Historic' & Data$HasRamFvFmsy==F #FIX THIS
+  HistoricFData<- Data$Policy=='Historic' & Data$HasRamFvFmsy==F & is.na(Data$FvFmsy) #FIX THIS
 
   Data$FvFmsy[HistoricFData]<- (Data$Catch[HistoricFData]/Data$MSY[HistoricFData])/Data$BvBmsy[HistoricFData]
   
