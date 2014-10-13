@@ -16,13 +16,13 @@ library(prettyR)
 library(zoo)
 library(proftools)
 library(snowfall)
-
+library(parallel)
 
 # Basic Controls -------------------------------------------------------------
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'Results/Oct 3 2014 Complete Run FAO Trumps With NEIs/'
+BatchFolder<- 'Results/Oct 11 Eos Run/'
 
 InputFolder<- 'Data/'
 
@@ -178,7 +178,7 @@ ManualFinalYear<- 0 #Set year you want to run all analyses for
 
 NumCatchMSYIterations <- 6000  ## number of iterations, e.g. 100000
 
-NumCPUs<- 30 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 20 #Number of CPUs to use for parallel computing of CatchMSY
 
 Parel<- TRUE #Run SNOWFALL in parallel?
 
