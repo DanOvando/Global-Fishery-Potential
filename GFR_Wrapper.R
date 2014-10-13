@@ -118,21 +118,23 @@ if (RunAnalyses==TRUE)
   
   library(proftools)
   
-  sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SyntheticRegressionFormatProgress.txt" )
-  
   Fisheries<- (unique(SyntheticData$IdOrig))
   
-  Data<- SyntheticData
-  
-  sfExport('Data','Fisheries','DependentVariable','CatchVariables','CatchLags','LifeHistoryVars','IsLog','IdVar')
-  
-  SyntheticFormatRegressionResults <- (sfClusterApplyLB(1:(length(Fisheries)), FormatForRegression))      
-  
-  sfStop()
-  
-  rm(Data)
+  SyntheticFormatRegressionResults<- mclapply(1:(length(Fisheries)), FormatForRegression,mc.cores=NumCPUs,Data=SyntheticData,Fisheries=Fisheries,DependentVariable=DependentVariable,CatchVariables=CatchVariables,CatchLags=CatchLags,LifeHistoryVars=LifeHistoryVars,IsLog=IsLog,IdVar=IdVar) 
   
   SyntheticData <- ldply (SyntheticFormatRegressionResults, data.frame)
+  
+  #   sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SyntheticRegressionFormatProgress.txt" )
+  #   
+  #   
+  #   
+  #   sfExport('Data','Fisheries','DependentVariable','CatchVariables','CatchLags','LifeHistoryVars','IsLog','IdVar')
+  #   
+  #   SyntheticFormatRegressionResults <- (sfClusterApplyLB(1:(length(Fisheries)), FormatForRegression))      
+  #   
+  #   sfStop()
+  #   
+  #   rm(Data)
   
   show('Data prepared for regression')
   
@@ -246,20 +248,26 @@ if (RunAnalyses==TRUE)
   
   Predictions<- predict(NeiModels$M6,ProxyCats) #Apply nei model
   
-  #   FaoNeiLevel$M6Prediction<- Predictions
-  
   FaoNeiLevel$M6Prediction<- 999
-  
-  
-  #   NotIdentifiedPredictions<- predict(NeiModels$M7,FaoMarineFishLevel) #Apply unidentified fish model
-  
-  #   FaoMarineFishLevel$M7Prediction<- NotIdentifiedPredictions
   
   FaoMarineFishLevel$M7Prediction<- 999
   
   show('Regressions Applied')
   
   # Assign and identify best predicted biomass to stocks  ---------------------------------------
+  
+  
+  HasAllRefs<- ddply(RamData,c('IdOrig'),summarize,HasAllBFM=any(is.na(BvBmsy)==F & is.na(FvFmsy)==F & is.na(MSY)==F))
+  
+  RamData<- RamData[RamData$IdOrig %in% HasAllRefs$IdOrig[HasAllRefs$HasAllBFM==T],]
+  
+  # Arg<- ddply(RamData,c('IdOrig'),summarize,HasFinalF=any(is.na(FvFmsy)==F & is.na(BvBmsy)==F & is.na(MSY)==F & Year==2011))
+  
+  MissingF<- is.na(RamData$FvFmsy) & RamData$Year==BaselineYear 
+  
+  RamData$FvFmsy[MissingF]<- (RamData$Catch[MissingF]/RamData$MSY[MissingF])/RamData$BvBmsy[MissingF]
+  
+  #For now, solve for F/Fmsy in BaselineYear, ask Hiveley about this though. Check whether you always have B/Bmsy and MSY and Catch in BaselineYear
   
   if (IncludeNEIs==TRUE)
   {
@@ -343,6 +351,8 @@ if (RunAnalyses==TRUE)
   
   sigR<- 0
   
+  GlobalStatus$BvBmsySD[GlobalStatus$Data$Dbase=='SOFIA']<- 0.1
+  
   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   
   #   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data[GlobalStatus$Data$IdOrig=='10041-FAO-41-44',],ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
@@ -356,7 +366,7 @@ if (RunAnalyses==TRUE)
   BiomassData$FvFmsy[MsyData$RanCatchMSY==T]<- MsyData$FvFmsy[MsyData$RanCatchMSY==T]
   
   BiomassData$BvBmsy[MsyData$RanCatchMSY==T]<- log(MsyData$BvBmsy[MsyData$RanCatchMSY==T])
-
+  
   BiomassData$RanCatchMSY[MsyData$RanCatchMSY==T]<- TRUE
   
   #Run quick diagnostic of CatchMSY results
@@ -395,7 +405,7 @@ if (RunAnalyses==TRUE)
     
     BiomassData<- rbind(BiomassData,NeiData$BiomassNeis)
   }
-  BiomassData<- BiomassData[BiomassData$BvBmsy!=999 | is.infinite(BiomassData$BvBmsy)!=TRUE,]
+  BiomassData<- BiomassData[BiomassData$BvBmsy!=999 & is.infinite(BiomassData$BvBmsy)==FALSE & is.na(BiomassData$BvBmsy)==F,]
   
   MsyData<- MsyData[is.na(MsyData$MSY)==F,]
   
@@ -564,7 +574,7 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
   {
     
     # Analyze Current Status/Kobe Plot Trends  ----------------------------------------------------------
-        
+    
     BiomassStatus<- AnalyzeFisheries(BiomassData[Biomass_CountryLocater,],paste(CountriesToRun[c],' Status',sep=''),'Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
     
 #     if(CountriesToRun=="Global"){saveRDS(BiomassStatus$Data,"BetaApp/data/KobeAppData.rds")} # For updating Shiny Kobe Plot Data

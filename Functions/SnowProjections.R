@@ -1,11 +1,17 @@
-SnowProjections<- function(s)
+# SnowProjections<- function(s)
+SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,beta,CatchSharePrice,CatchShareCost,Policies,ProjectionTime,TempStockMatrix)
+  
 {
   
   sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
   
   counter<- 1
 
-  show(paste(  round(100*(s/length(Stocks)),2),'% Done with Projections',sep=''))
+#   show(paste(  round(100*(s/length(Stocks)),2),'% Done with Projections',sep=''))
+  
+  write.table(paste(  round(100*(s/length(Stocks)),2),'% Done with Projections',sep=''), file = 'Projection Analysis Progress.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
+  
+  
   
   TempMat<- TempStockMatrix
   

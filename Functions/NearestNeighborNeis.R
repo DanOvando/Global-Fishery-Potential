@@ -45,18 +45,22 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   
   ShortNEIs$Policy<- 'Historic'
   
-  
-  sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="NeiExtendTimeSeriesProgress.txt" )
-  
   BaselineYear<- max(ProjData$Year,na.rm=T)
   
-  Data<- NEIs
-  sfExport('Data','BaselineYear')
-  
   Stocks<- (unique(NEIs$IdOrig))
-  ExtendResults <- (sfClusterApplyLB(1:(length(Stocks)), ExtendTimeSeries))      
-  sfStop()
-  rm(Data)
+  
+  ExtendResults <- (mclapply(1:(length(Stocks)), ExtendTimeSeries,mc.cores=NumCPUs,NEIs,BaselineYear))      
+  
+  
+#   sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="NeiExtendTimeSeriesProgress.txt" )
+  
+  
+#   Data<- NEIs
+#   sfExport('Data','BaselineYear')
+  
+#   ExtendResults <- (sfClusterApplyLB(1:(length(Stocks)), ExtendTimeSeries))      
+#   sfStop()
+#   rm(Data)
   
   NEIs <- ldply (ExtendResults, data.frame)
   
