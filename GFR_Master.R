@@ -17,19 +17,12 @@ library(zoo)
 library(proftools)
 library(snowfall)
 library(parallel)
-<<<<<<< HEAD
-=======
 
-
->>>>>>> dd6212a194fef6a57b2c2eb174167b5921be5fdd
 
 # Basic Controls -------------------------------------------------------------
 
 RunAnalyses<- TRUE
 
-<<<<<<< HEAD
-BatchFolder<- 'Results/Oct 11 Eos Run/'
-=======
 BatchFolder<- 'Scratch'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
@@ -68,7 +61,7 @@ if (RunAnalyses==FALSE)
 
 SubSample<- 0.9
 
-NumCPUs<- 4 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 20 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
@@ -192,13 +185,9 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-<<<<<<< HEAD
-NumCatchMSYIterations <- 6000  ## number of iterations, e.g. 100000
-
 NumCPUs<- 20 #Number of CPUs to use for parallel computing of CatchMSY
-=======
+
 NumCatchMSYIterations <- 1500  ## number of iterations, e.g. 100000
->>>>>>> dd6212a194fef6a57b2c2eb174167b5921be5fdd
 
 Parel<- TRUE #Run SNOWFALL in parallel?
 
