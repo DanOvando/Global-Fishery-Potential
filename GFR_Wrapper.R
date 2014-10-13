@@ -118,6 +118,13 @@ if (RunAnalyses==TRUE)
   
   library(proftools)
   
+  if (CapRefs==T)
+  {
+    RamData$BvBmsy[RamData$BvBmsy>1.9]<- 1.9
+
+    RamData$FvFmsy[RamData$FvFmsy>1.9]<- 1.9
+  }
+  
   Fisheries<- (unique(SyntheticData$IdOrig))
   
   SyntheticFormatRegressionResults<- mclapply(1:(length(Fisheries)), FormatForRegression,mc.cores=NumCPUs,Data=SyntheticData,Fisheries=Fisheries,DependentVariable=DependentVariable,CatchVariables=CatchVariables,CatchLags=CatchLags,LifeHistoryVars=LifeHistoryVars,IsLog=IsLog,IdVar=IdVar) 
@@ -317,7 +324,7 @@ if (RunAnalyses==TRUE)
   
   BiomassData$BvBmsy<- BestBio
   
-  BiomassData$CommName<- as.character((BiomassData$CommName))
+#   BiomassData$CommName<- as.character((BiomassData$CommName))
   
   BiomassData$SciName<- as.character((BiomassData$SciName))
   
@@ -699,6 +706,11 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
     FinalYear$AbsChangeFromSQMedianBiomass<- FinalYear$MedianBvBmsy-FinalYear$MedianBvBmsy[FinalYear$Policy=='SQ'] # Absolute change in median B/Bmsy relative to BAU
     
+    FinalYear$Country<-CountriesToRun[c]
+    
+    if(c==1){FinalYearFinal<-FinalYear} 
+    if(c>1){FinalYearFinal<-rbind(FinalYearFinal,FinalYear)}
+
     # Populate summary table of results  -----------------------------------------------------
     
     ResultMetricsBaselineTable[c,1]<-CountriesToRun[c]
@@ -823,6 +835,7 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
 } #Close Country Trajectory Analysis 
 
 # saveRDS(CumulativesFinal,"UpsideApp/data/UpsideAppData.rds") # For saving cumulatives data for UpsideApp
+# saveRDS(FinalYearFinal,"UpsideApp/data/UpsideAppFinalYrData.rds") # For saving final year data for UpsideApp
 
 UpsidePlot(CumulativesFinal,"CatchShare")
 

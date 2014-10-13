@@ -17,12 +17,22 @@ library(zoo)
 library(proftools)
 library(snowfall)
 library(parallel)
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> dd6212a194fef6a57b2c2eb174167b5921be5fdd
 
 # Basic Controls -------------------------------------------------------------
 
 RunAnalyses<- TRUE
 
+<<<<<<< HEAD
 BatchFolder<- 'Results/Oct 11 Eos Run/'
+=======
+BatchFolder<- 'Scratch'
+
+BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
 InputFolder<- 'Data/'
 
@@ -40,8 +50,10 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Results/Oct 2 2014 Complete Run Without NEIs/'
-    
+  BatchFolder<- 'Scratch'
+  
+  BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
+  
   InputFolder<- 'Data/'
   
   FigureFolder<- paste(BatchFolder,'Figures/',sep='')
@@ -54,7 +66,11 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0
+SubSample<- 0.9
+
+NumCPUs<- 4 #Number of CPUs to use for parallel computing of CatchMSY
+
+CapRefs<- TRUE
 
 IncludeNEIs<- TRUE
 
@@ -176,9 +192,13 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
+<<<<<<< HEAD
 NumCatchMSYIterations <- 6000  ## number of iterations, e.g. 100000
 
 NumCPUs<- 20 #Number of CPUs to use for parallel computing of CatchMSY
+=======
+NumCatchMSYIterations <- 1500  ## number of iterations, e.g. 100000
+>>>>>>> dd6212a194fef6a57b2c2eb174167b5921be5fdd
 
 Parel<- TRUE #Run SNOWFALL in parallel?
 
@@ -194,7 +214,7 @@ beta<- 1.3
 
 Discount<- 0.05
 
-bvec<- seq(0,2.5,length.out=50)
+bvec<- seq(0.000001,2,length.out=30)
 
 tol<- 1e-1
 
