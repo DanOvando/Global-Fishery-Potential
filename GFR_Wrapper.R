@@ -532,6 +532,19 @@ CountriesToRun<- CountriesToRun[!grepl('Grenadines',(CountriesToRun))]
 
 #  BiomassData$RanCatchMSY<- TRUE
 
+if (CapRefs==T)
+{
+  BiomassData$BvBmsy[BiomassData$BvBmsy>1.9]<- 1.9
+  BiomassData$FvFmsy[BiomassData$FvFmsy>1.9]<- 1.9
+
+  MsyData$BvBmsy[MsyData$BvBmsy>1.9]<- 1.9
+  MsyData$FvFmsy[MsyData$FvFmsy>1.9]<- 1.9
+  
+  ProjectionData$BvBmsy[ProjectionData$BvBmsy>1.9]<- 1.9
+  ProjectionData$FvFmsy[ProjectionData$FvFmsy>1.9]<- 1.9
+  
+}
+
 for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
 {
   
@@ -584,6 +597,10 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
     BiomassStatus<- AnalyzeFisheries(BiomassData[Biomass_CountryLocater,],paste(CountriesToRun[c],' Status',sep=''),'Year',2005:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
     
+    if (CapRefs==T)
+    {
+      BiomassStatus$Data$BvBmsy[BiomassStatus$Data$BvBmsy>1.9]<- 1.9
+    }
 #     if(CountriesToRun=="Global"){saveRDS(BiomassStatus$Data,"BetaApp/data/KobeAppData.rds")} # For updating Shiny Kobe Plot Data
     
     if (BiomassStatus$CatchStats$Catch$NumberOfStocks>5)
