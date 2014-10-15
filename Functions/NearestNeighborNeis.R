@@ -45,11 +45,15 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   
   ShortNEIs$Policy<- 'Historic'
   
+  OrigBaselineYear<- BaselineYear
+  
   BaselineYear<- max(ProjData$Year,na.rm=T)
   
   Stocks<- (unique(NEIs$IdOrig))
   
   ExtendResults <- (mclapply(1:(length(Stocks)), ExtendTimeSeries,mc.cores=NumCPUs,NEIs,BaselineYear))      
+  
+  BaselineYear<- OrigBaselineYear
   
   
 #   sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="NeiExtendTimeSeriesProgress.txt" )
