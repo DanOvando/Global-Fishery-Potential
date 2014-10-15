@@ -177,6 +177,44 @@ Stocks<-NA # fill this vector with the number of Jstocks for each nei fishery
     } # Close compstocks if
   } # Close NeiStats loop
   
+NEIs<- NEIs[NEIs$CanProject==T,]
+
+Stocks<- unique(NEIs$IdOrig)
+
+for (p in 1:length(Pols))
+{
+  for(s in 1:length(Stocks))
+  {
+    
+    Where<- NEIs$IdOrig==Stocks[s] & NEIs$Policy==Pols[p]
+    
+    WhereBase<- NEIs$IdOrig==Stocks[s]  & NEIs$Policy=='Historic' & NEIs$Year==BaselineYear
+    
+    WhereHistoric<- NEIs$IdOrig==Stocks[s]  & NEIs$Policy=='Historic' 
+    
+    msy<-NEIs$Catch[WhereBase]/(NEIs$BvBmsy[WhereBase]*NEIs$FvFmsy[WhereBase])
+    
+    NEIs$MSY[Where]<- msy
+    
+    NEIs$MSY[WhereHistoric]<- msy[1]
+    
+    NEIs$Catch[Where]<- NEIs$MSY[Where]*(NEIs$BvBmsy[Where]*NEIs$FvFmsy[Where])
+    
+    c_num <-  NEIs$Price[Where]*(2-NEIs$BvBmsyOpenAccess[Where])*NEIs$BvBmsyOpenAccess[Where]*NEIs$MSY[Where]*2^beta
+    
+    c_den = ((2-NEIs$BvBmsyOpenAccess[Where])*NEIs$r[Where])^beta
+    
+    cost = c_num/c_den
+    
+    NEIs$MarginalCost[Where]<- cost
+    
+    NEIs$MarginalCost[WhereHistoric]<- cost[1]
+    
+    NEIs$Profits[Where]<- NEIs$Price[Where]*NEIs$MSY[Where]*(NEIs$BvBmsy[Where]*NEIs$FvFmsy[Where])-NEIs$MarginalCost[Where]*(NEIs$FvFmsy[Where]*NEIs$r[Where]/2)^beta
+    
+  } # close stock loop
+} # close policy loop
+
   Biomass<- NEIs[NEIs$Policy=='Historic',colnames(NEIs) %in% colnames(BiomassData)]
   
   Biomass$BvBmsy<- log(Biomass$BvBmsy)
