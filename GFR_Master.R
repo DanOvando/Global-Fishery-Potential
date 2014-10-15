@@ -21,7 +21,7 @@ library(parallel)
 
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- TRUE
+RunAnalyses<- FALSE
 
 BatchFolder<- 'Scratch'
 
@@ -44,7 +44,7 @@ if (RunAnalyses==FALSE)
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
   BatchFolder<- 'Scratch'
-  
+    
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
   InputFolder<- 'Data/'
