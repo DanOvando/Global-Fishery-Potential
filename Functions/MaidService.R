@@ -87,6 +87,8 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
   Overlap<- RemoveOverlap(Data,OverlapMode)
   
   Data<-Overlap$FilteredData
+
+  Data$Country[Data$Dbase=="SOFIA" & grepl(", ",Data$Country)==T] <- "Multinational" # rename Country for multinational Sofia stocks to "Multinational"
   
   AllOverlap<-Overlap$AllOverlapFinal
   
