@@ -108,7 +108,7 @@ NeiStats$TaxonLevel<-NA
   NeiStats$TaxonLevel[grepl("spp",NeiStats$SciName)==T]<-"Genus"  
   NeiStats$TaxonLevel[grepl("spp",NeiStats$SciName)==F]<-"Non-Genus"
   
-Stocks<-NA # fill this vector with the number of Jstocks for each nei fishery 
+JStocks<-c(rep(0,nrow(NeiStats)) # fill this vector with the number of Jstocks for each nei fishery 
 
 
   for(a in 1:nrow(NeiStats))
@@ -176,7 +176,7 @@ Stocks<-NA # fill this vector with the number of Jstocks for each nei fishery
           } 
         } # Close Policy loop
       
-        Stocks[a]<- (unique(results$JStocks))
+        JStocks[a]<- (unique(results$JStocks))
         } # Close ComparisonStocks if
     } # Close compstocks if
   } # Close NeiStats loop
@@ -223,5 +223,5 @@ for (p in 1:length(Pols))
   
   Biomass$BvBmsy<- log(Biomass$BvBmsy)
   
-  return(list(ProjNeis=NEIs,BiomassNeis=Biomass,JStocks=Stocks))
+  return(list(ProjNeis=NEIs,BiomassNeis=Biomass,JStocks=JStocks))
 } # close function
