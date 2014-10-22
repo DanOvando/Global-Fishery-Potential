@@ -108,7 +108,7 @@ NeiStats$TaxonLevel<-NA
   NeiStats$TaxonLevel[grepl("spp",NeiStats$SciName)==T]<-"Genus"  
   NeiStats$TaxonLevel[grepl("spp",NeiStats$SciName)==F]<-"Non-Genus"
   
-JStocks<-c(rep(0,nrow(NeiStats)) # fill this vector with the number of Jstocks for each nei fishery 
+JStocks<-c(rep(0,nrow(NeiStats))) # fill this vector with the number of Jstocks for each nei fishery 
 
 
   for(a in 1:nrow(NeiStats))
