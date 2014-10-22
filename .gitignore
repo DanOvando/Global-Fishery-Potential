@@ -1,13 +1,13 @@
 .Rproj.user
 .Rhistory
-.RData
-~Data**/*.Rdata
+
+
 **/*.pdf
 **/*.xlsx
 **/*.xls
 **/*.Rproj
-**/*.Rdata
-**/*.rdata
+
+
 **/*.out
 Results**/*.csv
 Results**/*.*
