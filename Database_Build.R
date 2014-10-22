@@ -5,7 +5,7 @@
 ####
 #### GLOBAL FISHERY POTENTIAL DATA PROCESSING
 #### DATA RECEIVED ON: 
-####      RAM: 7/23/14
+####      RAM: 10/22/14
 ####      SOFIA: 
 ####      FAO: 
 ####
@@ -15,7 +15,9 @@
 
 ############################################################################################################
 
-load("Data/DBdata.RData") # Load R data pack
+# load("Data/DBdata.RData") # Load R data pack
+
+load("Data/DBdata_102214.RData") # RData object obtained 10/22/14
 
 ############################################################################################################
 ############ RAM DATABASE ############
@@ -51,12 +53,16 @@ colnames(timeseries.views.data)<-c("IdOrig","stockid","CommName","Year","TB", "S
 # tsyear -> Year
 # F -> Fmort
 # stocklong -> CommName # temporary
-# BvBmsy -> BvBmsyDrop # dropping this variable in favor of Bmsytouse
+# BvBmsy -> BvBmsyDrop # dropping this variable in favor of BvBmsytouse
 # BvBmsytouse -> BvBmsy
+
+timeseries.views.units<-timeseries.views.units[,1:11] # remove newly added 'touse' parameter source columns 10/22/14
 
 colnames(timeseries.views.units)<-c("IdOrig","stockid","stocklong","TB", "SSB", "TN", "R","TC", "TL", "F", "ER")
 
 # For datasets missing variable names, convert to data frame, name variables, and convert to character/numeric as neccessary
+
+bioparams.views.units<-bioparams.views.units[,1:12] # remove newly added 'touse' parameter source colums 10/22/14
 bioparams.views.units<-as.data.frame(bioparams.views.units)
 colnames(bioparams.views.units)<-c("IdOrig","stockid","stocklong","Bmsy", "SSBmsy", "Nmsy", "MSY", "Fmsy", "Umsy", "B0", "SSB0", "M")
 
@@ -341,7 +347,27 @@ for (i in 1:length(GroupNums)) # match group code to group name
   }
 }
 
+# RAM quality control and data checks
+
 RAM$Country[RAM$Country=="Russia"]<-"Russian Federation"
+
+MetaStocks<-unique(metadata$assessid) # unique stocks in metadata 446
+RamStocks<-unique(RAM$IdOrig) # unique stocks in RAM 438
+
+missing<-!(MetaStocks %in% RamStocks) # identify which stocks are missing
+
+MissingStocks<-MetaStocks[missing]
+
+MissingStocks %in% timeseries.views.data[,1] # check if missing stocks are in timeseries.views.data. They are not
+
+MissingStocksData<-metadata[(metadata$assessid %in% MissingStocks),] # look at data for missing stocks
+
+# write.csv(MissingStocksData,file='Stocks Missing From Ram TimeSeries Data.csv')
+
+# Subset RAM to only include stocks with all 3 reference values (consider making option in Master)
+ThreeRefs<-read.csv('Data/RamStocks_All_Ref_Values.csv',stringsAsFactors=F,col.names=c("IdOrig"))
+
+RAM<-RAM[(RAM$IdOrig %in% ThreeRefs$IdOrig),]
 
 ############################################################################################################
 ############ SOFIA DATABASE ############
