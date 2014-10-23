@@ -98,7 +98,7 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   # Find comparison stocks --------------------------
   
   VarsToFill<-c("BvBmsy","FvFmsy", "r", "k","Price","MarginalCost")
-  
+
 #   NeiStats<-unique(NEIs[c("CommName", "SciName","RegionFAO","SpeciesCatName")]) # find unique combinations of nei stocks  
   NeiStats<-unique(NEIs[c("CommName", "SciName","SpeciesCatName")]) # find unique combinations of nei stocks  
 
@@ -108,8 +108,10 @@ NeiStats$TaxonLevel<-NA
   NeiStats$TaxonLevel[grepl("spp",NeiStats$SciName)==T]<-"Genus"  
   NeiStats$TaxonLevel[grepl("spp",NeiStats$SciName)==F]<-"Non-Genus"
   
-JStocks<-c(rep(0,nrow(NeiStats))) # fill this vector with the number of Jstocks for each nei fishery 
-
+JStocks<-NA# fill this vector with the number of Jstocks for each nei group 
+VarBvBmsy<-NA # fill this vector with the variance in BvBmsy for each nei group 
+VarFvFmsy<-NA # fill this vector with the variance in FvFmsy for each nei group
+Year<-NA
 
   for(a in 1:nrow(NeiStats))
   {
@@ -163,7 +165,12 @@ JStocks<-c(rep(0,nrow(NeiStats))) # fill this vector with the number of Jstocks 
         for (p in 1:length(LongPols))
         {
           results<-ddply(ComparisonStocks[ComparisonStocks$Policy==LongPols[p],],c("Year"),summarize,MedianBvBmsy=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),
-                         MedianR=median(r,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T),MedianCost=median(MarginalCost,na.rm=T),JStocks=length(unique(IdOrig)),Variance=var(BvBmsy,na.rm=T))
+                         MedianR=median(r,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T),MedianCost=median(MarginalCost,na.rm=T),JStocks=length(unique(IdOrig)),VarBvBmsy=var(BvBmsy,na.rm=T),VarFvFmsy=var(FvFmsy,na.rm=T))
+          
+          Year<-append(Year,results$Year,after=length(Year))
+          JStocks<-append(JStocks,results$JStocks,after=length(JStocks))
+          VarBvBmsy<-append(VarBvBmsy,results$VarBvBmsy,after=length(VarBvBmsy))
+          VarFvFmsy<-append(VarFvFmsy,results$VarFvFmsy,after=length(VarFvFmsy))
           
           for (b in 1:nrow(results))
           {
@@ -173,14 +180,19 @@ JStocks<-c(rep(0,nrow(NeiStats))) # fill this vector with the number of Jstocks 
             
             NEIs[WhereNei,VarsToFill]<-results[b,c("MedianBvBmsy", "MedianFvFmsy", "MedianR", "MedianK","MedianPrice", "MedianCost")]
             NEIs$CanProject[WhereNei]<- TRUE
+           
           } 
         } # Close Policy loop
       
-        JStocks[a]<- (unique(results$JStocks))
+#         JStocks[a]<- (unique(results$JStocks))
         } # Close ComparisonStocks if
     } # Close compstocks if
   } # Close NeiStats loop
-  
+
+# Make data frame from JStocks, VarBvBmsy, and FvFmsy
+
+NeiDiagnostics<-data.frame(cbind(Year,JStocks,VarBvBmsy,VarFvFmsy))
+
 NEIs<- NEIs[NEIs$CanProject==T,]
 
 Stocks<- unique(NEIs$IdOrig)
@@ -223,5 +235,5 @@ for (p in 1:length(Pols))
   
   Biomass$BvBmsy<- log(Biomass$BvBmsy)
   
-  return(list(ProjNeis=NEIs,BiomassNeis=Biomass,JStocks=JStocks))
+  return(list(ProjNeis=NEIs,BiomassNeis=Biomass,DiagnosticsNEIs=NeiDiagnostics))
 } # close function
