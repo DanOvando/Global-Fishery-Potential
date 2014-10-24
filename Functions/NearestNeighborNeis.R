@@ -193,6 +193,16 @@ Year<-NA
 
 NeiDiagnostics<-data.frame(cbind(Year,JStocks,VarBvBmsy,VarFvFmsy))
 
+# Plot diagnostics
+
+# pdf(file=paste(FigureFolder,'NEI Stock and Variance Diagnostics.pdf',sep=''))
+# print(hist(NeiDiagnostics$JStocks))
+# print(hist(NeiDiagnostics$VarBvBmsy))
+# print(hist(NeiDiagnostics$VarFvFmsy))
+# print(xyplot(VarBvBmsy~JStocks,data=NeiDiagnostics))
+# print(xyplot(VarFvFmsy~JStocks,data=NeiDiagnostics))
+# dev.off()
+
 NEIs<- NEIs[NEIs$CanProject==T,]
 
 Stocks<- unique(NEIs$IdOrig)
