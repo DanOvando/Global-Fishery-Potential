@@ -108,6 +108,8 @@ for (n in 1:nrow(newSofia)){
 
 newSofia2$Country<- gsub("^\\s+|\\s+$","",newSofia2$Country) # trim leading and trailing space
 
+newSofia2$SciName<-gsub('spp.','spp',newSofia2$SciName) # remove period from end of spp. make sofia/fao equivalent
+
 # find IDs of SOFIA stocks that are missing SciName and Country, and remove these stocks from dataset
 SofiaWithData<-unique(newSofia2$IdOrig)
 SofiaWithoutData<-newSofia[newSofia$SciName=="" & newSofia$Country=="",]
