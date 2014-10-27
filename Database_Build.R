@@ -508,6 +508,14 @@ sofia$Country<-gsub("China, Hong Kong SAR","China Hong Kong SAR",sofia$Country)
 sofia$Country<-gsub("China, Macao SAR","China Macao SAR",sofia$Country)
 sofia$Country<-gsub("Other NEI","Other nei",sofia$Country)
 
+# Sci Name fixes
+
+sofia$SciName<-gsub("spp.",'spp',sofia$SciName) # make genus level names same as fao syntax
+sofia$SciName<-gsub('Scomberjaponicus','Scomber japonicus',sofia$SciName)
+sofia$SciName<-gsub('Ruditapes','Ruditapes spp',sofia$SciName)
+sofia$SciName<-gsub('Nephrops norvegicus Palinurus spp','Nephrops norvegicus',sofia$SciName)
+sofia$SciName<-gsub('Merluccius capensis, M. paradox.','Merluccius capensis, M.paradoxus',sofia$SciName)
+sofia$SciName<-gsub("Haemulidae (= Pomadasyidae)","Haemulidae (=Pomadasyidae)",sofia$SciName,fixed=T)
 
 ############################################################################################################
 ############ FAO DATABASE ############
@@ -601,6 +609,8 @@ fao$Country<-gsub("Tanzania, United Rep. of","United Republic of Tanzania", fao$
 
 fao$Country<-gsub(",.*$","",fao$Country) # removes everything after a comma, this will shorten names of all countries that only have one entry
 # e.g., Fiji, Republic of becomes just Fiji. This change is done after all standardizing of countries between FAO and SOFIA
+
+fao$SciName[fao$SciName=='']<-'Missing'
 
 ############################################################################################################
 ############ BIND AND CLEAN-UP COMPLETE DATABASE ############

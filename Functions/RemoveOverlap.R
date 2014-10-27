@@ -108,9 +108,11 @@ for (n in 1:nrow(newSofia)){
 
 newSofia2$Country<- gsub("^\\s+|\\s+$","",newSofia2$Country) # trim leading and trailing space
 
+newSofia2$SciName<-gsub('spp.','spp',newSofia2$SciName) # remove period from end of spp. make sofia/fao equivalent
+
 # find IDs of SOFIA stocks that are missing SciName and Country, and remove these stocks from dataset
 SofiaWithData<-unique(newSofia2$IdOrig)
-SofiaWithoutData<-newSofia[newSofia$SciName=="" & newSofia$Country=="",]
+SofiaWithoutData<-newSofia[newSofia$SciName=="" & (newSofia$Country=="" | newSofia$Country=='0' | is.na(newSofia$Country) | newSofia$Country=='FALSE'),]
 SofiaWithoutDataIds<-unique(SofiaWithoutData$IdOrig) 
 
 ### Identify SOFIA stocks covered by RAM assessments (may be partial or full overlap)
@@ -162,11 +164,26 @@ for (i in 1:nrow(multinational)){
 # natOverlap<-unique(newRam$FOverlapId) # unique FAO stocks that match ram country level assessments
 natOverlap<-unique(newRam$FOverlapId,na.rm=T) # unique FAO stocks that match ram country level assessments
 
-
-
 multiOverlap<-unique(RamMultiNatOverlap,na.rm=T) # unique FAO stocks that match ram multinational level assessments
 
 RamOverlap<-unique(c(natOverlap,multiOverlap)) # all possible FAO stocks that overlap with RAM
+
+## Identify Sofia Stocks that match RAM multinational stocks
+
+RamMultiNatSofiaOverlap<-NA
+
+for (i in 1:nrow(multinational)){
+  
+  duplicate<-multinational$SciName[i]==sofiastocks$SciName & multinational$RegionFAO[i]==sofiastocks$RegionFAO
+  Soverlapstocks<- (sofiastocks$IdOrig[duplicate])
+  
+  num<-length(Soverlapstocks)
+  
+  if(num>0){
+    
+    RamMultiNatSofiaOverlap<- (c(RamMultiNatSofiaOverlap,as.character(Soverlapstocks)))
+  }
+}
 
 ### Identify the FAO stocks that match SOFIA stocks for Scientific name, Country, and FAO region
 
@@ -200,7 +217,10 @@ SofiaOverlap<-newSofia2$OverlapId[is.na(newSofia2$OverlapId)==F] # fao stocks ov
 
 if (OverlapMode=='SofiaTrumps')
 {
-AllOverlap<- c(RamOverlap,newSofia2$OverlapId[is.na(newSofia2$OverlapId)==F],OverlapS,SofiaWithoutDataIds)
+
+  newSofia2<-newSofia2[!(newSofia2$IdOrig %in% OverlapS),] # remove sofia entries that overlap with ram so as not to remove FAO entries covered by sofia but not ram
+  
+  AllOverlap<- c(RamOverlap,RamMultiNatSofiaOverlap,newSofia2$OverlapId[is.na(newSofia2$OverlapId)==F],OverlapS,SofiaWithoutDataIds)
 }
 
 if (OverlapMode=='FaoTrumps')
