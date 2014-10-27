@@ -520,18 +520,19 @@ sofia$SciName<-gsub("Haemulidae (= Pomadasyidae)","Haemulidae (=Pomadasyidae)",s
 ############################################################################################################
 ############ FAO DATABASE ############
 
-FAO=read.csv("Data/FAO_Capture_1950to2011.csv",header=T,stringsAsFactors=F,na.strings=c("...","-","0 0")) # convert ... and - to NA in catch record
-FAO[,10:71]=apply(FAO[,10:71],2,function(y) as.numeric(gsub(" F","",y))) # remove " F" from certain data points and convert catch record to numeric
+FAO=read.csv("Data/FAO_Capture_1950to2012.csv",header=T,stringsAsFactors=F,na.strings=c("...","-","0 0")) # convert ... and - to NA in catch record
+FAO[,10:72]=apply(FAO[,10:72],2,function(y) as.numeric(gsub(" F","",y))) # remove " F" from certain data points and convert catch record to numeric
 
 
 # rename Country, FAO area, Measure, ASFIS, ASFIS 1, ISSCAAP group 1
 names(FAO)[1]="Country"
+names(FAO)[2]="CommName"
+names(FAO)[3]="SciName"
+names(FAO)[5]="SpeciesCat"
+names(FAO)[6]="SpeciesCatName"
 names(FAO)[8]="RegionFAO"
 names(FAO)[9]="CatchUnit"
-names(FAO)[6]="SpeciesCat"
-names(FAO)[2]="CommName"
-names(FAO)[4]="SciName"
-names(FAO)[5]="SpeciesCatName"
+
 
 # remove columns for NEI, Region, Max, CUmSum, 2000-2011 average, Has 2011 landings, ISSCAAP group desc, FAO area desc
 FAO$Nei.=NULL
@@ -540,6 +541,7 @@ FAO$CUmSum=NULL
 FAO$Has.2011.Landings=NULL
 FAO$X2000.2011..Average=NULL
 FAO$Fishing.area..FAO.major.fishing.area.=NULL
+FAO$Species..ASFIS.species..2=NULL # delete taxon code column
 
 # add missing columns as per ColNames
 FAO$Id=rep(0,nrow(FAO)) # fill in once full database is compiled 
@@ -579,7 +581,7 @@ FAOID=seq(from=1, to=nrow(FAO))
 FAO$IdOrig=paste(FAOID,FAO$Dbase,FAO$RegionFAO,FAO$SpeciesCat,sep="-") # fill with zeroes, will apply for loop to create unique ID  
 
 # transpose dataset to "long" format and add variable for Year and Catch
-fao=reshape(FAO,varying=8:69,direction="long", v.names="Catch", timevar="Year",times=1950:2011,)
+fao=reshape(FAO,varying=8:70,direction="long", v.names="Catch", timevar="Year",times=1950:2012,)
 
 # reorder columns 
 fao=subset(fao, select=c(ColNames)) # subset to remove added column names
