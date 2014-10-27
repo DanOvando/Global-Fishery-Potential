@@ -10,7 +10,7 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   
   #     Data<- MsyData
   
-#           ProjData<- ProjectionData
+  #           ProjData<- ProjectionData
   
   #   MsyData<- RamMsy
   
@@ -56,15 +56,15 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   BaselineYear<- OrigBaselineYear
   
   
-#   sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="NeiExtendTimeSeriesProgress.txt" )
+  #   sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="NeiExtendTimeSeriesProgress.txt" )
   
   
-#   Data<- NEIs
-#   sfExport('Data','BaselineYear')
+  #   Data<- NEIs
+  #   sfExport('Data','BaselineYear')
   
-#   ExtendResults <- (sfClusterApplyLB(1:(length(Stocks)), ExtendTimeSeries))      
-#   sfStop()
-#   rm(Data)
+  #   ExtendResults <- (sfClusterApplyLB(1:(length(Stocks)), ExtendTimeSeries))      
+  #   sfStop()
+  #   rm(Data)
   
   NEIs <- ldply (ExtendResults, data.frame)
   
@@ -98,21 +98,21 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   # Find comparison stocks --------------------------
   
   VarsToFill<-c("BvBmsy","FvFmsy", "r", "k","Price","MarginalCost")
-
-#   NeiStats<-unique(NEIs[c("CommName", "SciName","RegionFAO","SpeciesCatName")]) # find unique combinations of nei stocks  
+  
+  #   NeiStats<-unique(NEIs[c("CommName", "SciName","RegionFAO","SpeciesCatName")]) # find unique combinations of nei stocks  
   NeiStats<-unique(NEIs[c("CommName", "SciName","SpeciesCatName")]) # find unique combinations of nei stocks  
-
-
-NeiStats$TaxonLevel<-NA
+  
+  
+  NeiStats$TaxonLevel<-NA
   
   NeiStats$TaxonLevel[grepl("spp",NeiStats$SciName)==T]<-"Genus"  
   NeiStats$TaxonLevel[grepl("spp",NeiStats$SciName)==F]<-"Non-Genus"
   
-JStocks<-NA# fill this vector with the number of Jstocks for each nei group 
-VarBvBmsy<-NA # fill this vector with the variance in BvBmsy for each nei group 
-VarFvFmsy<-NA # fill this vector with the variance in FvFmsy for each nei group
-Year<-NA
-
+  JStocks<-NA# fill this vector with the number of Jstocks for each nei group 
+  VarBvBmsy<-NA # fill this vector with the variance in BvBmsy for each nei group 
+  VarFvFmsy<-NA # fill this vector with the variance in FvFmsy for each nei group
+  Year<-NA
+  
   for(a in 1:nrow(NeiStats))
   {
     
@@ -155,10 +155,10 @@ Year<-NA
     {
       
       ComparisonStocks<-SpeciesLevel[SpeciesLevel$SciName %in% compstocks,] # pulling comparable stocks from the globe
-                                         
-#       ComparisonStocks<-SpeciesLevel[SpeciesLevel$SciName %in% compstocks  &
-#                                        grepl((NeiStats$RegionFAO[a]),SpeciesLevel$RegionFAO ) & is.na(SpeciesLevel$RegionFAO)==F,]
-#       
+      
+      #       ComparisonStocks<-SpeciesLevel[SpeciesLevel$SciName %in% compstocks  &
+      #                                        grepl((NeiStats$RegionFAO[a]),SpeciesLevel$RegionFAO ) & is.na(SpeciesLevel$RegionFAO)==F,]
+      #       
       if(nrow(ComparisonStocks)>0)
       {
         
@@ -174,73 +174,63 @@ Year<-NA
           
           for (b in 1:nrow(results))
           {
-#             WhereNei<- NEIs$SciName==NeiStats$SciName[a] & grepl((NeiStats$RegionFAO[a]),NEIs$RegionFAO ) & NEIs$Year==results$Year[b]  & is.na(NEIs$RegionFAO)==F & NEIs$Policy==LongPols[p]
+            #             WhereNei<- NEIs$SciName==NeiStats$SciName[a] & grepl((NeiStats$RegionFAO[a]),NEIs$RegionFAO ) & NEIs$Year==results$Year[b]  & is.na(NEIs$RegionFAO)==F & NEIs$Policy==LongPols[p]
             WhereNei<- NEIs$SciName==NeiStats$SciName[a] & NEIs$Year==results$Year[b] & NEIs$Policy==LongPols[p]
             
             
             NEIs[WhereNei,VarsToFill]<-results[b,c("MedianBvBmsy", "MedianFvFmsy", "MedianR", "MedianK","MedianPrice", "MedianCost")]
             NEIs$CanProject[WhereNei]<- TRUE
-           
+            
           } 
         } # Close Policy loop
-      
-#         JStocks[a]<- (unique(results$JStocks))
-        } # Close ComparisonStocks if
+        
+        #         JStocks[a]<- (unique(results$JStocks))
+      } # Close ComparisonStocks if
     } # Close compstocks if
   } # Close NeiStats loop
-
-# Make data frame from JStocks, VarBvBmsy, and FvFmsy
-
-NeiDiagnostics<-data.frame(cbind(Year,JStocks,VarBvBmsy,VarFvFmsy))
-
-# Plot diagnostics
-
-# pdf(file=paste(FigureFolder,'NEI Stock and Variance Diagnostics.pdf',sep=''))
-# print(hist(NeiDiagnostics$JStocks))
-# print(hist(NeiDiagnostics$VarBvBmsy))
-# print(hist(NeiDiagnostics$VarFvFmsy))
-# print(xyplot(VarBvBmsy~JStocks,data=NeiDiagnostics))
-# print(xyplot(VarFvFmsy~JStocks,data=NeiDiagnostics))
-# dev.off()
-
-NEIs<- NEIs[NEIs$CanProject==T,]
-
-Stocks<- unique(NEIs$IdOrig)
-
-for (p in 1:length(Pols))
-{
-  for(s in 1:length(Stocks))
+  
+  # Make data frame from JStocks, VarBvBmsy, and FvFmsy
+  
+  NeiDiagnostics<-data.frame(cbind(Year,JStocks,VarBvBmsy,VarFvFmsy))
+  
+  NEIs<- NEIs[NEIs$CanProject==T,]
+  
+  Stocks<- unique(NEIs$IdOrig)
+  
+  for (p in 1:length(Pols))
   {
-    
-    Where<- NEIs$IdOrig==Stocks[s] & NEIs$Policy==Pols[p]
-    
-    WhereBase<- NEIs$IdOrig==Stocks[s]  & NEIs$Policy=='Historic' & NEIs$Year==BaselineYear
-    
-    WhereHistoric<- NEIs$IdOrig==Stocks[s]  & NEIs$Policy=='Historic' 
-    
-    msy<-NEIs$Catch[WhereBase]/(NEIs$BvBmsy[WhereBase]*NEIs$FvFmsy[WhereBase])
-    
-    NEIs$MSY[Where]<- msy
-    
-    NEIs$MSY[WhereHistoric]<- msy[1]
-    
-    NEIs$Catch[Where]<- NEIs$MSY[Where]*(NEIs$BvBmsy[Where]*NEIs$FvFmsy[Where])
-    
-    c_num <-  NEIs$Price[Where]*(2-NEIs$BvBmsyOpenAccess[Where])*NEIs$BvBmsyOpenAccess[Where]*NEIs$MSY[Where]*2^beta
-    
-    c_den = ((2-NEIs$BvBmsyOpenAccess[Where])*NEIs$r[Where])^beta
-    
-    cost = c_num/c_den
-    
-    NEIs$MarginalCost[Where]<- cost
-    
-    NEIs$MarginalCost[WhereHistoric]<- cost[1]
-    
-    NEIs$Profits[Where]<- NEIs$Price[Where]*NEIs$MSY[Where]*(NEIs$BvBmsy[Where]*NEIs$FvFmsy[Where])-NEIs$MarginalCost[Where]*(NEIs$FvFmsy[Where]*NEIs$r[Where]/2)^beta
-    
-  } # close stock loop
-} # close policy loop
-
+    for(s in 1:length(Stocks))
+    {
+      
+      Where<- NEIs$IdOrig==Stocks[s] & NEIs$Policy==Pols[p]
+      
+      WhereBase<- NEIs$IdOrig==Stocks[s]  & NEIs$Policy=='Historic' & NEIs$Year==BaselineYear
+      
+      WhereHistoric<- NEIs$IdOrig==Stocks[s]  & NEIs$Policy=='Historic' 
+      
+      msy<-NEIs$Catch[WhereBase]/(NEIs$BvBmsy[WhereBase]*NEIs$FvFmsy[WhereBase])
+      
+      NEIs$MSY[Where]<- msy
+      
+      NEIs$MSY[WhereHistoric]<- msy[1]
+      
+      NEIs$Catch[Where]<- NEIs$MSY[Where]*(NEIs$BvBmsy[Where]*NEIs$FvFmsy[Where])
+      
+      c_num <-  NEIs$Price[Where]*(2-NEIs$BvBmsyOpenAccess[Where])*NEIs$BvBmsyOpenAccess[Where]*NEIs$MSY[Where]*2^beta
+      
+      c_den = ((2-NEIs$BvBmsyOpenAccess[Where])*NEIs$r[Where])^beta
+      
+      cost = c_num/c_den
+      
+      NEIs$MarginalCost[Where]<- cost
+      
+      NEIs$MarginalCost[WhereHistoric]<- cost[1]
+      
+      NEIs$Profits[Where]<- NEIs$Price[Where]*NEIs$MSY[Where]*(NEIs$BvBmsy[Where]*NEIs$FvFmsy[Where])-NEIs$MarginalCost[Where]*(NEIs$FvFmsy[Where]*NEIs$r[Where]/2)^beta
+      
+    } # close stock loop
+  } # close policy loop
+  
   Biomass<- NEIs[NEIs$Policy=='Historic',colnames(NEIs) %in% colnames(BiomassData)]
   
   Biomass$BvBmsy<- log(Biomass$BvBmsy)

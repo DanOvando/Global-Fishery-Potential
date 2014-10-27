@@ -38,7 +38,7 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   {
     CommonError<- ErrorSize
   }
-
+  
   stock_id <- unique((Data[,IdVar][Data$HasRamMSY==F & Data$BvBmsy!=999 & is.infinite(Data$BvBmsy)==F])) 
   
   
