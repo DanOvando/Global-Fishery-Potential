@@ -252,11 +252,11 @@ RAM$ReferenceBiomassUnits[WhereRefB]<-"Bmsy"
 # read in .csvs with matched RAM assessids and FAO regions and species scientific names and ISSCAAP codes
 
 Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes 
-Spec_Region_RAM=read.csv("Data/RAM_Regions_72814.csv") # list of RAM Assessed IDs previously matched to species code and FAO Region
+Spec_Region_RAM=read.csv("Data/RAM_Regions_102814.csv",stringsAsFactors=F) # list of RAM Assessed IDs previously matched to species code and FAO Region
 Spec_Region_RAM$RegionFAO<- gsub("/",",",Spec_Region_RAM$RegionFAO,fixed=T) # change / to , for use in string parsing during filtering function
 
-Spec_Region_RAM$assessid=as.character(levels(Spec_Region_RAM$assessid))[Spec_Region_RAM$assessid] # convert ID to character
-Spec_Region_RAM$areaname<-as.character(levels(Spec_Region_RAM$areaname))[Spec_Region_RAM$areaname]
+# Spec_Region_RAM$assessid=as.character(levels(Spec_Region_RAM$assessid))[Spec_Region_RAM$assessid] # convert ID to character
+# Spec_Region_RAM$areaname<-as.character(levels(Spec_Region_RAM$areaname))[Spec_Region_RAM$areaname]
 
 
 # Country Identification - using first word from "areaid" in metadata data frame
@@ -299,7 +299,7 @@ for (i in 1:length(Spec_Region_RAM$assessid)){
     
     regmatch<-match(Spec_Region_RAM$areaname[i],multiFAOdf$regionname)
     
-    Spec_Region_RAM$RegionFAO[i]<-multiFAOdf[regmatch,2]
+    Spec_Region_RAM$RegionFAO[i]<-multiFAOdf$regs[regmatch]
   }
 }
 
@@ -315,7 +315,7 @@ for (i in 1:length(RAMNames)) # currently only matching 11 of the 17 unique FAO 
   
   if (sum(Spec_Region_RAM$assessid==RAMNames[i])>0)
   {
-    RAM$RegionFAO[Where2]<- Spec_Region_RAM[Where1,15]
+    RAM$RegionFAO[Where2]<- Spec_Region_RAM$RegionFAO[Where1]
   }
 }
 
@@ -331,9 +331,11 @@ for (i in 1:length(SpecNames)) # match species name to group code
   
   if (sum(Spec_ISSCAAP$Species_AFSIS==SpecNames[i],na.rm=T)>0)
   {
-    RAM$SpeciesCat[Where]<-Spec_ISSCAAP[Spec_ISSCAAP$Species_AFSIS==SpecNames[i],1]
+    RAM$SpeciesCat[Where]<-Spec_ISSCAAP$SpeciesCat_ISSCAAP_code[Spec_ISSCAAP$Species_AFSIS==SpecNames[i]]
   }
 }
+
+RAM$SpeciesCat[RAM$SciName=='Litopenaeus setiferus']<-45 # add SpeciesCat to missing RAM stock
 
 GroupNums<-unique(na.omit(RAM$SpeciesCat))
 
@@ -343,7 +345,7 @@ for (i in 1:length(GroupNums)) # match group code to group name
   
   if (sum(GroupNames_ISSCAAP$ISSCAAP.code==GroupNums[i])>0)
   {
-    RAM$SpeciesCatName[Where]<-GroupNames_ISSCAAP[GroupNames_ISSCAAP$ISSCAAP.code==GroupNums[i],2]
+    RAM$SpeciesCatName[Where]<-GroupNames_ISSCAAP$Definition[GroupNames_ISSCAAP$ISSCAAP.code==GroupNums[i]]
   }
 }
 
