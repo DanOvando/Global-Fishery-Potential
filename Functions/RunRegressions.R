@@ -31,10 +31,10 @@ RunRegressions<- function(Data,RegList,FigureName)
     abline(0,1)
     dev.off()
   
-  pdf(file=paste(FigureFolder,RegNames[m],' Leverage Plots.pdf',sep=''))
-  leveragePlots(TempReg,ask=F)
-  dev.off()
-  
+#   pdf(file=paste(FigureFolder,RegNames[m],' Leverage Plots.pdf',sep=''))
+#   leveragePlots(TempReg,ask=F)
+#   dev.off()
+#   
   show(summary(TempReg))
   
   eval(parse(text=paste('Models$',RegNames[m],'=TempReg',sep='')))
