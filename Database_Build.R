@@ -252,7 +252,7 @@ RAM$ReferenceBiomassUnits[WhereRefB]<-"Bmsy"
 # read in .csvs with matched RAM assessids and FAO regions and species scientific names and ISSCAAP codes
 
 Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes 
-Spec_Region_RAM=read.csv("Data/RAM_Regions_102814.csv",stringsAsFactors=F) # list of RAM Assessed IDs previously matched to species code and FAO Region
+Spec_Region_RAM=read.csv("Data/Ram_Regions_102814.csv",stringsAsFactors=F) # list of RAM Assessed IDs previously matched to species code and FAO Region
 Spec_Region_RAM$RegionFAO<- gsub("/",",",Spec_Region_RAM$RegionFAO,fixed=T) # change / to , for use in string parsing during filtering function
 
 # Spec_Region_RAM$assessid=as.character(levels(Spec_Region_RAM$assessid))[Spec_Region_RAM$assessid] # convert ID to character
