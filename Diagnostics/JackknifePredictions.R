@@ -16,17 +16,29 @@ JackStore<- as.data.frame(matrix(NA,nrow=0,ncol=12))
 
 colnames(JackStore)<- c('Assessid','Year','RamB','RamF','RamMSY','PrmB','CmsyB','CmsyF','CmsyMSY','CmsyBnoP','CmsyFnoP','CmsyMSYnoP')
 
+NumCatchMSYIterations<- 10000
+
+ErrorSize=.95
+
+TransbiasIterations<- 1000
+
+sigR<- 0.05
 
 for (r in 1:length(RamIds))
 {
   
   Omit<- RamData[RamData$IdOrig==RamIds[r],]
   
+  if (sum(is.na(Omit$Catch))==0)
+  {
+  
   FirstCatch<- which(is.na(Omit$Catch)==F)[1]
   
   Omit<- Omit[(FirstCatch+4):dim(Omit)[1],]
   
   Omit$CatchToRollingMax[is.na(Omit$CatchToRollingMax)]<- 0
+  
+  Omit$Catch<- na.approx(Omit$Catch)
   
   Jacked<- RamData[RamData$IdOrig!=RamIds[r],]
   
@@ -145,11 +157,51 @@ for (r in 1:length(RamIds))
   
   OmitStatus$Data$BvBmsySD<- NA
   
-  CatchMSYresults<- (RunCatchMSY(OmitStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
+  CatchMSYresults<- (RunCatchMSY(OmitStatus$Data,1,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   
   TempJack[,c('CmsyBnoP','CmsyFnoP','CmsyMSYnoP')]<- CatchMSYresults[,c('CatchMSYBvBmsy','FvFmsy','MSY')]
   
   show(paste(100*(r/length(RamIds)),' % Done with JackKnife',sep=''))
   
   JackStore<- rbind(JackStore,TempJack)
+  } #Close if all catch loop
 }
+
+
+
+Prm<- cbind(JackStore[,c('Assessid','Year','RamB','PrmB')],'PRM')
+
+CmsyB<- cbind(JackStore[,c('Assessid','Year','RamB','CmsyB')],'CmsyB')
+
+CmsyBnoP<- cbind(JackStore[,c('Assessid','Year','RamB','CmsyBnoP')],'CmsyBnoP')
+
+colnames(Prm)<- c('Id','Year','RamBvBmsy','ModelBvBmsy','Model')
+
+colnames(CmsyB)<- c('Id','Year','RamBvBmsy','ModelBvBmsy','Model')
+
+colnames(CmsyBnoP)<- c('Id','Year','RamBvBmsy','ModelBvBmsy','Model')
+
+PlotJack<- rbind(Prm,CmsyB,CmsyBnoP)
+
+save(PlotJack,JackStore,file='Diagnostics/JackKnife.rdata')
+
+pdf(file='Diagnostics/Observed vs Predicted Diagnostic Plots.pdf')
+xyplot((ModelBvBmsy) ~ (RamBvBmsy) | Model,subset=Year>2005,data=PlotJack,xlab=' Log RAM B/Bmsy',ylab='Log Predicted B/Bmsy', panel=function(x,y,...)
+{
+  panel.xyplot(x,y,...)
+  panel.abline(a=0,b=1,lty=2)
+  panel.lmline(x,y,col='Salmon',...)
+}
+)
+dev.off()
+
+
+pdf(file='Diagnostics/PRM and CMSY Proportional Error Boxplots.pdf')
+bwplot( ((ModelBvBmsy-RamBvBmsy)/RamBvBmsy)~Model ,data=PlotJack,do.out=TRUE)
+dev.off()
+
+pdf(file='Diagnostics/PRM and CMSY Proportional Error Boxplots.pdf')
+boxplot( 100*((ModelBvBmsy-RamBvBmsy)/RamBvBmsy)~Model ,data=PlotJack,outline=F,ylab='% Proportional Error')
+dev.off()
+
+

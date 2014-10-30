@@ -4,10 +4,11 @@
 #This code runs comparisons of Catch MSY and PRM predictions against RAM data
 
 #Load in predictions of B/Bmsy made my the PRM
+library(parallel)
+library(plyr)
+library(lattice)
 
-load('Results/Oct 2 2014 Complete Run FAO Trumps Without NEIs/Data/Global Fishery Recovery Results.rdata')
-
-load('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/Results/Oct 2 2014 Complete Run FAO Trumps Without NEIs/Data/Global Fishery Recovery Results.rdata')
+load('Results/Oct 23 Eos Capped FAO Trumps/Data/Global Fishery Recovery Results.rdata')
 
 PrmPred<- BiomassData[BiomassData$Dbase=='RAM',]
 
@@ -17,7 +18,9 @@ RamMsy<- ddply(PrmStatus,c('IdOrig'),summarize,RamMsy=mean(MSY,na.rm=T))
 
 PrmStatus$MSY<- NA
 
-CmsyPred<- RunCatchMSY(PrmStatus,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,1000,4,FALSE)
+ErrorSize<- 1
+
+CmsyPred<- RunCatchMSY(PrmStatus,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,500,4,FALSE)
 
 # CmsyPred<- CmsyPred$Data
 
