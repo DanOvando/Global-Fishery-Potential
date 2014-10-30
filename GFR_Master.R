@@ -23,7 +23,7 @@ library(parallel)
 
 RunAnalyses<- FALSE
 
-BatchFolder<- 'Oct 13 Eos Run Capped Ram Reference Points'
+BatchFolder<- 'Oct 23 Eos Capped FAO Trumps'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -43,8 +43,8 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Scratch'
-    
+  BatchFolder<- 'Oct 23 Eos Capped FAO Trumps'
+  
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
   InputFolder<- 'Data/'
@@ -59,9 +59,9 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0
+SubSample<- 0.95
 
-NumCPUs<- 30 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 3 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
