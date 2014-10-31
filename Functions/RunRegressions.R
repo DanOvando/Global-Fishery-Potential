@@ -21,9 +21,22 @@ RunRegressions<- function(Data,RegList,FigureName)
   
   ModelVars<- eval(parse(text=paste('RegList$',RegNames[m],sep='')))
     
-  WhereVars<- colnames(Data) %in% ModelVars
+#   WhereVars<- colnames(Data) %in% c('IdOrig',ModelVars)
+#   
+  WhereVars<- colnames(Data) %in% c(ModelVars)
+#   
+    fmla <- as.formula(paste("LogBvBmsy ~ ", paste( ModelVars[ModelVars!='LogBvBmsy' & ModelVars!='IdOrig'], collapse= "+")))
+
+  TempReg<- lm(fmla , data=Data[,WhereVars])
   
-  TempReg<- lm(LogBvBmsy ~. , data=Data[,WhereVars])
+#   TempReg<- plm(fmla , data=Data[,WhereVars],model="pooling",index=c('IdOrig','Year'),na.action='na.omit')
+  
+  
+# z=predict(TempReg,Data[,WhereVars])
+# 
+# r<- TempReg$residuals
+# 
+# s<- TempReg$model$LogBvBmsy
 
      pdf(file=paste(FigureFolder,FigureName,' ',RegNames[m],' Observed vs Predicted.pdf',sep=''))
     plot(TempReg$fitted.values+TempReg$residuals,TempReg$fitted.values,xlab='Observed Log B/Bmsy',
