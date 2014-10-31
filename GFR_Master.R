@@ -21,9 +21,9 @@ library(parallel)
 
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- FALSE
+RunAnalyses<- TRUE
 
-BatchFolder<- 'Oct 23 Eos Capped FAO Trumps'
+BatchFolder<- 'Oct 31 Uncapped Complete Run'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -43,7 +43,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Oct 23 Eos Capped FAO Trumps'
+  BatchFolder<- 'Test'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
@@ -59,9 +59,9 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0.95
+SubSample<- 0
 
-NumCPUs<- 3 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 28 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
@@ -77,7 +77,7 @@ CatchMSYTrumps<- TRUE
 
 CommonFinalYear<- TRUE
 
-BaselineYear<- 2011
+BaselineYear<- 2012
 
 CountriesToRun<- c('Global','USA','China','Indonesia','Philippines','Peru','Chile','Mexico','Japan','Myanmar','Viet Nam','EU','Parties to the Nauru Agreement') 
 
@@ -115,7 +115,7 @@ EUCountries<- c('Austria',
 
 MinimumCatchYears<- 10 #Minimum length of catch history
 
-OutlierBvBmsy<- 2.5 #Maximum BvBmsy that is allowed in the analysis 
+OutlierBvBmsy<- 40 #Maximum BvBmsy that is allowed in the analysis 
 
 FisheriesToOmit<- 'None' #List of fisheries to manually exclude from analysis 
 
@@ -185,7 +185,7 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-NumCatchMSYIterations <- 8000  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 10000  ## number of iterations, e.g. 100000
 
 Parel<- TRUE #Run SNOWFALL in parallel?
 
