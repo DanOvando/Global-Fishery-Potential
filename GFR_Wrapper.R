@@ -597,7 +597,7 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
     # Analyze Current Status/Kobe Plot Trends  ----------------------------------------------------------
     
-    BiomassStatus<- AnalyzeFisheries(BiomassData[Biomass_CountryLocater,],paste(CountriesToRun[c],' Status',sep=''),'Year',1975:2011,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+    BiomassStatus<- AnalyzeFisheries(BiomassData[Biomass_CountryLocater,],paste(CountriesToRun[c],' Status',sep=''),'Year',1990:BaselineYear,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
     
     if (CapRefs==T)
     {
