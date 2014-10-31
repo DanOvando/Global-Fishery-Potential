@@ -118,13 +118,13 @@ if (RunAnalyses==TRUE)
   
   library(proftools)
   
-  if (CapRefs==T)
-  {
-    RamData$BvBmsy[RamData$BvBmsy>1.9]<- 1.9
-
-    RamData$FvFmsy[RamData$FvFmsy>1.9]<- 1.9
-  }
-  
+#   if (CapRefs==T)
+#   {
+#     RamData$BvBmsy[RamData$BvBmsy>1.9]<- 1.9
+# 
+#     RamData$FvFmsy[RamData$FvFmsy>1.9]<- 1.9
+#   }
+#   
   Fisheries<- (unique(SyntheticData$IdOrig))
   
   SyntheticFormatRegressionResults<- mclapply(1:(length(Fisheries)), FormatForRegression,mc.cores=NumCPUs,Data=SyntheticData,Fisheries=Fisheries,DependentVariable=DependentVariable,CatchVariables=CatchVariables,CatchLags=CatchLags,LifeHistoryVars=LifeHistoryVars,IsLog=IsLog,IdVar=IdVar) 
