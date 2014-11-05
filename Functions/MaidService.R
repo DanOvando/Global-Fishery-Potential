@@ -37,7 +37,8 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
   
   Data<- Data[Data$Drop==F,] #Remove unusable fisheries
   
-  Data<- LumpFisheries(Data,SpeciesCategoriesToLump)
+  
+  #   Data<- LumpFisheries(Data,SpeciesCategoriesToLump)
   
   Stocks<- (unique(Data$IdOrig))
   
@@ -59,7 +60,7 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
       ExtendResults <- (sfClusterApplyLB(1:(length(Stocks)), ExtendTimeSeries))      
       sfStop()
     }
-   
+    
     Data <- ldply (ExtendResults, data.frame)
     
     
@@ -67,29 +68,38 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
     
   }
   
-    Fisheries<- (unique(Data$IdOrig))
+  Overlap<- RemoveOverlap(Data,OverlapMode)
+  
+  Data<-Overlap$FilteredData
+  
+  Data$Country[Data$Dbase=="SOFIA" & grepl(", ",Data$Country)==T] <- "Multinational" # rename Country for multinational Sofia stocks to "Multinational"
+  
+  Data<- LumpFisheries(Data,SpeciesCategoriesToLump)
+  
+  
+  Fisheries<- (unique(Data$IdOrig))
   
   
   FormatRegressionResults<- mclapply(1:(length(Fisheries)), FormatForRegression,mc.cores=NumCPUs,Data=Data,Fisheries=Fisheries,DependentVariable=DependentVariable,CatchVariables=CatchVariables,CatchLags=CatchLags,LifeHistoryVars=LifeHistoryVars,IsLog=IsLog,IdVar=IdVar) 
   
-#   sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="RegressionFormatProgress.txt" )
-#   
-#   Fisheries<- (unique(Data$IdOrig))
-#   
-#   sfExport('Data','Fisheries','DependentVariable','CatchVariables','CatchLags','LifeHistoryVars','IsLog','IdVar')
-#   
-#   FormatRegressionResults <- (sfClusterApplyLB(1:(length(Fisheries)), FormatForRegression))      
-#   
-#   sfStop()
+  #   sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="RegressionFormatProgress.txt" )
+  #   
+  #   Fisheries<- (unique(Data$IdOrig))
+  #   
+  #   sfExport('Data','Fisheries','DependentVariable','CatchVariables','CatchLags','LifeHistoryVars','IsLog','IdVar')
+  #   
+  #   FormatRegressionResults <- (sfClusterApplyLB(1:(length(Fisheries)), FormatForRegression))      
+  #   
+  #   sfStop()
   
   Data <- ldply (FormatRegressionResults, data.frame)
   
-  Overlap<- RemoveOverlap(Data,OverlapMode)
-  
-  Data<-Overlap$FilteredData
-
-  Data$Country[Data$Dbase=="SOFIA" & grepl(", ",Data$Country)==T] <- "Multinational" # rename Country for multinational Sofia stocks to "Multinational"
-  
+  #   Overlap<- RemoveOverlap(Data,OverlapMode)
+  #   
+  #   Data<-Overlap$FilteredData
+  # 
+  #   Data$Country[Data$Dbase=="SOFIA" & grepl(", ",Data$Country)==T] <- "Multinational" # rename Country for multinational Sofia stocks to "Multinational"
+  #   
   AllOverlap<-Overlap$AllOverlapFinal
   
   OverlapToRemove<- c('Ram','Sofia','SofiaRam')
