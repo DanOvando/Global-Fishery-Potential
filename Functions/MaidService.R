@@ -5,7 +5,7 @@
 
 MaidService<- function(Data,OverlapMode,BaselineYear)
 {
-  #   Data<- FullData
+#     Data<- FullData
   
   Data$SpeciesCatName[Data$SpeciesCatName=='']<- NA
   
@@ -74,12 +74,16 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
   
   Data$Country[Data$Dbase=="SOFIA" & grepl(", ",Data$Country)==T] <- "Multinational" # rename Country for multinational Sofia stocks to "Multinational"
   
+  StillHasCatch<- ddply(Data,c('IdOrig'),summarize,HasCatch=sum(is.na(Catch)==F)>0) #Filter out stocks that now have no catch
+  
+  NoCatch<- StillHasCatch$IdOrig[StillHasCatch$HasCatch==F]
+  
+  Data<- Data[! (Data$IdOrig %in% NoCatch),] #Remove stocks that have no catch after overlap has been dealt with 
+  
   Data<- LumpFisheries(Data,SpeciesCategoriesToLump)
   
-  
   Fisheries<- (unique(Data$IdOrig))
-  
-  
+    
   FormatRegressionResults<- mclapply(1:(length(Fisheries)), FormatForRegression,mc.cores=NumCPUs,Data=Data,Fisheries=Fisheries,DependentVariable=DependentVariable,CatchVariables=CatchVariables,CatchLags=CatchLags,LifeHistoryVars=LifeHistoryVars,IsLog=IsLog,IdVar=IdVar) 
   
   #   sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="RegressionFormatProgress.txt" )
