@@ -86,7 +86,8 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
       for (i in 1:length(IdLevels))
       {
         
-        Where<- Data$IdLevel==IdLevels[i] & Data$BestModel!='RAM'
+        Where<- Data$IdLevel==IdLevels[i] & Data$BestModel!='RAM' & Data$RanCatchMSY==F
+        
         
         if (IdLevels[i]=='Species')
         {

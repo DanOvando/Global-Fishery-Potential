@@ -27,7 +27,8 @@ shinyUI(fluidPage(
                             '% Change From Current Total Biomass'='PercChangeTotalBiomass',
                             '% Change From Status Quo Median Biomass'='PercChangeFromSQMedianBiomass',
                             '% Change From Current Median Biomass'='PercChangeMedianBiomass',
-                            '% Change From Status Quo Food'='Food'),
+                            '% Change From Status Quo Food'='Food',
+                            '% Change From Current Food'='PercChangeTotalCatch'),
                   selected= 'PercChangeFromSQTotalBiomass'),
      
       selectInput("yaxis",
@@ -55,8 +56,10 @@ shinyUI(fluidPage(
       h1("Upside Plot"),
       h3("Overview"),
       p("This plot displays the potential upside of recovering a country's fisheries. 
-          The x and y axes represent percent changes in profits and biomass. Dot size is proportional to the percent change in landings (Food). 
-          Each dot represents a different country."),
+          The options on the left can be used to specify the values that are displayed on the x and y axes, as well as the value
+          used to scale the size of the dots."), 
+          
+      strong("Note: This application and the data contained within it are a work in progress and are subject to change."),
       
       
       plotOutput(outputId = "upside_plot", height = "600px")

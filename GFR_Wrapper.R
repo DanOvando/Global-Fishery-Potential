@@ -49,6 +49,15 @@ if (RunAnalyses==TRUE)
     
     FullData<-FindResilience(FullData)
     
+#     Overlap<- ddply(FullData,c('Year'),summarize,FullDataCatch=sum(Catch,na.rm=T))
+# 
+#     Raw<- ddply(RawData[RawData$Dbase=='FAO',],c('Year'),summarize,FullDataCatch=sum(Catch,na.rm=T))
+#     
+#     m<- join(Overlap,Raw,by='Year')
+#     
+#     quartz()
+#     matplot(m[,2:3])
+    
     rm(CleanedData)
     
     write.csv(file=paste(ResultFolder,'Cleaned Compiled Database.csv',sep=''),FullData)

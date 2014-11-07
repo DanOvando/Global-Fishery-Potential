@@ -38,6 +38,7 @@ shinyServer(function(input, output) {
     if(input$xaxis=='PercChangeTotalBiomass'){x<-FinalYr$PercChangeTotalBiomass}
     if(input$xaxis=='PercChangeFromSQMedianBiomass'){x<-FinalYr$PercChangeFromSQMedianBiomass}
     if(input$xaxis=='PercChangeMedianBiomass'){x<-FinalYr$PercChangeMedianBiomass}
+    if(input$xaxis=='PercChangeTotalCatch'){x<-FinalYr$PercChangeTotalCatch}
     if(input$xaxis=="Food") { x<-Data$Food}
     
     PlotData<-data.frame(c,x,y,s)
