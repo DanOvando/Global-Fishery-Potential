@@ -74,17 +74,42 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
   
   Data$Country[Data$Dbase=="SOFIA" & grepl(", ",Data$Country)==T] <- "Multinational" # rename Country for multinational Sofia stocks to "Multinational"
   
-  StillHasCatch<- ddply(Data,c('IdOrig'),summarize,HasCatch=sum(is.na(Catch)==F)>0) #Filter out stocks that now have no catch
-  
-  NoCatch<- StillHasCatch$IdOrig[StillHasCatch$HasCatch==F]
-  
-  Data<- Data[! (Data$IdOrig %in% NoCatch),] #Remove stocks that have no catch after overlap has been dealt with 
-  
   Data<- LumpFisheries(Data,SpeciesCategoriesToLump)
   
-  Fisheries<- (unique(Data$IdOrig))
+  
+  # FIlter out bad data once again ------------------------------------------
+  
+  
+  StockStats<- ddply(Data,~IdOrig,summarise,MeanCatch=mean(Catch,na.rm=T),TotalCatch=sum(Catch,na.rm=T),
+                     TooFewCatchYears=sum(is.na(Catch)==F)<MinimumCatchYears,
+                     PercentMissingTooHigh=(sum(is.na(Catch))/length(Catch))>=MissingCatchTolerance,NoCatch=sum(Catch,na.rm=T)==0
+                     ,SpeciesCatName=unique(SpeciesCatName),NoRamOrSofiaBiomass=(as.numeric(any(Dbase=='RAM') | any(Dbase=='SOFIA'))*as.numeric(sum(is.na(BvBmsy)==F)==0))==1)
+  
+  StockStats$NoSpeciesCategory<- is.na(StockStats$SpeciesCatName)
+  
+  StockStats$WrongSpeciesCategory<- (StockStats$SpeciesCatName %in% SpeciesCategoriesToOmit)
+  
+  StockStats$DropFishery<- 0
+  
+  ## Mark fisheries that need to be dropped 
+  StockStats$DropFishery[StockStats$NoSpeciesCategory  | StockStats$WrongSpeciesCategory 
+                         | StockStats$TooFewCatchYears |
+                           StockStats$PercentMissingTooHigh | StockStats$NoCatch | StockStats$NoRamOrSofiaBiomass==T]<- 1
+  
+  DroppedStocks<- StockStats[StockStats$DropFishery==1,]
+  
+  Data$Drop<- Data[,IdVar] %in% DroppedStocks[,IdVar]
+  
+  Data<- Data[Data$Drop==F,] #Remove unusable fisheries
     
+  Fisheries<- (unique(Data$IdOrig))
+
+
+
+#   FormatRegressionResults<- lapply(1:(length(Fisheries)), FormatForRegression,Data=Data,Fisheries=Fisheries,DependentVariable=DependentVariable,CatchVariables=CatchVariables,CatchLags=CatchLags,LifeHistoryVars=LifeHistoryVars,IsLog=IsLog,IdVar=IdVar) 
+  
   FormatRegressionResults<- mclapply(1:(length(Fisheries)), FormatForRegression,mc.cores=NumCPUs,Data=Data,Fisheries=Fisheries,DependentVariable=DependentVariable,CatchVariables=CatchVariables,CatchLags=CatchLags,LifeHistoryVars=LifeHistoryVars,IsLog=IsLog,IdVar=IdVar) 
+  
   
   #   sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="RegressionFormatProgress.txt" )
   #   
