@@ -522,7 +522,7 @@ sofia$SciName<-gsub("Haemulidae (= Pomadasyidae)","Haemulidae (=Pomadasyidae)",s
 ############################################################################################################
 ############ FAO DATABASE ############
 
-FAO=read.csv("Data/faoTest.csv",header=T,stringsAsFactors=F,na.strings=c("...","-","0 0")) # convert ... and - to NA in catch record
+FAO=read.csv("Data/faotest.csv",header=T,stringsAsFactors=F,na.strings=c("...","-","0 0")) # convert ... and - to NA in catch record
 FAO[,10:72]=apply(FAO[,10:72],2,function(y) as.numeric(gsub(" F","",y))) # remove " F" from certain data points and convert catch record to numeric
 
 
