@@ -522,7 +522,11 @@ sofia$SciName<-gsub("Haemulidae (= Pomadasyidae)","Haemulidae (=Pomadasyidae)",s
 ############################################################################################################
 ############ FAO DATABASE ############
 
+<<<<<<< HEAD
 FAO=read.csv("Data/faotest.csv",header=T,stringsAsFactors=F,na.strings=c("...","-","0 0")) # convert ... and - to NA in catch record
+=======
+FAO=read.csv("Data/FAO_1950to2012_111014.csv",header=T,stringsAsFactors=F,na.strings=c("...","-","0 0")) # convert ... and - to NA in catch record
+>>>>>>> 87bb56385c1129ef625c544f72d4e337606c036f
 FAO[,10:72]=apply(FAO[,10:72],2,function(y) as.numeric(gsub(" F","",y))) # remove " F" from certain data points and convert catch record to numeric
 
 
@@ -593,6 +597,8 @@ fao=fao[,c(ColNames)]
 fao=fao[order(fao$IdOrig,fao$Year),] # *** currently ordering based only on the first digit of the IdOrig
 
 # general fixes to FAO
+
+fao<-fao[fao$Country!="Totals - Quantity",] # delete totals 
 
 fao$Country<-gsub("\\(.*\\)","",fao$Country) # delete anything within parentheses
 fao$Country<- gsub("^\\s+|\\s+$","",fao$Country) # trim leading and trailing space
