@@ -21,9 +21,9 @@ library(parallel)
 
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- TRUE
+RunAnalyses<- FALSE
 
-BatchFolder<- 'Oct 31 Uncapped Complete Run'
+BatchFolder<- 'Nov 6 Uncapped Complete Run FaoTrumps copy'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -43,7 +43,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Test'
+  BatchFolder<- 'Nov 6 Uncapped Complete Run FaoTrumps copy'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
@@ -61,7 +61,7 @@ if (RunAnalyses==FALSE)
 
 SubSample<- 0
 
-NumCPUs<- 28 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 3 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
@@ -152,8 +152,13 @@ IdVar<- 'IdOrig' #Id variable to use in regressions
 CatchVariables<- c('YearsBack','ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'MaxCatch','TimeToMaxCatch','InitialScaledCatchSlope'
                    ,'MeanScaledCatch','CatchToRollingMax')
 
-Regressions<- list(M1=c(DependentName,'Year',CatchVariables,LifeHistoryVars,'SpeciesCatName'),M2=c(DependentName,'Year',CatchVariables,'MaxLength','AgeMat','VonBertK','SpeciesCatName'),
-                   M3=c(DependentName,'Year',CatchVariables,'MaxLength','VonBertK','SpeciesCatName'),M4=c(DependentName,'Year',CatchVariables,'VonBertK','SpeciesCatName'),M6=c(DependentName,'Year',CatchVariables,'SpeciesCatName'),M7=c(DependentName,CatchVariables))  
+# Regressions<- list(M1=c(DependentName,'Year',CatchVariables,LifeHistoryVars,'SpeciesCatName'),M2=c(DependentName,'Year',CatchVariables,'MaxLength','AgeMat','VonBertK','SpeciesCatName'),
+#                    M3=c(DependentName,'Year',CatchVariables,'MaxLength','VonBertK','SpeciesCatName'),M4=c(DependentName,'Year',CatchVariables,'VonBertK','SpeciesCatName'),M6=c(DependentName,'Year',CatchVariables,'SpeciesCatName'),M7=c(DependentName,CatchVariables))  
+
+
+Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCatName'),M2=c(DependentName,CatchVariables,'MaxLength','AgeMat','VonBertK','SpeciesCatName'),
+                   M3=c(DependentName,CatchVariables,'MaxLength','VonBertK','SpeciesCatName'),M4=c(DependentName,CatchVariables,'VonBertK','SpeciesCatName'),M6=c(DependentName,CatchVariables,'SpeciesCatName'),M7=c(DependentName,CatchVariables))  
+
 
 TransbiasBin<- 0.9
 

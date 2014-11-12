@@ -250,11 +250,11 @@ if(r>1){
   SofiaWithoutDataIdsYr<-paste(c(SofiaWithoutDataIds),yrs[r],sep="_")
   
   
-  AllOverlapFinal<-append(AllOverlapFinal,AllOverlapYr,after=length(AllOverlapFinal)) # add list of IDs and date to final lists
-  RamOverlapFinal<-append(RamOverlapFinal,RamOverlapYr,after=length(RamOverlapFinal))
-  SofiaOverlapFinal<-append(SofiaOverlapFinal,SofiaOverlapYr,after=length(SofiaOverlapFinal)) 
-  SofiaRamOverlapFinal<-append(SofiaRamOverlapFinal,SofiaRamOverlapYr,after=length(SofiaRamOverlapFinal))
-  SofiaWithoutDataIdsFinal<-append(SofiaWithoutDataIdsFinal,SofiaWithoutDataIdsYr,after=length(SofiaWithoutDataIdsFinal))
+  append(AllOverlapFinal,AllOverlapYr,after=length(AllOverlapFinal)) # add list of IDs and date to final lists
+  append(RamOverlapFinal,RamOverlapYr,after=length(RamOverlapFinal))
+  append(SofiaOverlapFinal,SofiaOverlapYr,after=length(SofiaOverlapFinal)) 
+  append(SofiaRamOverlapFinal,SofiaRamOverlapYr,after=length(SofiaRamOverlapFinal))
+  append(SofiaWithoutDataIdsFinal,SofiaWithoutDataIdsYr,after=length(SofiaWithoutDataIdsFinal))
   
   } # close if
 # show(yrs[r])

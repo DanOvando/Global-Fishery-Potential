@@ -601,7 +601,7 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
   }
   
   NumStocks<- length(unique(BiomassData$IdOrig[Biomass_CountryLocater]))
-  if(sum(Biomass_CountryLocater,na.rm=T)>0 & sum(Proj_CountryLocater,na.rm=T)>0 & NumStocks>2)
+  if(sum(Biomass_CountryLocater,na.rm=T)>0 & sum(Proj_CountryLocater,na.rm=T)>0 & NumStocks>5)
   {
     
     # Analyze Current Status/Kobe Plot Trends  ----------------------------------------------------------

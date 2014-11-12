@@ -593,7 +593,7 @@ fao=fao[,c(ColNames)]
 fao=fao[order(fao$IdOrig,fao$Year),] # *** currently ordering based only on the first digit of the IdOrig
 
 # general fixes to FAO
- 
+
 fao$Country<-gsub("\\(.*\\)","",fao$Country) # delete anything within parentheses
 fao$Country<- gsub("^\\s+|\\s+$","",fao$Country) # trim leading and trailing space
 fao$Country<-gsub("  "," ",fao$Country) # change double spaces to single spaces
@@ -619,8 +619,6 @@ fao$Country<-gsub(",.*$","",fao$Country) # removes everything after a comma, thi
 # e.g., Fiji, Republic of becomes just Fiji. This change is done after all standardizing of countries between FAO and SOFIA
 
 fao$SciName[fao$SciName=='']<-'Missing'
-
-fao<-fao[fao$Country!="Totals - Quantity",] # delete totals
 
 ############################################################################################################
 ############ BIND AND CLEAN-UP COMPLETE DATABASE ############
