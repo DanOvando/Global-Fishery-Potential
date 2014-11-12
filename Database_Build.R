@@ -522,28 +522,28 @@ sofia$SciName<-gsub("Haemulidae (= Pomadasyidae)","Haemulidae (=Pomadasyidae)",s
 ############################################################################################################
 ############ FAO DATABASE ############
 
-FAO=read.csv("Data/FAO_1950to2012_111014.csv",header=T,stringsAsFactors=F,na.strings=c("...","-","0 0")) # convert ... and - to NA in catch record
-FAO[,10:72]=apply(FAO[,10:72],2,function(y) as.numeric(gsub(" F","",y))) # remove " F" from certain data points and convert catch record to numeric
+FAO=read.csv("Data/FAO_1950to2012_111214.csv",header=T,stringsAsFactors=F,na.strings=c("...","-","0 0")) # convert ... and - to NA in catch record
+FAO[,8:70]=apply(FAO[,8:70],2,function(y) as.numeric(gsub(" F","",y))) # remove " F" from certain data points and convert catch record to numeric
 
 
 # rename Country, FAO area, Measure, ASFIS, ASFIS 1, ISSCAAP group 1
 names(FAO)[1]="Country"
 names(FAO)[2]="CommName"
-names(FAO)[3]="SciName"
-names(FAO)[5]="SpeciesCat"
-names(FAO)[6]="SpeciesCatName"
-names(FAO)[8]="RegionFAO"
-names(FAO)[9]="CatchUnit"
+names(FAO)[3]="SpeciesCat"
+names(FAO)[4]="SpeciesCatName"
+names(FAO)[5]="SciName"
+names(FAO)[6]="RegionFAO"
+names(FAO)[7]="CatchUnit"
 
 
 # remove columns for NEI, Region, Max, CUmSum, 2000-2011 average, Has 2011 landings, ISSCAAP group desc, FAO area desc
-FAO$Nei.=NULL
-FAO$Max=NULL
-FAO$CUmSum=NULL
-FAO$Has.2011.Landings=NULL
-FAO$X2000.2011..Average=NULL
-FAO$Fishing.area..FAO.major.fishing.area.=NULL
-FAO$Species..ASFIS.species..2=NULL # delete taxon code column
+# FAO$Nei.=NULL
+# FAO$Max=NULL
+# FAO$CUmSum=NULL
+# FAO$Has.2011.Landings=NULL
+# FAO$X2000.2011..Average=NULL
+# FAO$Fishing.area..FAO.major.fishing.area.=NULL
+# FAO$Species..ASFIS.species..2=NULL # delete taxon code column
 
 # add missing columns as per ColNames
 FAO$Id=rep(0,nrow(FAO)) # fill in once full database is compiled 
@@ -600,9 +600,13 @@ fao$Country<-gsub("  "," ",fao$Country) # change double spaces to single spaces
 
 fao$Country[fao$Country=="United States of America"]<-"USA"
 fao$Country<-gsub("R\x8eunion","Reunion",fao$Country)
+fao$Country<-gsub("R\xe9union","Reunion",fao$Country)
 fao$Country<-gsub("Cura\x8dao","Curacao",fao$Country)
+fao$Country<-gsub("Cura\xe7ao","Curacao",fao$Country)
 fao$Country<-gsub("C\x99te d'Ivoire","Ivory Coast",fao$Country)
+fao$Country<-gsub("C\xf4te d'Ivoire","Ivory Coast",fao$Country)
 fao$Country<-gsub("Saint Barth\x8elemy","Saint Barthelemy",fao$Country)
+fao$Country<-gsub("Saint Barth\xe9lemy","Saint Barthelemy",fao$Country)
 fao$Country<-gsub("Korea, Dem. People's Rep", "Democratic People's Republic of Korea",fao$Country)
 fao$Country<-gsub("Korea, Republic of", "Republic of Korea",fao$Country,)
 fao$Country<-gsub("China, Hong Kong SAR", "China Hong Kong SAR",fao$Country)
