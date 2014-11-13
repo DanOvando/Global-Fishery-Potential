@@ -6,21 +6,22 @@
 AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,NeiModelSdevs,TransbiasBin,J) 
 {
   
-  #       Data<- BiomassData[Biomass_CountryLocater,]
-  
-  #      BatchName<- 'Test'
-  #   #   
-  #      GroupingVars<- c('Year')
-  #   
-  #     Years<- 1950:2013
-  #   
-  #   RealModelSdevs<- RealModelSdevs
-  #   
-  #   NeiModelSdevs<- NeiModelSdevs
-  #   
-  #   TransbiasBin<- TransbiasBin
-  #   
-  #   J<- TransbiasIterations
+#   Data<- rus
+#   #       Data<- BiomassData[Biomass_CountryLocater,]
+#   
+#        BatchName<- 'Test'
+#     #   
+#        GroupingVars<- c('Year')
+#     
+#       Years<- 1990:2013
+#     
+#     RealModelSdevs<- RealModelSdevs
+#     
+#     NeiModelSdevs<- NeiModelSdevs
+#     
+#     TransbiasBin<- TransbiasBin
+#     
+#     J<- TransbiasIterations
   
   #   NeiData<- Data[Data$BvBmsy==-999,]
   
@@ -97,12 +98,13 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
         {
           Sdevs<- NeiModelSdevs
         }
+        
         TempTransbiasResults<- TransBias(Data[Where,],Sdevs,TransbiasBin,J)
+        
         TempBio[Where]<- TempTransbiasResults$Individuals$raw
         
         TempBioSd[Where]<- TempTransbiasResults$Individuals$logsd
-        
-        
+         
         FaoIndividualStocks<- rbind(FaoIndividualStocks,TempTransbiasResults$DynamicDistribution)
         
       }
@@ -130,20 +132,22 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
         MedianSeries[y,]<- apply(exp(Individuals[Where,3:(dim(Individuals)[2])]),2,median,na.rm=T)    
       }
       
-      MedianSeries<- t(apply(MedianSeries,1,sort))
+#       MedianSeries<- t(apply(MedianSeries,1,sort))
       
-      MeanMedian<- apply(MedianSeries,1,mean)
+      MeanMedian<- apply(MedianSeries,1,mean,na.rm=T)
+            
+      Quantiles<- t(apply(MedianSeries,1,quantile,probs=c(0.025,.25,.75,0.975),na.rm=T))
       
-      Quantiles<- t(apply(MedianSeries,1,quantile,probs=c(0.025,.25,.75,0.975)))
+      BioStats<- data.frame(Years,MeanMedian,Quantiles)  
       
-      BioStats$Median<- data.frame(Years,MeanMedian,Quantiles)  
+      BioStats<- BioStats[is.na(BioStats$MeanMedian)==F,]      
+
+      colnames(BioStats)<- c('Year','MeanMedian',paste('Q',100*c(0.025,.25,.75,0.975),sep=''))
       
-      colnames(BioStats$Median)<- c('Year','MeanMedian',paste('Q',100*c(0.025,.25,.75,0.975),sep=''))
-      
-      plot(BioStats$Median$Year,BioStats$Median$MeanMedian,type='b',lwd=2,xlab='Year',ylab='Median B/Bmsy',pty='m',ylim=c(0,2))
-      polygon(x=c(BioStats$Median$Year,rev(BioStats$Median$Year)),y=c(BioStats$Median$Q97.5,rev(BioStats$Median$Q2.5)),
+      plot(BioStats$Year,BioStats$MeanMedian,type='b',lwd=2,xlab='Year',ylab='Median B/Bmsy',pty='m',ylim=c(0,2))
+      polygon(x=c(BioStats$Year,rev(BioStats$Year)),y=c(BioStats$Q97.5,rev(BioStats$Q2.5)),
               col="lightsteelblue2",border=F)
-      lines(BioStats$Median$Year,BioStats$Median$MeanMedian,type='b',lwd=2)
+      lines(BioStats$Year,BioStats$MeanMedian,type='b',lwd=2)
       abline(h=1,lty=2,lwd=2)
       legend('topright',legend='95% Confidence Range of Median',fill='lightsteelblue2')
       
@@ -151,14 +155,16 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
     else
     {
       
-      BioStats$Median<- ddply(Data,.(Year),summarize,Median=median(exp(BvBmsy)),Q2.5=quantile(exp(BvBmsy),c(0.025)),Q25=quantile(exp(BvBmsy),c(0.25)),
+      BioStats<- ddply(Data,.(Year),summarize,Median=median(exp(BvBmsy)),Q2.5=quantile(exp(BvBmsy),c(0.025)),Q25=quantile(exp(BvBmsy),c(0.25)),
                               Q75=quantile(exp(BvBmsy),c(0.75)),Q97.5=quantile(exp(BvBmsy),c(0.975)))
       
+      BioStats<- BioStats[is.na(BioStats$MeanMedian)==F,]      
       
-      plot(BioStats$Median$Year,BioStats$Median$Median,type='b',lwd=2,xlab='Year',ylab='B/Bmsy',pty='m',ylim=c(0,3))
-      polygon(x=c(BioStats$Median$Year,rev(BioStats$Median$Year)),y=c(BioStats$Median$Q75,rev(BioStats$Median$Q25)),
+      
+      plot(BioStats$Year,BioStats$Median,type='b',lwd=2,xlab='Year',ylab='B/Bmsy',pty='m',ylim=c(0,3))
+      polygon(x=c(BioStats$Year,rev(BioStats$Year)),y=c(BioStats$Q75,rev(BioStats$Q25)),
               col="lightsteelblue2",border=F,ylim=c(0,3))
-      lines(BioStats$Median$Year,BioStats$Median$Median,type='b',lwd=2,ylim=c(0,3))
+      lines(BioStats$Year,BioStats$Median,type='b',lwd=2,ylim=c(0,3))
       abline(h=1)
       legend('topright',legend='Interquantile Range',fill='lightsteelblue2')
       
