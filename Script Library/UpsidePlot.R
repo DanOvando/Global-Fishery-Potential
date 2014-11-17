@@ -1,6 +1,6 @@
 #####################
 ##
-## Upside Plot
+## Upside Plot 2.0
 ##
 #####################
 
@@ -42,10 +42,10 @@ PlotData$xVar[PlotData$xVar>Limit]<-Limit # change value to limit variable?
 PlotData$yVar[PlotData$yVar>Limit]<-Limit
 PlotData$Size[PlotData$Size>100]<-100
  
-# pdf(file='Upside Plot Current Biomass No Legend.pdf',height=10,width=14,pointsize=6)
-plot<-ggplot(PlotData,aes(xVar,yVar,size=Size)) +
+pdf(file=paste(FigureFolder,'Economic Upside Plot.pdf',sep=''),height=10,width=14,pointsize=6)
+print(ggplot(PlotData,aes(xVar,yVar,size=Size)) +
   geom_point(aes(color=Country)) +
-  guides(color=FALSE) +
+#   guides(color=FALSE) +
   coord_cartesian(xlim=c(-30,Limit),ylim=c(-30,Limit)) +
   scale_size_continuous(range=c(6,12), 
                       breaks=c(25,50,75,100), 
@@ -54,8 +54,8 @@ plot<-ggplot(PlotData,aes(xVar,yVar,size=Size)) +
   geom_abline(intercept=0,slope=0) +
   geom_vline(xintercept=0) +
   labs(title=paste(Policy,"Upside Percentages",sep=" "), x = "Percent Change from Current Biomass",
-       y = "Percent Change from SQ NPV",size="% Change\n SQ Food")
-# dev.off()
-print(plot)
+       y = "Percent Change from SQ NPV",size="% Change\n SQ Food"))
+dev.off()
+
 return()
 }
