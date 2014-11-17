@@ -15,7 +15,8 @@ shinyUI(fluidPage(
       checkboxGroupInput("Country",
                          label="Select Country(s)",
                          choices= c("Global","Lumped","Multinational","Indonesia","USA", "China","Philippines",
-                                    "Japan","Chile","Mexico","Viet Nam",'Parties to the Nauru Agreement'),
+                                    "Japan","Viet Nam",'Thailand','India','Taiwan Province of China','Parties to the Nauru Agreement',
+                                    'Republic of Korea','Malaysia','Russian Federation',"Chile","Mexico"),
                          selected="Global"),
       
       sliderInput("Year","Year",2005,2012,2012),
