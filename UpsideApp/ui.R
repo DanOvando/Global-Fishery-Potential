@@ -29,7 +29,7 @@ shinyUI(fluidPage(
                             '% Change From Current Median Biomass'='PercChangeMedianBiomass',
                             '% Change From Status Quo Food'='Food',
                             '% Change From Current Food'='PercChangeTotalCatch'),
-                  selected= 'PercChangeFromSQTotalBiomass'),
+                  selected= 'PercChangeTotalBiomass'),
      
       selectInput("yaxis",
                   label="Y-axis",
