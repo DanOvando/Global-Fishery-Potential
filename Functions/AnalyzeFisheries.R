@@ -7,7 +7,7 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
 {
   
 #   Data<- rus
-#   #       Data<- BiomassData[Biomass_CountryLocater,]
+#         Data<- BiomassData[Biomass_CountryLocater,]
 #   
 #        BatchName<- 'Test'
 #     #   
@@ -22,7 +22,7 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
 #     TransbiasBin<- TransbiasBin
 #     
 #     J<- TransbiasIterations
-  
+#   
   #   NeiData<- Data[Data$BvBmsy==-999,]
   
   Data<- Data[Data$Year %in% Years,]
@@ -155,7 +155,7 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
     else
     {
       
-      BioStats<- ddply(Data,.(Year),summarize,Median=median(exp(BvBmsy)),Q2.5=quantile(exp(BvBmsy),c(0.025)),Q25=quantile(exp(BvBmsy),c(0.25)),
+      BioStats<- ddply(Data,.(Year),summarize,MeanMedian=median(exp(BvBmsy)),Q2.5=quantile(exp(BvBmsy),c(0.025)),Q25=quantile(exp(BvBmsy),c(0.25)),
                               Q75=quantile(exp(BvBmsy),c(0.75)),Q97.5=quantile(exp(BvBmsy),c(0.975)))
       
       BioStats<- BioStats[is.na(BioStats$MeanMedian)==F,]      
