@@ -619,6 +619,8 @@ fao$Country<-gsub("Tanzania, United Rep. of","United Republic of Tanzania", fao$
 fao$Country<-gsub(",.*$","",fao$Country) # removes everything after a comma, this will shorten names of all countries that only have one entry
 # e.g., Fiji, Republic of becomes just Fiji. This change is done after all standardizing of countries between FAO and SOFIA
 
+fao<-fao[fao$Country!='Totals - Quantity',]
+
 fao$SciName[fao$SciName=='']<-'Missing'
 
 ############################################################################################################
