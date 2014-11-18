@@ -16,7 +16,7 @@ JackStore<- as.data.frame(matrix(NA,nrow=0,ncol=12))
 
 colnames(JackStore)<- c('Assessid','Year','RamB','RamF','RamMSY','PrmB','CmsyB','CmsyF','CmsyMSY','CmsyBnoP','CmsyFnoP','CmsyMSYnoP')
 
-NumCatchMSYIterations<- 10000
+NumCatchMSYIterations<- 5000
 
 ErrorSize=.95
 
@@ -185,7 +185,7 @@ PlotJack<- rbind(Prm,CmsyB,CmsyBnoP)
 
 save(PlotJack,JackStore,file='Diagnostics/JackKnife.rdata')
 
-pdf(file='Observed vs Predicted Diagnostic Plots.pdf')
+pdf(file='Diagnostics/Observed vs Predicted Diagnostic Plots.pdf')
 xyplot((ModelBvBmsy) ~ (RamBvBmsy) | Model,subset=Year>2005,data=PlotJack,xlab=' Log RAM B/Bmsy',ylab='Log Predicted B/Bmsy', panel=function(x,y,...)
 {
   panel.xyplot(x,y,...)
@@ -195,8 +195,20 @@ xyplot((ModelBvBmsy) ~ (RamBvBmsy) | Model,subset=Year>2005,data=PlotJack,xlab='
 )
 dev.off()
 
+pdf(file='Diagnostics/Year by Year Observed vs Predicted Diagnostic Plots.pdf')
+xyplot((ModelBvBmsy) ~ (RamBvBmsy) | as.factor(Year),subset=Model=='PRM',data=PlotJack,xlab=' Log RAM B/Bmsy',ylab='Log Predicted B/Bmsy', panel=function(x,y,...)
+{
+  panel.xyplot(x,y,...)
+  panel.abline(a=0,b=1,lty=2)
+  panel.lmline(x,y,col='Salmon',...)
+}
+)
+dev.off()
 
-pdf(file='Observed vs Predicted FvFmsy Diagnostic Plots.pdf')
+
+
+
+pdf(file='Diagnostics/Observed vs Predicted FvFmsy Diagnostic Plots.pdf')
 xyplot((CmsyF) ~ (RamF),subset=Year>2005,data=JackStore,xlab=' RAM F/Fmsy',ylab=' Predicted F/Fmsy', panel=function(x,y,...)
 {
   panel.xyplot(x,y,...)
@@ -206,7 +218,7 @@ xyplot((CmsyF) ~ (RamF),subset=Year>2005,data=JackStore,xlab=' RAM F/Fmsy',ylab=
 )
 dev.off()
 
-pdf(file='Observed vs Predicted MSY Diagnostic Plots.pdf')
+pdf(file='Diagnostics/Observed vs Predicted MSY Diagnostic Plots.pdf')
 xyplot(log(CmsyMSY) ~ log(RamMSY),subset=Year>2005,data=JackStore,xlab='Log RAM MSY',ylab=' Log  Predicted MSY', panel=function(x,y,...)
 {
   panel.xyplot(x,y,...)
@@ -218,17 +230,17 @@ dev.off()
 
 
 
-pdf(file='PRM and CMSY MSY Proportional Error Boxplots.pdf')
+pdf(file='Diagnostics/PRM and CMSY MSY Proportional Error Boxplots.pdf')
 boxplot(((CmsyMSY-RamMSY)/RamMSY)~ Year,data=JackStore,outline=FALSE,horizontal=FALSE,xlab='Year',ylab='CatchMSY MSY Proportional Error')
 abline(h=0)
 dev.off()
 
-pdf(file='PRM and CMSY FvFmsy Proportional Error Boxplots.pdf')
+pdf(file='Diagnostics/PRM and CMSY FvFmsy Proportional Error Boxplots.pdf')
 boxplot(((CmsyF-RamF)/RamF)~ Year,data=JackStore,outline=FALSE,horizontal=FALSE,ylab='CatchMSY FvFmsy Proportional Error')
 abline(h=0)
 dev.off()
 
-pdf(file='PRM and CMSY BvBmsy Proportional Error Boxplots.pdf')
+pdf(file='Diagnostics/PRM and CMSY BvBmsy Proportional Error Boxplots.pdf')
 # par(mfrow=c(2,1))
 boxplot(((CmsyB-RamB)/RamB)~ Year,data=JackStore,outline=FALSE,horizontal=FALSE,ylab='CatchMSY BvBmsy With Prior Proportional Error')
 abline(h=0)
@@ -238,7 +250,7 @@ abline(h=0)
 dev.off()
 
 
-pdf(file='PRM and CMSY Proportional Error Boxplots.pdf')
+pdf(file='Diagnostics/PRM and CMSY Proportional Error Boxplots.pdf')
 boxplot( 100*((ModelBvBmsy-RamBvBmsy)/RamBvBmsy)~Model ,data=PlotJack,outline=F,ylab='% Proportional Error')
 dev.off()
 

@@ -16,8 +16,12 @@ if (RunAnalyses==TRUE)
   if (file.exists(paste(ResultFolder,'Cleaned Compiled Database.csv',sep=''))==F)
   {
     
-    source('Database_Build.R') #Build Tyler's database
+#     source('Database_Build.R') #Build Tyler's database
+
+   fulldata<- DatabseBuild()
     
+    write.csv(file=paste(ResultFolder,"fulldata.csv",sep=""),fulldata)
+        
     show('Done building raw database')
     
     RawData<- fulldata
@@ -49,14 +53,14 @@ if (RunAnalyses==TRUE)
     
     FullData<-FindResilience(FullData)
     
-#     Overlap<- ddply(FullData,c('Year'),summarize,FullDataCatch=sum(Catch,na.rm=T))
-# 
-#     Raw<- ddply(RawData[RawData$Dbase=='FAO',],c('Year'),summarize,FullDataCatch=sum(Catch,na.rm=T))
-#     
-#     m<- join(Overlap,Raw,by='Year')
-#     
-#     quartz()
-#     matplot(m[,2:3])
+    #     Overlap<- ddply(FullData,c('Year'),summarize,FullDataCatch=sum(Catch,na.rm=T))
+    # 
+    #     Raw<- ddply(RawData[RawData$Dbase=='FAO',],c('Year'),summarize,FullDataCatch=sum(Catch,na.rm=T))
+    #     
+    #     m<- join(Overlap,Raw,by='Year')
+    #     
+    #     quartz()
+    #     matplot(m[,2:3])
     
     rm(CleanedData)
     
@@ -127,13 +131,13 @@ if (RunAnalyses==TRUE)
   
   library(proftools)
   
-#   if (CapRefs==T)
-#   {
-#     RamData$BvBmsy[RamData$BvBmsy>1.9]<- 1.9
-# 
-#     RamData$FvFmsy[RamData$FvFmsy>1.9]<- 1.9
-#   }
-#   
+  #   if (CapRefs==T)
+  #   {
+  #     RamData$BvBmsy[RamData$BvBmsy>1.9]<- 1.9
+  # 
+  #     RamData$FvFmsy[RamData$FvFmsy>1.9]<- 1.9
+  #   }
+  #   
   Fisheries<- (unique(SyntheticData$IdOrig))
   
   SyntheticFormatRegressionResults<- mclapply(1:(length(Fisheries)), FormatForRegression,mc.cores=NumCPUs,Data=SyntheticData,Fisheries=Fisheries,DependentVariable=DependentVariable,CatchVariables=CatchVariables,CatchLags=CatchLags,LifeHistoryVars=LifeHistoryVars,IsLog=IsLog,IdVar=IdVar) 
@@ -335,7 +339,7 @@ if (RunAnalyses==TRUE)
   
   BiomassData$BvBmsy<- BestBio
   
-#   BiomassData$CommName<- as.character((BiomassData$CommName))
+  #   BiomassData$CommName<- as.character((BiomassData$CommName))
   
   BiomassData$SciName<- as.character((BiomassData$SciName))
   
@@ -384,6 +388,9 @@ if (RunAnalyses==TRUE)
   BiomassData$FvFmsy[MsyData$RanCatchMSY==T]<- MsyData$FvFmsy[MsyData$RanCatchMSY==T]
   
   BiomassData$BvBmsy[MsyData$RanCatchMSY==T]<- log(MsyData$BvBmsy[MsyData$RanCatchMSY==T])
+  
+  BiomassData$CatchMSYBvBmsy_LogSd[MsyData$RanCatchMSY==T]<- (MsyData$CatchMSYBvBmsy_LogSd[MsyData$RanCatchMSY==T])
+  
   
   BiomassData$RanCatchMSY[MsyData$RanCatchMSY==T]<- TRUE
   
@@ -455,6 +462,8 @@ if (RunAnalyses==F) #Load baseline versions of key dataframes for analysis after
   
 }
 
+
+BiomassData<- join(BiomassData,MsyData[,c('IdOrig','CatchMSYBvBmsy_LogSd')],by='IdOrig')
 
 # Assign labels and prepare results for analysis --------------------------
 
@@ -547,7 +556,7 @@ if (CapRefs==T)
 {
   BiomassData$BvBmsy[BiomassData$BvBmsy>1.9]<- 1.9
   BiomassData$FvFmsy[BiomassData$FvFmsy>1.9]<- 1.9
-
+  
   MsyData$BvBmsy[MsyData$BvBmsy>1.9]<- 1.9
   MsyData$FvFmsy[MsyData$FvFmsy>1.9]<- 1.9
   
@@ -619,7 +628,7 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     {
       BiomassStatus$Data$BvBmsy[BiomassStatus$Data$BvBmsy>1.9]<- 1.9
     }
-    
+
     if(CountriesToRun[c]=="Global" & SaveRDS==TRUE) # For updating Shiny Kobe Plot Data
       {
         saveRDS(BiomassStatus$Data,"BetaApp/data/KobeAppData.rds")
@@ -749,7 +758,7 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
     if(c==1){FinalYearFinal<-FinalYear} 
     if(c>1){FinalYearFinal<-rbind(FinalYearFinal,FinalYear)}
-
+    
     # Populate summary table of results  -----------------------------------------------------
     
     ResultMetricsBaselineTable[c,1]<-CountriesToRun[c]

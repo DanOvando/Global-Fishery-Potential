@@ -6,23 +6,23 @@
 AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,NeiModelSdevs,TransbiasBin,J) 
 {
   
-#   Data<- rus
-#         Data<- BiomassData[Biomass_CountryLocater,]
-#   
-#        BatchName<- 'Test'
-#     #   
-#        GroupingVars<- c('Year')
-#     
-#       Years<- 1990:2013
-#     
-#     RealModelSdevs<- RealModelSdevs
-#     
-#     NeiModelSdevs<- NeiModelSdevs
-#     
-#     TransbiasBin<- TransbiasBin
-#     
-#     J<- TransbiasIterations
-#   
+  #   Data<- rus
+  #         Data<- BiomassData[Biomass_CountryLocater,]
+  #   
+  #        BatchName<- 'Test'
+  #     #   
+  #        GroupingVars<- c('Year')
+  #     
+  #       Years<- 1990:2013
+  #     
+  #     RealModelSdevs<- RealModelSdevs
+  #     
+  #     NeiModelSdevs<- NeiModelSdevs
+  #     
+  #     TransbiasBin<- TransbiasBin
+  #     
+  #     J<- TransbiasIterations
+  #   
   #   NeiData<- Data[Data$BvBmsy==-999,]
   
   Data<- Data[Data$Year %in% Years,]
@@ -64,6 +64,7 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
                                       MedianCatch=median(Catch,na.rm=T),TotalCatch=sum(Catch,na.rm=T),SDofCatch=sd(Catch,na.rm=T))
   
   plot(CatchStats$YearCatch$Year,CatchStats$YearCatch$TotalCatch,type='b',xlab='Year',ylab='Total Catch (MT)')
+  
   plot(CatchStats$YearCatch$Year,CatchStats$YearCatch$MeanCatch,type='b',xlab='Year',ylab='Mean Catch (MT)')
   
   # Analyze B/Bmsy Statistics ----------------------------------------------
@@ -104,61 +105,99 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
         TempBio[Where]<- TempTransbiasResults$Individuals$raw
         
         TempBioSd[Where]<- TempTransbiasResults$Individuals$logsd
-         
+        
         FaoIndividualStocks<- rbind(FaoIndividualStocks,TempTransbiasResults$DynamicDistribution)
         
       }
       
-      NotFao<- Data$Dbase!= 'FAO'
+      #       NotFao<- Data$Dbase!= 'FAO'
+      #       
+      #       colnames(FaoIndividualStocks)<- c('Year','Id',paste('It',1:J,sep=''))
+      #       
+      #       CmsyStocks<- Data[Data$RanCatchMSY==T,]
+      #       
+      #       CmsyStocks<- CmsyStocks[,c('IdOrig','Year','BvBmsy','CatchMSYBvBmsy_LogSd')]
+      #       
+      #       
+      #       GenerateDist<- function(i,CmsyStocks,N,Mean,SD)
+      #       {
+      #         #         show(i)
+      #         x<- CmsyStocks[i,]
+      #         a=(x[Mean])
+      #         b=(x[SD])
+      #         return(rlnorm(as.numeric(N),as.numeric(a),as.numeric(b)))
+      #       }
+      #       
+      #       #       CmsyDist<-  ((lapply(CmsyStocks,GenerateDist,Mean='BvBmsy',SD='CatchMSYBvBmsy_LogSd',N=J )))
+      #       
+      #       #       CmsyDist<-  ((lapply(1:(dim(CmsyStocks)[1]),GenerateDist,CmsyStocks=CmsyStocks,Mean='BvBmsy',SD='CatchMSYBvBmsy_LogSd',N=J )))
+      #       
+      #       
+      #       CmsyDistStore<- (matrix(NA,nrow=dim(CmsyStocks)[1],ncol=J+2))
+      #       for (i in 1:dim(CmsyStocks)[1])
+      #       {
+      #         #         CmsyDistStore[i,]<- CmsyDist[[i]]
+      #         CmsyDistStore[i,3:dim(CmsyDistStore)[2]]<- log(GenerateDist(i,CmsyStocks,N=J,Mean='BvBmsy',SD='CatchMSYBvBmsy_LogSd'))
+      #         CmsyDistStore[i,1]<- CmsyStocks$Year[i]
+      # #         CmsyDistStore[i,2]<- CmsyStocks$IdOrig[i]
+      # #         
+      #         
+      #         show(i)
+      #       }
+      #       
+      #       show('Madeit')
+      #       #       CmsyDistStore<- log(CmsyDistStore)
+      #       
+      #       #       CmsyDist<- ldply(CmsyDist)
+      #       
+      #       #       CmsyDist<- log(t(CmsyDist))
+      #       
+      #       #       CmsyStocks<- cbind(CmsyStocks[,c('Year','IdOrig')],CmsyDistStore)
+      #       #       
+      #       
+      #       FaoIndividualStocks<- as.matrix(FaoIndividualStocks)
+      #       
+      #       CmsyDistStore[,1:2]<- n <- CmsyStocks[,c('Year','IdOrig')]
+      #       
+      #       RamAndSofia<- data.frame(Data$Year[NotFao],Data$IdOrig[NotFao],as.data.frame(matrix(rep(Data$BvBmsy[NotFao],J),nrow=sum(NotFao),ncol=J,byrow=F)))
+      #       
+      #       RamAndSofia<- as.matrix(RamAndSofia)
+      #       
+      #       Individuals<- rbind(FaoIndividualStocks,RamAndSofia,CmsyDistStore)
+      #       
+      #       colnames(Individuals)<- c('Year','Id',paste('It',1:J,sep=''))
+      #       
+      # #       colnames(RamAndSofia)<- c('Year','Id',paste('It',1:J,sep=''))
+      #       
+      #   
+      #       #       Individuals<- rbind(FaoIndividualStocks,RamAndSofia)
+      #       
+      #       
+      #       #   Individuals<- (FaoIndividualStocks)
+      #       
+      #       MedianSeries<- (matrix(NA,nrow=length(Years),ncol=J))
+      #       for (y in 1:length(Years) )
+      #       {
+      #         Where<- Individuals$Year==Years[y]    
+      #         #     Argh<- (Individuals[1:3,1:(dim(Individuals)[2])])
+      #         #     quartz()
+      #         #     hist(exp(Argh[,4]))
+      #         show(y)
+      #         Inds<- as.matrix(Individuals[Where,3:(dim(Individuals)[2])])
+      #         
+      #         MedianSeries[y,]<- apply(exp((Inds)),2,median,na.rm=T)    
+      #       }
+      #       
+      #       #       MedianSeries<- t(apply(MedianSeries,1,sort))
+      #       
       
-      colnames(FaoIndividualStocks)<- c('Year','Id',paste('It',1:J,sep=''))
+      Data$BvBmsy<- TempBio
       
-      RamAndSofia<- data.frame(Data$Year[NotFao],Data$IdOrig[NotFao],as.data.frame(matrix(rep(Data$BvBmsy[NotFao],J),nrow=sum(NotFao),ncol=J,byrow=F)))
       
-      colnames(RamAndSofia)<- c('Year','Id',paste('It',1:J,sep=''))
+      BioStats<- ddply(Data,.(Year),summarize,Median=median((BvBmsy)),Q2.5=quantile((BvBmsy),c(0.025)),Q25=quantile((BvBmsy),c(0.25)),
+                       Q75=quantile((BvBmsy),c(0.75)),Q97.5=quantile((BvBmsy),c(0.975)))
       
-      Individuals<- rbind(FaoIndividualStocks,RamAndSofia)
-      
-      #   Individuals<- (FaoIndividualStocks)
-      
-      MedianSeries<- as.data.frame(matrix(NA,nrow=length(Years),ncol=J))
-      for (y in 1:length(Years) )
-      {
-        Where<- Individuals$Year==Years[y]    
-        #     Argh<- (Individuals[1:3,1:(dim(Individuals)[2])])
-        #     quartz()
-        #     hist(exp(Argh[,4]))
-        
-        MedianSeries[y,]<- apply(exp(Individuals[Where,3:(dim(Individuals)[2])]),2,median,na.rm=T)    
-      }
-      
-#       MedianSeries<- t(apply(MedianSeries,1,sort))
-      
-      MeanMedian<- apply(MedianSeries,1,mean,na.rm=T)
-            
-      Quantiles<- t(apply(MedianSeries,1,quantile,probs=c(0.025,.25,.75,0.975),na.rm=T))
-      
-      BioStats<- data.frame(Years,MeanMedian,Quantiles)  
-      
-      BioStats<- BioStats[is.na(BioStats$MeanMedian)==F,]      
-
-      colnames(BioStats)<- c('Year','MeanMedian',paste('Q',100*c(0.025,.25,.75,0.975),sep=''))
-      
-      plot(BioStats$Year,BioStats$MeanMedian,type='b',lwd=2,xlab='Year',ylab='Median B/Bmsy',pty='m',ylim=c(0,2))
-      polygon(x=c(BioStats$Year,rev(BioStats$Year)),y=c(BioStats$Q97.5,rev(BioStats$Q2.5)),
-              col="lightsteelblue2",border=F)
-      lines(BioStats$Year,BioStats$MeanMedian,type='b',lwd=2)
-      abline(h=1,lty=2,lwd=2)
-      legend('topright',legend='95% Confidence Range of Median',fill='lightsteelblue2')
-      
-    }
-    else
-    {
-      
-      BioStats<- ddply(Data,.(Year),summarize,MeanMedian=median(exp(BvBmsy)),Q2.5=quantile(exp(BvBmsy),c(0.025)),Q25=quantile(exp(BvBmsy),c(0.25)),
-                              Q75=quantile(exp(BvBmsy),c(0.75)),Q97.5=quantile(exp(BvBmsy),c(0.975)))
-      
-      BioStats<- BioStats[is.na(BioStats$MeanMedian)==F,]      
+      BioStats<- BioStats[is.na(BioStats$Median)==F,]      
       
       
       plot(BioStats$Year,BioStats$Median,type='b',lwd=2,xlab='Year',ylab='B/Bmsy',pty='m',ylim=c(0,3))
@@ -169,6 +208,44 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
       legend('topright',legend='Interquantile Range',fill='lightsteelblue2')
       
       Individuals<- Data$BvBmsy
+      
+      
+      #       MeanMedian<- apply(MedianSeries,1,mean,na.rm=T)
+      #       
+      #       Quantiles<- t(apply(MedianSeries,1,quantile,probs=c(0.025,.25,.75,0.975),na.rm=T))
+      #       
+      #       BioStats<- data.frame(Years,MeanMedian,Quantiles)  
+      #       
+      #       BioStats<- BioStats[is.na(BioStats$MeanMedian)==F,]      
+      #       
+      #       colnames(BioStats)<- c('Year','MeanMedian',paste('Q',100*c(0.025,.25,.75,0.975),sep=''))
+      #       
+      #       plot(BioStats$Year,BioStats$MeanMedian,type='b',lwd=2,xlab='Year',ylab='Median B/Bmsy',pty='m',ylim=c(0,2))
+      #       polygon(x=c(BioStats$Year,rev(BioStats$Year)),y=c(BioStats$Q97.5,rev(BioStats$Q2.5)),
+      #               col="lightsteelblue2",border=F)
+      #       lines(BioStats$Year,BioStats$MeanMedian,type='b',lwd=2)
+      #       abline(h=1,lty=2,lwd=2)
+      #       legend('topright',legend='95% Confidence Range of Median',fill='lightsteelblue2')
+      
+    }
+    else
+    {
+      
+      BioStats<- ddply(Data,.(Year),summarize,Median=median(exp(BvBmsy)),Q2.5=quantile(exp(BvBmsy),c(0.025)),Q25=quantile(exp(BvBmsy),c(0.25)),
+                       Q75=quantile(exp(BvBmsy),c(0.75)),Q97.5=quantile(exp(BvBmsy),c(0.975)))
+      
+      
+      BioStats<- BioStats[is.na(BioStats$Median)==F,]      
+      
+      
+      plot(BioStats$Year,BioStats$Median,type='b',lwd=2,xlab='Year',ylab='B/Bmsy',pty='m',ylim=c(0,3))
+      polygon(x=c(BioStats$Year,rev(BioStats$Year)),y=c(BioStats$Q75,rev(BioStats$Q25)),
+              col="lightsteelblue2",border=F,ylim=c(0,3))
+      lines(BioStats$Year,BioStats$Median,type='b',lwd=2,ylim=c(0,3))
+      abline(h=1)
+      legend('topright',legend='Interquantile Range',fill='lightsteelblue2')
+      
+      Individuals<- exp(Data$BvBmsy)
       
     }
   }
@@ -215,6 +292,7 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
                      panel.mathdensity(dmath = dnorm, col = "black",
                                        args = list(mean=mean(x),sd=sd(x)))
                      panel.abline(v=1,lwd=2)
+                     panel.abline(v=median(x),lwd=2,col='salmon')
                    } ))
   
   

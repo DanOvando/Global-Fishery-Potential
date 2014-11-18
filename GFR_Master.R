@@ -23,7 +23,7 @@ library(parallel)
 
 RunAnalyses<- FALSE
 
-BatchFolder<- 'Nov 6 Uncapped Complete Run FaoTrumps copy'
+BatchFolder<- 'Nov 12 Uncapped Complete Run copy'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -43,7 +43,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Scratch'
+  BatchFolder<- 'Nov 12 Uncapped Complete Run copy'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
@@ -71,8 +71,6 @@ IncludeForageFish<- TRUE
 
 IncludeUnderfished<- FALSE
 
-SaveRDS<-FALSE
-
 OverlapMode<- 'FaoTrumps' #SofiaTrumps, FaoTrumps
 
 CatchMSYTrumps<- TRUE
@@ -81,7 +79,7 @@ CommonFinalYear<- TRUE
 
 BaselineYear<- 2012
 
-CountriesToRun<- c('Global','Asia','USA','China','Indonesia','Philippines','Peru','Chile','Mexico','Japan','Myanmar','Viet Nam','EU','Parties to the Nauru Agreement') 
+CountriesToRun<- c('Global','USA','China','Indonesia','Philippines','Peru','Chile','Mexico','Japan','Myanmar','Viet Nam','EU','Parties to the Nauru Agreement') 
 
 EUCountries<- c('Austria',
   'Belgium',
@@ -111,12 +109,6 @@ EUCountries<- c('Austria',
   'Spain',
   'Sweden',
   'United Kingdom')
-
-AsianCountries<-c('Afghanistan','Bahrain','Bangladesh', 'Bhutan','Brunei Darussalam','Cambodia','China', 
-                  'Timor-Leste','Viet Nam', 'Japan','Tajikistan','Turkmenistan','Iran','Iraq','Israel','Jordan','Kazakhstan',
-                  'Kuwait','Myanmar','Indonesia','Thailand', 'India','Philipines','Republic of Korea','Malaysia','Taiwan Province of China',
-                  'Maldives','Nepal','Uzbekistan','Kyrgyzstan','Malaysia','Mongolia','Oman','Pakistan','Russian Federation',
-                  'Saudi Arabia','Singapore','Syrian Arab Republic','Turkey','United Arab Emirates','Yemen','Sri Lanka','Qatar')
 
 
 # Data Processing ---------------------------------------------------------

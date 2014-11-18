@@ -1,6 +1,7 @@
 
 # Database Build ----------------------------------------------------------
-
+DatabaseBuild<- function()
+{
 ##############################################
 ####
 #### GLOBAL FISHERY POTENTIAL DATA PROCESSING
@@ -640,6 +641,6 @@ fulldata$SpeciesCatName[fulldata$SpeciesCatName=="Flounders halibuts and soles"]
 # convert VonBertK data points recorded in mm/T to cm/T
 WhereVbkMM<-fulldata$VonBertKUnit=="VB-k-mm/T"
 fulldata$VonBertK[WhereVbkMM]<-fulldata$VonBertK[WhereVbkMM]/10
-
+return(fulldata)
+}
 # write .csv file
-write.csv(file=paste(ResultFolder,"fulldata.csv",sep=""),fulldata)
