@@ -888,7 +888,11 @@ if(SaveRDS==TRUE)
   saveRDS(FinalYearFinal,"UpsideApp/data/UpsideAppFinalYrData.rds") # For saving final year data for UpsideApp
 }
 
+# upside plot of CountriesToRun
 UpsidePlot(CumulativesFinal,FinalYearFinal,Policy='CatchShare',XVar='PercChangeTotalBiomass',YVar='NPV',DotSize='Food',Limit=300)
+
+# evaluate cost:revenue ratios of Projection data
+CostRevenues<-CostRevCheck(ProjectionData,RawData,BaselineYear)
 
 write.csv(file=paste(ResultFolder,"Percent Upside From Business As Usual Data.csv",sep=''),CumulativesFinal)
 
