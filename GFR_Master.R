@@ -59,7 +59,7 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0
+SubSample<- 0.8
 
 NumCPUs<- 3 #Number of CPUs to use for parallel computing of CatchMSY
 
