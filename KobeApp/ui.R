@@ -14,10 +14,12 @@ shinyUI(fluidPage(
       
       checkboxGroupInput("Country",
                          label="Select Country(s)",
-                         choices= c("Global","Lumped","Multinational", "Indonesia","USA", "China","Philippines","Japan","Chile","Mexico","Viet Nam"),
+                         choices= c("Global","Lumped","Multinational","Indonesia","USA", "China","Philippines",
+                                    "Japan","Viet Nam",'Thailand','India','Taiwan Province of China','Parties to the Nauru Agreement',
+                                    'Republic of Korea','Malaysia','Russian Federation',"Chile","Mexico"),
                          selected="Global"),
       
-      sliderInput("Year","Year",2005,2011,2011),
+      sliderInput("Year","Year",2005,2012,2012),
       
       selectInput("DotColor",
                   label="Label Dots",

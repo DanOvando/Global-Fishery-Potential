@@ -28,11 +28,17 @@ sum(CountryRevenues$TotalCatch)/faoCatch$TotalCatch[1] # percent of total global
 # plot revenue against profits and cost
 
 ggplot(eTest,aes(Revenue,Profits)) + geom_point(alpha=.4) + geom_abline(intercept=0,slope=1) # profit
+  # no points above 1to1 line 
 
 ggplot(eTest,aes(Revenue,Cost)) + geom_point(alpha=.4) + geom_abline(intercept=0,slope=1) # cost
 
 ggplot(eTest,aes(Profits)) + geom_histogram()
+
 ggplot(eTest[eTest$CostRevRatio<5,],aes(CostRevRatio)) + geom_histogram(binwidth=0.1)
+
+# subset fisheries with outlier cost:revenue ratios to look for causes
+OutlierRatios<-eTest[eTest$CostRevRatio>2 & is.na(eTest$IdOrig)==F,]
+OutlierRatios<-OutlierRatios[is.na(OutlierRatios$IdOrig)==F,]
 
 # Boxplot of Cost/Revenue Ratio by SpeciesCat
 

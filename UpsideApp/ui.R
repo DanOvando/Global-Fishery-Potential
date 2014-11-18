@@ -29,7 +29,7 @@ shinyUI(fluidPage(
                             '% Change From Current Median Biomass'='PercChangeMedianBiomass',
                             '% Change From Status Quo Food'='Food',
                             '% Change From Current Food'='PercChangeTotalCatch'),
-                  selected= 'PercChangeFromSQTotalBiomass'),
+                  selected= 'PercChangeTotalBiomass'),
      
       selectInput("yaxis",
                   label="Y-axis",
@@ -48,8 +48,10 @@ shinyUI(fluidPage(
       
       checkboxGroupInput("Country",
                          label="Select Country(s)",
-                         choices= c("Global","Indonesia","USA","China","Philippines","Peru","EU", "Japan","Chile","Mexico","Viet Nam","Parties to the Nauru Agreement"),
-                         selected="USA")),
+                         choices= c('Global','Multinational','Lumped','Asia','USA','China','Indonesia','Philippines','Thailand','Russian Federation',
+                                    'Japan','Viet Nam','Republic of Korea','Malaysia','Taiwan Province of China','India', 
+                                    'EU','Parties to the Nauru Agreement','Peru','Chile','Mexico'),
+                          selected='Global')),
     
     
     mainPanel(

@@ -5,22 +5,24 @@
 
 AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,NeiModelSdevs,TransbiasBin,J) 
 {
-#   Data<- BiomassData[Biomass_CountryLocater,]
-#   
-#   BatchName<- 'Test'
-#   #   
-#   GroupingVars<- c('Year')
-#   
-#   Years<- 2006:2013
-#   
-#   RealModelSdevs<- RealModelSdevs
-#   
-#   NeiModelSdevs<- NeiModelSdevs
-#   
-#   TransbiasBin<- TransbiasBin
-#   
-#   J<- TransbiasIterations
   
+  #   Data<- rus
+  #         Data<- BiomassData[Biomass_CountryLocater,]
+  #   
+  #        BatchName<- 'Test'
+  #     #   
+  #        GroupingVars<- c('Year')
+  #     
+  #       Years<- 1990:2013
+  #     
+  #     RealModelSdevs<- RealModelSdevs
+  #     
+  #     NeiModelSdevs<- NeiModelSdevs
+  #     
+  #     TransbiasBin<- TransbiasBin
+  #     
+  #     J<- TransbiasIterations
+  #   
   #   NeiData<- Data[Data$BvBmsy==-999,]
   
   Data<- Data[Data$Year %in% Years,]
@@ -232,7 +234,8 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
       BioStats<- ddply(Data,.(Year),summarize,Median=median(exp(BvBmsy)),Q2.5=quantile(exp(BvBmsy),c(0.025)),Q25=quantile(exp(BvBmsy),c(0.25)),
                        Q75=quantile(exp(BvBmsy),c(0.75)),Q97.5=quantile(exp(BvBmsy),c(0.975)))
       
-      BioStats<- BioStats[is.na(BioStats$MeanMedian)==F,]      
+      
+      BioStats<- BioStats[is.na(BioStats$Median)==F,]      
       
       
       plot(BioStats$Year,BioStats$Median,type='b',lwd=2,xlab='Year',ylab='B/Bmsy',pty='m',ylim=c(0,3))
