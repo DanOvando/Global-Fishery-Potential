@@ -599,7 +599,14 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     Proj_CountryLocater<- ProjectionData$Country %in% c("China","China Hong Kong SAR","China Macao SAR")
     FullData_CountryLocater<- FullData$Country %in% c("China","China Hong Kong SAR","China Macao SAR")
     Nei_CountryLocater<-FaoNeiLevel$Country %in% c("China","China Hong Kong SAR","China Macao SAR")
-    
+  
+  } else if (CountriesToRun[c]=='Asia')
+  {
+    Biomass_CountryLocater<- BiomassData$Country %in% AsianCountries
+    Proj_CountryLocater<- ProjectionData$Country %in% AsianCountries
+    FullData_CountryLocater<- FullData$Country %in% AsianCountries
+    Nei_CountryLocater<-FaoNeiLevel$Country %in% AsianCountries
+  
   } else
   {
     Biomass_CountryLocater<- BiomassData$Country==CountriesToRun[c] 
@@ -621,7 +628,11 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     {
       BiomassStatus$Data$BvBmsy[BiomassStatus$Data$BvBmsy>1.9]<- 1.9
     }
-    #     if(CountriesToRun=="Global"){saveRDS(BiomassStatus$Data,"BetaApp/data/KobeAppData.rds")} # For updating Shiny Kobe Plot Data
+
+    if(CountriesToRun[c]=="Global" & SaveRDS==TRUE) # For updating Shiny Kobe Plot Data
+      {
+        saveRDS(BiomassStatus$Data,"BetaApp/data/KobeAppData.rds")
+      } 
     
     if (BiomassStatus$CatchStats$Catch$NumberOfStocks>5)
     {
@@ -871,10 +882,13 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
   } #Close if
 } #Close Country Trajectory Analysis 
 
-# saveRDS(CumulativesFinal,"UpsideApp/data/UpsideAppData.rds") # For saving cumulatives data for UpsideApp
-# saveRDS(FinalYearFinal,"UpsideApp/data/UpsideAppFinalYrData.rds") # For saving final year data for UpsideApp
+if(SaveRDS==TRUE)
+{
+  saveRDS(CumulativesFinal,"UpsideApp/data/UpsideAppData.rds") # For saving cumulatives data for UpsideApp
+  saveRDS(FinalYearFinal,"UpsideApp/data/UpsideAppFinalYrData.rds") # For saving final year data for UpsideApp
+}
 
-UpsidePlot(CumulativesFinal,"CatchShare")
+UpsidePlot(CumulativesFinal,FinalYearFinal,Policy='CatchShare',XVar='PercChangeTotalBiomass',YVar='NPV',DotSize='Food',Limit=300)
 
 write.csv(file=paste(ResultFolder,"Percent Upside From Business As Usual Data.csv",sep=''),CumulativesFinal)
 
