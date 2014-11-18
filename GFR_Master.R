@@ -17,11 +17,12 @@ library(zoo)
 library(proftools)
 library(snowfall)
 library(parallel)
-
+library(shiny)
 
 # Basic Controls -------------------------------------------------------------
 
 RunAnalyses<- FALSE
+
 
 BatchFolder<- 'Nov 12 Uncapped Complete Run copy'
 
@@ -70,6 +71,8 @@ IncludeNEIs<- TRUE
 IncludeForageFish<- TRUE
 
 IncludeUnderfished<- FALSE
+
+SaveRDS<- FALSE
 
 OverlapMode<- 'FaoTrumps' #SofiaTrumps, FaoTrumps
 
