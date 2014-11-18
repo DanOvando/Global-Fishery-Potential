@@ -18,7 +18,7 @@ if (RunAnalyses==TRUE)
     
 #     source('Database_Build.R') #Build Tyler's database
 
-   fulldata<- DatabseBuild()
+   fulldata<- DatabaseBuild()
     
     write.csv(file=paste(ResultFolder,"fulldata.csv",sep=""),fulldata)
         
