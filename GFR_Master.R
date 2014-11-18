@@ -23,7 +23,7 @@ library(parallel)
 
 RunAnalyses<- FALSE
 
-BatchFolder<- 'Nov 6 Uncapped Complete Run FaoTrumps copy'
+BatchFolder<- 'Nov 12 Uncapped Complete Run copy'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -43,7 +43,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Nov 6 Uncapped Complete Run FaoTrumps copy'
+  BatchFolder<- 'Nov 12 Uncapped Complete Run copy'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
@@ -59,7 +59,7 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0.8
+SubSample<- 0
 
 NumCPUs<- 3 #Number of CPUs to use for parallel computing of CatchMSY
 
