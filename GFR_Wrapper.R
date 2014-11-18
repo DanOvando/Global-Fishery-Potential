@@ -510,6 +510,9 @@ if (IncludeForageFish==FALSE) #Remove forage fish species if desired
   BiomassData<- BiomassData[BiomassData$SpeciesCatName%in%ForageFish==F,]
 }
 
+# evaluate cost:revenue ratios of full Projection data before CountriesToRun analysis
+CostRevenues<-CostRevCheck(ProjectionData,RawData,BaselineYear)
+
 #Reframe 0 profits/catch to prevent infinites and NANs in 
 
 ProjectionData$Profits[ProjectionData$Profits<0]<- 0.0001 #Reframe 0 profits/catch to prevent infinites and NANs in 
@@ -890,9 +893,6 @@ if(SaveRDS==TRUE)
 
 # upside plot of CountriesToRun
 UpsidePlot(CumulativesFinal,FinalYearFinal,Policy='CatchShare',XVar='PercChangeTotalBiomass',YVar='NPV',DotSize='Food',Limit=300)
-
-# evaluate cost:revenue ratios of Projection data
-CostRevenues<-CostRevCheck(ProjectionData,RawData,BaselineYear)
 
 write.csv(file=paste(ResultFolder,"Percent Upside From Business As Usual Data.csv",sep=''),CumulativesFinal)
 

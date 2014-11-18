@@ -5,7 +5,7 @@
 #
 ##############################
 
-CostRevCheck<-function(Data,fao,BaselineYear)
+CostRevCheck<-function(Data,RawData,BaselineYear)
 {
   # subset Projection data to examine results in baseline year
   eTest<-ProjectionData[is.na(ProjectionData$BvBmsy)==F & is.na(ProjectionData$FvFmsy)==F & ProjectionData$Year==BaselineYear,]
@@ -20,6 +20,8 @@ CostRevCheck<-function(Data,fao,BaselineYear)
   
   # Summarize revenue by country
   CountryRevenues<-ddply(eTest,c("Country"),summarize,TotalRevenue=sum(Revenue,na.rm=T), TotalCatch=sum(Catch,na.rm=T),TotalStocks=length(unique(IdOrig)))
+  
+  fao<-RawData[RawData$Dbase=='FAO',]
   
   faoCatch<-ddply(fao[fao$Year==BaselineYear,],c('Country','Year'),summarize,TotalCatch=sum(Catch,na.rm=T))
   
