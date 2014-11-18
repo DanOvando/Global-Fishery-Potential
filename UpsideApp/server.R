@@ -61,7 +61,7 @@ shinyServer(function(input, output) {
 
 
 # ggplot plot test
-
+  theme_set(theme_gray(base_size = 18))
   qplot(xVar,yVar,data=PlotData,color=Country, size=Size,
         main=c("Percentage Upsides"),
               
