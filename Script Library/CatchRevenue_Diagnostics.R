@@ -20,7 +20,7 @@ eTest$CostRevRatio<-eTest$Cost/eTest$Revenue
 
 CountryRevenues<-ddply(eTest,c("Country"),summarize,TotalRevenue=sum(Revenue,na.rm=T), TotalCatch=sum(Catch,na.rm=T),TotalStocks=length(unique(IdOrig)))
 
-faoCatch<-ddply(fao[fao$Year==BaselineYear,],c("Year"),summarize,TotalCatch=sum(Catch,na.rm=T))
+faoCatch<-ddply(fao[fao$Year==BaselineYear,],c('Year','Country'),summarize,TotalCatch=sum(Catch,na.rm=T))
 
 sum(CountryRevenues$TotalCatch) # total catch in ProjectionData
 sum(CountryRevenues$TotalCatch)/faoCatch$TotalCatch[1] # percent of total global catch in baseline year
