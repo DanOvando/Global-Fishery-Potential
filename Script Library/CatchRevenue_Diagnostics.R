@@ -50,6 +50,27 @@ ggplot(eTest,aes(SpeciesCatName,CostRevRatio)) +
   labs(title="Cost to Revenue Ratio by Species Category", x = "ISSCAAP Group", y = "Cost to Revenue Ratio",fill="ISSCAAP Group")
 dev.off()
 
+# Boxplots by species category and region
+
+regs<-c('37','51','27','21','77','34','81','48','47','31','87','57','41','71','67','61','88','58','18')
+
+pdf(file="Cost to Revenue Ratio by Species Category and Region.pdf",width=12, height=10)
+
+for(b in 1:length(regs))
+{
+  eTestTemp<-eTest[grepl(regs[b],eTest$RegionFAO),]
+  
+  print(ggplot(eTestTemp,aes(SpeciesCatName,CostRevRatio)) + 
+    geom_boxplot(aes(fill=SpeciesCatName),legend.position='none') +
+    coord_flip() + # make boxplot horizontal
+    theme(text=element_text(size=20),legend.position='none') +
+    labs(title=paste(regs[b],"Cost to Revenue Ratio by Species Category",sep=' '), x = "ISSCAAP Group", y = "Cost to Revenue Ratio",fill="ISSCAAP Group"))
+}
+
+dev.off()
+
+##
+
 ggplot(eTest,aes(SpeciesCatName,CostRevRatio)) + 
   geom_boxplot(aes(fill=SpeciesCatName),outlier.shape=NA) +
   scale_y_continuous(limits=c(0,5)) +

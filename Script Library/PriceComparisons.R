@@ -75,6 +75,32 @@ for (b in 1:length(codes))
   NMFS$ISSCAAP[NMFS$SpeciesCat==codes[b]]<-GroupNames_ISSCAAP$Definition[GroupNames_ISSCAAP$ISSCAAP.code==codes[b]]
 }
 
+# calculate proportional error for each NMFS entry 
+# (model price/NMFS price) - 1
+
+NMFS$PropError<-NA
+
+for(f in 1:nrow(NMFS))
+{
+  where<-PriceData$SpeciesCatName==NMFS$ISSCAAP[f]
+  
+  if(any(where)==T)
+  {
+  NMFS$PropError[f]<-(PriceData$Price[where]/NMFS$AvgUsPrice[f])-1
+  }
+}
+
+# boxplot of all proportional errors
+
+ggplot(NMFS,aes(Year,PropError)) +
+  geom_boxplot()
+
+ggplot(NMFS,aes(ISSCAAP,PropError)) +
+  geom_boxplot() +
+  coord_flip()
+
+
+
 # add in our currently used price data
 
 PriceNMFS$PriceEDF<-NA
@@ -171,7 +197,6 @@ for(b in 1:nrow(PriceData))
 
 # plot three price sources
 
-
 PricePlot<-melt(PriceData,na.rm=T,id.var='SpeciesCatName')
 
 PricePlot<-PricePlot[!(PricePlot$SpeciesCatName %in% SpeciesCategoriesToOmit),]
@@ -179,4 +204,6 @@ PricePlot<-PricePlot[!(PricePlot$SpeciesCatName %in% SpeciesCategoriesToOmit),]
 ggplot(PricePlot[PricePlot$SpeciesCatName!='Sturgeons, paddlefishes',],aes(SpeciesCatName,value,fill=variable)) +
   geom_bar(stat='identity',position='dodge') +
   coord_flip()
+
+
   
