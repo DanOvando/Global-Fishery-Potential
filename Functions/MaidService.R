@@ -129,7 +129,7 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
   # 
   #   Data$Country[Data$Dbase=="SOFIA" & grepl(", ",Data$Country)==T] <- "Multinational" # rename Country for multinational Sofia stocks to "Multinational"
   #   
-  AllOverlap<-Overlap$AllOverlapFinal
+  AllOverlap<-Overlap$AllOverlap
   
   OverlapToRemove<- c('Ram','Sofia','SofiaRam')
   
