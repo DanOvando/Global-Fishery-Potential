@@ -153,13 +153,53 @@ JacknifeNeis<-function(MsyData,ProjectionData,Policy,BaselineYear,Level,MinStock
 } # close years loop
   
 
-# Melt data set and plot observed v. predicted BvBmsy and FvFmsy
+# Plot observed v. predicted BvBmsy and FvFmsy, calculate proportional error
 
-JackRun1<-JackNei
+ # plotted together
+ggplot(JackNei[JackNei$BvBmsy<3,],aes(x=BvBmsy,y=EstimateB)) +
+  geom_point(aes(color=EstLevel,size=JStocks),alpha=.6) +
+  coord_cartesian(xlim=c(0,4)) +
+  geom_abline(intercept=0,slope=1)
 
+fit<-lm(EstimateB~BvBmsy+JStocks+SpeciesCatName,JackNei[JackNei$EstLevel=='Genus',])
+summary(fit)
+
+# plotted in facets
+ggplot(JackNei[is.na(JackNei$EstLevel)==F,],aes(x=BvBmsy,y=EstimateB)) +
+  geom_point(aes(size=JStocks,color=EstLevel),alpha=.6) +
+  facet_grid(.~EstLevel) +
+  coord_cartesian(xlim=c(0,4)) +
+  geom_smooth(method='lm')
+  geom_abline(intercept=0,slope=1)
+
+# wrap by species category
+pdf(file='test.pdf')
+print(ggplot(JackNei[JackNei$BvBmsy<3 & is.na(JackNei$EstLevel)==F,],aes(x=BvBmsy,y=EstimateB)) +
+  geom_point(aes(size=JStocks,color=EstLevel),alpha=.6) +
+  facet_wrap(~SpeciesCatName) +
+  coord_cartesian(xlim=c(0,4)) +
+  geom_smooth(method='lm') +
+geom_abline(intercept=0,slope=1))
+dev.off()
+
+# FvFmsy
+ggplot(JackNei,aes(x=FvFmsy,y=EstimateF)) +
+  geom_point(aes(color=EstLevel,size=JStocks),alpha=.6) +
+  coord_cartesian(xlim=c(0,4)) +
+  geom_abline(intercept=0,slope=1)
       
+# Proportional error
+
+JackNei$PropErrorB<-(JackNei$EstimateB/JackNei$BvBmsy)-1
       
-      
+JackNei$PropErrorF<-(JackNei$EstimateF/JackNei$FvFmsy)-1  
   
-  
+ggplot(JackNei[JackNei$PropErrorB<10,],aes(EstLevel,PropErrorB)) +
+  geom_boxplot() 
+
+ggplot(JackNei[JackNei$PropErrorF<10,],aes(EstLevel,PropErrorF)) +
+  geom_boxplot() 
+
+return(JackNei)
+
 }
