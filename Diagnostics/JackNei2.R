@@ -154,32 +154,30 @@ JacknifeNeis<-function(MsyData,ProjectionData,Policy,BaselineYear,Level,MinStock
   
 
 # Plot observed v. predicted BvBmsy and FvFmsy, calculate proportional error
-
- # plotted together
-ggplot(JackNei[JackNei$BvBmsy<3,],aes(x=BvBmsy,y=EstimateB)) +
+pdf(file=paste(FigureFolder,'Nei Jackknife Results.pdf',sep=''),width=12,height=10)
+ 
+# plotted together
+print(ggplot(JackNei[JackNei$BvBmsy<3,],aes(x=BvBmsy,y=EstimateB)) +
   geom_point(aes(color=EstLevel,size=JStocks),alpha=.6) +
   coord_cartesian(xlim=c(0,4)) +
-  geom_abline(intercept=0,slope=1)
-
-fit<-lm(EstimateB~BvBmsy+JStocks+SpeciesCatName,JackNei[JackNei$EstLevel=='Genus',])
-summary(fit)
+  geom_abline(intercept=0,slope=1))
 
 # plotted in facets
-ggplot(JackNei[is.na(JackNei$EstLevel)==F,],aes(x=BvBmsy,y=EstimateB)) +
+print(ggplot(JackNei[is.na(JackNei$EstLevel)==F,],aes(x=BvBmsy,y=EstimateB)) +
   geom_point(aes(size=JStocks,color=EstLevel),alpha=.6) +
   facet_grid(.~EstLevel) +
   coord_cartesian(xlim=c(0,4)) +
-  geom_smooth(method='lm')
-  geom_abline(intercept=0,slope=1)
+  geom_smooth(method='lm') +
+  geom_abline(intercept=0,slope=1))
 
 # wrap by species category
-pdf(file='test.pdf')
 print(ggplot(JackNei[JackNei$BvBmsy<3 & is.na(JackNei$EstLevel)==F,],aes(x=BvBmsy,y=EstimateB)) +
   geom_point(aes(size=JStocks,color=EstLevel),alpha=.6) +
   facet_wrap(~SpeciesCatName) +
   coord_cartesian(xlim=c(0,4)) +
   geom_smooth(method='lm') +
 geom_abline(intercept=0,slope=1))
+
 dev.off()
 
 # FvFmsy

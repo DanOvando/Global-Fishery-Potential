@@ -61,7 +61,7 @@ for(b in 1:length(regs))
   eTestTemp<-eTest[grepl(regs[b],eTest$RegionFAO),]
   
   print(ggplot(eTestTemp,aes(SpeciesCatName,CostRevRatio)) + 
-    geom_boxplot(aes(fill=SpeciesCatName),legend.position='none') +
+    geom_violin(aes(fill=SpeciesCatName),legend.position='none') +
     coord_flip() + # make boxplot horizontal
     theme(text=element_text(size=20),legend.position='none') +
     labs(title=paste(regs[b],"Cost to Revenue Ratio by Species Category",sep=' '), x = "ISSCAAP Group", y = "Cost to Revenue Ratio",fill="ISSCAAP Group"))

@@ -8,6 +8,9 @@
 
 ### DATA ###
 
+PriceDiagnostics<-function(ProjectionData,SpeciesCategoriesToOmit,BaselineYear)
+{
+  
 NMFS<-read.csv("Data/NMFS_PRICE_DATA_0814.csv",stringsAsFactors=F) # NMFS Price Data
 
 PriceData<- read.csv('Data/Species Category Prices.csv') # Current model price data from EDF
@@ -90,16 +93,36 @@ for(f in 1:nrow(NMFS))
   }
 }
 
+# add in number of fisheries in Projection Data for each ISSCAAP group
+FisheriesPerGroup<-ddply(ProjectionData[ProjectionData$IdLevel=='Species' & ProjectionData$Year==BaselineYear,],
+                         c('SpeciesCatName'),summarize,Fisheries=length(unique(IdOrig,na.rm=T)))
+
+for(d in 1:nrow(FisheriesPerGroup))
+{
+  NMFS$FisheriesInData[NMFS$ISSCAAP==FisheriesPerGroup$SpeciesCatName[d]]<-FisheriesPerGroup$Fisheries[d]
+}
+
 # boxplot of all proportional errors
 
-ggplot(NMFS,aes(Year,PropError)) +
-  geom_boxplot()
+NmfsBoxPlot<-ddply(NMFS[!(NMFS$ISSCAAP %in% SpeciesCategoriesToOmit),],('ISSCAAP'),summarize,
+                   min=min(PropError,na.rm=T),
+                   q1=quantile(PropError,0.25,na.rm=T),
+                   med=median(PropError,na.rm=T),
+                   q3=quantile(PropError,0.75,na.rm=T),
+                   max=max(PropError,na.rm=T),
+                   Fisheries=mean(FisheriesInData,na.rm=T)
+                   )
+pdf(file=paste(FigureFolder,"Price Data Prop Error.pdf",sep=''),width=15,height=10)
 
-ggplot(NMFS,aes(ISSCAAP,PropError)) +
-  geom_boxplot() +
-  coord_flip()
+print(ggplot(NmfsBoxPlot,aes(x=factor(ISSCAAP))) +
+  geom_boxplot(aes(lower = q1, upper = q3, middle = med, ymin = min, ymax = max), stat = "identity") +
+  coord_flip(ylim=c(-2,5)) +
+  geom_text(aes(y = min,label = Fisheries,color=Fisheries),hjust = 3) +
+  geom_hline(yintercept=0) +
+  labs(title="Proportional Error of Price Data",x='ISSCAAP Group',y='Proportional Error'))
 
-
+dev.off()
+  
 
 # add in our currently used price data
 
@@ -124,13 +147,13 @@ PriceNMFS$PriceDiff05Dols<-round(log(PriceNMFS$PriceEDF/PriceNMFS$AvgPrice05Dols
 PriceNMFS<-PriceNMFS[!(PriceNMFS$ISSCAAP %in% SpeciesCategoriesToOmit),] # subset to only include categories of interest
 NMFS<-NMFS[!(NMFS$ISSCAAP %in% SpeciesCategoriesToOmit),] 
 
-pdf(file="NMFS Model Price Comparison.pdf",width=15,height=10)
-ggplot(NMFS, aes(as.factor(ISSCAAP),AvgUsPrice05Dols,)) + # primary plot variables
+pdf(file=paste(FigureFolder,"NMFS Model Price Comparison.pdf",sep=''),width=15,height=10)
+print(ggplot(NMFS, aes(as.factor(ISSCAAP),AvgUsPrice)) + # primary plot variables
   geom_boxplot() + # call to make boxplot
   geom_point(data=PriceNMFS,aes(x=as.factor(ISSCAAP),y=PriceEDF,color='red',shape=as.factor(PriceDiff)),size=4) + # add points for EDF price
-  coord_flip() + # make boxplot horizontal
+  coord_flip(ylim=c(0,25000)) + # make boxplot horizontal
   theme(text=element_text(size=20)) +
-  labs(title="NMFS and EDF Price Comparison", x = "ISSCAAP Group", y = "Price in $/MT",color="EDF Price",shape="Order of Magnitude \nComparison")
+  labs(title="NMFS and EDF Price Comparison", x = "ISSCAAP Group", y = "Price in $/MT",color="EDF Price",shape="Order of Magnitude \nComparison"))
 dev.off()
 
 ### FAO EXPORT VALUE AND QUANTITY DATA
@@ -201,9 +224,16 @@ PricePlot<-melt(PriceData,na.rm=T,id.var='SpeciesCatName')
 
 PricePlot<-PricePlot[!(PricePlot$SpeciesCatName %in% SpeciesCategoriesToOmit),]
 
+# all together
 ggplot(PricePlot[PricePlot$SpeciesCatName!='Sturgeons, paddlefishes',],aes(SpeciesCatName,value,fill=variable)) +
   geom_bar(stat='identity',position='dodge') +
   coord_flip()
 
-
+# faceted plot
+ggplot(PricePlot[PricePlot$SpeciesCatName!='Sturgeons, paddlefishes',],aes(SpeciesCatName,value,fill=variable)) +
+  geom_bar(stat='identity',position='dodge',axis.text.x=theme()) +
+  facet_wrap(~SpeciesCatName,scales='free')
+ 
+return(list(PriceComparison=PriceData ))
+}
   

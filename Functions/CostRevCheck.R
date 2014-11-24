@@ -18,6 +18,8 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
   
   eTest$CostRevRatio<-eTest$Cost/eTest$Revenue
   
+  eTest<-eTest[is.na(eTest$SpeciesCatName)==F,]
+  
   # Summarize revenue by country
   CountryRevenues<-ddply(eTest,c("Country"),summarize,TotalRevenue=sum(Revenue,na.rm=T), TotalCatch=sum(Catch,na.rm=T),TotalStocks=length(unique(IdOrig)))
   
@@ -25,9 +27,9 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
   
   faoCatch<-ddply(fao[fao$Year==BaselineYear,],c('Country','Year'),summarize,TotalCatch=sum(Catch,na.rm=T))
   
-  show(sum(CountryRevenues$TotalCatch)) # total catch in ProjectionData
-  show(sum(CountryRevenues$TotalCatch)/sum(faoCatch$TotalCatch)) # percent of total global catch in baseline year
-  
+#   show(sum(CountryRevenues$TotalCatch)) # total catch in ProjectionData
+#   show(sum(CountryRevenues$TotalCatch)/sum(faoCatch$TotalCatch)) # percent of total global catch in baseline year
+#   
   # calculate percent of total catch that is projected for each country
   CountryRevenues$PercTotal<-NA
   
@@ -51,6 +53,26 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
     labs(title="Cost to Revenue Ratio by ISSCAAP Group", x = "Cost:Revenue Ratio", y = "Density"))
   dev.off()
   
+  # Boxplots by species category and region
+  
+  regs<-c('37','51','27','21','77','34','81','48','47','31','87','57','41','71','67','61','88','58','18')
+    
+  pdf(file=paste(FigureFolder,"Cost to Revenue Ratio by Species Category and Region.pdf",sep=''),width=12, height=10)
+  
+  for(b in 1:length(regs))
+  {
+    eTestTemp<-eTest[grepl(regs[b],eTest$RegionFAO),]
+    
+    print(ggplot(eTestTemp,aes(SpeciesCatName,CostRevRatio)) + 
+            geom_boxplot(varwidth=T) +
+            coord_flip(ylim=c(0,2)) + # make boxplot horizontal
+            theme(text=element_text(size=20),legend.position='none') +
+            labs(title=paste(regs[b],"Cost to Revenue Ratio by Species Category",sep=' '), 
+                 x = "ISSCAAP Group", y = "Cost to Revenue Ratio",fill="ISSCAAP Group"))
+  }
+  
+  dev.off()
+  
   # Summary stats of cost:revenue ratio across all data
   OverallCostRevSummary<-data.frame(matrix(summary(eTest$CostRevRatio),nrow=1,ncol=length(summary(eTest$CostRevRatio))))
   colnames(OverallCostRevSummary)<-c('Min','1st Quart','Median','Mean','3rd Quart','Max','NAs')
@@ -72,8 +94,8 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
     SummaryTable[b,3:9]<-x[1:7] # stats
   }
   
-#   write.csv(file=paste(ResultFolder,'Catch_Revenue_Ratios_ISSCAAP.csv',sep=''),SummaryTable)
-#   write.csv(file=paste(ResultFolder,'Catch_Revenue_Ratio_AllData.csv',sep=''),OverallCostRevSummary)
+  write.csv(file=paste(ResultFolder,'Catch_Revenue_Ratios_ISSCAAP.csv',sep=''),SummaryTable)
+  write.csv(file=paste(ResultFolder,'Catch_Revenue_Ratio_AllData.csv',sep=''),OverallCostRevSummary)
   
   # subset fisheries with outlier cost:revenue ratios to look for causes
   OutlierRatios<-eTest[(eTest$CostRevRatio>2 | eTest$CostRevRatio<0.2) & is.na(eTest$IdOrig)==F,
@@ -83,6 +105,8 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
   # subset eTest to include only economically relevent columns
   eTest<-eTest[,c('IdOrig','SpeciesCatName', 'CommName','Year','Catch','Fmort','BvBmsy','FvFmsy','Price',
                   'Revenue','Cost','CostRevRatio','MSY','r','MarginalCost')]
+
+
   
   return(list(FisheryValues=eTest,CountryRevenues=CountryRevenues,CostRevenueAllData=OverallCostRevSummary,ISSCAAPCostRevenues=SummaryTable,CostRevenueOutliers=OutlierRatios))
   
