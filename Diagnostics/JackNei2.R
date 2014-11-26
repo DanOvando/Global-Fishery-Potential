@@ -1,6 +1,9 @@
 JacknifeNeis<-function(MsyData,ProjectionData,Policy,BaselineYear,Level,MinStocks)
 {
   
+  # Level<-'All'
+  # MinStocks<-10
+  
   ### Subset Msy and Projection data to only historic years
   RamNeiDiag<-MsyData[MsyData$Dbase=='RAM' & MsyData$Year<=BaselineYear,] 
   
@@ -55,6 +58,8 @@ JacknifeNeis<-function(MsyData,ProjectionData,Policy,BaselineYear,Level,MinStock
   NeiStats$EstimateF<-NA # variable to fill with FvFmsy estimate
   NeiStats$JStocks<-NA # variable to fill with JStocks
   NeiStats$EstLevel<-NA # variable to fill with the taxonomic level used for estimate
+  NeiStats$CatchWtMeanB<-NA
+  NeiStats$CatchWtMeanF<-NA
 
   # loop over years and then stocks to estimate status of ram 'nei' stocks  
   yrs<-unique(NeiStats$Year)
@@ -69,7 +74,7 @@ JacknifeNeis<-function(MsyData,ProjectionData,Policy,BaselineYear,Level,MinStock
     
     for(b in 1:nrow(tempNeiStats)) # loop over stocks in year[a]
     {
-      SpeciesLevel<-SpeciesLevel[SpeciesLevel$IdOrig!=tempNeiStats$IdOrig[b],] # drop stock being estimated
+      tempSpeciesLevel<-SpeciesLevel[SpeciesLevel$IdOrig!=tempNeiStats$IdOrig[b],] # drop stock being estimated
       
       rm(compstocks)
       rm(ComparisonStocks)
@@ -88,7 +93,7 @@ JacknifeNeis<-function(MsyData,ProjectionData,Policy,BaselineYear,Level,MinStock
       
       if(exists('compstocks'))
       {
-      ComparisonStocks<-SpeciesLevel[SpeciesLevel$SciName %in% compstocks,]
+      ComparisonStocks<-tempSpeciesLevel[tempSpeciesLevel$SciName %in% compstocks,]
       
       level<-'Genus'
       }
@@ -108,7 +113,7 @@ JacknifeNeis<-function(MsyData,ProjectionData,Policy,BaselineYear,Level,MinStock
       
     if(exists('compstocks'))
       {
-        ComparisonStocks<-SpeciesLevel[SpeciesLevel$SciName %in% compstocks,]
+        ComparisonStocks<-tempSpeciesLevel[tempSpeciesLevel$SciName %in% compstocks,]
         
         level<-'Family'
       }
@@ -127,7 +132,7 @@ JacknifeNeis<-function(MsyData,ProjectionData,Policy,BaselineYear,Level,MinStock
       
       if(exists('compstocks'))
       {
-        ComparisonStocks<-SpeciesLevel[SpeciesLevel$SciName %in% compstocks,]
+        ComparisonStocks<-tempSpeciesLevel[tempSpeciesLevel$SciName %in% compstocks,]
         
         level<-'Order'
       }
@@ -136,12 +141,15 @@ JacknifeNeis<-function(MsyData,ProjectionData,Policy,BaselineYear,Level,MinStock
     if(exists('ComparisonStocks') & nrow(ComparisonStocks)>MinStocks)
     {
       results<-ddply(ComparisonStocks,c("Year"),summarize,MedianBvBmsy=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),
-                     JStocks=length(unique(IdOrig)))
+                     JStocks=length(unique(IdOrig)),CatchWtMeanB=sum(Catch*BvBmsy,na.rm=T)/sum(Catch,na.rm=T),CatchWtMeanF=sum(Catch*FvFmsy,na.rm=T)/sum(Catch,na.rm=T))
       
       tempNeiStats$EstimateB[b]<-results$MedianBvBmsy[1]
       tempNeiStats$EstimateF[b]<-results$MedianFvFmsy[1]
       tempNeiStats$JStocks[b]<-results$JStocks[1]
       tempNeiStats$EstLevel[b]<-level
+      tempNeiStats$CatchWtMeanB[b]<-results$CatchWtMeanB[1]
+      tempNeiStats$CatchWtMeanF[b]<-results$CatchWtMeanF[1]
+      
     }
    
   } # close stocks loop
@@ -180,8 +188,29 @@ geom_abline(intercept=0,slope=1))
 
 dev.off()
 
+# Same plots for catch weighted mean
+
+print(ggplot(JackNei,aes(x=BvBmsy,y=CatchWtMeanB)) +
+        geom_point(aes(color=EstLevel,size=JStocks),alpha=.6) +
+        coord_cartesian(xlim=c(0,4)) +
+        geom_abline(intercept=0,slope=1))
+
+print(ggplot(JackNei[is.na(JackNei$EstLevel)==F,],aes(x=BvBmsy,y=CatchWtMeanB)) +
+        geom_point(aes(size=JStocks,color=EstLevel),alpha=.6) +
+        facet_grid(.~EstLevel) +
+        coord_cartesian(xlim=c(0,4)) +
+        geom_smooth(method='lm') +
+        geom_abline(intercept=0,slope=1))
+
+print(ggplot(JackNei[JackNei$BvBmsy<3 & is.na(JackNei$EstLevel)==F,],aes(x=BvBmsy,y=CatchWtMeanB)) +
+        geom_point(aes(color=EstLevel),alpha=.6) +
+        facet_wrap(~SpeciesCatName) +
+        coord_cartesian(xlim=c(0,4)) +
+        geom_smooth(method='lm') +
+        geom_abline(intercept=0,slope=1))
+
 # FvFmsy
-ggplot(JackNei,aes(x=FvFmsy,y=EstimateF)) +
+ggplot(JackNei[JackNei$CatchWtMeanF<4,],aes(x=FvFmsy,y=CatchWtMeanF)) +
   geom_point(aes(color=EstLevel,size=JStocks),alpha=.6) +
   coord_cartesian(xlim=c(0,4)) +
   geom_abline(intercept=0,slope=1)
