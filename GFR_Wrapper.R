@@ -16,12 +16,12 @@ if (RunAnalyses==TRUE)
   if (file.exists(paste(ResultFolder,'Cleaned Compiled Database.csv',sep=''))==F)
   {
     
-#     source('Database_Build.R') #Build Tyler's database
-
-   fulldata<- DatabaseBuild()
+    #     source('Database_Build.R') #Build Tyler's database
+    
+    fulldata<- DatabaseBuild()
     
     write.csv(file=paste(ResultFolder,"fulldata.csv",sep=""),fulldata)
-        
+    
     show('Done building raw database')
     
     RawData<- fulldata
@@ -365,6 +365,8 @@ if (RunAnalyses==TRUE)
   
   # Run First Analisis of Current Status --------------------------------------------------
   
+  BiomassData$CatchMSYBvBmsy_LogSd<- NA
+  
   GlobalStatus<- AnalyzeFisheries(BiomassData,'Baseline Global Status','Year',min(BiomassData$Year):max(BiomassData$Year),RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
   
   #   RAMStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='RAM',],'RAM Status','Year',1950:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
@@ -601,14 +603,14 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     Proj_CountryLocater<- ProjectionData$Country %in% c("China","China Hong Kong SAR","China Macao SAR")
     FullData_CountryLocater<- FullData$Country %in% c("China","China Hong Kong SAR","China Macao SAR")
     Nei_CountryLocater<-FaoNeiLevel$Country %in% c("China","China Hong Kong SAR","China Macao SAR")
-  
+    
   } else if (CountriesToRun[c]=='Asia')
   {
     Biomass_CountryLocater<- BiomassData$Country %in% AsianCountries
     Proj_CountryLocater<- ProjectionData$Country %in% AsianCountries
     FullData_CountryLocater<- FullData$Country %in% AsianCountries
     Nei_CountryLocater<-FaoNeiLevel$Country %in% AsianCountries
-  
+    
   } else
   {
     Biomass_CountryLocater<- BiomassData$Country==CountriesToRun[c] 
@@ -630,11 +632,11 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     {
       BiomassStatus$Data$BvBmsy[BiomassStatus$Data$BvBmsy>1.9]<- 1.9
     }
-
+    
     if(CountriesToRun[c]=="Global" & SaveRDS==TRUE) # For updating Shiny Kobe Plot Data
-      {
-        saveRDS(BiomassStatus$Data,"BetaApp/data/KobeAppData.rds")
-      } 
+    {
+      saveRDS(BiomassStatus$Data,"BetaApp/data/KobeAppData.rds")
+    } 
     
     if (BiomassStatus$CatchStats$Catch$NumberOfStocks>5)
     {
