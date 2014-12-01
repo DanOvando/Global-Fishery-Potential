@@ -198,8 +198,8 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
       polygon(x=c(BioStats$Year,rev(BioStats$Year)),y=c(BioStats$Q75,rev(BioStats$Q25)),
               col="lightsteelblue2",border=F,ylim=c(0,3))
       lines(BioStats$Year,BioStats$Median,type='b',lwd=2,ylim=c(0,3))
-      abline(h=1)
-      legend('topright',legend='Interquantile Range',fill='lightsteelblue2')
+      abline(h=1,lty=2)
+      legend('topright',legend='Interquartile Range',fill='lightsteelblue2')
       
       
     }
