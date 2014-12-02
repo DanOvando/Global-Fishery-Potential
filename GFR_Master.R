@@ -21,10 +21,10 @@ library(shiny)
 
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- FALSE
+RunAnalyses<- TRUE
 
 
-BatchFolder<- 'Nov 12 Uncapped Complete Run copy'
+BatchFolder<- 'Dec 1 Cost Test'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -44,7 +44,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Nov 12 Uncapped Complete Run copy'
+  BatchFolder<- 'Scratch'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
@@ -60,9 +60,9 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0
+SubSample<- 0.9
 
-NumCPUs<- 3 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 2 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
@@ -193,7 +193,7 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-NumCatchMSYIterations <- 10000  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 1000  ## number of iterations, e.g. 100000
 
 Parel<- TRUE #Run SNOWFALL in parallel?
 
@@ -212,6 +212,8 @@ Discount<- 0.05
 bvec<- seq(0.00000001,2,length.out=30)
 
 tol<- 1e-1
+
+BOAtol<-0.1 # distance tolerance for finding stocks at equilibrium
 
 # Figures -----------------------------------------------------------------
 

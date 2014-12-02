@@ -357,8 +357,12 @@ if (RunAnalyses==TRUE)
   
   BiomassData$IdLevel[WhereSpeciesLevel]<- 'Species'
   
-  BiomassData<- AssignEconomicData(BiomassData) #Assign price and cost data to each stock
+#   BiomassData<- AssignEconomicData(BiomassData) #Assign price and cost data to each stock
   
+  BiomassData$Price<-NA # Price and BvBmsyOpenAccess variable must be created before Analyze fisheries. Will be filled later by Assign EconData
+
+  BiomassData$BvBmsyOpenAccess<-NA
+
   BiomassData$RanCatchMSY<- F
   
   show('Results Processed')
@@ -393,8 +397,11 @@ if (RunAnalyses==TRUE)
   
   BiomassData$CatchMSYBvBmsy_LogSd[MsyData$RanCatchMSY==T]<- (MsyData$CatchMSYBvBmsy_LogSd[MsyData$RanCatchMSY==T])
   
-  
   BiomassData$RanCatchMSY[MsyData$RanCatchMSY==T]<- TRUE
+  
+  BvBmsyOpenAccess<-FindOpenAccess(MsyData,BaselineYear,BOAtol) # find open access equilibrium for each species cat using results in MsyData
+
+  BiomassData<- AssignEconomicData(BiomassData,BvBmsyOpenAccess) #Assign price and cost data back to each stock in biomass data
   
   #Run quick diagnostic of CatchMSY results
   pdf(file=paste(FigureFolder,'Catch MSY vs PRM BvBmsy predictions.pdf',sep=''))
@@ -411,6 +418,9 @@ if (RunAnalyses==TRUE)
   
   # Run projection analysis -------------------------------------------------
   
+  MsyData$Price<-BiomassData$Price
+
+  MsyData$BvBmsyOpenAccess<-BiomassData$BvBmsyOpenAccess
   
   MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T) #Apply mean price to fisheries with no price
   
