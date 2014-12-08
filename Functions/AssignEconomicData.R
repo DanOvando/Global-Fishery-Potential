@@ -1,12 +1,12 @@
 
-AssignEconomicData<- function(Data)
+AssignEconomicData<- function(Data,BvBmsyOpenAccess)
 {
   
 #   Data<- FullData
   
   PriceData<- read.csv('Data/Species Category Prices.csv')
   
-  BvBmsyOpenAccess<- read.csv('Data/Species Category Open Access Depletion.csv')
+#   BvBmsyOpenAccess<- read.csv('Data/Species Category Open Access Depletion.csv')
   
   SpeciesCats<- unique(Data$SpeciesCatName)
     

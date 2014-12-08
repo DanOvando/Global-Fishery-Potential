@@ -20,6 +20,8 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   #   
   data(fishbase)  
   
+  Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
+  
   #Pull out NEI fisheries
   NEIs<-MsyData[MsyData$Dbase!='RAM' & MsyData$RanCatchMSY==F & ((grepl("nei",MsyData$CommName,ignore.case=T)) | (grepl("nei",MsyData$CommName,ignore.case=T) & (is.infinite(MsyData$BvBmsy)==T | MsyData$BvBmsy==999)) | (grepl("spp",MsyData$SciName) & grepl("not identified",MsyData$SpeciesCatName) & MsyData$Dbase=="FAO")),]
   
@@ -197,7 +199,7 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   
   Stocks<- unique(NEIs$IdOrig)
   
-  for (p in 1:length(Pols))
+  for (p in 1:length(LongPols))
   {
     for(s in 1:length(Stocks))
     {
