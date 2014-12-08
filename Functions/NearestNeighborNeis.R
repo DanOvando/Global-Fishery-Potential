@@ -204,7 +204,7 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
     for(s in 1:length(Stocks))
     {
       
-      Where<- NEIs$IdOrig==Stocks[s] & NEIs$Policy==Pols[p]
+      Where<- NEIs$IdOrig==Stocks[s] & NEIs$Policy==LongPols[p]
       
       WhereBase<- NEIs$IdOrig==Stocks[s]  & NEIs$Policy=='Historic' & NEIs$Year==BaselineYear
       
