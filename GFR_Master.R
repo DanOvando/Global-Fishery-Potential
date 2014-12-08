@@ -18,13 +18,14 @@ library(proftools)
 library(snowfall)
 library(parallel)
 library(shiny)
+library(ggplot2)
 
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- FALSE
+RunAnalyses<- TRUE
 
 
-BatchFolder<- 'Nov 12 Uncapped Complete Run copy'
+BatchFolder<- 'Scratch'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -60,7 +61,7 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0
+SubSample<- 0.9
 
 NumCPUs<- 3 #Number of CPUs to use for parallel computing of CatchMSY
 
