@@ -2,8 +2,120 @@
 SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,beta,CatchSharePrice,CatchShareCost,Policies,ProjectionTime,TempStockMatrix)
   
 {
+  ######################################
+  # Run Dynamic Optimization --------------------------------------------------
+  # Solves for optimal policy function f (as function of bvec) given model parameters.
+  # last input argument "tol" is convergence tolerance (use tol=.01)
+  ######################################
   
-  sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
+  RunDynamicOpt2= function(MSY,r,p,c,beta,disc,bvec,tol)
+  {
+    
+    # MSY<- RecentStockData$MSY
+    # r<- RecentStockData$r
+    # p<- RecentStockData$Price
+    # c<- cost
+    # beta<- Beta
+    # disc<- Discount
+    # bvec<- bvec
+    # tol<- tol
+    #   
+    
+    delta= 1/(1+disc) #Discount parameter
+    t=0
+    
+    f1= matrix(1,length(bvec),1)
+    Vnew= matrix(0,length(bvec),1)
+    diff= 10*tol
+    
+    while (t<4 | diff>tol)
+    {
+      t= t+1
+      V= Vnew
+      oldf1= f1
+      for (i in 1:length(bvec))
+      {
+        b= bvec[i]
+        if(i==1)
+        {guess= 1}
+        else
+        {guess= f1[i-1]}
+        
+        FishOut= optim(par=guess,fn=GFRM_funR,lower=0.0001,upper=1.99,b=b,p=p,MSY=MSY,c=c,r=r,beta=beta,V=V,bvec=bvec,delta=delta,method="L-BFGS-B")
+        
+        Vnew[i]= -FishOut$value
+        f1[i]= FishOut$par
+        
+        
+      } #Close bvec loop
+      
+      diff= sum(abs(f1-oldf1))
+      
+    }# Close while loop
+    
+    
+    return(list(Policy=f1))
+    
+  } #Close function
+
+  ######################################
+  # Internal Optimization Function 
+  # To be used with RunDynamicOptimization2.R
+  # Gives (negative) value function value for value function iteration code--------------------------------------------------
+  ######################################
+  
+  GFRM_funR= function(f,b,p,MSY,c,r,beta,V,bvec,delta)
+  {  
+    profit= p*MSY*f*b - c*(f*r/2)^beta
+    
+    bnext= max(min(bvec),b + r*b*(1-b/2) - r/2*b*f)
+    bnext=min(max(bvec),bnext)
+    out= approx(bvec,t(V),bnext) #spline(bvec,V,xout=bnext)
+    Vnext= out$y
+    
+    negout= -(profit + delta*Vnext)
+    return(negout)
+  }  
+  
+  ######################################
+  # Forward Simulation of Policy Function
+  # Inputs: polcy function, duration of simulation, and other model parameters
+  # Outputs: variables over time (f, b, yield (y), profit (pi)--------------------------------------------------
+  ######################################
+  
+  Sim_Forward= function(Policy,fpolicy,bvec,b0,T,p,MSY,c,r,beta,delta)
+  {  
+    b = matrix(0,T,1)
+    f = b
+    pi = b
+    y = b
+    
+    b[1] = b0;
+    
+    if (Policy=='CatchShare')
+    {
+      p<- p*CatchSharePrice
+      
+      c<- c*CatchShareCost
+    }
+    
+    for (t in 1:T)
+    {
+      f[t] = approx(bvec,fpolicy,b[t])$y
+      pi[t] = p*MSY*f[t]*b[t] - c*(f[t]*r/2)^beta
+      y[t] = MSY*f[t]*b[t]
+      if (t<T)
+      {b[t+1] = b[t] + r*b[t]*(1-b[t]/2) - r/2*b[t]*f[t]}
+    }
+    
+    Projection<- data.frame(f,b,y,pi)
+    
+    colnames(Projection)<- c('FvFmsy','BvBmsy','Yields','Profits')
+    
+    return(Projection)
+  }
+  
+#   sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
   
   counter<- 1
 

@@ -428,6 +428,8 @@ if (RunAnalyses==TRUE)
   
   MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$r)==F #Identify disheries that have both MSY and r
   
+  save(file='MsyData.rdata',MsyData)
+
   ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs) #Run projections on MSY data that can be projected
   
   show("Completed Projections")

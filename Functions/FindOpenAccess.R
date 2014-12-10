@@ -19,7 +19,7 @@ FindOpenAccess<-function(MsyData,BaselineYear,BOAtol)
   {
     CategoryStocks<-Data[Data$SpeciesCatName==SpeciesCats[s] & Data$Year==BaselineYear &  Data$Dbase!='RAM',]
     
-    KobeSpace<-ddply(CategoryStocks,c('IdOrig'),summarize,KobeSpot=abs(1-sum(BvBmsy+FvFmsy,na.rm=T)/2)) 
+    KobeSpace<-ddply(CategoryStocks,c('IdOrig'),summarize,KobeSpot=abs((2-FvFmsy-BvBmsy))) 
     # Any stock on the equilibrium line has a value of 2 for the sum of BvBmsy and FvFmsy
     # This ddply calculates the distance from the equilibrium line for each stock
     # subset this dataset to only include stocks within a desired tolerance, make option on Master

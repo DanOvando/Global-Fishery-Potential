@@ -83,9 +83,9 @@ RunProjection<- function(Data,BaselineYear,NumCPUs)
   
   Data$FvFmsy[HistoricFData]<- (Data$Catch[HistoricFData]/Data$MSY[HistoricFData])/Data$BvBmsy[HistoricFData]
   
-  c_num<- Data$Price[HistoricData]* Data$MSY[HistoricData]*  (2-Data$BvBmsyOpenAccess[HistoricData]) * Data$BvBmsyOpenAccess[HistoricData]
+  c_num<- Data$Price[HistoricData] * (2-Data$BvBmsyOpenAccess[HistoricData]) * Data$BvBmsyOpenAccess[HistoricData] * Data$MSY[HistoricData]*2^beta  
   
-  c_den<- ((2-Data$BvBmsyOpenAccess[HistoricData])*Data$r[HistoricData]/2)^beta
+  c_den<- ((2-Data$BvBmsyOpenAccess[HistoricData])*Data$r[HistoricData])^beta
   
   Costs<- c_num/c_den
   
