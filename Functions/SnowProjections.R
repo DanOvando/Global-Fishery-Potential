@@ -200,12 +200,12 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     
     PolicyMatrix$MarginalCost<- cost
     
-    TempMat[counter:(counter+-1+(dim(PolicyMatrix)[1])),]<- I(PolicyMatrix)
-#     
-     counter<- (counter+(dim(PolicyMatrix)[1]))
+#     TempMat[counter:(counter+-1+(dim(PolicyMatrix)[1])),]<- I(PolicyMatrix)
+# #     
+#      counter<- (counter+(dim(PolicyMatrix)[1]))
     
     
   } # close policies loop
   
-  return(TempMat)
+  return(PolicyMatrix)
 } #Close function
