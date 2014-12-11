@@ -50,7 +50,11 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
       } #Close bvec loop
       
       diff= sum(abs(f1-oldf1))
-      
+       if (t>2000)
+       {
+         diff<- tol
+         write.table(paste(  'Fishery ',Stocks[s],' is stuck',sep=''), file = 'Optimization Catch.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
+       }
     }# Close while loop
     
     
