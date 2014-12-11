@@ -6,7 +6,7 @@
 RunProjection<- function(Data,BaselineYear,NumCPUs)
 {
   
-  # Data<-  MsyData[MsyData$CanProject==T,]
+#   Data<-  MsyData[MsyData$CanProject==T,]
   #   Data<- MsyData[MsyData$CanProject==T & MsyData$IdOrig=='AFSC-REYEROCKBSAI-1974-2011-STACHURA',]
   
   #   #  
