@@ -50,12 +50,15 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
       } #Close bvec loop
       
       diff= sum(abs(f1-oldf1))
-       if (t>2000)
+       if (t>200)
        {
          diff<- tol
-         write.table(paste(  'Fishery ',Stocks[s],' is stuck',sep=''), file = 'Optimization Catch.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
+         write.table(paste(  'Fishery ',Stocks[s],' is stuck',sep=''), file = 'Optimization Fail Log.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
        }
     }# Close while loop
+    
+#     write.table(paste(  'Number of Trys is ', t,sep=''), file = 'Optimization Testing.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
+    
     
     
     return(list(Policy=f1))
@@ -204,12 +207,12 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     
     PolicyMatrix$MarginalCost<- cost
     
-#     TempMat[counter:(counter+-1+(dim(PolicyMatrix)[1])),]<- I(PolicyMatrix)
-# #     
-#      counter<- (counter+(dim(PolicyMatrix)[1]))
+    TempMat[counter:(counter+-1+(dim(PolicyMatrix)[1])),]<- I(PolicyMatrix)
+#     
+     counter<- (counter+(dim(PolicyMatrix)[1]))
     
     
   } # close policies loop
   
-  return(PolicyMatrix)
+  return(TempMat)
 } #Close function

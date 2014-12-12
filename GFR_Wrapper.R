@@ -20,6 +20,14 @@ if (RunAnalyses==TRUE)
     
     fulldata<- DatabaseBuild()
     
+    Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes 
+    
+    Spec_Region_RAM=read.csv("Data/Ram_Regions_102814.csv",stringsAsFactors=F) # list of RAM Assessed IDs previously matched to species code and FAO Region
+    
+    Spec_Region_RAM$RegionFAO<- gsub("/",",",Spec_Region_RAM$RegionFAO,fixed=T) # change / to , for use in string parsing during filtering function
+    
+    
+    
     write.csv(file=paste(ResultFolder,"fulldata.csv",sep=""),fulldata)
     
     show('Done building raw database')
@@ -357,12 +365,12 @@ if (RunAnalyses==TRUE)
   
   BiomassData$IdLevel[WhereSpeciesLevel]<- 'Species'
   
-#   BiomassData<- AssignEconomicData(BiomassData) #Assign price and cost data to each stock
+  #   BiomassData<- AssignEconomicData(BiomassData) #Assign price and cost data to each stock
   
   BiomassData$Price<-NA # Price and BvBmsyOpenAccess variable must be created before Analyze fisheries. Will be filled later by Assign EconData
-
+  
   BiomassData$BvBmsyOpenAccess<-NA
-
+  
   BiomassData$RanCatchMSY<- F
   
   show('Results Processed')
@@ -400,7 +408,7 @@ if (RunAnalyses==TRUE)
   BiomassData$RanCatchMSY[MsyData$RanCatchMSY==T]<- TRUE
   
   BvBmsyOpenAccess<-FindOpenAccess(MsyData,BaselineYear,BOAtol) # find open access equilibrium for each species cat using results in MsyData
-
+  
   BiomassData<- AssignEconomicData(BiomassData,BvBmsyOpenAccess) #Assign price and cost data back to each stock in biomass data
   
   #Run quick diagnostic of CatchMSY results
@@ -419,7 +427,7 @@ if (RunAnalyses==TRUE)
   # Run projection analysis -------------------------------------------------
   
   MsyData$Price<-BiomassData$Price
-
+  
   MsyData$BvBmsyOpenAccess<-BiomassData$BvBmsyOpenAccess
   
   MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T) #Apply mean price to fisheries with no price
@@ -429,7 +437,9 @@ if (RunAnalyses==TRUE)
   MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$r)==F #Identify disheries that have both MSY and r
   
   save(file='MsyData.rdata',MsyData)
-
+  
+  MsyData$BestModel<- as.character(MsyData$BestModel)
+  
   ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs) #Run projections on MSY data that can be projected
   
   show("Completed Projections")

@@ -114,7 +114,6 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   VarBvBmsy<-NA # fill this vector with the variance in BvBmsy for each nei group 
   VarFvFmsy<-NA # fill this vector with the variance in FvFmsy for each nei group
   Year<-NA
-  
   for(a in 1:nrow(NeiStats))
   {
     
