@@ -24,8 +24,7 @@ library(ggplot2)
 
 RunAnalyses<- TRUE
 
-
-BatchFolder<- 'Scratch'
+BatchFolder<- 'Test Optimization'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -35,18 +34,18 @@ FigureFolder<- paste(BatchFolder,'Figures/',sep='')
 
 ResultFolder<- paste(BatchFolder,'Data/',sep='')
 
-dir.create(BatchFolder)
+dir.create(BatchFolder,recursive=T)
 
-dir.create(FigureFolder)
+dir.create(FigureFolder,recursive=T)
 
-dir.create(ResultFolder)
+dir.create(ResultFolder,recursive=T)
 
 if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
   BatchFolder<- 'Nov 12 Uncapped Complete Run copy'
-  
+    
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
   InputFolder<- 'Data/'
@@ -210,9 +209,11 @@ beta<- 1.3
 
 Discount<- 0.05
 
-bvec<- seq(0.00000001,2,length.out=30)
+bvec<- seq(0.00000001,3,length.out=30)
 
-tol<- 1e-1
+tol<- 1
+
+BOAtol<- 0.1
 
 # Figures -----------------------------------------------------------------
 
