@@ -17,14 +17,14 @@ library(zoo)
 library(proftools)
 library(snowfall)
 library(parallel)
-library(shiny)
+# library(shiny)
 library(ggplot2)
 
 # Basic Controls -------------------------------------------------------------
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'Test Optimization'
+BatchFolder<- 'PLEEEEEEEASE Jebus Full Run Dec 11'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -60,9 +60,9 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0.9
+SubSample<- 0
 
-NumCPUs<- 3 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 15 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
@@ -165,7 +165,7 @@ Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCat
 
 TransbiasBin<- 0.9
 
-TransbiasIterations<- 500
+TransbiasIterations<- 1000
 
 # Synthetic Stock Settings ------------------------------------------------
 
@@ -199,7 +199,7 @@ Parel<- TRUE #Run SNOWFALL in parallel?
 
 # Projections -------------------------------------------------------------
 
-ProjectionTime<- 15
+ProjectionTime<- 37
 
 CatchSharePrice<- 1.2
 
@@ -213,7 +213,7 @@ bvec<- seq(0.00000001,3,length.out=30)
 
 tol<- 1
 
-BOAtol<- 0.1
+BOAtol<- 0.2
 
 # Figures -----------------------------------------------------------------
 
