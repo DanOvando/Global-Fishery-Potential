@@ -24,7 +24,7 @@ library(ggplot2)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'PLEEEEEEEASE Jebus Full Run Dec 11'
+BatchFolder<- 'PLEEEEEEEASE Jebus Full Run Dec 13 Sofia Trumps'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -74,7 +74,7 @@ IncludeUnderfished<- FALSE
 
 SaveRDS<- FALSE
 
-OverlapMode<- 'FaoTrumps' #SofiaTrumps, FaoTrumps
+OverlapMode<- 'SofiaTrumps' #SofiaTrumps, FaoTrumps
 
 CatchMSYTrumps<- TRUE
 
@@ -199,7 +199,7 @@ Parel<- TRUE #Run SNOWFALL in parallel?
 
 # Projections -------------------------------------------------------------
 
-ProjectionTime<- 37
+ProjectionTime<- 20
 
 CatchSharePrice<- 1.2
 
