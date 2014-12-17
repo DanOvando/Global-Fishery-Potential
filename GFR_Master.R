@@ -24,7 +24,7 @@ library(ggplot2)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'PLEEEEEEEASE Jebus Full Run Dec 13 Sofia Trumps'
+BatchFolder<- 'FML Dec 16 Full Run Fao'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -44,7 +44,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Nov 12 Uncapped Complete Run copy'
+  BatchFolder<- 'FML Dec 16 Full Run Fao'
     
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
@@ -82,7 +82,7 @@ CommonFinalYear<- TRUE
 
 BaselineYear<- 2012
 
-CountriesToRun<- c('Global','USA','China','Indonesia','Philippines','Peru','Chile','Mexico','Japan','Myanmar','Viet Nam','EU','Parties to the Nauru Agreement') 
+CountriesToRun<- c('Global','Multinational','USA','China','Indonesia','Philippines','Peru','Chile','Mexico','Japan','Myanmar','Viet Nam','EU','Parties to the Nauru Agreement') 
 
 EUCountries<- c('Austria',
   'Belgium',

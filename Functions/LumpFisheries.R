@@ -57,7 +57,7 @@ LumpFisheries<- function(Data,GroupsToGroup)
           
           TempStitch$IdOrig<- paste('Lumped-',TempStitch$CommName[1],'-FaoRegion',FaoRegs[f],sep='')
 
-          TempStitch$Country<- 'Lumped'
+          TempStitch$Country<- 'Multinational'
           for (y in 1:length(GroupYears))
           {
             
