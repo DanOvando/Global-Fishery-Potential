@@ -56,7 +56,7 @@ Figure2<-function(CumulativesFinal,FinalYearFinal,Countries,Limit)
   
   # Figure 2 - Plot data for P1-P4 and wrap by Country
   pdf(file=paste(FigureFolder,'Figure 2.pdf',sep=''),height=10,width=14,pointsize=6)
-  print(ggplot(Plot2Data,aes(xVar,yVar,size=Size)) +
+  print(ggplot(Plot2Data[Plot2Data$Policy!='Food',],aes(xVar,yVar,size=Size)) +
           geom_point(aes(color=Policy),alpha=0.6) +
           facet_wrap(~Country,scales='free') +
           coord_cartesian(xlim=c(-30,100),ylim=c(-30,100)) +
@@ -64,10 +64,11 @@ Figure2<-function(CumulativesFinal,FinalYearFinal,Countries,Limit)
                                 breaks=c(20,40,60,80,100,120,140,160,180,200), 
                                 labels=c("20%","40%",'60%','80%','100%','120%','140%','160%','180%','200%')) +
           theme(text=element_text(size=20)) +
+          guides(color=guide_legend(override.aes=list(size=5))) +
           geom_abline(intercept=0,slope=0) +
           geom_vline(xintercept=0) +
-          labs(x = "Percent Change from Status Quo Food",
-               y ="Percent Change from Status Quo Fish",size="% Change\n SQ NPV"))
+          labs(x = "Percent Change from Status Quo Fish",
+               y ="Percent Change from Status Quo Food",size="% Change\n SQ NPV"))
   dev.off()
   
   return(Figure2Data=Plot2Data)

@@ -35,7 +35,7 @@ Figure3<-function(CumulativesFinal,Countries)
   
   pdf(file=paste(FigureFolder,"Figure 3.pdf",sep=''),width=16,height=10)  
   
-  panelA<-ggplot(Plot[(Plot$Country!='Chile' & Plot$Country!='Multinational')  & Plot$variable!='NPV.CatchShare',],aes(x=Country,y=value,fill=variable)) +
+  panelA<-ggplot(Plot[(Plot$Country!='Chile' & Plot$Country!='Multinational' & Plot$Country!='Global')  & Plot$variable!='NPV.CatchShare',],aes(x=Country,y=value,fill=variable)) +
     geom_bar(stat='identity') +
     guides(fill=F) +
     theme(axis.text.x = element_text(angle = 30, hjust = 1)) +

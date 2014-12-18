@@ -17,9 +17,9 @@
 Figure1<-function(CumulativesFinal,FinalYearFinal,Policy,Limit)
 {
   # subset upside data to countries of interest
-  Cumulatives<-CumulativesFinal[CumulativesFinal$Policy==Policy,]
+  Cumulatives<-CumulativesFinal[CumulativesFinal$Policy==Policy & CumulativesFinal$Country!='Global',]
   
-  FinalYear<-FinalYearFinal[FinalYearFinal$Policy==Policy,]
+  FinalYear<-FinalYearFinal[FinalYearFinal$Policy==Policy & FinalYearFinal$Country!='Global',]
   
   # Build dataframe to plot based on axis inputs and country
   c<-Cumulatives$Country
@@ -70,8 +70,8 @@ Figure1<-function(CumulativesFinal,FinalYearFinal,Policy,Limit)
     theme(text=element_text(size=18)) +
     geom_abline(intercept=0,slope=0) +
     geom_vline(xintercept=0) +
-    labs( x = 'Percent Change from Status Quo Food',
-          y ="Percent Change from Status Quo Fish",size='% Change from\n Status Quo NPV')
+    labs( x = 'Percent Change from Status Quo Fish',
+          y ="Percent Change from Status Quo Food",size='% Change from\n Status Quo NPV')
   
   print(panelA)
   dev.off()
@@ -84,8 +84,8 @@ Figure1<-function(CumulativesFinal,FinalYearFinal,Policy,Limit)
     theme(text=element_text(size=18)) +
     geom_abline(intercept=0,slope=0) +
     geom_vline(xintercept=0) +
-    labs( x = 'Absolute Change from Status Quo Food',
-          y ="Absolute Change from Status Quo Fish",size='Absolute Change from\n Status Quo NPV')
+    labs( x = 'Absolute Change from Status Quo Fish',
+          y ="Absolute Change from Status Quo Food",size='Absolute Change from\n Status Quo NPV')
   
   print(panelB)
   dev.off()
