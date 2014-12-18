@@ -19,12 +19,15 @@ library(snowfall)
 library(parallel)
 # library(shiny)
 library(ggplot2)
+library(grid)
+library(gridExtra)
+library(reshape2)
 
 # Basic Controls -------------------------------------------------------------
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'FML Dec 16 Full Run Fao'
+BatchFolder<- 'FML Dec 17 Full FAO Trumps'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -74,7 +77,7 @@ IncludeUnderfished<- FALSE
 
 SaveRDS<- FALSE
 
-OverlapMode<- 'SofiaTrumps' #SofiaTrumps, FaoTrumps
+OverlapMode<- 'FaoTrumps' #SofiaTrumps, FaoTrumps
 
 CatchMSYTrumps<- TRUE
 

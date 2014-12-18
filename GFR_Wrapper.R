@@ -923,6 +923,14 @@ write.csv(file=paste(ResultFolder,"Percent Upside From Business As Usual Data.cs
 
 # Scale and Analyze Results -----------------------------------------------
 
+# Figures for Paper
+
+FigureOne<-Figure1(CumulativesFinal,FinalYearFinal,Policy='Opt',Limit=200)
+
+FigureTwo<-Figure2(CumulativesFinal, FinalYearFinal, Countries=c('Global','EU','USA','China','Indonesia','Japan'),Limit=100)
+
+FigureThree<-Figure3(CumulativesFinal,Countries=CountriesToRun)
+
 # Publish in Science ------------------------------------------------------
 
 
