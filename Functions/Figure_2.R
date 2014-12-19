@@ -60,7 +60,7 @@ Figure2<-function(CumulativesFinal,FinalYearFinal,Countries,Limit)
           geom_point(aes(color=Policy),alpha=0.6) +
           facet_wrap(~Country,scales='free') +
           coord_cartesian(xlim=c(-30,100),ylim=c(-30,100)) +
-          scale_size_continuous(range=c(2,20), 
+          scale_size_continuous(range=c(10,20), 
                                 breaks=c(20,40,60,80,100,120,140,160,180,200), 
                                 labels=c("20%","40%",'60%','80%','100%','120%','140%','160%','180%','>200%')) +
           theme(text=element_text(size=20)) +
@@ -68,7 +68,7 @@ Figure2<-function(CumulativesFinal,FinalYearFinal,Countries,Limit)
           geom_abline(intercept=0,slope=0) +
           geom_vline(xintercept=0) +
           labs(x = "Percent Change from Status Quo Fish",
-               y ="Percent Change from Status Quo Food",size="% Change\n SQ NPV"))
+               y ="Percent Change from Status Quo Food",size="% Change\n From SQ NPV"))
   dev.off()
   
   return(Figure2Data=Plot2Data)
