@@ -32,7 +32,7 @@ FindOpenAccess<-function(MsyData,BaselineYear,BOAtol)
   
   OpenAccess<-OpenAccess[is.na(OpenAccess$BvBmsyOpenAccess)==F,]
   
-  OpenAccess$BvBmsyOpenAccess[(OpenAccess$BvBmsyOpenAccess)>=1.9]<- 1.9
+  OpenAccess$BvBmsyOpenAccess[(OpenAccess$BvBmsyOpenAccess)>=0.3]<- 0.3 # limit BOA to 0.3
   
   
   return(BvBmsyOpenAccess=OpenAccess)
