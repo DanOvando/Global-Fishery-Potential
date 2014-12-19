@@ -27,7 +27,7 @@ library(reshape2)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'FML Dec 17 Full FAO Trumps'
+BatchFolder<- 'FML UGHHH Dec 18 Full FAO Trumps'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -65,7 +65,7 @@ if (RunAnalyses==FALSE)
 
 SubSample<- 0
 
-NumCPUs<- 15 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 20 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 

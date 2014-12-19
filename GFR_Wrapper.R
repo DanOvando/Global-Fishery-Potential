@@ -591,6 +591,9 @@ if (CapRefs==T)
   
 }
 
+# AllCountries<-unique(ProjectionData$Country)
+# CountriesToRun<-c('Global',AllCountries)
+
 for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
 {
   
@@ -662,7 +665,7 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
     if (BiomassStatus$CatchStats$Catch$NumberOfStocks>5)
     {
-      MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
+#       MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
     }
     # Analyze Projections -----------------------------------------------------
     
@@ -918,6 +921,7 @@ if(SaveRDS==TRUE)
 UpsidePlot(CumulativesFinal,FinalYearFinal,Policy='CatchShare',XVar='PercChangeTotalBiomass',YVar='NPV',DotSize='Food',Limit=300)
 
 write.csv(file=paste(ResultFolder,"Percent Upside From Business As Usual Data.csv",sep=''),CumulativesFinal)
+write.csv(file=paste(ResultFolder,"Percent Upside From Business As Usual Data Final Year.csv",sep=''),FinalYearFinal)
 
 # write.csv(file=paste(ResultFolder,'Chris Summary Table Data.csv',sep=''),ResultMetricsTable)
 
