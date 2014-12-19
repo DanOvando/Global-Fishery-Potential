@@ -673,6 +673,11 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
     TempProjectionData$DiscProfits<- TempProjectionData$Profits * (1+Discount)^-(TempProjectionData$Year-BaselineYear)
     
+    if(CountriesToRun[c]=='Global')
+    {
+      FisheriesUpside<-FisheriesUpside(TempProjectionData=TempProjectionData)
+    }
+    
     #Calculate baseline metrics values 
     
     Baseline<- ddply(subset(TempProjectionData,Year==BaselineYear & Policy=='Historic'),c('Year','Policy'),summarize,MedianBvBmsy=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),
@@ -929,7 +934,7 @@ write.csv(file=paste(ResultFolder,"Percent Upside From Business As Usual Data Fi
 
 # Figures for Paper
 
-FigureOne<-Figure1(CumulativesFinal,FinalYearFinal,Policy='Opt',Limit=200)
+FigureOne<-Figure1(CumulativesFinal,FinalYearFinal,Policy='Opt',Limit=100)
 
 FigureTwo<-Figure2(CumulativesFinal, FinalYearFinal, Countries=c('Global','EU','USA','China','Indonesia','Japan'),Limit=100)
 
