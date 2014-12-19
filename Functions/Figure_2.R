@@ -52,7 +52,7 @@ Figure2<-function(CumulativesFinal,FinalYearFinal,Countries,Limit)
   
   Plot2Data$xVar[Plot2Data$xVar>Limit]<-Limit 
   Plot2Data$yVar[Plot2Data$yVar>Limit]<-Limit
-  Plot2Data$Size[Plot2Data$Size>Limit]<-Limit
+  Plot2Data$Size[Plot2Data$Size>Limit]<-200
   
   # Figure 2 - Plot data for P1-P4 and wrap by Country
   pdf(file=paste(FigureFolder,'Figure 2.pdf',sep=''),height=10,width=14,pointsize=6)
@@ -62,7 +62,7 @@ Figure2<-function(CumulativesFinal,FinalYearFinal,Countries,Limit)
           coord_cartesian(xlim=c(-30,100),ylim=c(-30,100)) +
           scale_size_continuous(range=c(2,20), 
                                 breaks=c(20,40,60,80,100,120,140,160,180,200), 
-                                labels=c("20%","40%",'60%','80%','100%','120%','140%','160%','180%','200%')) +
+                                labels=c("20%","40%",'60%','80%','100%','120%','140%','160%','180%','>200%')) +
           theme(text=element_text(size=20)) +
           guides(color=guide_legend(override.aes=list(size=5))) +
           geom_abline(intercept=0,slope=0) +
