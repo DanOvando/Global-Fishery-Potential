@@ -206,6 +206,8 @@ PlotJack<- rbind(Prm,CmsyB,CmsyBnoP)
 
 save(PlotJack,JackStore,file='Diagnostics/JackKnife.rdata')
 
+load(file='Diagnostics/JackKnife.rdata')
+
 pdf(file='Diagnostics/Observed vs Predicted BvBmsy Diagnostic Plots.pdf')
 xyplot((ModelBvBmsy) ~ (RamBvBmsy) | Model,subset=Year>2005,data=PlotJack,xlab=' Log RAM B/Bmsy',ylab='Log Predicted B/Bmsy', panel=function(x,y,...)
 {
@@ -276,11 +278,11 @@ PlotJack$ProportionalFError<- 100*((PlotJack$CmsyF-PlotJack$RamF)/PlotJack$RamF)
 
 
 pdf(file='Diagnostics/Proportional Error by Model Boxplots.pdf')
-boxplot( ProportionalError~Model ,data=PlotJack,outline=F,ylab='% Proportional Error')
+boxplot( ProportionalError~Model ,data=PlotJack,outline=F,ylab='% Proportional Errori in BvBmsy')
 dev.off()
 
 pdf(file='Diagnostics/Proportional Error Boxplots by Country.pdf')
-boxplot( ProportionalError ~Country ,data=PlotJack,outline=F,ylab='% Proportional Error')
+boxplot( ProportionalError ~Country ,data=PlotJack,outline=F,ylab='% Proportional Error in BvBmsy')
 dev.off()
 
 
@@ -304,13 +306,12 @@ pdf(file='Diagnostics/Proportional error in FvFmsy by time and country.pdf')
 
 print(ggplot(data=subset(PlotJack,Year>1985),aes(factor(Year),ProportionalFError))+
         geom_boxplot(outlier.shape=NA,fill='steelblue2')+
-        coord_cartesian(ylim=c(-200,200))+
-        #   coord_cartesian(ylim = range(boxplot(PlotJack$ProportionalError, plot=FALSE)$stats)*c(.8, 1.5))+
-        facet_wrap(~Country,scales='free')+
+         coord_cartesian(ylim=c(-200,200))+
+        facet_wrap(~Country)+
         geom_abline(intercept=0,slope=0)+
         ylab('Proportional Error (%)')+
-        xlab('Time')+
-        scale_x_discrete(breaks=as.character(seq(from=1986,to=2012,by=8))))
+        xlab('Time'))
+#         scale_x_discrete(breaks=as.character(seq(from=1986,to=2012,by=8))))
 
 dev.off()
 
@@ -352,7 +353,7 @@ print(ggplot(data=subset(PlotJack,Year>2000 & is.na(ProportionalError)==F),aes((
         facet_wrap(~Country,scales='free')+
         geom_abline(intercept=0,slope=0)+
         geom_smooth(method='lm')+
-        ylab('Proportional Error (%)')+
+        ylab('Proportional Error (%) in BvBmsy')+
         xlab('Catch'))
 #         scale_x_discrete(breaks=as.character(seq(from=2000,to=2012,by=4))))
 dev.off()
@@ -369,7 +370,7 @@ print(ggplot(data=TotalPerformance,aes((TotalCatch),(MeanBioError)))+
         facet_wrap(~Country,scales='free')+
         geom_abline(intercept=0,slope=0)+
         geom_smooth(method='lm')+
-        ylab('Mean Proportional Error (%)')+
+        ylab('Mean Proportional Error (%) in BvBmsy')+
         xlab('Catch'))
 #         scale_x_discrete(breaks=as.character(seq(from=2000,to=2012,by=4))))
 dev.off()
@@ -383,20 +384,20 @@ print(ggplot(data=subset(TotalPerformance,is.na(MeanMSYError)==F),aes((TotalCatc
         facet_wrap(~Country,scales='free')+
         geom_abline(intercept=0,slope=0)+
         geom_smooth(method='lm')+
-        ylab('Proportional Error (%)')+
+        ylab('Proportional Error (%) in MSY')+
         xlab('Catch'))
 #         scale_x_discrete(breaks=as.character(seq(from=2000,to=2012,by=4))))
 dev.off()
 
 pdf(file='Diagnostics/Proportional error in BvBmsy as a function of lifetime log catch.pdf')
 
-print(ggplot(data=TotalPerformance,aes((TotalCatch),(MeanBioError)))+
+print(ggplot(data=TotalPerformance,aes(log(TotalCatch),(MeanBioError)))+
         geom_point(color='steelblue1')+
         #   coord_cartesian(ylim = range(boxplot(PlotJack$ProportionalError, plot=FALSE)$stats)*c(.8, 1.5))+
         facet_wrap(~Country,scales='free')+
         geom_abline(intercept=0,slope=0)+
         geom_smooth(method='lm')+
-        ylab('Mean Proportional Error (%)')+
+        ylab('Mean Proportional Error (%) in BvBmsy')+
         xlab('log(Catch)'))
 #         scale_x_discrete(breaks=as.character(seq(from=2000,to=2012,by=4))))
 dev.off()
@@ -410,7 +411,7 @@ print(ggplot(data=subset(TotalPerformance,is.na(MeanMSYError)==F),aes(log(TotalC
         facet_wrap(~Country,scales='free')+
         geom_abline(intercept=0,slope=0)+
         geom_smooth(method='lm')+
-        ylab('Proportional Error (%)')+
+        ylab('Proportional Error (%) in MSY')+
         xlab('log(Catch)'))
 #         scale_x_discrete(breaks=as.character(seq(from=2000,to=2012,by=4))))
 dev.off()
