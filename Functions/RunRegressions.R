@@ -27,7 +27,7 @@ RunRegressions<- function(Data,RegList,FigureName)
 #   
     fmla <- as.formula(paste("LogBvBmsy ~ ", paste( ModelVars[ModelVars!='LogBvBmsy' & ModelVars!='IdOrig'], collapse= "+")))
 
-  TempReg<- lm(fmla , data=Data[,WhereVars])
+  TempReg<- lm(fmla , data=Data[Data$ExtendedTime==F,WhereVars])
   
 #   TempReg<- plm(fmla , data=Data[,WhereVars],model="pooling",index=c('IdOrig','Year'),na.action='na.omit')
   
