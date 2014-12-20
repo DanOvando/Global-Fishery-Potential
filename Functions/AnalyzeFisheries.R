@@ -46,10 +46,10 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
   
   # Analyze Catch Statistics ------------------------------------------------
   
-  
+  Data$Catch[is.infinite(Data$Catch)]<- NA
   
   CatchStats$FisherySizes<- ddply(Data,.(IdOrig),summarize,LifetimeCatch=sum(Catch,na.rm=T)) 
-  
+
   plot(cumsum(sort(CatchStats$FisherySizes$LifetimeCatch,decreasing=T)),xlab='Fishery',ylab='Cumulative Catch (MT)')
   
   CatchStats$Catch<- ddply(Data,.(),summarize,NumberOfStocks=length(unique(IdOrig)),MeanCatch=mean(Catch,na.rm=T),
