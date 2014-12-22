@@ -19,10 +19,12 @@ library(snowfall)
 library(parallel)
 library(shiny)
 library(ggplot2)
+library(gridExtra)
+library(reshape2)
 
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- TRUE
+RunAnalyses<- FALSE
 
 BatchFolder<- 'Test2'
 
@@ -44,8 +46,8 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Nov 12 Uncapped Complete Run copy'
-    
+  BatchFolder<- 'Test2'
+  
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
   InputFolder<- 'Data/'
