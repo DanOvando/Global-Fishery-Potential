@@ -206,7 +206,7 @@ if (RunAnalyses==TRUE)
   NeiRegressions$M6<- Regressions$M6
   
   NeiRegressions$M7<- Regressions$M7
-  
+  SyntheticData$ExtendedTime<- FALSE
   NeiModels<- RunRegressions(SyntheticData,NeiRegressions,'Synthetic Stocks')
   
   NeiModelFactorLevels<- NULL
@@ -219,7 +219,7 @@ if (RunAnalyses==TRUE)
     
   }
   
-  SyntheticData<- InsertFisheryPredictions(SyntheticData,NeiModels) #Add fishery predictions back into main dataframe
+#   SyntheticData<- InsertFisheryPredictions(SyntheticData,NeiModels) #Add fishery predictions back into main dataframe
   
   NeiModelSdevs<- CreateSdevBins(NeiModels,SyntheticData,TransbiasBin)
   
