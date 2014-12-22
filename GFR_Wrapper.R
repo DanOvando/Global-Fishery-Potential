@@ -172,7 +172,11 @@ if (RunAnalyses==TRUE)
   
   # Run regressions ---------------------------------------------------------
   
-  RealModels<- RunRegressions(RamData,Regressions,'Real Stocks')
+  RegressionResults<- RunRegressions(RamData,Regressions,'Real Stocks')
+  
+  RealModels<- RegressionResults$Models
+  
+  RamData<- RegressionResults$RamData
   
   RealModelFactorLevels<- NULL
   
@@ -191,7 +195,7 @@ if (RunAnalyses==TRUE)
     eval(parse(text=paste('RealModelFactorLevels$',Model,'<- RealModels$',Model,'$xlevels$SpeciesCatName',sep='')))
   }
   
-  RamData<- InsertFisheryPredictions(RamData,RealModels) #Add fishery predictions back into main dataframe
+#   RamData<- InsertFisheryPredictions(RamData,RealModels) #Add fishery predictions back into main dataframe
   
   RealModelSdevs<- CreateSdevBins(RealModels,RamData,TransbiasBin)
   
@@ -591,6 +595,9 @@ if (CapRefs==T)
   
 }
 
+# AllCountries<-unique(ProjectionData$Country)
+# CountriesToRun<-c('Global',AllCountries)
+
 for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
 {
   
@@ -662,13 +669,18 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
     if (BiomassStatus$CatchStats$Catch$NumberOfStocks>5)
     {
-      MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
+#       MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
     }
     # Analyze Projections -----------------------------------------------------
     
     TempProjectionData<- ProjectionData[Proj_CountryLocater,]
     
     TempProjectionData$DiscProfits<- TempProjectionData$Profits * (1+Discount)^-(TempProjectionData$Year-BaselineYear)
+    
+    if(CountriesToRun[c]=='Global')
+    {
+      FisheriesUpside<-FisheriesUpside(TempProjectionData=TempProjectionData)
+    }
     
     #Calculate baseline metrics values 
     
@@ -918,10 +930,19 @@ if(SaveRDS==TRUE)
 UpsidePlot(CumulativesFinal,FinalYearFinal,Policy='CatchShare',XVar='PercChangeTotalBiomass',YVar='NPV',DotSize='Food',Limit=300)
 
 write.csv(file=paste(ResultFolder,"Percent Upside From Business As Usual Data.csv",sep=''),CumulativesFinal)
+write.csv(file=paste(ResultFolder,"Percent Upside From Business As Usual Data Final Year.csv",sep=''),FinalYearFinal)
 
 # write.csv(file=paste(ResultFolder,'Chris Summary Table Data.csv',sep=''),ResultMetricsTable)
 
 # Scale and Analyze Results -----------------------------------------------
+
+# Figures for Paper
+
+FigureOne<-Figure1(CumulativesFinal,FinalYearFinal,Policy='Opt',Limit=100)
+
+FigureTwo<-Figure2(CumulativesFinal, FinalYearFinal, Countries=c('Global','EU','USA','China','Indonesia','Japan'),Limit=100)
+
+FigureThree<-Figure3(CumulativesFinal,Countries=CountriesToRun)
 
 # Publish in Science ------------------------------------------------------
 
