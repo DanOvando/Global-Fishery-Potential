@@ -195,7 +195,7 @@ if (RunAnalyses==TRUE)
     eval(parse(text=paste('RealModelFactorLevels$',Model,'<- RealModels$',Model,'$xlevels$SpeciesCatName',sep='')))
   }
   
-#   RamData<- InsertFisheryPredictions(RamData,RealModels) #Add fishery predictions back into main dataframe
+  #   RamData<- InsertFisheryPredictions(RamData,RealModels) #Add fishery predictions back into main dataframe
   
   RealModelSdevs<- CreateSdevBins(RealModels,RamData,TransbiasBin)
   
@@ -206,8 +206,14 @@ if (RunAnalyses==TRUE)
   NeiRegressions$M6<- Regressions$M6
   
   NeiRegressions$M7<- Regressions$M7
+  
   SyntheticData$ExtendedTime<- FALSE
+  
   NeiModels<- RunRegressions(SyntheticData,NeiRegressions,'Synthetic Stocks')
+
+  SyntheticData<- NeiModels$RamData
+  
+  NeiModels<- NeiModels$Model
   
   NeiModelFactorLevels<- NULL
   
@@ -219,7 +225,7 @@ if (RunAnalyses==TRUE)
     
   }
   
-#   SyntheticData<- InsertFisheryPredictions(SyntheticData,NeiModels) #Add fishery predictions back into main dataframe
+    SyntheticData<- InsertFisheryPredictions(SyntheticData,NeiModels) #Add fishery predictions back into main dataframe
   
   NeiModelSdevs<- CreateSdevBins(NeiModels,SyntheticData,TransbiasBin)
   
@@ -669,7 +675,7 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
     if (BiomassStatus$CatchStats$Catch$NumberOfStocks>5)
     {
-#       MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
+      #       MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
     }
     # Analyze Projections -----------------------------------------------------
     
