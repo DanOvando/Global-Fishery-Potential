@@ -37,14 +37,14 @@ RunRegressions<- function(Data,RegList,FigureName)
     
     #   TempReg<- plm(fmla , data=Data[,WhereVars],model="pooling",index=c('IdOrig','Year'),na.action='na.omit')
        
-    Model<- ModelNames[m]  
+    Model<- RegNames[m]  
         
     Omitted<- names(na.action(TempReg))
     
     HasPrediction<- UsedNames[(rownames(RegData) %in% Omitted)==F]
     
     WherePrediction<- AllNames %in% HasPrediction
-    
+
     eval(parse(text=paste('Data$',Model,'Marker[WherePrediction]<- TRUE' ,sep='')))
     
     eval(parse(text=paste('Data$',Model,'Prediction[WherePrediction]<- TempReg$fitted.values' ,sep='')))
