@@ -7,22 +7,22 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
 {
   
   #   Data<- rus
-#   Data<- BiomassData[Biomass_CountryLocater,]
-#   
-#   BatchName<- 'Test'
-#   #   
-#   GroupingVars<- c('Year')
-#   
-#   Years<- 1990:2013
-#   
-#   RealModelSdevs<- RealModelSdevs
-#   
-#   NeiModelSdevs<- NeiModelSdevs
-#   
-#   TransbiasBin<- TransbiasBin
-#   
-#   J<- TransbiasIterations
-    
+  #   Data<- BiomassData[Biomass_CountryLocater,]
+  #   
+  #   BatchName<- 'Test'
+  #   #   
+  #   GroupingVars<- c('Year')
+  #   
+  #   Years<- 1990:2013
+  #   
+  #   RealModelSdevs<- RealModelSdevs
+  #   
+  #   NeiModelSdevs<- NeiModelSdevs
+  #   
+  #   TransbiasBin<- TransbiasBin
+  #   
+  #   J<- TransbiasIterations
+  
   Data<- Data[Data$Year %in% Years,]
   
   CatchStats<- list()
@@ -49,7 +49,7 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
   Data$Catch[is.infinite(Data$Catch)]<- NA
   
   CatchStats$FisherySizes<- ddply(Data,.(IdOrig),summarize,LifetimeCatch=sum(Catch,na.rm=T)) 
-
+  
   plot(cumsum(sort(CatchStats$FisherySizes$LifetimeCatch,decreasing=T)),xlab='Fishery',ylab='Cumulative Catch (MT)')
   
   CatchStats$Catch<- ddply(Data,.(),summarize,NumberOfStocks=length(unique(IdOrig)),MeanCatch=mean(Catch,na.rm=T),
@@ -184,8 +184,9 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
       lines(BioStats$Year,BioStats$MeanMedian,type='b',lwd=2)
       abline(h=1,lty=2,lwd=2)
       legend('topright',legend='95% Confidence Range of Median',fill='lightsteelblue2')
-      
       Data$BvBmsy<- TempBio
+      
+      Data$BvBmsySD<- TempBioSd
       
       
       BioStats<- ddply(Data,.(Year),summarize,Median=median((BvBmsy)),Q2.5=quantile((BvBmsy),c(0.025)),Q25=quantile((BvBmsy),c(0.25)),
@@ -222,13 +223,13 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
       
       Individuals<- exp(Data$BvBmsy)
       
+      Data$BvBmsy<- TempBio
+      
+      Data$BvBmsySD<- TempBioSd
     }
   }
   
   
-  Data$BvBmsy<- TempBio
-  
-  Data$BvBmsySD<- TempBioSd
   
   Data$Year<- as.factor(Data$Year)
   
