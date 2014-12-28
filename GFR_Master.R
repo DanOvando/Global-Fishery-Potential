@@ -24,9 +24,9 @@ library(reshape2)
 
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- FALSE
+RunAnalyses<- TRUE
 
-BatchFolder<- 'Test2'
+BatchFolder<- 'Extend Test 2'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -64,7 +64,7 @@ if (RunAnalyses==FALSE)
 
 SubSample<- 0.9
 
-NumCPUs<- 3 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 2 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
@@ -215,7 +215,7 @@ bvec<- seq(0.00000001,3,length.out=30)
 
 tol<- 1
 
-BOAtol<- 0.1
+BOAtol<- 0.3
 
 # Figures -----------------------------------------------------------------
 

@@ -16,7 +16,7 @@ FisheriesUpside<-function(TempProjectionData)
   
   for(a in 1:length(ids))
   {
-    show(a)
+#     show(a)
     
     temp<-TempProjectionData[TempProjectionData$IdOrig==ids[a],]
     
