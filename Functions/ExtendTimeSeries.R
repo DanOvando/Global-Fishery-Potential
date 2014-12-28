@@ -1,7 +1,7 @@
 ExtendTimeSeries<- function(s,Data,BaselineYear)
 {
   
-
+  
   source('Functions/RepMat.R')
   
   VarNames<- colnames(Data)
@@ -33,6 +33,11 @@ ExtendTimeSeries<- function(s,Data,BaselineYear)
   
   MissingYears<- max(0,(BaselineYear-MaxYear))
   
+  if (any(TempStock$Dbase=='FAO'))
+  {
+    MissingYears<- 0
+  }
+  
   for (i in 1)
     if (MissingYears>0)
     {
@@ -48,15 +53,16 @@ ExtendTimeSeries<- function(s,Data,BaselineYear)
     }   
   else
   {
-    NewData<- rbind(NewData,TempStock)
+    #     NewData<- rbind(NewData,TempStock)
+    NewData<- TempStock
   }
-
-
   
-# show(paste(round(100*(s/length(Stocks))), '% Done With Time Series Extension',sep=''))
-write.table(paste(round(100*(s/length(Stocks))), '% Done With Time Series Extension',sep=''), file = 'ExtendTimeSeriesProgress.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
-
-
-#   colnames(NewData)<- c(VarNames,'ExtendedTime')
-return(NewData)
+  
+  
+  # show(paste(round(100*(s/length(Stocks))), '% Done With Time Series Extension',sep=''))
+  write.table(paste(round(100*(s/length(Stocks))), '% Done With Time Series Extension',sep=''), file = 'ExtendTimeSeriesProgress.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
+  
+  
+  #   colnames(NewData)<- c(VarNames,'ExtendedTime')
+  return(NewData)
 }
