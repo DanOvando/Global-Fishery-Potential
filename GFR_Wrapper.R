@@ -225,7 +225,7 @@ if (RunAnalyses==TRUE)
     
   }
   
-    SyntheticData<- InsertFisheryPredictions(SyntheticData,NeiModels) #Add fishery predictions back into main dataframe
+#     SyntheticData<- InsertFisheryPredictions(SyntheticData,NeiModels) #Add fishery predictions back into main dataframe
   
   NeiModelSdevs<- CreateSdevBins(NeiModels,SyntheticData,TransbiasBin)
   
