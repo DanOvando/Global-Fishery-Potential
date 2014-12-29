@@ -48,7 +48,7 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
     
     if(Sys.info()[1]!='Windows')
     {
-      ExtendResults <- (mclapply(1:(length(Stocks)), ExtendTimeSeries,mc.cores=NumCPUs,Data,BaselineYear))      
+      ExtendResults <- (mclapply(1:(length(Stocks)), ExtendTimeSeries,mc.cores=NumCPUs,Data,BaselineYear,ExtendFAO=F))      
     }
     if(Sys.info()[1]=='Windows')
     {

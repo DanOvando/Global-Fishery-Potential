@@ -53,8 +53,10 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   
   Stocks<- (unique(NEIs$IdOrig))
   
-  ExtendResults <- (mclapply(1:(length(Stocks)), ExtendTimeSeries,mc.cores=NumCPUs,NEIs,BaselineYear))      
+  ExtendFAO<- T
   
+  ExtendResults <- (mclapply(1:(length(Stocks)), ExtendTimeSeries,mc.cores=NumCPUs,NEIs,BaselineYear,ExtendFAO=ExtendFAO))      
+
   BaselineYear<- OrigBaselineYear
   
   
@@ -156,7 +158,6 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
     {
       
       ComparisonStocks<-SpeciesLevel[SpeciesLevel$SciName %in% compstocks,] # pulling comparable stocks from the globe
-      
       #       ComparisonStocks<-SpeciesLevel[SpeciesLevel$SciName %in% compstocks  &
       #                                        grepl((NeiStats$RegionFAO[a]),SpeciesLevel$RegionFAO ) & is.na(SpeciesLevel$RegionFAO)==F,]
       #       
@@ -176,20 +177,16 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
           for (b in 1:nrow(results))
           {
             #             WhereNei<- NEIs$SciName==NeiStats$SciName[a] & grepl((NeiStats$RegionFAO[a]),NEIs$RegionFAO ) & NEIs$Year==results$Year[b]  & is.na(NEIs$RegionFAO)==F & NEIs$Policy==LongPols[p]
-            WhereNei<- NEIs$SciName==NeiStats$SciName[a] & NEIs$Year==results$Year[b] & NEIs$Policy==LongPols[p]
-            
-            
+            WhereNei<- NEIs$SciName==NeiStats$SciName[a] & NEIs$Year==results$Year[b] & NEIs$Policy==LongPols[p]            
             NEIs[WhereNei,VarsToFill]<-results[b,c("MedianBvBmsy", "MedianFvFmsy", "MedianR", "MedianK","MedianPrice", "MedianCost")]
             NEIs$CanProject[WhereNei]<- TRUE
             
           } 
         } # Close Policy loop
-        
         #         JStocks[a]<- (unique(results$JStocks))
       } # Close ComparisonStocks if
     } # Close compstocks if
   } # Close NeiStats loop
-  
   # Make data frame from JStocks, VarBvBmsy, and FvFmsy
   
   NeiDiagnostics<-data.frame(cbind(Year,JStocks,VarBvBmsy,VarFvFmsy))

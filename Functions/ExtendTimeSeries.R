@@ -1,4 +1,4 @@
-ExtendTimeSeries<- function(s,Data,BaselineYear)
+ExtendTimeSeries<- function(s,Data,BaselineYear,ExtendFAO)
 {
   
   
@@ -33,7 +33,7 @@ ExtendTimeSeries<- function(s,Data,BaselineYear)
   
   MissingYears<- max(0,(BaselineYear-MaxYear))
   
-  if (any(TempStock$Dbase=='FAO'))
+  if (any(TempStock$Dbase=='FAO') & ExtendFAO==F)
   {
     MissingYears<- 0
   }
