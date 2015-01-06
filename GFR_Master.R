@@ -17,7 +17,7 @@ library(zoo)
 library(proftools)
 library(snowfall)
 library(parallel)
-library(shiny)
+# library(shiny)
 library(ggplot2)
 library(gridExtra)
 library(reshape2)
@@ -26,7 +26,7 @@ library(reshape2)
 
 RunAnalyses<- FALSE
 
-BatchFolder<- 'QAQC'
+BatchFolder<- 'Dec 28 Full Run'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -63,9 +63,9 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0.9
+SubSample<- 0
 
-NumCPUs<- 3 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 17 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
@@ -168,7 +168,7 @@ Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCat
 
 TransbiasBin<- 0.9
 
-TransbiasIterations<- 500
+TransbiasIterations<- 1000
 
 # Synthetic Stock Settings ------------------------------------------------
 
@@ -196,7 +196,7 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-NumCatchMSYIterations <- 2000  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 15000  ## number of iterations, e.g. 100000
 
 Parel<- TRUE #Run SNOWFALL in parallel?
 
@@ -216,7 +216,7 @@ bvec<- seq(0.00000001,3,length.out=30)
 
 tol<- 1
 
-BOAtol<- 0.1
+BOAtol<- 0.2
 
 # Figures -----------------------------------------------------------------
 
