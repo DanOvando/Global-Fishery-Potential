@@ -449,8 +449,13 @@ if (RunAnalyses==TRUE)
   save(file='MsyData.rdata',MsyData)
   
   MsyData$BestModel<- as.character(MsyData$BestModel)
+
+  if(SubSample>0)
+  {
+    save.image(file=paste(ResultFolder,'Test Results Prior to Projections.rdata',sep=''))
+  }
   
-  ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs) #Run projections on MSY data that can be projected
+  ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs,StatusQuoPolicy) #Run projections on MSY data that can be projected
   
   show("Completed Projections")
   
@@ -944,12 +949,15 @@ write.csv(file=paste(ResultFolder,"Percent Upside From Business As Usual Data Fi
 
 # Figures for Paper
 
-FigureOne<-Figure1(CumulativesFinal,FinalYearFinal,Policy='Opt',Limit=100)
-
-FigureTwo<-Figure2(CumulativesFinal, FinalYearFinal, Countries=c('Global','EU','USA','China','Indonesia','Japan'),Limit=100)
-
-FigureThree<-Figure3(CumulativesFinal,Countries=CountriesToRun)
-
+if(PlotFinalFigures==TRUE)
+{
+  FigureOne<-Figure1(CumulativesFinal,FinalYearFinal,Policy='Opt',Limit=100)
+  
+  FigureTwo<-Figure2(CumulativesFinal, FinalYearFinal, Countries=c('Global','EU','USA','China','Indonesia','Japan'),Limit=100)
+  
+  FigureThree<-Figure3(CumulativesFinal,Countries=CountriesToRun)
+}
+  
 # Publish in Science ------------------------------------------------------
 
 

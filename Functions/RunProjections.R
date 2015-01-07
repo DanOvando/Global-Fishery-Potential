@@ -3,7 +3,7 @@
 # This code projects fished populations forward under different policy scenarios 
 ######################################
 
-RunProjection<- function(Data,BaselineYear,NumCPUs)
+RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy)
 {
   
 #   Data<-  MsyData[MsyData$CanProject==T,]
@@ -49,7 +49,7 @@ RunProjection<- function(Data,BaselineYear,NumCPUs)
     Projections <- (mclapply(1:(length(Stocks)), SnowProjections,mc.cores=NumCPUs,
                              Data=Data,BaselineYear=BaselineYear,Stocks=Stocks,IdVar=IdVar,bvec=bvec,
                              Discount=Discount,tol=tol,beta=beta,CatchSharePrice=CatchSharePrice,CatchShareCost=CatchShareCost,
-                             Policies=Policies,ProjectionTime=ProjectionTime,TempStockMatrix=TempStockMatrix))
+                             Policies=Policies,ProjectionTime=ProjectionTime,TempStockMatrix=TempStockMatrix,StatusQuoPolicy=StatusQuoPolicy))
     
     #     sfInit( parallel=TRUE, cpus=NumCPUs )
     #     sfExport('Data','BaselineYear','Stocks','IdVar','bvec','Discount','tol','beta','CatchSharePrice','CatchShareCost','Policies','ProjectionTime','TempStockMatrix')
@@ -64,7 +64,7 @@ RunProjection<- function(Data,BaselineYear,NumCPUs)
     Projections <- (lapply(1:(length(Stocks)), SnowProjections,
                            Data=Data,BaselineYear=BaselineYear,Stocks=Stocks,IdVar=IdVar,bvec=bvec,
                            Discount=Discount,tol=tol,beta=beta,CatchSharePrice=CatchSharePrice,CatchShareCost=CatchShareCost,
-                           Policies=Policies,ProjectionTime=ProjectionTime,TempStockMatrix=TempStockMatrix))
+                           Policies=Policies,ProjectionTime=ProjectionTime,TempStockMatrix=TempStockMatrix,StatusQuoPolicy=StatusQuoPolicy))
     
   }
   

@@ -1,5 +1,5 @@
 # SnowProjections<- function(s)
-SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,beta,CatchSharePrice,CatchShareCost,Policies,ProjectionTime,TempStockMatrix)
+SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,beta,CatchSharePrice,CatchShareCost,Policies,ProjectionTime,TempStockMatrix,StatusQuoPolicy)
   
 {
   ######################################
@@ -112,7 +112,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
       pi[t] = p*MSY*f[t]*b[t] - c*(f[t]*r/2)^beta
       y[t] = MSY*f[t]*b[t]
       if (t<T)
-      {b[t+1] = b[t] + r*b[t]*(1-b[t]/2) - r/2*b[t]*f[t]}
+      {b[t+1] =max(min(bvec), b[t] + r*b[t]*(1-b[t]/2) - r/2*b[t]*f[t])}
     }
     
     Projection<- data.frame(f,b,y,pi)
@@ -170,8 +170,29 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   FoodPolicy<-  RunDynamicOpt2(MSY,r,1,0,beta,0,bvec,tol)$Policy
   
-  SQPolicy<- FStatusQuo*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])
+  if(StatusQuoPolicy=='StatusQuoA')
+  {
+    SQPolicy<- FStatusQuo*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])  
+  }
   
+  if(StatusQuoPolicy=='StatusQuoB')
+  {
+    
+    if(FStatusQuo>=1)
+    {
+      SQPolicy<- FStatusQuo*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])
+    }
+    
+    if(FStatusQuo<1)
+    {
+      SQPolicy<- bvec
+      
+      SQPolicy[bvec<1]<- FStatusQuo
+      
+      SQPolicy[bvec>=1]<- 1
+    }
+  }
+    
   FmsyPolicy<- matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])
   
   CloseDownPolicy<- bvec

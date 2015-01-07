@@ -26,7 +26,7 @@ library(reshape2)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'Dec 28 Full Run'
+BatchFolder<- 'Jan 6 SQ B Test'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -46,7 +46,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'QAQC'
+  BatchFolder<- 'Scratch'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
@@ -62,9 +62,9 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0
+SubSample<- 0.9
 
-NumCPUs<- 17 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 20 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
@@ -76,7 +76,11 @@ IncludeUnderfished<- FALSE
 
 SaveRDS<- FALSE
 
+PlotFinalFigures<-FALSE
+
 OverlapMode<- 'FaoTrumps' #SofiaTrumps, FaoTrumps
+
+StatusQuoPolicy<-'StatusQuoB' # 'StatusQuoA'
 
 CatchMSYTrumps<- TRUE
 
@@ -195,7 +199,7 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-NumCatchMSYIterations <- 15000  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 2000  ## number of iterations, e.g. 100000
 
 Parel<- TRUE #Run SNOWFALL in parallel?
 
