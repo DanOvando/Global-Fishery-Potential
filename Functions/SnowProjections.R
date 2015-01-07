@@ -139,6 +139,13 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   #   Where<- Data[,IdVar]== '11776-FAO-67-31'
   
   StockData<- Data[Where,]
+
+  if(max(StockData$BvBmsy)>max(bvec))
+  {
+    maxb<-max(StockData$BvBmsy)
+    
+    bvec<-seq(from=0.00000001,to=maxb+0.1,by=0.1)
+  }
   
   RecentStockData<-  StockData[dim(StockData)[1],]
   

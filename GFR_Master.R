@@ -24,9 +24,9 @@ library(reshape2)
 
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- FALSE
+RunAnalyses<- TRUE
 
-BatchFolder<- 'Jan 6 SQ B Test'
+BatchFolder<- 'Jan 7 SQ B bvec Test'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
