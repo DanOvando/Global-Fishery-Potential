@@ -1,4 +1,4 @@
-PriceBarPlot<-function(Data,SpeciesCategoriesToOmit,FigureFolder)
+PriceBarPlot<-function(SpeciesCategoriesToOmit,FigureFolder)
 {
   Prices<- read.csv('Data/Species Category Prices.csv',stringsAsFactors=F) # Current model price data from EDF
   

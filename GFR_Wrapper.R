@@ -522,6 +522,8 @@ Policies<- unique(ProjectionData$Policy)
 
 ProjectionData$Biomass<- (ProjectionData$BvBmsy* (2* ProjectionData$MSY/ProjectionData$r))
 
+SteadyStateStatus(Data=ProjectionData,Subset=c('Steady State Status Complete Projection Data.pdf')) # histograms of b by policy for complete ProjectionData
+
 if (IncludeUnderfished==FALSE) #Remove projections for underfished stocks if desired
 {
   
@@ -551,6 +553,15 @@ if (IncludeForageFish==FALSE) #Remove forage fish species if desired
 # evaluate cost:revenue ratios of full Projection data before CountriesToRun analysis
 CostRevenues<-CostRevCheck(ProjectionData,RawData,BaselineYear)
 
+# Plot historical status of RAM and unassessed stocks
+StatusISSCAAP<-StatusPlots(FullData,BiomassData,BaselineYear,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+
+# Test C parameter sensitivity to BOA level
+SensitivityCParam<-CParamSensitivity(Data=MsyData,BaselineYear,beta)
+
+# Plot histograms of steady state status for chosen subset of projection data
+SteadyStateStatus(Data=ProjectionData,Subset=c('Steady State Status Analyzed Projection Data.pdf')) # histograms of b by policy for complete ProjectionData
+
 #Reframe 0 profits/catch to prevent infinites and NANs in 
 
 ProjectionData$Profits[ProjectionData$Profits<0]<- 0.0001 #Reframe 0 profits/catch to prevent infinites and NANs in 
@@ -575,16 +586,16 @@ ResultMetricsSQFinalNames<-c("PercChangeFromSQTotalBiomass","PercChangeFromSQTot
                              "AbsChangeFromSQMedianProfits","AbsChangeFromSQMedianCatch")
 
 ResultMetricsSQCumFinalNames<-c("PercChangeFromSQCum_NPV","PercChangeFromSQCum_Food","PercChangeFromSQCum_Fish","PercChangeFromSQCumMedianProfits","PercChangeFromSQCumMedianCatch","PercChangeFromSQMedianBiomass",
-                                "AbsChangeFromSQCumProfits","AbsChangeFromSQCumFood","AbsChangeFromSQCumFish","AbsChangeFromSQCumMedianProfits","AbsChangeFromSQCumMedianCatch","AbsChangeFromSQCumMedianBiomass",'Country')
+                                "AbsChangeFromSQCumProfits","AbsChangeFromSQCumFood","AbsChangeFromSQCumFish","AbsChangeFromSQCumMedianProfits","AbsChangeFromSQCumMedianCatch","AbsChangeFromSQCumMedianBiomass")
 
-ResultMetricsBaselineTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=13))
-colnames(ResultMetricsBaselineTable)<-c("Region",ResultMetricsBaselineNames)
+ResultMetricsBaselineTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=length(ResultMetricsBaselineNames)+1))
+colnames(ResultMetricsBaselineTable)<-c('Region',ResultMetricsBaselineNames)
 
-ResultMetricsSQFinalTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=13))
-colnames(ResultMetricsSQFinalTable)<-c("Region",ResultMetricsSQFinalNames)
+ResultMetricsSQFinalTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=length(ResultMetricsSQFinalNames)+1))
+colnames(ResultMetricsSQFinalTable)<-c('Region',ResultMetricsSQFinalNames)
 
-ResultMetricsSQCumFinalTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=14))
-colnames(ResultMetricsSQCumFinalTable)<-c("Region",ResultMetricsSQCumFinalNames)
+ResultMetricsSQCumFinalTable<-data.frame(matrix(NA,nrow=length(CountriesToRun),ncol=length(ResultMetricsSQCumFinalNames)+1))
+colnames(ResultMetricsSQCumFinalTable)<-c('Region',ResultMetricsSQCumFinalNames)
 
 
 # CountriesToRun<-c("Global","USA","China","Indonesia","Philippines","Peru","Chile","Mexico","Japan","Myanmar","Viet Nam","EU","Parties to the Nauru Agreement",EUCountries)
@@ -606,8 +617,11 @@ if (CapRefs==T)
   
 }
 
-# AllCountries<-unique(ProjectionData$Country)
-# CountriesToRun<-c('Global',AllCountries)
+if(CountriesToRun=='All')
+{
+  AllCountries<-unique(ProjectionData$Country)
+  CountriesToRun<-c('Global','EU','Asia','Parties to the Nauru Agreement',AllCountries) 
+}
 
 for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
 {
@@ -680,7 +694,7 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
     if (BiomassStatus$CatchStats$Catch$NumberOfStocks>5)
     {
-      #       MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
+            MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
     }
     # Analyze Projections -----------------------------------------------------
     
@@ -810,23 +824,32 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
     # Populate summary table of results  -----------------------------------------------------
     
-    ResultMetricsBaselineTable[c,1]<-CountriesToRun[c]
+    PercChangeFromSQTotalVars<-c("PercChangeFromSQTotalBiomass","PercChangeFromSQTotalProfits",'PercChangeFromSQTotalCatch')
     
-    ResultMetricsSQFinalTable[c,1]<-CountriesToRun[c]
+    PercChangeFromSQMedianVars<-c("PercChangeFromSQMedianBiomass","PercChangeFromSQMedianProfits","PercChangeFromSQMedianCatch")
     
-    ResultMetricsSQCumFinalTable[c,1]<-CountriesToRun[c]
+    AbsChangeFromSQTotalVars<-c("AbsChangeFromSQTotalBiomass","AbsChangeFromSQTotalProfits","AbsChangeFromSQTotalCatch")
     
-    ResultMetricsBaselineTable[c,2:13]<-FinalYear[FinalYear$Policy=="CatchShare",13:24]
+    AbsChangeFromSQMedianVars<-c("AbsChangeFromSQMedianBiomass","AbsChangeFromSQMedianProfits","AbsChangeFromSQMedianCatch")
     
-    ResultMetricsSQFinalTable[c,2:4]<-FinalYear[FinalYear$Policy=="CatchShare",28:30]
+    ResultMetricsBaselineTable[c,c('Region')]<-CountriesToRun[c]
     
-    ResultMetricsSQFinalTable[c,5:7]<-FinalYear[FinalYear$Policy=="CatchShare",25:27]
+    ResultMetricsSQFinalTable[c,c('Region')]<-CountriesToRun[c]
     
-    ResultMetricsSQFinalTable[c,8:10]<-FinalYear[FinalYear$Policy=="CatchShare",34:36]
+    ResultMetricsSQCumFinalTable[c,c('Region')]<-CountriesToRun[c]
     
-    ResultMetricsSQFinalTable[c,11:13]<-FinalYear[FinalYear$Policy=="CatchShare",31:33]
+    ResultMetricsBaselineTable[c,ResultMetricsBaselineNames]<-FinalYear[FinalYear$Policy=="CatchShare",ResultMetricsBaselineNames]
     
-    ResultMetricsSQCumFinalTable[c,2:14]<-Cumulatives[Cumulatives$Policy=="CatchShare",2:dim(Cumulatives)[2]]
+    ResultMetricsSQFinalTable[c,PercChangeFromSQTotalVars]<-FinalYear[FinalYear$Policy=="CatchShare",PercChangeFromSQTotalVars]
+    
+    ResultMetricsSQFinalTable[c,PercChangeFromSQMedianVars]<-FinalYear[FinalYear$Policy=="CatchShare",PercChangeFromSQMedianVars]
+    
+    ResultMetricsSQFinalTable[c,AbsChangeFromSQTotalVars]<-FinalYear[FinalYear$Policy=="CatchShare",AbsChangeFromSQTotalVars]
+    
+    ResultMetricsSQFinalTable[c,AbsChangeFromSQMedianVars]<-FinalYear[FinalYear$Policy=="CatchShare",AbsChangeFromSQMedianVars]
+    
+    ResultMetricsSQCumFinalTable[c,ResultMetricsSQCumFinalNames]<-Cumulatives[Cumulatives$Policy=="CatchShare",c("NPV","Food",
+    "Fish","MedianProfits","MedianCatch","MedianBiomass","AbsNPV","AbsFood","AbsFish","AbsMedianProfits","AbsMedianCatch","AbsMedianBiomass")]
     
     ResultMetricsTable<-merge(ResultMetricsBaselineTable,ResultMetricsSQFinalTable,by = "Region")
     
@@ -938,7 +961,7 @@ if(SaveRDS==TRUE)
 }
 
 # upside plot of CountriesToRun
-UpsidePlot(CumulativesFinal,FinalYearFinal,Policy='CatchShare',XVar='PercChangeTotalBiomass',YVar='NPV',DotSize='Food',Limit=300)
+# UpsidePlot(CumulativesFinal,FinalYearFinal,Policy='CatchShare',XVar='PercChangeTotalBiomass',YVar='NPV',DotSize='Food',Limit=300)
 
 write.csv(file=paste(ResultFolder,"Percent Upside From Business As Usual Data.csv",sep=''),CumulativesFinal)
 write.csv(file=paste(ResultFolder,"Percent Upside From Business As Usual Data Final Year.csv",sep=''),FinalYearFinal)
@@ -951,12 +974,20 @@ write.csv(file=paste(ResultFolder,"Percent Upside From Business As Usual Data Fi
 
 if(PlotFinalFigures==TRUE)
 {
-  FigureOne<-Figure1(CumulativesFinal,FinalYearFinal,Policy='Opt',Limit=100)
+  # Figure 1: Upside plot for all countries
+  FigureOne<-Figure1(CumulativesFinal,FinalYearFinal,Policy='Opt',Limit=200)
   
+  # Figure 2: Upside plots showing policy trade-offs for select countries
   FigureTwo<-Figure2(CumulativesFinal, FinalYearFinal, Countries=c('Global','EU','USA','China','Indonesia','Japan'),Limit=100)
   
-  FigureThree<-Figure3(CumulativesFinal,Countries=CountriesToRun)
+  # Figure 3: Upside from Opt and Catch Shares relative to SQ for top fishing nations
+  Fig3Countries<-c('Japan','Morocco','Republic of Korea','USA','Russian Federation','Global','Spain','Peru','Iceland','Thailand','Mexico','India',
+  'China','Philippines','Taiwan Province of China','Indonesia','Norway','Malaysia','Multinational')
+  
+  FigureThree<-Figure3(CumulativesFinal,Countries=Fig3Countries)
 }
+
+PriceBarPlot(SpeciesCategoriesToOmit,FigureFolder)
   
 # Publish in Science ------------------------------------------------------
 

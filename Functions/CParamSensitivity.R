@@ -9,12 +9,12 @@
 CParamSensitivity<-function(Data,BaselineYear,beta)
 {
   # unique species categories
-  cats<-unique(Data$SpeciesCatName)
+  cats<-unique(Data$SpeciesCatName[Data$Year==BaselineYear])
   
   # loop over species categories
   for(a in 1:length(cats))
   {
-    show(a)
+#     show(a)
     
     # subset MSY data to species category
     temp<-Data[Data$SpeciesCatName==cats[a] & Data$Year==BaselineYear,c('IdOrig','SpeciesCatName','BvBmsyOpenAccess','MSY','r','Price')]

@@ -26,7 +26,7 @@ library(reshape2)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'Jan 7 SQ B bvec Test'
+BatchFolder<- 'Jan 8 Full Run SQB'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -63,7 +63,7 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0.9
+SubSample<- 0
 
 NumCPUs<- 20 #Number of CPUs to use for parallel computing of CatchMSY
 
@@ -77,7 +77,7 @@ IncludeUnderfished<- FALSE
 
 SaveRDS<- FALSE
 
-PlotFinalFigures<-FALSE
+PlotFinalFigures<-TRUE
 
 OverlapMode<- 'FaoTrumps' #SofiaTrumps, FaoTrumps
 
@@ -89,7 +89,9 @@ CommonFinalYear<- TRUE
 
 BaselineYear<- 2012
 
-CountriesToRun<- c('Global','USA','China','Indonesia','Philippines','Peru','Chile','Mexico','Japan','Myanmar','Viet Nam','EU','Parties to the Nauru Agreement') 
+# CountriesToRun<- c('Global','USA','China','Indonesia','Philippines','Peru','Chile','Mexico','Japan','Myanmar','Viet Nam','EU','Parties to the Nauru Agreement','Asia') 
+
+CountriesToRun<-'All'
 
 EUCountries<- c('Austria',
   'Belgium',
@@ -120,6 +122,11 @@ EUCountries<- c('Austria',
   'Sweden',
   'United Kingdom')
 
+AsianCountries<-c('Afghanistan','Bahrain','Bangladesh', 'Bhutan','Brunei Darussalam','Cambodia','China', 
+                  'Timor-Leste','Viet Nam', 'Japan','Tajikistan','Turkmenistan','Iran','Iraq','Israel','Jordan','Kazakhstan',
+                  'Kuwait','Myanmar','Indonesia','Thailand', 'India','Philipines','Republic of Korea','Malaysia','Taiwan Province of China',
+                  'Maldives','Nepal','Uzbekistan','Kyrgyzstan','Malaysia','Mongolia','Oman','Pakistan','Russian Federation',
+                  'Saudi Arabia','Singapore','Syrian Arab Republic','Turkey','United Arab Emirates','Yemen','Sri Lanka','Qatar')
 
 # Data Processing ---------------------------------------------------------
 
@@ -200,7 +207,7 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-NumCatchMSYIterations <- 2000  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 10000  ## number of iterations, e.g. 100000
 
 Parel<- TRUE #Run SNOWFALL in parallel?
 

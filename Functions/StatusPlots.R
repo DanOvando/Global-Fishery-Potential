@@ -4,6 +4,8 @@
 ## group through time and distributions of 
 ## status for RAM and unassessed
 ##
+## Also plots projected steady state BvBmsy by policy
+##
 ##############################################
 
 # Pass BiomassData
@@ -22,7 +24,7 @@ StatusPlots<-function(FullData,BiomassData,BaselineYear,RealModelSdevs,NeiModelS
   
   for (a in 1:length(cats))
   {
-    show(a)
+#     show(a)
     
     temp<-BiomassData[BiomassData$SpeciesCatName==cats[a],]
     
@@ -88,6 +90,6 @@ StatusPlots<-function(FullData,BiomassData,BaselineYear,RealModelSdevs,NeiModelS
     geom_abline(intercept=1,slope=0) +
     labs(x='Year (1990-2012)',y='B/Bmsy',title='Unassessed Status by ISSCAAP Category'))
   dev.off()
-  
+
   return(StatusISSCAAP=Status)
 }
