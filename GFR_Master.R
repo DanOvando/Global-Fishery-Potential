@@ -24,9 +24,9 @@ library(reshape2)
 
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- TRUE
+RunAnalyses<- FALSE
 
-BatchFolder<- 'Jan 7 SQ B bvec Test'
+BatchFolder<- 'QAQC'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -46,9 +46,8 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Scratch'
-  
-  
+  BatchFolder<- 'QAQC'
+    
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
   InputFolder<- 'Data/'
