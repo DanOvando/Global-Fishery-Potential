@@ -2,15 +2,28 @@
 ##
 ## This function performs a jackknife analysis of the NEI method using RAM stocks with known B/Bmsy values
 ##
+## Pass MsyData 
+## 'Level' indicates the taxonomic level to search for comparable stocks. 'All' will result in hierarchical process   
+## 'StitchLevel' indicates whether synthetic NEIs should be greated at the genus level ('SciName') or ISSCAAP level ('SpeciesCatName')
+## 'MaxStitchStocks' indicates the maximum number of RAM stocks that should be stitched into a synthetic NEI
+## 'StitchIterations' indicates how many iterations of 1:MaxStitchStocks should be created
+## 'MinStocks' indicates the minimum number of comparable stocks required to predict B/Bmsy at a given taxonomic level
+## 'Replacement' indicates whether to sample with (TRUE) or without (FALSE) replacement
+## 'Sebastes' runs the jackknife routine on just rockfish, of which there are a large sample. Must be false if Stitch Level is 'SpeciesCatName
+##
 #############################################
-JacknifeNeis<-function(MsyData,ProjectionData,Policy,BaselineYear,Level,MinStocks,Replacement)
+JacknifeNeis<-function(MsyData,BaselineYear,Level,StitchLevel,MaxStitchStocks,StitchIterations,MinStocks,Replacement,Sebastes)
 {
   
 #   Level<-'All'
-#   MinStocks<-5
+#   MinStocks<-10
 #   Replacement<-FALSE
 #   BaselineYear<-2012
-  
+#   MsyData<-OriginalMsyData
+#   StitchLevel<-'SciName'
+#   MaxStitchLevel<-10
+#   StitchIterations<-10
+#   Sebastes<-FALSE
 
   library(ggplot2)
   library(gridExtra)
@@ -35,11 +48,14 @@ JacknifeNeis<-function(MsyData,ProjectionData,Policy,BaselineYear,Level,MinStock
   
   RamNeiDiag$SciName<-sapply(RamNeiDiag$SciName,MakeGenusNei)
   
-#   RamNeiDiag<-RamNeiDiag[RamNeiDiag$SciName=='Sebastes spp',] # For running on just Sebastes
+  if(Sebastes==TRUE)
+  {
+  RamNeiDiag<-RamNeiDiag[RamNeiDiag$SciName=='Sebastes spp',] # For running on just Sebastes
+  }
   
   source('Diagnostics/StitchFishJackknife.R')
 
-  TestStitch<-StitchFishJackknife(Data=RamNeiDiag,IdVar,Level='SciName',Groups=unique(RamNeiDiag$SciName),GroupSamples=10,Iterations=1)
+  TestStitch<-StitchFishJackknife(Data=RamNeiDiag,IdVar,Level=StitchLevel,Groups=unique(RamNeiDiag[,StitchLevel]),GroupSamples=MaxStitchLevel,Iterations=StitchIterations)
   
   # Create Ram "NeiStats" dataset to loop through 
   NeiStats<-TestStitch[,c('IdOrig','Year','CommName',"SciName","SpeciesCatName",'BvBmsy',
@@ -192,7 +208,7 @@ JacknifeNeis<-function(MsyData,ProjectionData,Policy,BaselineYear,Level,MinStock
 
 neilevels<-unique(JackNei$NumStocks)
 
-pdf(file=paste(FigureFolder,'ISSCAAP Nei Jackknife Results.pdf',sep=''),width=12,height=10)
+pdf(file=paste(FigureFolder,StitchLevel,StitchIterations,'ISSCAAP Nei Jackknife Results.pdf',sep=''),width=12,height=10)
 
 for(a in 1:length(neilevels))
 {
