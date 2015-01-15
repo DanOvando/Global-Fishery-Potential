@@ -17,9 +17,9 @@
 Figure1<-function(CumulativesFinal,FinalYearFinal,Policy,Limit)
 {
   # subset upside data to countries of interest
-  Cumulatives<-CumulativesFinal[CumulativesFinal$Policy==Policy & CumulativesFinal$Country!='Global',]
+  Cumulatives<-CumulativesFinal[CumulativesFinal$Policy==Policy & !(CumulativesFinal$Country %in% c('Global','EU','Asia','Multinational','Lumped')),]
   
-  FinalYear<-FinalYearFinal[FinalYearFinal$Policy==Policy & FinalYearFinal$Country!='Global',]
+  FinalYear<-FinalYearFinal[FinalYearFinal$Policy==Policy & !(FinalYearFinal$Country %in% c('Global','EU','Asia','Multinational','Lumped')),]
   
   # Build dataframe to plot based on axis inputs and country
   c<-Cumulatives$Country
@@ -63,7 +63,7 @@ Figure1<-function(CumulativesFinal,FinalYearFinal,Policy,Limit)
   # Percentages
   panelA<-ggplot(PlotData,aes(PercXVar,PercYVar,size=PercSize)) +
     geom_point(color='blue',alpha=0.6) +
-    coord_cartesian(xlim=c(-30,100),ylim=c(-30,100)) +
+    coord_cartesian(xlim=c(-10,100),ylim=c(-10,100)) +
     scale_size_continuous(range=c(2,20), 
                           breaks=c(20,40,60,80,100,120,140,160,180,200), 
                           labels=c("20%","40%",'60%','80%','100%','120%','140%','160%','180%','200%')) +
