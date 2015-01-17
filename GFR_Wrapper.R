@@ -1007,20 +1007,11 @@ if(PlotFinalFigures==TRUE)
   
   # Figure 3: Upside from Opt and Catch Shares relative to SQ for top fishing nations
   Fig3Countries<-c('Japan','Morocco','Republic of Korea','USA','Russian Federation','Global','Spain','Peru','Iceland','Thailand','Mexico','India',
-<<<<<<< HEAD
   'China','Philippines','Taiwan Province of China','Indonesia','Norway','Malaysia','Multinational')
   
   FigureThree<-Figure3(CumulativesFinal,Countries=Fig3Countries)
 }
 
-PriceBarPlot(SpeciesCategoriesToOmit,FigureFolder)
-=======
-                   'China','Philippines','Taiwan Province of China','Indonesia','Norway','Malaysia','Multinational')
->>>>>>> 2855f09d7999ea561135723fe725d2169b0876a5
-  
-  FigureThree<-Figure3(CumulativesFinal,Countries=Fig3Countries)
-}
- 
 PriceBarPlot(SpeciesCategoriesToOmit,FigureFolder)
 
 # Publish in Science ------------------------------------------------------

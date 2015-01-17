@@ -24,9 +24,9 @@ library(reshape2)
 
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- FALSE
+RunAnalyses<- TRUE
 
-BatchFolder<- 'Dec 28 Full Run Copy'
+BatchFolder<- 'Jan 17 Test'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -64,7 +64,7 @@ if (RunAnalyses==FALSE)
 
 SubSample<- 0.9
 
-NumCPUs<- 3 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 20 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
@@ -80,7 +80,7 @@ PlotFinalFigures<-FALSE
 
 OverlapMode<- 'FaoTrumps' #SofiaTrumps, FaoTrumps
 
-StatusQuoPolicy<-'StatusQuoB' # 'StatusQuoA'
+StatusQuoPolicy<-'StatusQuoA' # 'StatusQuoA'
 
 CatchMSYTrumps<- TRUE
 

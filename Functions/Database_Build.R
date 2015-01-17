@@ -520,6 +520,8 @@ sofia$SciName<-gsub('Nephrops norvegicus Palinurus spp','Nephrops norvegicus',so
 sofia$SciName<-gsub('Merluccius capensis, M. paradox.','Merluccius capensis, M.paradoxus',sofia$SciName)
 sofia$SciName<-gsub("Haemulidae (= Pomadasyidae)","Haemulidae (=Pomadasyidae)",sofia$SciName,fixed=T)
 
+sofia<-sofia[!(sofia$Country=="0" | sofia$Country==""),] # remove sofia entries with no country
+
 ############################################################################################################
 ############ FAO DATABASE ############
 
