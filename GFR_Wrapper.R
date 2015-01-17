@@ -600,7 +600,7 @@ colnames(ResultMetricsSQCumFinalTable)<-c('Region',ResultMetricsSQCumFinalNames)
 
 # CountriesToRun<-c("Global","USA","China","Indonesia","Philippines","Peru","Chile","Mexico","Japan","Myanmar","Viet Nam","EU","Parties to the Nauru Agreement",EUCountries)
 
-CountriesToRun<- CountriesToRun[!grepl('Grenadines',(CountriesToRun))]
+# CountriesToRun<- CountriesToRun[!grepl('Grenadines',(CountriesToRun))]
 
 #  BiomassData$RanCatchMSY<- TRUE
 
@@ -851,7 +851,32 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     ResultMetricsSQCumFinalTable[c,ResultMetricsSQCumFinalNames]<-Cumulatives[Cumulatives$Policy=="CatchShare",c("NPV","Food",
     "Fish","MedianProfits","MedianCatch","MedianBiomass","AbsNPV","AbsFood","AbsFish","AbsMedianProfits","AbsMedianCatch","AbsMedianBiomass")]
     
-    ResultMetricsTable<-merge(ResultMetricsBaselineTable,ResultMetricsSQFinalTable,by = "Region")
+    PercChangeFromSQMedianVars<-c("PercChangeFromSQMedianBiomass","PercChangeFromSQMedianProfits","PercChangeFromSQMedianCatch")
+    
+    AbsChangeFromSQTotalVars<-c("AbsChangeFromSQTotalBiomass","AbsChangeFromSQTotalProfits","AbsChangeFromSQTotalCatch")
+    
+    AbsChangeFromSQMedianVars<-c("AbsChangeFromSQMedianBiomass","AbsChangeFromSQMedianProfits","AbsChangeFromSQMedianCatch")
+    
+    ResultMetricsBaselineTable[c,c('Region')]<-CountriesToRun[c]
+    
+    ResultMetricsSQFinalTable[c,c('Region')]<-CountriesToRun[c]
+    
+    ResultMetricsSQCumFinalTable[c,c('Region')]<-CountriesToRun[c]
+    
+    ResultMetricsBaselineTable[c,ResultMetricsBaselineNames]<-FinalYear[FinalYear$Policy=="CatchShare",ResultMetricsBaselineNames]
+    
+    ResultMetricsSQFinalTable[c,PercChangeFromSQTotalVars]<-FinalYear[FinalYear$Policy=="CatchShare",PercChangeFromSQTotalVars]
+    
+    ResultMetricsSQFinalTable[c,PercChangeFromSQMedianVars]<-FinalYear[FinalYear$Policy=="CatchShare",PercChangeFromSQMedianVars]
+    
+    ResultMetricsSQFinalTable[c,AbsChangeFromSQTotalVars]<-FinalYear[FinalYear$Policy=="CatchShare",AbsChangeFromSQTotalVars]
+    
+    ResultMetricsSQFinalTable[c,AbsChangeFromSQMedianVars]<-FinalYear[FinalYear$Policy=="CatchShare",AbsChangeFromSQMedianVars]
+    
+    ResultMetricsSQCumFinalTable[c,ResultMetricsSQCumFinalNames]<-Cumulatives[Cumulatives$Policy=="CatchShare",
+                                                                              c("NPV","Food","Fish","MedianProfits","MedianCatch","MedianBiomass","AbsNPV","AbsFood","AbsFish","AbsMedianProfits","AbsMedianCatch","AbsMedianBiomass")]
+    
+    ResultMetricsTable<-merge(ResultMetricsBaselineTable,ResultMetricsSQFinalTable,by='Region')
     
     ResultMetricsTable<-merge(ResultMetricsTable,ResultMetricsSQCumFinalTable,by = "Region")
     
@@ -982,13 +1007,22 @@ if(PlotFinalFigures==TRUE)
   
   # Figure 3: Upside from Opt and Catch Shares relative to SQ for top fishing nations
   Fig3Countries<-c('Japan','Morocco','Republic of Korea','USA','Russian Federation','Global','Spain','Peru','Iceland','Thailand','Mexico','India',
+<<<<<<< HEAD
   'China','Philippines','Taiwan Province of China','Indonesia','Norway','Malaysia','Multinational')
   
   FigureThree<-Figure3(CumulativesFinal,Countries=Fig3Countries)
 }
 
 PriceBarPlot(SpeciesCategoriesToOmit,FigureFolder)
+=======
+                   'China','Philippines','Taiwan Province of China','Indonesia','Norway','Malaysia','Multinational')
+>>>>>>> 2855f09d7999ea561135723fe725d2169b0876a5
   
+  FigureThree<-Figure3(CumulativesFinal,Countries=Fig3Countries)
+}
+ 
+PriceBarPlot(SpeciesCategoriesToOmit,FigureFolder)
+
 # Publish in Science ------------------------------------------------------
 
 
