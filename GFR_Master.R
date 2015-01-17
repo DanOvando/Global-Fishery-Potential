@@ -26,7 +26,7 @@ library(reshape2)
 
 RunAnalyses<- FALSE
 
-BatchFolder<- 'QAQC'
+BatchFolder<- 'Dec 28 Full Run Copy'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -46,8 +46,8 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'QAQC'
-    
+  BatchFolder<- 'Dec 28 Full Run Copy'
+  
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
   InputFolder<- 'Data/'
@@ -64,7 +64,7 @@ if (RunAnalyses==FALSE)
 
 SubSample<- 0.9
 
-NumCPUs<- 20 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 3 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
