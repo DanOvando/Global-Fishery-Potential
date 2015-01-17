@@ -21,12 +21,14 @@ FindResilience<-function(Data)
   ResData$tm[ResData$AgeMat<1]<-"High"
   ResData$tm[ResData$AgeMat>=2 & ResData$AgeMat<=4]<-"Medium"
   ResData$tm[ResData$AgeMat>=5 & ResData$AgeMat<=10]<-"Low"
-  ResData$tm[ResData$AgeMat>10]<-"Low"
+  ResData$tm[ResData$AgeMat>10]<-"Very Low"
       
   ResData$Res[grepl("Very low", ResData$k) | grepl("Very low", ResData$tm)]<-"Very low"
   ResData$Res[(grepl("Low", ResData$k) | grepl("Low", ResData$tm)) & is.na(ResData$Res)==T]<-"Low"  
   ResData$Res[(grepl("Medium", ResData$k) | grepl("Medium", ResData$tm)) & is.na(ResData$Res)==T]<-"Medium"
   ResData$Res[(grepl("High", ResData$k) | grepl("High", ResData$tm)) & is.na(ResData$Res)==T]<-"High"
+  
+  ResData$Res[is.na(ResData$Res)]<-"Medium"
   
   for(a in 1:nrow(ResData))
   {
@@ -36,6 +38,14 @@ FindResilience<-function(Data)
     
     show(paste((a/nrow(ResData)*100),"% Done with Resilience",sep=""))
   }
+  
+  Data$Res[is.na(Data$Res)==T]<-'Medium' 
+  
+  pdf(file=paste(FigureFolder,'Resilience Histograms by ISSCAAP.pdf',sep=''),width=12,height=10)
+  print(ggplot(Data,aes(x=factor(Res))) +
+    geom_bar() +
+    facet_wrap(~SpeciesCatName,scales='free'))
+  dev.off()
   
   return(FullData=Data)
   
