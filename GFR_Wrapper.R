@@ -442,7 +442,11 @@ if (RunAnalyses==TRUE)
   
   MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T) #Apply mean price to fisheries with no price
   
-  MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T) #FIX THIS XXX Apply mean r to fisheries with no r
+  MsyData$k[MsyData$Dbase=='RAM']<-MsyData$Bmsy[MsyData$Dbase=='RAM']*2
+
+  MsyData$r[MsyData$Dbase=='RAM']<-4*MsyData$MSY[MsyData$Dbase=='RAM']/MsyData$k[MsyData$Dbase=='RAM']
+
+  MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T) #FIX THIS XXX Apply mean r to fisheries with no r THIS WAS ASSIGNING ALL RAM STOCKS THE MEAN r VALUE
   
   MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$r)==F #Identify disheries that have both MSY and r
   
