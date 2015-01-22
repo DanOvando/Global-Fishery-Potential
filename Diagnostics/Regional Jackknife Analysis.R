@@ -9,9 +9,29 @@
 # 5. Run catchMSY with priors
 # 
 # 6. Store Real B/Bmsy, F/Fmsy, MSY, PRM B/Bmsy, MSY BvBmsy, FvFmsy, MSY with and without priors, and year
+rm(list=ls())
+load('Results/Dec 28 Full Run/Data/Global Fishery Recovery Results.rdata')
+library(car)
+library(plyr)
+library(lattice)
+library(rfishbase)
+library(stringr)
+library(RCurl)
+library(XML)
+library(MASS)
+library(prettyR)
+library(zoo)
+library(proftools)
+library(snowfall)
+library(parallel)
+# library(shiny)
+library(ggplot2)
+library(gridExtra)
+library(reshape2)
+
 RamData<- RamData[RamData$Year<=BaselineYear,]
 
-Regions<- unique(RamData$Country)
+Regions<- unique(RamData$Country)[1]
 
 RamIds<- unique(RamData$IdOrig)
 
@@ -19,7 +39,7 @@ JackStore<- as.data.frame(matrix(NA,nrow=0,ncol=14))
 
 colnames(JackStore)<- c('Assessid','Year','Country','Catch','RamB','RamF','RamMSY','PrmB','CmsyB','CmsyF','CmsyMSY','CmsyBnoP','CmsyFnoP','CmsyMSYnoP')
 
-NumCatchMSYIterations<- 6000
+NumCatchMSYIterations<- 2000
 
 ErrorSize<- 0.95
 
@@ -76,7 +96,7 @@ for (n in 1:length(Regions))
       
       Jacked<- InsertFisheryPredictions(Jacked,JackModel) #Add fishery predictions back into main dataframe
       
-      RealModelSdevs<- CreateSdevBins(JackModel,Jacked,TransbiasBin)
+      RealModelSdevs<- CreateSdevBins(JackModel$Models,Jacked,TransbiasBin)
       
       
       AllPossible<- unique(data.frame(I(Jacked$SpeciesCatName),I(Jacked$SpeciesCat)))
@@ -156,7 +176,7 @@ for (n in 1:length(Regions))
       
       BiomassData$BvBmsy<- BestBio
       
-      BiomassData<- AssignEconomicData(BiomassData) #Assign price and cost data to each stock
+      BiomassData<- AssignEconomicData(BiomassData,BvBmsyOpenAccess) #Assign price and cost data to each stock
       
       BiomassData$RanCatchMSY<- F
       
@@ -203,6 +223,12 @@ colnames(CmsyB)<- c('Id','Year','Country','Catch','RamBvBmsy','ModelBvBmsy','Ram
 colnames(CmsyBnoP)<- c('Id','Year','Country','Catch','RamBvBmsy','ModelBvBmsy','RamMSY','CmsyMSY','RamF','CmsyF','Model')
 
 PlotJack<- rbind(Prm,CmsyB,CmsyBnoP)
+
+SpeciesInfo<- RamData[,c('IdOrig','SpeciesCatName','MaxLength','AgeMat','VonBertK')]
+
+colnames(SpeciesInfo)<- c('Id','SpeciesCatName','MaxLength','AgeMat','VonBertK')
+
+PlotJack<- join(PlotJack, SpeciesInfo,by='Id',match='first')
 
 save(PlotJack,JackStore,file='Diagnostics/JackKnife.rdata')
 
@@ -295,38 +321,72 @@ coord_cartesian(ylim=c(-200,200))+
 #   coord_cartesian(ylim = range(boxplot(PlotJack$ProportionalError, plot=FALSE)$stats)*c(.8, 1.5))+
   facet_wrap(~Country,scales='free')+
   geom_abline(intercept=0,slope=0)+
-ylab('Proportional Error (%)')+
+ylab('Proportional Error (%) in B/Bmsy')+
   xlab('Time')+
   scale_x_discrete(breaks=as.character(seq(from=1986,to=2012,by=8))))
 
 dev.off()
 
-pdf(file='Diagnostics/Proportional error in FvFmsy by time and country.pdf')
-
-
-print(ggplot(data=subset(PlotJack,Year>1985),aes(factor(Year),ProportionalFError))+
-        geom_boxplot(outlier.shape=NA,fill='steelblue2')+
-         coord_cartesian(ylim=c(-200,200))+
-        facet_wrap(~Country)+
-        geom_abline(intercept=0,slope=0)+
-        ylab('Proportional Error (%)')+
-        xlab('Time'))
-#         scale_x_discrete(breaks=as.character(seq(from=1986,to=2012,by=8))))
-
-dev.off()
+# pdf(file='Diagnostics/Proportional error in FvFmsy by time and country.pdf')
+# 
+# PlotJack$ProportionalFError[is.infinite(PlotJack$ProportionalFError)]<- NA
+# 
+# PlotJack$ProportionalFError<- pmin(PlotJack$ProportionalFError,200)
+# print(ggplot(data=subset(PlotJack,Year>1985),aes(factor(Year),ProportionalFError))+
+#         geom_boxplot(outlier.shape=NA,fill='steelblue2')+
+# #          coord_cartesian(ylim=c(-200,200))+
+#         facet_wrap(~Country)+
+#         geom_abline(intercept=0,slope=0)+
+#         ylab('Proportional Error (%)')+
+#         xlab('Time'))
+# #         scale_x_discrete(breaks=as.character(seq(from=1986,to=2012,by=8))))
+# 
+# dev.off()
 
 
 pdf(file='Diagnostics/Proportional error in MSY by country.pdf')
 
 
-print(ggplot(data=subset(PlotJack,Year>1985),aes(factor(Country),ProportionalMSYError))+
-        geom_boxplot(outlier.shape=NA,color='steelblue2')+
+print(ggplot(data=subset(PlotJack,Year==BaselineYear),aes((Country),ProportionalMSYError))+
+        geom_boxplot(outlier.shape=NA,fill='steelblue2')+
         coord_cartesian(ylim=c(-200,200))+
         #   coord_cartesian(ylim = range(boxplot(PlotJack$ProportionalError, plot=FALSE)$stats)*c(.8, 1.5))+
 #         facet_wrap(~Country,scales='free')+
         geom_abline(intercept=0,slope=0)+
         ylab('Proportional Error in MSY (%)'))
 dev.off()
+
+
+pdf(file='Diagnostics/Proportional error in MSY by Species Category.pdf')
+
+
+print(ggplot(data=subset(PlotJack,Year==BaselineYear),aes((SpeciesCatName),ProportionalMSYError))+
+        geom_boxplot(outlier.shape=NA,fill='steelblue2')+
+        coord_cartesian(ylim=c(-200,200))+
+        #   coord_cartesian(ylim = range(boxplot(PlotJack$ProportionalError, plot=FALSE)$stats)*c(.8, 1.5))+
+        #         facet_wrap(~Country,scales='free')+
+        geom_abline(intercept=0,slope=0)+
+        ylab('Proportional Error in MSY (%)')+
+        xlab('')+
+        theme(axis.text.x=element_text(angle = -100, hjust = 0)))
+dev.off()
+
+pdf(file='Diagnostics/Proportional error in BvBmsy by Species Category.pdf')
+
+
+print(ggplot(data=subset(PlotJack,Year==BaselineYear),aes((SpeciesCatName),ProportionalError))+
+        geom_boxplot(outlier.shape=NA,fill='steelblue2')+
+        coord_cartesian(ylim=c(-200,200))+
+        #   coord_cartesian(ylim = range(boxplot(PlotJack$ProportionalError, plot=FALSE)$stats)*c(.8, 1.5))+
+        #         facet_wrap(~Country,scales='free')+
+        geom_abline(intercept=0,slope=0)+
+        ylab('Proportional Error in BvBmsy (%)')+
+        xlab('')+
+        theme(axis.text.x=element_text(angle = -100, hjust = 0)))
+dev.off()
+
+
+
 
 
 
@@ -344,7 +404,7 @@ dev.off()
 # dev.off()
 
 
-pdf(file='Diagnostics/Proportional Error as a function of catch and country.pdf')
+pdf(file='Diagnostics/Proportional BvBmsy Error as a function of catch and country.pdf')
 
 PlotJack$RamBvBmsy[PlotJack$RamBvBmsy>2]<- 2
 print(ggplot(data=subset(PlotJack,Year>2000 & is.na(ProportionalError)==F),aes((Catch),(ProportionalError)))+
@@ -358,7 +418,49 @@ print(ggplot(data=subset(PlotJack,Year>2000 & is.na(ProportionalError)==F),aes((
 #         scale_x_discrete(breaks=as.character(seq(from=2000,to=2012,by=4))))
 dev.off()
 
-nos
+pdf(file='Diagnostics/Proportional BvBmsy Error as a function of log catch and country.pdf')
+
+PlotJack$RamBvBmsy[PlotJack$RamBvBmsy>2]<- 2
+print(ggplot(data=subset(PlotJack,Year>2000 & is.na(ProportionalError)==F),aes(log(Catch),(ProportionalError)))+
+        geom_point(aes(color=RamBvBmsy))+
+        #   coord_cartesian(ylim = range(boxplot(PlotJack$ProportionalError, plot=FALSE)$stats)*c(.8, 1.5))+
+        facet_wrap(~Country,scales='free')+
+        geom_abline(intercept=0,slope=0)+
+        geom_smooth(method='lm')+
+        ylab('Proportional Error (%) in BvBmsy')+
+        xlab('Catch'))
+#         scale_x_discrete(breaks=as.character(seq(from=2000,to=2012,by=4))))
+dev.off()
+
+pdf(file='Diagnostics/Proportional MSY Error as a function of catch and country.pdf')
+
+PlotJack$RamBvBmsy[PlotJack$RamBvBmsy>2]<- 2
+print(ggplot(data=subset(PlotJack,Year==BaselineYear & is.na(ProportionalMSYError)==F),aes((Catch),(ProportionalMSYError)))+
+        geom_point(aes(color=RamBvBmsy))+
+        #   coord_cartesian(ylim = range(boxplot(PlotJack$ProportionalError, plot=FALSE)$stats)*c(.8, 1.5))+
+        facet_wrap(~Country,scales='free')+
+        geom_abline(intercept=0,slope=0)+
+        geom_smooth(method='lm')+
+        ylab('Proportional Error (%) in MSY')+
+        xlab('Catch'))
+#         scale_x_discrete(breaks=as.character(seq(from=2000,to=2012,by=4))))
+dev.off()
+
+PlotJack$Catch[PlotJack$Catch==0]<- NA
+
+pdf(file='Diagnostics/Proportional MSY Error as a function of log catch and country.pdf')
+
+print(ggplot(data=subset(PlotJack,Year==BaselineYear & is.na(ProportionalMSYError)==F),aes(log(Catch),(ProportionalMSYError)))+
+        geom_point(aes(color=RamBvBmsy))+
+        #   coord_cartesian(ylim = range(boxplot(PlotJack$ProportionalError, plot=FALSE)$stats)*c(.8, 1.5))+
+        facet_wrap(~Country,scales='free')+
+        geom_abline(intercept=0,slope=0)+
+        geom_smooth(method='lm')+
+        ylab('Proportional Error (%) in MSY')+
+        xlab('Log Catch'))
+#         scale_x_discrete(breaks=as.character(seq(from=2000,to=2012,by=4))))
+dev.off()
+
 TotalPerformance<- ddply(PlotJack,c('Id'),summarize,MeanBioError=mean(ProportionalError,na.rm=T),MeanMSYError=mean(ProportionalMSYError,na.rm=T),Country=unique(Country),TotalCatch=sum(Catch,na.rm=T))
 
 
