@@ -6,14 +6,14 @@
 RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,NumCPUs,CatchMSYTrumps)
 {
   
-#         Data<- GlobalStatus$Data
+  #         Data<- GlobalStatus$Data
   
   Data$RanCatchMSY<- FALSE
-
+  
   Data$HasRamMSY<-  is.na(Data$MSY)==F
   
   Data$HasRamFvFmsy<- is.na(Data$FvFmsy)==F
-
+  
   Data$HasRamBvBmsy<- is.na(Data$BvBmsy)==F & Data$Dbase=='RAM'
   
   MsyData<- Data
@@ -33,39 +33,44 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   MsyData$CatchMSYBvBmsy_LogSd<- NA
   
   CommonError<- mean(MsyData$BvBmsySD,na.rm=T)
-
+  
   if (is.na(CommonError))
   {
     CommonError<- ErrorSize
   }
   
   stock_id <- unique((Data[,IdVar][Data$HasRamMSY==F & Data$BvBmsy!=999 & is.infinite(Data$BvBmsy)==F])) 
-    
+  
   if (NumCPUs>1)
   {
+        CMSYResults <- (mclapply(1:length(stock_id), MatrixSnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
+                                        CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
     
-    
-    CMSYResults <- (mclapply(1:(length(stock_id)), SnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
-                             CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
-
-#     
-#     sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SnowfallMSY_ProgressWorkPlease.txt" )
-#     
-#     sfExport('Data','ErrorSize','CommonError','sigR','Smooth','Display','BestValues','ManualFinalYear','n','NumCPUs','CatchMSYTrumps','stock_id','IdVar')
-#     
-#     CMSYResults <- (sfClusterApplyLB(1:(length(stock_id)), SnowCatchMSY))
-#     sfStop()
+#      CMSYResults2 <- (mclapply(1:length(stock_id), SnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
+#                                          CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
+    #     
+    #     sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SnowfallMSY_ProgressWorkPlease.txt" )
+    #     
+    #     sfExport('Data','ErrorSize','CommonError','sigR','Smooth','Display','BestValues','ManualFinalYear','n','NumCPUs','CatchMSYTrumps','stock_id','IdVar')
+    #     
+    #     CMSYResults <- (sfClusterApplyLB(1:(length(stock_id)), SnowCatchMSY))
+    #     sfStop()
   }
   if (NumCPUs==1)
-  {
+  {    
     pdf(file=paste(FigureFolder,'Catch-MSY Diagnostics.pdf',sep=''))
-    CMSYResults<- lapply(1:(length(stock_id)/10),SingleCatchMSY,stock_id=stock_id,Data=Data,ErrorSize=ErrorSize,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
-                         CatchMSYTrumps=CatchMSYTrumps,IdVar=IdVar)                
+    CMSYResults <- (mclapply(1:length(stock_id), MatrixSnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
+                             CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
     dev.off()
+    
+    #     pdf(file=paste(FigureFolder,'Catch-MSY Diagnostics Normal.pdf',sep=''))
+    #     
+    #     
+    #     CMSYResults <- (mclapply(1, SnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
+    #                              CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))    
+    #   
+    #     dev.off()
   }
-  
-  
-  
   CmsyStore<- as.data.frame(matrix(NA,nrow=0,ncol=dim(CMSYResults[[1]]$CatchMSY)[2]))
   for (l in 1:length(CMSYResults))
   {
