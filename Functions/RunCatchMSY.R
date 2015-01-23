@@ -43,12 +43,12 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   
   if (NumCPUs>1)
   {
-        CMSYResults <- (mclapply(1:length(stock_id), MatrixSnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
-                                        CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
+    CMSYResults <- (mclapply(1:length(stock_id), MatrixSnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
+                             CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
     
-#      CMSYResults2 <- (mclapply(1:length(stock_id), SnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
-#                                          CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
-    #     
+    #      CMSYResults <- (mclapply(1:length(stock_id), SnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
+    #                                          CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
+    
     #     sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SnowfallMSY_ProgressWorkPlease.txt" )
     #     
     #     sfExport('Data','ErrorSize','CommonError','sigR','Smooth','Display','BestValues','ManualFinalYear','n','NumCPUs','CatchMSYTrumps','stock_id','IdVar')
@@ -59,8 +59,14 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   if (NumCPUs==1)
   {    
     pdf(file=paste(FigureFolder,'Catch-MSY Diagnostics.pdf',sep=''))
+    
     CMSYResults <- (mclapply(1:length(stock_id), MatrixSnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
                              CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
+    
+    #     CMSYResults <- (mclapply(1:length(stock_id), SnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
+    #                              CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
+    
+    
     dev.off()
     
     #     pdf(file=paste(FigureFolder,'Catch-MSY Diagnostics Normal.pdf',sep=''))
@@ -72,17 +78,32 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
     #     dev.off()
   }
   CmsyStore<- as.data.frame(matrix(NA,nrow=0,ncol=dim(CMSYResults[[1]]$CatchMSY)[2]))
+  
+  pdf(file='Diagnostics/Initial Biomass Prior Diagnostic.pdf')
   for (l in 1:length(CMSYResults))
   {
     CmsyResults<- CMSYResults[[l]]
-    
     if (CmsyResults$RanCatchMSY==T)
       
     {
+      
+            ParamSpace<- CmsyResults$PossibleParams
+            
+            BioData<- ParamSpace[,grepl('X',colnames(ParamSpace))]
+            
+            ParamSpace$FinalBvBmsy<- 2*(BioData[,dim(BioData)[2]]/ParamSpace$K)
+                
+            print(ggplot(data=ParamSpace,aes(StartBio,FinalBvBmsy))+geom_point()+geom_smooth(method='lm')+ylab('FinalBvBmsy')+xlab('StartBvBmsy'))
+            
+            print(ggplot(data=ParamSpace,aes(StartBio,MSY))+geom_point()+geom_smooth(method='lm')+xlab('StartBvBmsy')+ylab('MSY'))
+            
+            
+            
+#             print(ggplot(data=ParamSpace,aes(StartBio))+geom_histogram(binwidth=.025))      
       CmsyStore<- rbind(CmsyStore,CmsyResults$CatchMSY)
     }
   }
-  
+    dev.off()
   ConCatDat<- paste(MsyData$IdOrig,Data$Year,sep='-')
   
   ConCatCmsy<- paste(CmsyStore$IdOrig,CmsyStore$Year,sep='-')

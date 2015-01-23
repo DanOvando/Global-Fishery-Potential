@@ -9,8 +9,7 @@
 # 5. Run catchMSY with priors
 # 
 # 6. Store Real B/Bmsy, F/Fmsy, MSY, PRM B/Bmsy, MSY BvBmsy, FvFmsy, MSY with and without priors, and year
-rm(list=ls())
-load('Results/Dec 28 Full Run/Data/Global Fishery Recovery Results.rdata')
+load('Results/Test Full Run/Data/Global Fishery Recovery Results.rdata')
 library(car)
 library(plyr)
 library(lattice)
@@ -29,6 +28,8 @@ library(ggplot2)
 library(gridExtra)
 library(reshape2)
 
+
+
 RamData<- RamData[RamData$Year<=BaselineYear,]
 
 Regions<- unique(RamData$Country)[1]
@@ -45,10 +46,11 @@ ErrorSize<- 0.95
 
 TransbiasIterations<- 1000
 
-sigR<- 0.05
+NumCPUs<- 3
+
+sigR<- 0
 
 # NewRam<- MaidService(RawData[RawData$Dbase=='RAM',],OverlapMode,BaselineYear) #Filter out unusable stocks, prepare data for regression and use
-
 
 
 for (n in 1:length(Regions))
@@ -232,7 +234,7 @@ PlotJack<- join(PlotJack, SpeciesInfo,by='Id',match='first')
 
 save(PlotJack,JackStore,file='Diagnostics/JackKnife.rdata')
 
-load(file='Diagnostics/JackKnife.rdata')
+# load(file='Diagnostics/JackKnife.rdata')
 
 pdf(file='Diagnostics/Observed vs Predicted BvBmsy Diagnostic Plots.pdf')
 xyplot((ModelBvBmsy) ~ (RamBvBmsy) | Model,subset=Year>2005,data=PlotJack,xlab=' Log RAM B/Bmsy',ylab='Log Predicted B/Bmsy', panel=function(x,y,...)

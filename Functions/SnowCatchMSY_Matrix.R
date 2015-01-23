@@ -58,6 +58,9 @@ MatrixSnowCatchMSY<- function(s,Data,CommonError,sigR,Smooth,Display,BestValues,
   
   Ell= EllBio$FinalBio>=ResultMat$FinalBio1 & EllBio$FinalBio <= ResultMat$FinalBio2 & EllBio$InterBio>=ResultMat$InterBio1 & EllBio$InterBio <= ResultMat$InterBio2 & EllBio$MinBio>0 & EllBio$MaxBio<ResultMat$K 
   
+#   Ell= ResultMat$StartBio==min(ResultMat$StartBio) &EllBio$FinalBio>=ResultMat$FinalBio1 & EllBio$FinalBio <= ResultMat$FinalBio2 & EllBio$InterBio>=ResultMat$InterBio1 & EllBio$InterBio <= ResultMat$InterBio2 & EllBio$MinBio>0 & EllBio$MaxBio<ResultMat$K 
+  
+  
   PossibleRuns<- ResultMat[Ell,]
   return(PossibleRuns)
   
@@ -173,9 +176,8 @@ ct   <- (Data$Catch[(Data[,IdVar])==stock])  ## assumes that catch is given in t
 
 bio<- pmin(1,Data$BvBmsy[Data[,IdVar]==stock]/2) #pull out bvbmsy (transposed to B/K)
 
-bioerror<- Data$BvBmsySD[Where]/2
-
-bioerror[is.na(bioerror)]<- CommonError/2
+bioerror<- Data$BvBmsySD[Where]/10
+bioerror[is.na(bioerror)]<- CommonError/10
 
 PossibleRuns<- NA
 
@@ -243,7 +245,10 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   }
   
   #       sigR        <- 0.0      ## process error; 0 if deterministic model; 0.05 reasonable value? 0.2 is too high
-  startbt     <- seq(startbio[1], startbio[2], by = 0.05) ## apply range of start biomass in steps of 0.05	
+  startbt     <- seq(startbio[1], startbio[2], length.out = 10) ## apply range of start biomass in steps of 0.05	
+#   startbt     <- seq(startbio[1], startbio[2], by = 0.05) ## apply range of start biomass in steps of 0.05  
+  
+  
   parbound <- list(r = start_r, k = start_k, lambda = finalbio, sigR=sigR)
   
   if (Display==1)
@@ -304,6 +309,9 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
     ## Get statistics on r, k and msy
     r   <- PossibleRuns$r
     k 	<- PossibleRuns$K
+    
+    PossibleRuns$MSY<- (r*k)/4
+    
     bvbmsy<- 2*(PossibleRuns[,grepl('X',colnames(PossibleRuns))]/k)
     
     time_bvbmsy<- (apply(bvbmsy,2,function(x) exp(mean(log(x)))))
