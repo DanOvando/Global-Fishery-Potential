@@ -96,6 +96,9 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
             print(ggplot(data=ParamSpace,aes(StartBio,FinalBvBmsy))+geom_point()+geom_smooth(method='lm')+ylab('FinalBvBmsy')+xlab('StartBvBmsy'))
             
             print(ggplot(data=ParamSpace,aes(StartBio,MSY))+geom_point()+geom_smooth(method='lm')+xlab('StartBvBmsy')+ylab('MSY'))
+
+            print(ggplot(data=ParamSpace,aes(StartBio,FinalFvFmsy))+geom_point()+geom_smooth(method='lm')+xlab('StartBvBmsy')+ylab('FinalFvFmsy'))
+            
             
             
             
