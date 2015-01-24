@@ -314,6 +314,14 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
     
     bvbmsy<- 2*(PossibleRuns[,grepl('X',colnames(PossibleRuns))]/k)
     
+    CatchMat=matrix(rep(ct,dim(PossibleRuns)[1]),nrow=dim(PossibleRuns)[1],ncol=length(ct),byrow=T)  
+    
+    fvfmsy<- CatchMat/PossibleRuns$MSY/bvbmsy
+    
+    PossibleRuns$FinalFvFmsy<- fvfmsy[,dim(fvfmsy)[2]]
+    
+    
+    
     time_bvbmsy<- (apply(bvbmsy,2,function(x) exp(mean(log(x)))))
     mean_bvbmsy<- mean(apply(bvbmsy,1,function(x) exp(mean(log(x)))))
     LogSD_bvbmsy<- mean(apply(bvbmsy,1,function(x) (sd(log(x)))))
