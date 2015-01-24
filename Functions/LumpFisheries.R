@@ -9,10 +9,14 @@ LumpFisheries<- function(Data,GroupsToGroup)
 #   Data<- FaoData
 #   
 #   GroupsToGroup<- SpeciesCategoriesToLump
-  
+ 
   StitchMat<- as.data.frame(matrix(NA,nrow=0,ncol=dim(Data)[2]))
   
   colnames(StitchMat)<- colnames(Data)
+  
+  StitchIds<-as.data.frame(matrix(NA,nrow=0,ncol=2))
+  
+  colnames(StitchIds)<-c('LumpedID','StockIDs')
   
   CandidateStocks<- (Data$SpeciesCatName %in% GroupsToGroup) & Data$Dbase=='FAO'
   
@@ -45,11 +49,17 @@ LumpFisheries<- function(Data,GroupsToGroup)
           
           GroupYears<- sort(unique(GroupRegSpeciesData$Year))
           
+          GroupIds<-unique(GroupRegSpeciesData$IdOrig)
+          
           TempStitch<- as.data.frame(matrix(NA,nrow=length(GroupYears),ncol=dim(Data)[2]))
+          
+          TempStitchIds<-as.data.frame(matrix(NA,nrow=1,ncol=2))
           
           BioData<- GroupRegSpeciesData[1,]
           
           colnames(TempStitch)<- colnames(Data)
+          
+          colnames(TempStitchIds)<-colnames(StitchIds)
           
           TempStitch[,2:dim(TempStitch)[2]]<- BioData[2:dim(BioData)[2]]
          
@@ -58,6 +68,10 @@ LumpFisheries<- function(Data,GroupsToGroup)
           TempStitch$IdOrig<- paste('Lumped-',TempStitch$CommName[1],'-FaoRegion',FaoRegs[f],sep='')
 
           TempStitch$Country<- 'Multinational'
+          
+          TempStitchIds$LumpedID<-paste('Lumped-',TempStitch$CommName[1],'-FaoRegion',FaoRegs[f],sep='')
+          
+          TempStitchIds$StockIDs<-paste(GroupIds,collapse='_')
           for (y in 1:length(GroupYears))
           {
             
@@ -69,6 +83,8 @@ LumpFisheries<- function(Data,GroupsToGroup)
           
           StitchMat<- rbind(StitchMat,TempStitch)
           
+          StitchIds<-rbind(StitchIds,TempStitchIds)
+          
         } #Close species loop
         
       } #Close FAO Regions Loop
@@ -79,5 +95,5 @@ LumpFisheries<- function(Data,GroupsToGroup)
        
   StitchedData<- rbind(KeepData,StitchMat)
     
-return(StitchedData)
+return(list(StitchedData=StitchedData,StitchIds=StitchIds))
 } #Close function

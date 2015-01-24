@@ -74,9 +74,11 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
   
   Data$Country[Data$Dbase=="SOFIA" & grepl(", ",Data$Country)==T] <- "Multinational" # rename Country for multinational Sofia stocks to "Multinational"
   
-  Data<- LumpFisheries(Data,SpeciesCategoriesToLump)
+  StitchedData<- LumpFisheries(Data,SpeciesCategoriesToLump)
   
+  Data<-StitchedData$StitchedData
   
+  StitchIds<-StitchedData$StitchIds
   # FIlter out bad data once again ------------------------------------------
   
   
@@ -133,7 +135,7 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
   
   OverlapToRemove<- c('Ram','Sofia','SofiaRam')
   
-  return(list(CleanedData=Data,DroppedStocks= DroppedStocks,AllOverlap=AllOverlap))
+  return(list(CleanedData=Data,DroppedStocks= DroppedStocks,AllOverlap=AllOverlap,StitchIds=StitchIds))
   
 }
 
