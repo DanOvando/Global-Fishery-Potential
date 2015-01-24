@@ -21,7 +21,7 @@ library(parallel)
 library(ggplot2)
 library(gridExtra)
 library(reshape2)
-
+library(dplyr)
 # Basic Controls -------------------------------------------------------------
 
 RunAnalyses<- FALSE
@@ -47,8 +47,7 @@ if (RunAnalyses==FALSE)
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
   BatchFolder<- 'Test Full Run'
-  
-  
+    
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
   InputFolder<- 'Data/'
@@ -63,9 +62,9 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0
+SubSample<- 0.9
 
-NumCPUs<- 4 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 1 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
