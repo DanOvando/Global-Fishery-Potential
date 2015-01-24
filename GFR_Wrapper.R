@@ -505,7 +505,7 @@ if (RunAnalyses==F) #Load baseline versions of key dataframes for analysis after
   
 }
 
-BiomassData<- join(BiomassData,MsyData[,c('IdOrig','CatchMSYBvBmsy_LogSd')],by='IdOrig',match='first')
+# BiomassData<- join(BiomassData,MsyData[,c('IdOrig','CatchMSYBvBmsy_LogSd')],by='IdOrig',match='first')
 
 # Assign labels and prepare results for analysis --------------------------
 

@@ -4,9 +4,8 @@
 ###################################### 
 
 #   SnowCatchMSY<- function(s)
- SnowCatchMSY<- function(s,Data,CommonError,sigR,Smooth,Display,BestValues,ManualFinalYear,n,NumCPUs,CatchMSYTrumps,stock_id,IdVar)    
+SnowCatchMSY<- function(s,Data,CommonError,sigR,Smooth,Display,BestValues,ManualFinalYear,n,NumCPUs,CatchMSYTrumps,stock_id,IdVar)    
 {
-  
   RanCMSY<- FALSE
   require(zoo)
   require(plyr)
@@ -108,7 +107,7 @@ Where<- Data[,IdVar]==stock
 
 # (paste(round(100*(s/length(stock_id)),2),'% done with CatchMSY',sep=''))
 
-write.table((paste(round(100*(s/length(stock_id)),2),'% done with CatchMSY',sep='')), file = 'CatchMSY Progress.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
+write.table((paste(round(100*(s/length(stock_id)),2),'% done with CatchMSY OLDIE',sep='')), file = 'CatchMSY Progress.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
 
 
 
@@ -119,15 +118,14 @@ ct   <- (Data$Catch[(Data[,IdVar])==stock])  ## assumes that catch is given in t
 bio<- pmin(1,Data$BvBmsy[Data[,IdVar]==stock]/2) #pull out bvbmsy (transposed to B/K)
 
 bioerror<- Data$BvBmsySD[Where]/2
-
-  bioerror[is.na(bioerror)]<- CommonError/2
+bioerror[is.na(bioerror)]<- CommonError/2
 
 if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct) >1)
 {
   
-
+  
   ct<- na.approx(ct)
-      
+  
   if(Smooth==1){ct<- runmed(ct,3)}
   
   res  <- (Data$Res[(Data[,IdVar])==stock])[1] ## resilience from FishBase, if needed, enable in PARAMETER SECTION
@@ -150,11 +148,11 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   
   start_k     <- c(max(ct,na.rm=T),50*max(ct,na.rm=T)) ## default for upper k e.g. 100 * max catch
   ## startbio 	<- c(0.8,1)   ## assumed biomass range at start of time series, as fraction of k
-
+  
   startbio    <- pmin(1,pmax(0,c(qnorm(0.25,bio[1],bioerror[1]),qnorm(0.75,bio[1],bioerror[1]))))
   
   
-#   startbio    <- pmin(1,c((1-ErrorSize)*bio[1],(1+ErrorSize)*bio[1]))
+  #   startbio    <- pmin(1,c((1-ErrorSize)*bio[1],(1+ErrorSize)*bio[1]))
   
   if (is.na(bio[1]) | bio[1]==0)
   {
@@ -163,22 +161,22 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   
   interyr 	<- median(1:length(yr))   ## interim year within time series for which biomass estimate is available; set to yr[2] if no estimates are available #SUB IN INTERMIN YEAR
   
-#   interbio 	<- pmin(1,c((1-ErrorSize)*bio[interyr],(1+ErrorSize)*bio[interyr])) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
-
-interbio   <-  pmin(1,pmax(0,c(qnorm(0.25,bio[interyr],bioerror[interyr]),qnorm(0.75,bio[interyr],bioerror[interyr])))) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
-
-
-if (is.na(bio[interyr]) | bio[interyr]==0)
+  #   interbio 	<- pmin(1,c((1-ErrorSize)*bio[interyr],(1+ErrorSize)*bio[interyr])) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
+  
+  interbio   <-  pmin(1,pmax(0,c(qnorm(0.25,bio[interyr],bioerror[interyr]),qnorm(0.75,bio[interyr],bioerror[interyr])))) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
+  
+  
+  if (is.na(bio[interyr]) | bio[interyr]==0)
   {
     interbio 	<- c(0, 1) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
   }
   
   interyr<- yr[interyr]
   
-#   finalbio    <- pmin(1,c((1-ErrorSize)*bio[nyr],(1+ErrorSize)*bio[nyr]))
-finalbio    <- pmin(1,pmax(0,c(qnorm(0.25,bio[nyr],bioerror[nyr]),qnorm(0.75,bio[nyr],bioerror[nyr]))))
-
-
+  #   finalbio    <- pmin(1,c((1-ErrorSize)*bio[nyr],(1+ErrorSize)*bio[nyr]))
+  finalbio    <- pmin(1,pmax(0,c(qnorm(0.25,bio[nyr],bioerror[nyr]),qnorm(0.75,bio[nyr],bioerror[nyr]))))
+  
+  
   if (is.na(bio[nyr]) | bio[nyr]==0)
   {
     finalbio    <- if(ct[nyr]/max(ct,na.rm=T) > 0.5) {c(0.3,0.7)} else {c(0.01,0.4)} ## use for batch processing #SET TO KNOWN B/BMSY RANGE
@@ -287,35 +285,35 @@ finalbio    <- pmin(1,pmax(0,c(qnorm(0.25,bio[nyr],bioerror[nyr]),qnorm(0.75,bio
     ## plot MSY over catch data
     if (NumCPUs==1)
     {
-    par(mfcol=c(2,3))
-    plot(yr, ct, type="l", ylim = c(0, max(ct)), xlab = "Year", ylab = "Catch (MT)", main = stock)
-    abline(h=exp(mean(log(msy))),col="red", lwd=2)
-    abline(h=exp(mean_ln_msy - 2 * sd(log(msy))),col="red")
-    abline(h=exp(mean_ln_msy + 2 * sd(log(msy))),col="red")
-    
-    hist(r, freq=F, xlim=c(0, 1.2 * max(r)), main = "")
-    abline(v=exp(mean(log(r))),col="red",lwd=2)
-    abline(v=exp(mean(log(r))-2*sd(log(r))),col="red")
-    abline(v=exp(mean(log(r))+2*sd(log(r))),col="red")
-    
-    plot(r1, k1, xlim = start_r, ylim = start_k, xlab="r", ylab="k (MT)")
-    
-    hist(k, freq=F, xlim=c(0, 1.2 * max(k)), xlab="k (MT)", main = "")
-    abline(v=exp(mean(log(k))),col="red", lwd=2)	
-    abline(v=exp(mean(log(k))-2*sd(log(k))),col="red")
-    abline(v=exp(mean(log(k))+2*sd(log(k))),col="red")
-    
-    plot(log(r), log(k),xlab="ln(r)",ylab="ln(k)")
-    abline(v=mean(log(r)))
-    abline(h=mean(log(k)))
-    abline(mean(log(msy))+log(4),-1, col="red",lwd=2)
-    abline(mean(log(msy))-2*sd(log(msy))+log(4),-1, col="red")
-    abline(mean(log(msy))+2*sd(log(msy))+log(4),-1, col="red")
-    
-    hist(msy, freq=F, xlim=c(0, 1.2 * max(c(msy))), xlab="MSY (MT)",main = "")
-    abline(v=exp(mean(log(msy))),col="red", lwd=2)
-    abline(v=exp(mean_ln_msy - 2 * sd(log(msy))),col="red")
-    abline(v=exp(mean_ln_msy + 2 * sd(log(msy))),col="red")
+      par(mfcol=c(2,3))
+      plot(yr, ct, type="l", ylim = c(0, max(ct)), xlab = "Year", ylab = "Catch (MT)", main = stock)
+      abline(h=exp(mean(log(msy))),col="red", lwd=2)
+      abline(h=exp(mean_ln_msy - 2 * sd(log(msy))),col="red")
+      abline(h=exp(mean_ln_msy + 2 * sd(log(msy))),col="red")
+      
+      hist(r, freq=F, xlim=c(0, 1.2 * max(r)), main = "")
+      abline(v=exp(mean(log(r))),col="red",lwd=2)
+      abline(v=exp(mean(log(r))-2*sd(log(r))),col="red")
+      abline(v=exp(mean(log(r))+2*sd(log(r))),col="red")
+      
+      plot(r1, k1, xlim = start_r, ylim = start_k, xlab="r", ylab="k (MT)")
+      
+      hist(k, freq=F, xlim=c(0, 1.2 * max(k)), xlab="k (MT)", main = "")
+      abline(v=exp(mean(log(k))),col="red", lwd=2)	
+      abline(v=exp(mean(log(k))-2*sd(log(k))),col="red")
+      abline(v=exp(mean(log(k))+2*sd(log(k))),col="red")
+      
+      plot(log(r), log(k),xlab="ln(r)",ylab="ln(k)")
+      abline(v=mean(log(r)))
+      abline(h=mean(log(k)))
+      abline(mean(log(msy))+log(4),-1, col="red",lwd=2)
+      abline(mean(log(msy))-2*sd(log(msy))+log(4),-1, col="red")
+      abline(mean(log(msy))+2*sd(log(msy))+log(4),-1, col="red")
+      
+      hist(msy, freq=F, xlim=c(0, 1.2 * max(c(msy))), xlab="MSY (MT)",main = "")
+      abline(v=exp(mean(log(msy))),col="red", lwd=2)
+      abline(v=exp(mean_ln_msy - 2 * sd(log(msy))),col="red")
+      abline(v=exp(mean_ln_msy + 2 * sd(log(msy))),col="red")
     }
     if (Display==1)
     {
