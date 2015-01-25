@@ -81,9 +81,9 @@ if (RunAnalyses==TRUE)
   }
   else 
   {
-    FullData<- read.csv(paste(ResultFolder,'Cleaned Compiled Database.csv',sep=''))
+    FullData<- read.csv(paste(ResultFolder,'Cleaned Compiled Database.csv',sep=''),stringsAsFactors=F)
     
-    RawData<- read.csv(paste(ResultFolder,'Raw Database.csv',sep=''))
+    RawData<- read.csv(paste(ResultFolder,'Raw Database.csv',sep=''),stringsAsFactors=F)
     
   }
   

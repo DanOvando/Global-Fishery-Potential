@@ -28,7 +28,7 @@ FindOpenAccess<-function(MsyData,BaselineYear,BOAtol)
     IdsBOA<-KobeSpace$IdOrig[KobeSpace$KobeSpot<=BOAtol] # identify stocks that are within tolerance of equilibrium
     
     OpenAccess$SpeciesCatName[s]<-SpeciesCats[s] # store species category
-    OpenAccess$BvBmsyOpenAccess[s]<-summary(CategoryStocks$BvBmsy[CategoryStocks$IdOrig %in% IdsBOA])[2] # store BvBmsy of 25 percentile 
+    OpenAccess$BvBmsyOpenAccess[s]<-quantile(CategoryStocks$BvBmsy[CategoryStocks$IdOrig %in% IdsBOA],c(0.1,0.25))[1] # store BvBmsy of 25 percentile 
   }
   
   # remove species categories without data (fisheries considered to be in equilibrium)
@@ -61,42 +61,48 @@ FindOpenAccess<-function(MsyData,BaselineYear,BOAtol)
   dev.off()
   
 #   ## run diagnostic on range of BOA values obtained from different BOAtol values
-#   
-#   # create BOA range to loop over
-#   RangeBOA<-seq(from=0.02, to=1,by=0.02)
-#   
-#   # create dataframe to fill with sensitivity results
-#   SensitivityBOA<-data.frame(matrix(NA,nrow=length(SpeciesCats),ncol=length(RangeBOA)+1))
-#   colnames(SensitivityBOA)<-c('SpeciesCatName',RangeBOA)
-#   
-#   for (s in 1:length(SpeciesCats))
-#   {
-#     CategoryStocks<-Data[Data$SpeciesCatName==SpeciesCats[s] & Data$Year==BaselineYear &  Data$Dbase!='RAM',]
-#     
-#     KobeSpace<-ddply(CategoryStocks,c('IdOrig'),summarize,KobeSpot=abs((2-FvFmsy-BvBmsy))) 
-#     # Any stock on the equilibrium line has a value of 2 for the sum of BvBmsy and FvFmsy
-#     # This ddply calculates the distance from the equilibrium line for each stock
-#     # subset this dataset to only include stocks within a desired tolerance, make option on Master
-#     
-#     SensitivityBOA$SpeciesCatName[s]<-SpeciesCats[s] # store species category
-#     
-#     for(a in 1:length(RangeBOA))
-#     {
-#       # set temporary BOAtol
-#       tempBOAtol<-RangeBOA[a]
-# 
-#       # identify stocks that are within tolerance of equilibrium    
-#       tempIdsBOA<-KobeSpace$IdOrig[KobeSpace$KobeSpot<=tempBOAtol] 
-#       
-#       SensitivityBOA[s,a+1]<-summary(CategoryStocks$BvBmsy[CategoryStocks$IdOrig %in% tempIdsBOA])[2] # store BvBmsy of 25 percentile 
-#     }
-#   }
-#   
-#   SensPlot<-melt(SensitivityBOA,id.vars='SpeciesCatName',measure.vars=c(2:51),variable.name='BOAtolerance',value.name='BOA')
-#   
-#   ggplot(SensPlot,aes(x=as.numeric(BOAtolerance),y=BOA,color=SpeciesCatName)) +
-#     geom_line() +
-#     facet_wrap(~SpeciesCatName,scales='free')
   
+  # create BOA range to loop over
+  RangeBOA<-seq(from=0.02, to=1,by=0.02)
+  
+  # create dataframe to fill with BOA tol sensitivity results
+  SensitivityBOA<-data.frame(matrix(NA,nrow=length(SpeciesCats),ncol=length(RangeBOA)+1))
+  colnames(SensitivityBOA)<-c('SpeciesCatName',RangeBOA)
+
+  for (s in 1:length(SpeciesCats))
+  {
+    CategoryStocks<-Data[Data$SpeciesCatName==SpeciesCats[s] & Data$Year==BaselineYear &  Data$Dbase!='RAM',]
+    
+    KobeSpace<-ddply(CategoryStocks,c('IdOrig'),summarize,KobeSpot=abs((2-FvFmsy-BvBmsy))) 
+    # Any stock on the equilibrium line has a value of 2 for the sum of BvBmsy and FvFmsy
+    # This ddply calculates the distance from the equilibrium line for each stock
+    # subset this dataset to only include stocks within a desired tolerance, make option on Master
+    
+    SensitivityBOA$SpeciesCatName[s]<-SpeciesCats[s] # store species category
+    
+    for(a in 1:length(RangeBOA))
+    {
+      # set temporary BOAtol
+      tempBOAtol<-RangeBOA[a]
+
+      # identify stocks that are within tolerance of equilibrium    
+      tempIdsBOA<-KobeSpace$IdOrig[KobeSpace$KobeSpot<=tempBOAtol] 
+      
+      SensitivityBOA[s,a+1]<-quantile(CategoryStocks$BvBmsy[CategoryStocks$IdOrig %in% tempIdsBOA],c(0.1,0.25))[1] # store BvBmsy of 25 percentile 
+    }
+  }
+  
+  SensPlot<-melt(SensitivityBOA,id.vars='SpeciesCatName',measure.vars=c(2:51),variable.name='BOAtolerance',value.name='BOA')
+  
+  SensPlot$BOAtolerance<-as.numeric(levels(SensPlot$BOAtolerance))[SensPlot$BOAtolerance]
+
+  SensPlot<-SensPlot[is.na(SensPlot$BOA)==F,]
+
+  pdf(file=paste(FigureFolder,'BOA Sensitivity to BOAtol.pdf',sep=''))
+  print(ggplot(SensPlot,aes(x=BOAtolerance,y=BOA,color=SpeciesCatName)) +
+    geom_line() +
+    facet_wrap(~SpeciesCatName))
+  dev.off()  
+
   return(BvBmsyOpenAccess=OpenAccess)
 }
