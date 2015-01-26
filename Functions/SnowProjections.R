@@ -50,21 +50,21 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
       } #Close bvec loop
       
       diff= sum(abs(f1-oldf1))
-       if (t>200)
-       {
-         diff<- tol
-         write.table(paste(  'Fishery ',Stocks[s],' is stuck',sep=''), file = 'Optimization Fail Log.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
-       }
+      if (t>200)
+      {
+        diff<- tol
+        write.table(paste(  'Fishery ',Stocks[s],' is stuck',sep=''), file = 'Optimization Fail Log.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
+      }
     }# Close while loop
     
-#     write.table(paste(  'Number of Trys is ', t,sep=''), file = 'Optimization Testing.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
+    #     write.table(paste(  'Number of Trys is ', t,sep=''), file = 'Optimization Testing.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
     
     
     
     return(list(Policy=f1))
     
   } #Close function
-
+  
   ######################################
   # Internal Optimization Function 
   # To be used with RunDynamicOptimization2.R
@@ -90,15 +90,28 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   # Outputs: variables over time (f, b, yield (y), profit (pi)--------------------------------------------------
   ######################################
   
-  Sim_Forward= function(Policy,fpolicy,bvec,b0,T,p,MSY,c,r,beta,delta)
+  OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
+  {
+    
+    if (t==1)
+    {
+      f=f
+    }
+    if (t>1)
+    {
+      f<- max(f+omega*(pi/MsyProfits),.0001)
+    }
+    return(f)
+  }
+  
+  Sim_Forward= function(Policy,fpolicy,bvec,b0,Time,p,MSY,c,r,beta,delta)
   {  
-    b = matrix(0,T,1)
+    b = matrix(0,Time,1)
     f = b
     pi = b
     y = b
-    
     b[1] = b0;
-    
+    if (Policy=='StatusQuoOpenAccess'){f[1]<- fpolicy}
     if (Policy=='CatchShare')
     {
       p<- p*CatchSharePrice
@@ -106,12 +119,23 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
       c<- c*CatchShareCost
     }
     
-    for (t in 1:T)
+    MsyProfits<- MSY*p-c*(r/2)^beta
+    
+    Omega<- 0.1
+    
+    PastF<- f[1]
+    
+    for (t in 1:Time)
     {
-      f[t] = approx(bvec,fpolicy,b[t])$y
+      if (Policy!='StatusQuoOpenAccess'){ f[t] = approx(bvec,fpolicy,b[t])$y}
+      if (Policy=='StatusQuoOpenAccess')
+      {
+        f[t]=OpenAccessFleet(PastF,pi[t-1],t,Omega,MsyProfits)
+        PastF<- f[t]
+      }
       pi[t] = p*MSY*f[t]*b[t] - c*(f[t]*r/2)^beta
       y[t] = MSY*f[t]*b[t]
-      if (t<T)
+      if (t<Time)
       {b[t+1] =max(min(bvec), b[t] + r*b[t]*(1-b[t]/2) - r/2*b[t]*f[t])}
     }
     
@@ -122,11 +146,11 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     return(Projection)
   }
   
-#   sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
+  #   sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
   
   counter<- 1
-
-#   show(paste(  round(100*(s/length(Stocks)),2),'% Done with Projections',sep=''))
+  
+  #   show(paste(  round(100*(s/length(Stocks)),2),'% Done with Projections',sep=''))
   
   write.table(paste(  round(100*(s/length(Stocks)),2),'% Done with Projections',sep=''), file = 'Projection Analysis Progress.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
   
@@ -139,7 +163,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   #   Where<- Data[,IdVar]== '11776-FAO-67-31'
   
   StockData<- Data[Where,]
-
+  
   if(max(StockData$BvBmsy)>max(bvec))
   {
     maxb<-max(StockData$BvBmsy)
@@ -177,29 +201,10 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   FoodPolicy<-  RunDynamicOpt2(MSY,r,1,0,beta,0,bvec,tol)$Policy
   
-  if(StatusQuoPolicy=='StatusQuoA')
-  {
-    SQPolicy<- FStatusQuo*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])  
-  }
+  StatusQuoFForeverPolicy<- FStatusQuo*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])  
   
-  if(StatusQuoPolicy=='StatusQuoB')
-  {
-    
-    if(FStatusQuo>=1)
-    {
-      SQPolicy<- FStatusQuo*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])
-    }
-    
-    if(FStatusQuo<1)
-    {
-      SQPolicy<- bvec
-      
-      SQPolicy[bvec<1]<- FStatusQuo
-      
-      SQPolicy[bvec>=1]<- 1
-    }
-  }
-    
+  StatusQuoBForeverPolicy<- (2-RecentStockData$BvBmsy)*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])  
+  
   FmsyPolicy<- matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])
   
   CloseDownPolicy<- bvec
@@ -208,11 +213,14 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   CloseDownPolicy[bvec>=1]<- 1 
   
+  StatusQuoOpenAccessPolicy<- FStatusQuo
+  
+  
   for (p in 1:length(Policies))
   {
     
     eval(parse(text=paste('Policy<-',Policies[p],'Policy',sep=''))) 
-    
+        
     Projection<- Sim_Forward(Policies[p],Policy,bvec,RecentStockData$BvBmsy,ProjectionTime,Price,MSY,cost,r,beta,delta)
     
     PolicyMatrix<- as.data.frame(matrix(NA,nrow=ProjectionTime,ncol=dim(TempMat)[2]))
@@ -236,8 +244,8 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     PolicyMatrix$MarginalCost<- cost
     
     TempMat[counter:(counter+-1+(dim(PolicyMatrix)[1])),]<- I(PolicyMatrix)
-#     
-     counter<- (counter+(dim(PolicyMatrix)[1]))
+    #     
+    counter<- (counter+(dim(PolicyMatrix)[1]))
     
     
   } # close policies loop
