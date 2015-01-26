@@ -14,7 +14,8 @@
 
 UnlumpFisheries<-function(Data,RawData,BaselineYear,YearsBack,StitchIds)
 {
-  data<-Data
+  
+  data<-Data[grepl('Lumped',Data$IdOrig),]
   
   ids<-unique(data$IdOrig)
   
