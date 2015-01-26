@@ -4,7 +4,9 @@ AssignEconomicData<- function(Data,BvBmsyOpenAccess)
   
 #   Data<- FullData
   
-  PriceData<- read.csv('Data/Species Category Prices.csv')
+#   PriceData<- read.csv('Data/Species Category Prices.csv')
+  
+  PriceData<-read.csv('Data/Prices_FAO_ExVessel.csv',stringsAsFactors=F)
   
 #   BvBmsyOpenAccess<- read.csv('Data/Species Category Open Access Depletion.csv')
   
@@ -19,10 +21,10 @@ AssignEconomicData<- function(Data,BvBmsyOpenAccess)
     
     if (sum(WherePrices)>0)
     {
-      Price<- (PriceData$Price[WherePrices])
+      Price<- (PriceData$wt_avg_08to12[WherePrices])
       
     }
-    else{Price<- mean(PriceData$Price,na.rm=T)}
+    else{Price<- mean(PriceData$wt_avg_08to12,na.rm=T)}
     
     WhereBOA<- (BvBmsyOpenAccess$SpeciesCatName)==as.character(SpeciesCats[s])
     

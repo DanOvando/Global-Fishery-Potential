@@ -145,11 +145,20 @@ for (i in 1:length(RAMNames))
   {
     
     
-    RAM$VonBertK[Where]=bioparams[bioparams$assessid==RAMNames[i] & grepl("VB-k",bioparams$bioid),5]
-    RAM$VonBertKUnit[Where]=bioparams[bioparams$assessid==RAMNames[i]& grepl("VB-k",bioparams$bioid),4]
+    RAM$VonBertK[Where]=bioparams[bioparams$assessid==RAMNames[i] & grepl("VB-k",bioparams$bioid),c('biovalue')]
+    RAM$VonBertKUnit[Where]=bioparams[bioparams$assessid==RAMNames[i]& grepl("VB-k",bioparams$bioid),c('bioid')]
     RAM$VonBertKSource[Where]="RAM"
   }
 }
+
+# VonBertK
+# "varies by region" will be converted to NA, still finding a "-0.36 value", can't resolve from reference
+RAM$VonBertK<-as.numeric(RAM$VonBertK)
+
+# convert two VBk mm entries to cm
+RAM$VonBertK[RAM$VonBertKUnit=='VB-k-mm/T']<-RAM$VonBertK[RAM$VonBertKUnit=='VB-k-mm/T']/10
+RAM$VonBertKUnit[RAM$VonBertKUnit=='VB-k-mm/T']<-'Vb-k-cm/T'
+
 
 # Max Lenght and Units
 
@@ -162,55 +171,64 @@ for (i in 1:length(RAMNames))
   {
     
     
-    RAM$MaxLength[Where]=bioparams[bioparams$assessid==RAMNames[i] & grepl("MAX-LEN",bioparams$bioid),5]
-    RAM$MaxLengthUnit[Where]=bioparams[bioparams$assessid==RAMNames[i]& grepl("MAX-LEN",bioparams$bioid),4]
+    RAM$MaxLength[Where]=bioparams[bioparams$assessid==RAMNames[i] & grepl("MAX-LEN",bioparams$bioid),c('biovalue')]
+    RAM$MaxLengthUnit[Where]=bioparams[bioparams$assessid==RAMNames[i]& grepl("MAX-LEN",bioparams$bioid),c('bioid')]
     RAM$MaxLengthSource[Where]="RAM"
   }
 }
 
-# Age at 50% maturity
+RAM$MaxLength=gsub("26+","26",RAM$MaxLength, fixed=T) # remove + from end of 26
+RAM$MaxLength=gsub("available","",RAM$MaxLength) # remove "available", RAM entry says "varies greatly"
+RAM$MaxLength<-as.numeric(RAM$MaxLength)
 
-for (i in 1:length(RAMNames)) ## multiple matches for Age at Mat for some studies, pick one?
+
+## Age at 50% maturity
+
+AgeMatValues<-bioparams[grepl('A50',bioparams$bioid),c('assessid','bioid','biovalue','bionotes')]
+
+# AgeMat
+AgeMatValues$biovalue=gsub("7.7+","7.7",AgeMatValues$biovalue,fixed=T) # remove + from end of 7.7 
+AgeMatValues$biovalue=gsub("3+","3",AgeMatValues$biovalue,fixed=T) # remove + from end of 3
+AgeMatValues$biovalue=gsub(" yr","",AgeMatValues$biovalue) # remove yr from end of 2.5 
+AgeMatValues$biovalue=gsub("0-1","0.5",AgeMatValues$biovalue) # average
+# still have "FOUND AS A TIME SERIES IN FIGURE 10", "AVAILABLE", and "3-Apr", and "4-Mar" data points. Will be converted to NA
+
+AgeMatValues$biovalue<-as.numeric(AgeMatValues$biovalue)
+
+A50<-AgeMatValues[AgeMatValues$bioid=='A50-yr',]
+
+AvgA50<-ddply(AgeMatValues,c('assessid'),summarize,AvgA50=mean(biovalue,na.rm=T))
+
+for (i in 1:length(RAMNames)) 
 {
   
   Where<- RAM$IdOrig==RAMNames[i]
   
-  if (sum(bioparams$assessid==RAMNames[i] & grepl("A50-yr",bioparams$bioid))>0)
+  if (any(A50$assessid==RAMNames[i])) # use 'A50-yr if available
   {
+    agemat<-A50$biovalue[A50$assessid==RAMNames[i]]
     
-    
-    RAM$AgeMat[Where]=bioparams[bioparams$assessid==RAMNames[i] & grepl("A50-yr",bioparams$bioid),5]
-    RAM$AgeMatUnit[Where]=bioparams[bioparams$assessid==RAMNames[i]& grepl("A50-yr",bioparams$bioid),4]
-    RAM$AgeMatSource[Where]="RAM"
-  }
+    RAM$AgeMat[Where]=agemat
+    RAM$AgeMatUnit[Where]<-'A50-yr'
+    RAM$AgeMatSource[Where]<-'RAM' 
+    } 
+  
+  if(any(A50$assessid==RAMNames[i])==F & any(AvgA50$assessid==RAMNames[i])) # if A50 is not available, use mean of available values
+    {
+      agemat2<-AvgA50$AvgA50[AvgA50$assessid==RAMNames[i]]
+      
+      RAM$AgeMat[Where]=agemat2
+      RAM$AgeMatUnit[Where]<-'Avg A50-yr'
+      RAM$AgeMatSource[Where]<-'RAM'
+    }
 }
-
-### Clean up character values in life-history parameters and convert to numeric
-
-# VonBertK
-# "varies by region" will be converted to NA, still finding a "-0.36 value", can't resolve from reference
-
-# MaxLength
-RAM$MaxLength=gsub("26+","26",RAM$MaxLength, fixed=T) # remove + from end of 26
-RAM$MaxLength=gsub("available","",RAM$MaxLength) # remove "available", RAM entry says "varies greatly"
-
-# AgeMat
-RAM$AgeMat=gsub("7.7+","7.7",RAM$AgeMat,fixed=T) # remove + from end of 7.7 
-RAM$AgeMat=gsub("3+","3",RAM$AgeMat,fixed=T) # remove + from end of 3
-RAM$AgeMat=gsub(" yr","",RAM$AgeMat) # remove yr from end of 2.5 
-RAM$AgeMat=gsub("0-1","0.5",RAM$AgeMat) # average
-# still have "FOUND AS A TIME SERIES IN FIGURE 10", "AVAILABLE", and "3-Apr", and "4-Mar" data points. Will be converted to NA
-
-RAM$VonBertK<-as.numeric(RAM$VonBertK)
-RAM$AgeMat<-as.numeric(RAM$AgeMat)
-RAM$MaxLength<-as.numeric(RAM$MaxLength)
 
 # Add in SciName
 
 for (i in 1:length(RAMNames))
 {
   Where<-RAM$IdOrig==RAMNames[i]
-  RAM$SciName[Where]<-metadata[RAMNames[i]==metadata$assessid,4]
+  RAM$SciName[Where]<-metadata[RAMNames[i]==metadata$assessid,c('scientificname')]
 }
 
 # Add FmortMetric and Fmort Unit
@@ -221,7 +239,7 @@ for (i in 1:length(RAMNames))
   biop_match<-match(RAMNames[i],timeseries.views.units)
   
   RAM$FmortMetric[Wheref]<-"F"
-  RAM$FmortUnit[Wheref]<-timeseries.views.units[biop_match,10]
+  RAM$FmortUnit[Wheref]<-timeseries.views.units[biop_match,c('F')]
 }
 
 # Add in reference values (Bmsy,Fmsy,SSBmsy,Umsy)
@@ -231,11 +249,11 @@ for (i in 1:length(RAMNames))
   Whereref<-RAM$IdOrig==RAMNames[i]
   lh_match<-match(RAMNames[i],bioparams.views.data$IdOrig)
   
-  RAM$Bmsy[Whereref]<-bioparams.views.data[lh_match,13] #Bmsy - taken from Bmsytouse 
-  RAM$Umsy[Whereref]<-bioparams.views.data[lh_match,14] #Umsy - taken from Umsytouse
-  RAM$Fmsy[Whereref]<-bioparams.views.data[lh_match,8] #Fmsy
-  RAM$SSBmsy[Whereref]<-bioparams.views.data[lh_match,5] #SSBmsy
-  RAM$MSY[Whereref]<-bioparams.views.data[lh_match,7] # MSY
+  RAM$Bmsy[Whereref]<-bioparams.views.data[lh_match,c('ReferenceBiomass')] #Bmsy - taken from Bmsytouse, which was renamed ReferenceBiomass 
+  RAM$Umsy[Whereref]<-bioparams.views.data[lh_match,c('Umsy')] #Umsy - taken from Umsytouse
+  RAM$Fmsy[Whereref]<-bioparams.views.data[lh_match,c('Fmsy')] #Fmsy
+  RAM$SSBmsy[Whereref]<-bioparams.views.data[lh_match,c('SSBmsy')] #SSBmsy
+  RAM$MSY[Whereref]<-bioparams.views.data[lh_match,c('MSY')] # MSY
   # filling Bmsy with Bmsytouse, which was renamed to ReferenceBiomass. Will be duplicated in ReferenceBiomass column
 }
 
@@ -272,7 +290,7 @@ for(i in 1:length(RAMNames))# loop adds country variable to RAM
   whereram<-RAMNames[i]==RAM$IdOrig
   wheremeta<-RAMNames[i]==metadata$assessid
   
-  RAM$Country[whereram]<-metadata[wheremeta,12]
+  RAM$Country[whereram]<-metadata[wheremeta,c('Country')]
 }
 
 RAM$Country<- gsub("multinational","Multinational",RAM$Country)
@@ -306,7 +324,7 @@ for (i in 1:length(Spec_Region_RAM$assessid)){
 
 RegionFAOMatches=unique(Spec_Region_RAM$assessid)
 
-for (i in 1:length(RAMNames)) # currently only matching 11 of the 17 unique FAO regions in the Spec_Region.csv. Due to stocks in multiple zones? 
+for (i in 1:length(RAMNames)) 
 {
   
   Where1<- RAMNames[i]==Spec_Region_RAM$assessid
@@ -354,18 +372,15 @@ for (i in 1:length(GroupNums)) # match group code to group name
 
 RAM$Country[RAM$Country=="Russia"]<-"Russian Federation"
 
-MetaStocks<-unique(metadata$assessid) # unique stocks in metadata 446
-RamStocks<-unique(RAM$IdOrig) # unique stocks in RAM 438
+# Calculate MSY or F/Fvmsy for stocks missing one reference value
 
-missing<-!(MetaStocks %in% RamStocks) # identify which stocks are missing
+NeedRefs<-RAM[(is.na(RAM$MSY) | is.na(RAM$UvUmsytouse)) & (is.na(RAM$Catch)==F & is.na(RAM$BvBmsy)==F),
+              c('IdOrig','Catch','Year','BvBmsy','MSY','UvUmsytouse')]
 
-MissingStocks<-MetaStocks[missing]
+NeedRefs$CalcMSY<-NA
+NeedRefs$CalcFvFmsy<-NA
 
-MissingStocks %in% timeseries.views.data[,1] # check if missing stocks are in timeseries.views.data. They are not
-
-MissingStocksData<-metadata[(metadata$assessid %in% MissingStocks),] # look at data for missing stocks
-
-# write.csv(MissingStocksData,file='Stocks Missing From Ram TimeSeries Data.csv')
+NeedRefs$CalcMSY<-(NeedRefs$UvUmsytouse*NeedRefs$BvBmsy)/NeedRefs$Catch
 
 # Subset RAM to only include stocks with all 3 reference values (consider making option in Master)
 ThreeRefs<-read.csv('Data/RamStocks_All_Ref_Values.csv',stringsAsFactors=F,col.names=c("IdOrig"))
@@ -640,9 +655,6 @@ fulldata$SpeciesCatName[fulldata$SpeciesCatName=="Miscellaneous costal fishes"]<
 fulldata$SpeciesCatName[fulldata$SpeciesCatName=="Micellaneous pelagic fishes"]<-"Miscellaneous pelagic fishes"
 fulldata$SpeciesCatName[fulldata$SpeciesCatName=="Flounders halibuts and soles"]<-"Flounders, halibuts, soles"
 
-# convert VonBertK data points recorded in mm/T to cm/T
-WhereVbkMM<-fulldata$VonBertKUnit=="VB-k-mm/T"
-fulldata$VonBertK[WhereVbkMM]<-fulldata$VonBertK[WhereVbkMM]/10
 return(fulldata)
 }
 # write .csv file
