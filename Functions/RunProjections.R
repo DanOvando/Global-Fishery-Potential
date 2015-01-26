@@ -6,7 +6,7 @@
 RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy)
 {
   
-#   Data<-  MsyData[MsyData$CanProject==T,]
+  #   Data<-  MsyData[MsyData$CanProject==T,]
   #   Data<- MsyData[MsyData$CanProject==T & MsyData$IdOrig=='AFSC-REYEROCKBSAI-1974-2011-STACHURA',]
   
   #   #  
@@ -23,7 +23,11 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy)
   
   # Loop over Each Stock ----------------------------------------------------
   
-  Policies<- c('Opt','CatchShare','Food','SQ','Fmsy','CloseDown')
+  #   Policies<- c('Opt','CatchShare','Food','SQ','Fmsy','CloseDown')
+  
+  Policies<- c('StatusQuoOpenAccess','Opt','CatchShare','Food','StatusQuoFForever','StatusQuoBForever','Fmsy','CloseDown')
+  
+  Data$BvBmsy<- pmin(1.99,Data$BvBmsy) #Note capping projection data now
   
   Stocks<- unique(Data[Data$Year==BaselineYear,IdVar])
   
