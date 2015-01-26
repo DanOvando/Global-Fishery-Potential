@@ -210,7 +210,7 @@ if (RunAnalyses==TRUE)
   SyntheticData$ExtendedTime<- FALSE
   
   NeiModels<- RunRegressions(SyntheticData,NeiRegressions,'Synthetic Stocks')
-
+  
   SyntheticData<- NeiModels$RamData
   
   NeiModels<- NeiModels$Model
@@ -225,7 +225,7 @@ if (RunAnalyses==TRUE)
     
   }
   
-#     SyntheticData<- InsertFisheryPredictions(SyntheticData,NeiModels) #Add fishery predictions back into main dataframe
+  #     SyntheticData<- InsertFisheryPredictions(SyntheticData,NeiModels) #Add fishery predictions back into main dataframe
   
   NeiModelSdevs<- CreateSdevBins(NeiModels,SyntheticData,TransbiasBin)
   
@@ -443,9 +443,9 @@ if (RunAnalyses==TRUE)
   MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T) #Apply mean price to fisheries with no price
   
   MsyData$k[MsyData$Dbase=='RAM']<-MsyData$Bmsy[MsyData$Dbase=='RAM']*2
-
+  
   MsyData$r[MsyData$Dbase=='RAM']<-4*MsyData$MSY[MsyData$Dbase=='RAM']/MsyData$k[MsyData$Dbase=='RAM']
-
+  
   MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T) #FIX THIS XXX Apply mean r to fisheries with no r THIS WAS ASSIGNING ALL RAM STOCKS THE MEAN r VALUE
   
   MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$r)==F #Identify disheries that have both MSY and r
@@ -453,13 +453,18 @@ if (RunAnalyses==TRUE)
   save(file='MsyData.rdata',MsyData)
   
   MsyData$BestModel<- as.character(MsyData$BestModel)
-
+  
   if(SubSample>0)
   {
     save.image(file=paste(ResultFolder,'Test Results Prior to Projections.rdata',sep=''))
   }
   
   ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs,StatusQuoPolicy) #Run projections on MSY data that can be projected
+  
+  pdf(file='Diagnostics/CheckOpenAccess.pdf')
+  print(ggplot(data=subset(ProjectionData,Policy=='StatusQuoOpenAccess'),aes(BvBmsy,FvFmsy,group=IdOrig))+geom_line())
+  dev.off()
+  
   
   show("Completed Projections")
   
@@ -698,7 +703,7 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     
     if (BiomassStatus$CatchStats$Catch$NumberOfStocks>5)
     {
-            MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
+      MakeKobePlot(BiomassStatus$Data,BaselineYear,paste(paste(CountriesToRun[c],' Kobe Plot',sep='')))
     }
     # Analyze Projections -----------------------------------------------------
     
@@ -853,7 +858,7 @@ for (c in 1:length(CountriesToRun)) # Run analyses on each desired region
     ResultMetricsSQFinalTable[c,AbsChangeFromSQMedianVars]<-FinalYear[FinalYear$Policy=="CatchShare",AbsChangeFromSQMedianVars]
     
     ResultMetricsSQCumFinalTable[c,ResultMetricsSQCumFinalNames]<-Cumulatives[Cumulatives$Policy=="CatchShare",c("NPV","Food",
-    "Fish","MedianProfits","MedianCatch","MedianBiomass","AbsNPV","AbsFood","AbsFish","AbsMedianProfits","AbsMedianCatch","AbsMedianBiomass")]
+                                                                                                                 "Fish","MedianProfits","MedianCatch","MedianBiomass","AbsNPV","AbsFood","AbsFish","AbsMedianProfits","AbsMedianCatch","AbsMedianBiomass")]
     
     PercChangeFromSQMedianVars<-c("PercChangeFromSQMedianBiomass","PercChangeFromSQMedianProfits","PercChangeFromSQMedianCatch")
     
@@ -1011,7 +1016,7 @@ if(PlotFinalFigures==TRUE)
   
   # Figure 3: Upside from Opt and Catch Shares relative to SQ for top fishing nations
   Fig3Countries<-c('Japan','Morocco','Republic of Korea','USA','Russian Federation','Global','Spain','Peru','Iceland','Thailand','Mexico','India',
-  'China','Philippines','Taiwan Province of China','Indonesia','Norway','Malaysia','Multinational')
+                   'China','Philippines','Taiwan Province of China','Indonesia','Norway','Malaysia','Multinational')
   
   FigureThree<-Figure3(CumulativesFinal,Countries=Fig3Countries)
 }

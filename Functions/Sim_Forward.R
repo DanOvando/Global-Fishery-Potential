@@ -20,6 +20,7 @@ Sim_Forward= function(Policy,fpolicy,bvec,b0,T,p,MSY,c,r,beta,delta)
     c<- c*CatchShareCost
   }
   
+  browser()
   for (t in 1:T)
   {
     f[t] = approx(bvec,fpolicy,b[t])$y

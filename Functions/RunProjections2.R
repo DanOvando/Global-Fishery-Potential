@@ -90,28 +90,15 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   # Outputs: variables over time (f, b, yield (y), profit (pi)--------------------------------------------------
   ######################################
   
-  OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
-  {
-    
-    if (t==1)
-    {
-      f=f
-    }
-    if (t>1)
-    {
-      f<- max(f+omega*(pi/MsyProfits),.0001)
-    }
-    return(f)
-  }
-  
-  Sim_Forward= function(Policy,fpolicy,bvec,b0,Time,p,MSY,c,r,beta,delta)
+  Sim_Forward= function(Policy,fpolicy,bvec,b0,T,p,MSY,c,r,beta,delta)
   {  
-    b = matrix(0,Time,1)
+    b = matrix(0,T,1)
     f = b
     pi = b
     y = b
+    
     b[1] = b0;
-    if (Policy=='StatusQuoOpenAccess'){f[1]<- fpolicy}
+    
     if (Policy=='CatchShare')
     {
       p<- p*CatchSharePrice
@@ -119,23 +106,12 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
       c<- c*CatchShareCost
     }
     
-    MsyProfits<- MSY*p-c*(r/2)^beta
-    
-    Omega<- 0.1
-    
-    PastF<- f[1]
-    
-    for (t in 1:Time)
+    for (t in 1:T)
     {
-      if (Policy!='StatusQuoOpenAccess'){ f[t] = approx(bvec,fpolicy,b[t])$y}
-      if (Policy=='StatusQuoOpenAccess')
-      {
-        f[t]=OpenAccessFleet(PastF,pi[t-1],t,Omega,MsyProfits)
-        PastF<- f[t]
-      }
+      f[t] = approx(bvec,fpolicy,b[t])$y
       pi[t] = p*MSY*f[t]*b[t] - c*(f[t]*r/2)^beta
       y[t] = MSY*f[t]*b[t]
-      if (t<Time)
+      if (t<T)
       {b[t+1] =max(min(bvec), b[t] + r*b[t]*(1-b[t]/2) - r/2*b[t]*f[t])}
     }
     
@@ -201,26 +177,42 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   FoodPolicy<-  RunDynamicOpt2(MSY,r,1,0,beta,0,bvec,tol)$Policy
   
-  StatusQuoFForeverPolicy<- FStatusQuo*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])  
+  if(StatusQuoPolicy=='StatusQuoA')
+  {
+    SQPolicy<- FStatusQuo*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])  
+  }
   
-  StatusQuoBForeverPolicy<- (2-RecentStockData$BvBmsy)*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])  
+  if(StatusQuoPolicy=='StatusQuoB')
+  {
+    
+    if(FStatusQuo>=1)
+    {
+      SQPolicy<- FStatusQuo*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])
+    }
+    
+    if(FStatusQuo<1)
+    {
+      SQPolicy<- bvec
+      
+      SQPolicy[bvec<1]<- FStatusQuo
+      
+      SQPolicy[bvec>=1]<- 1
+    }
+  }
   
   FmsyPolicy<- matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])
-  
+  browser()
   CloseDownPolicy<- bvec
   
   CloseDownPolicy[bvec<1]<- 0 
   
   CloseDownPolicy[bvec>=1]<- 1 
   
-  StatusQuoOpenAccessPolicy<- FStatusQuo
-  
-  
   for (p in 1:length(Policies))
   {
     
     eval(parse(text=paste('Policy<-',Policies[p],'Policy',sep=''))) 
-        
+    
     Projection<- Sim_Forward(Policies[p],Policy,bvec,RecentStockData$BvBmsy,ProjectionTime,Price,MSY,cost,r,beta,delta)
     
     PolicyMatrix<- as.data.frame(matrix(NA,nrow=ProjectionTime,ncol=dim(TempMat)[2]))
