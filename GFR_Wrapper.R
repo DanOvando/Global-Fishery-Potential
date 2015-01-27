@@ -586,7 +586,9 @@ SensitivityCParam<-CParamSensitivity(Data=MsyData,BaselineYear,beta)
 
 SteadyStateStatus(Data=ProjectionData,Subset=c('Steady State Status Analyzed Projection Data.pdf')) # histograms of b by policy for complete ProjectionData
 
+# Save final image
 
+save.image(file=paste(ResultFolder,'Global Fishery Recovery Complete Results.rdata',sep=''))
 
 # Publish in Science ------------------------------------------------------
 

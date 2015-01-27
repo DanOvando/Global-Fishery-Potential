@@ -46,6 +46,8 @@ FisheriesUpside<-function(ProjectionData,DenominatorPolicy)
   PercentTripleBottom<-ddply(FisheriesUpside,c('Policy'),summarize,PercentRecovered=100*(sum(Recovered,na.rm=T)/length(unique(IdOrig))),
                              PercentTripleBottom=100*(sum(TripBottomLine,na.rm=T)/length(unique(IdOrig))))
   
+  write.csv(FisheriesUpside,file=paste(ResultFolder,'Fishery Upsides.csv',sep=''))
+  
   return(list(FisheriesUpside=FisheriesUpside,TripBottomLine=PercentTripleBottom))
   
 } # close function
