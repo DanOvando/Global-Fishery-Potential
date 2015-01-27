@@ -24,9 +24,9 @@ library(reshape2)
 library(dplyr)
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- FALSE
+RunAnalyses<- TRUE
 
-BatchFolder<- 'Test Full Run'
+BatchFolder<- 'Jan 26 TEST B'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
