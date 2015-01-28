@@ -26,7 +26,7 @@ load("Data/DBdata_102214.RData") # RData object obtained 10/22/14
 # build dataset using "timeseries.views.data as base dataset
 
 ColNames = c("Id","IdOrig","Dbase", "Year","Catch","CatchUnit", "Fmort","FmortUnit","FmortMetric", "SciName","CommName",
-             "Country","RegionFAO","SpeciesCat","SpeciesCatName","MSY", "Bmsy","SSBmsy","Umsy","Fmsy","Biomass","BiomassMetric",
+             "Country","RegionFAO","SpeciesCat","SpeciesCatName","MSY",'RefValueCalcRAM', "Bmsy","SSBmsy","Umsy","Fmsy","Biomass","BiomassMetric",
              "BiomassUnit","ExploitStatus", "VonBertK","VonBertKUnit","VonBertKSource","Temp","TempUnit",
              "TempSource","MaxLength","MaxLengthUnit", "MaxLengthSource","AgeMat","AgeMatUnit","AgeMatSource",'ReferenceBiomass','ReferenceBiomassUnits',"BvBmsy",'UvUmsytouse')
 
@@ -380,12 +380,43 @@ NeedRefs<-RAM[(is.na(RAM$MSY) | is.na(RAM$UvUmsytouse)) & (is.na(RAM$Catch)==F &
 NeedRefs$CalcMSY<-NA
 NeedRefs$CalcFvFmsy<-NA
 
-NeedRefs$CalcMSY<-(NeedRefs$UvUmsytouse*NeedRefs$BvBmsy)/NeedRefs$Catch
+NeedRefs$CalcMSY<-NeedRefs$Catch/(NeedRefs$UvUmsytouse*NeedRefs$BvBmsy)
+
+NeedRefs$CalcFvFmsy<-(NeedRefs$Catch/NeedRefs$MSY)/NeedRefs$BvBmsy
+
+CalcUvUmsy<-NeedRefs[is.na(NeedRefs$CalcFvFmsy)==F,]
+
+# find average MSY across years. add CatchShare variable at end of build script
+
+CalcMSY<-ddply(NeedRefs,c('IdOrig'),summarize,MeanMSY=mean(CalcMSY,na.rm=T))
+
+CalcMSY<-CalcMSY[is.na(CalcMSY$MeanMSY)==F,]
+
+# Add Calculated Reference Values into database
+
+for(e in 1:nrow(CalcMSY))
+{
+  needmsy<-RAM$IdOrig==CalcMSY$IdOrig[e]
+  
+  RAM$MSY[needmsy]<-CalcMSY$MeanMSY[e]
+  RAM$RefValueCalcRAM[needmsy]<-'Calc MSY'
+  
+  show(e)
+}
+
+
+for (d in 1:nrow(CalcUvUmsy))
+{
+  where<-RAM$IdOrig==CalcUvUmsy$IdOrig[d] & RAM$Year==CalcUvUmsy$Year[d]
+  
+  RAM$UvUmsytouse[where]<-CalcUvUmsy$CalcFvFmsy[d]
+  RAM$RefValueCalcRAM[where]<-'Calc FvFmsy'
+}
 
 # Subset RAM to only include stocks with all 3 reference values (consider making option in Master)
-ThreeRefs<-read.csv('Data/RamStocks_All_Ref_Values.csv',stringsAsFactors=F,col.names=c("IdOrig"))
-
-RAM<-RAM[(RAM$IdOrig %in% ThreeRefs$IdOrig),]
+# ThreeRefs<-read.csv('Data/RamStocks_All_Ref_Values.csv',stringsAsFactors=F,col.names=c("IdOrig"))
+# 
+# RAM<-RAM[(RAM$IdOrig %in% ThreeRefs$IdOrig),]
 
 ############################################################################################################
 ############ SOFIA DATABASE ############
@@ -394,12 +425,6 @@ SOFIA=read.csv("Data/SOFIA_2011_indiv_stocks_CLEAN.csv", stringsAsFactors=F)
 
 # rename columns to match main database columns as defined by ColNames
 names(SOFIA)[1]="RegionFAO"
-
-####### ****DELETE THIS RENAMING SECTION - THESE NUMBERS EXIST FOR INLAND WATERS****
-# SOFIA$RegionFAO=gsub("Pacific",1,SOFIA$RegionFAO) # change "Pacific" to 1
-# SOFIA$RegionFAO=gsub("Atlantic",2,SOFIA$RegionFAO) # change "Atlantic" to 2
-# SOFIA$RegionFAO=gsub("Indian",3,SOFIA$RegionFAO) # change "Indian" to 3
-
 names(SOFIA)[7]="CommName"
 names(SOFIA)[12]="SciName"
 names(SOFIA)[13]="Country"
@@ -475,6 +500,7 @@ SOFIA$ReferenceBiomassUnits<- NA
 SOFIA$BvBmsy<-NA
 SOFIA$MSY<-NA
 SOFIA$UvUmsytouse=as.numeric(rep("",nrow(SOFIA)))
+SOFIA$RefValueCalcRAM<-NA
 
 # Populate BvBmsy by converting Exploit Status values into numbers, taking the mean of the range of U, F, and O
 underexploit<-SOFIA$ExploitStatus=="U"
@@ -595,6 +621,7 @@ FAO$ReferenceBiomassUnits<- NA
 FAO$BvBmsy<-NA
 FAO$MSY<-NA
 FAO$UvUmsytouse=as.numeric(rep("",nrow(FAO)))
+FAO$RefValueCalcRAM<-NA
 
 # create IdOrig for FAO entries. Use same syntax as for SOFIA = 
 FAOID=seq(from=1, to=nrow(FAO))
@@ -654,6 +681,15 @@ fulldata$SpeciesCatName<-gsub("  "," ",fulldata$SpeciesCatName) # change double 
 fulldata$SpeciesCatName[fulldata$SpeciesCatName=="Miscellaneous costal fishes"]<-"Miscellaneous coastal fishes"
 fulldata$SpeciesCatName[fulldata$SpeciesCatName=="Micellaneous pelagic fishes"]<-"Miscellaneous pelagic fishes"
 fulldata$SpeciesCatName[fulldata$SpeciesCatName=="Flounders halibuts and soles"]<-"Flounders, halibuts, soles"
+
+# Read in list of matched catch share stocks and indicate in database
+CatchShares<-read.csv('Data/GFR_CS_matches.csv',stringsAsFactors=F)
+colnames(CatchShares)<-'IdOrig'
+
+fulldata$CatchShare<-rep(0,nrow(fulldata))
+
+fulldata$CatchShare[fulldata$IdOrig %in% CatchShares$IdOrig]<-1
+
 
 return(fulldata)
 }

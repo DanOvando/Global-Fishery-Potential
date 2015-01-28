@@ -570,6 +570,10 @@ RecoveryTrend<-RecoveryTrend(ProjectionData,RecoveryThreshold=0.95,OnlyOverfish=
 
 ### Diagnostics ---
 
+# Projection validation data for Chris
+
+ProjectionValidationData<-ProjectionValidation(ProjectionData,BaselineYear)
+
 # Evaluate cost:revenue ratios of full Projection data before CountriesToRun analysis
 
 CostRevenues<-CostRevCheck(ProjectionData,RawData,BaselineYear)

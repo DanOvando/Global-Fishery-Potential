@@ -104,7 +104,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     return(f)
   }
   
-  Sim_Forward= function(Policy,fpolicy,bvec,b0,Time,p,MSY,c,r,beta,delta)
+  Sim_Forward= function(Policy,fpolicy,IsCatchShare,bvec,b0,Time,p,MSY,c,r,beta,delta)
   {  
     b = matrix(0,Time,1)
     f = b
@@ -112,7 +112,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     y = b
     b[1] = b0;
     if (Policy=='StatusQuoOpenAccess'){f[1]<- fpolicy}
-    if (Policy=='CatchShare')
+    if (Policy=='CatchShare' & IsCatchShare==0)
     {
       p<- p*CatchSharePrice
       
@@ -178,6 +178,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   BOA<- RecentStockData$BvBmsyOpenAccess
   r<- RecentStockData$r
   FStatusQuo<- RecentStockData$FvFmsy
+  IsCatchShare<-RecentStockData$CatchShare
   
   #     FStatusQuo<- ((RecentStockData$Catch)/MSY)/RecentStockData$BvBmsy
   
@@ -193,11 +194,31 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   Data$MarginalCost[Where]<- cost 
   
+  if(IsCatchShare==1) # adjust prices and costs for catch share fisheries before dynamic optimization
+  {
+    Price<-Price*CatchSharePrice
+    
+    Data$Price[Where]<-Data$Price[Where]*CatchSharePrice
+    
+    cost<-cost*CatchShareCost
+    
+    Data$MarginalCost[Where]<-Data$MarginalCost[Where]*CatchShareCost
+  }
+
   MsyProfits = Price*MSY - cost*(r/2)^beta
   
   OptPolicy<-  RunDynamicOpt2(MSY,r,Price,cost,beta,Discount,bvec,tol)$Policy
   
-  CatchSharePolicy<-  RunDynamicOpt2(MSY,r,CatchSharePrice*Price,CatchShareCost*cost,beta,Discount,bvec,tol)$Policy
+  # Only apply catch share economic effects to non-catch share stocks. Should make Opt and CatchShare Identical for CS stocks
+  if(IsCatchShare==0)
+  {
+    CatchSharePolicy<-  RunDynamicOpt2(MSY,r,CatchSharePrice*Price,CatchShareCost*cost,beta,Discount,bvec,tol)$Policy
+  }
+  
+  if(IsCatchShare==1)
+  {
+    CatchSharePolicy<-  RunDynamicOpt2(MSY,r,Price,CatchShareCost*cost,beta,Discount,bvec,tol)$Policy
+  }
   
   FoodPolicy<-  RunDynamicOpt2(MSY,r,1,0,beta,0,bvec,tol)$Policy
   
@@ -221,7 +242,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     
     eval(parse(text=paste('Policy<-',Policies[p],'Policy',sep=''))) 
         
-    Projection<- Sim_Forward(Policies[p],Policy,bvec,RecentStockData$BvBmsy,ProjectionTime,Price,MSY,cost,r,beta,delta)
+    Projection<- Sim_Forward(Policies[p],Policy,IsCatchShare,bvec,RecentStockData$BvBmsy,ProjectionTime,Price,MSY,cost,r,beta,delta)
     
     PolicyMatrix<- as.data.frame(matrix(NA,nrow=ProjectionTime,ncol=dim(TempMat)[2]))
     
