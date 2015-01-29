@@ -130,6 +130,11 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
       if (Policy!='StatusQuoOpenAccess'){ f[t] = approx(bvec,fpolicy,b[t])$y}
       if (Policy=='StatusQuoOpenAccess')
       {
+        if(IsCatchShare==1) # revert price and cost effects of catch share fisheries for Open Access policy
+        {
+          p<-p/CatchSharePrice
+          c<-c/CatchShareCost
+        }
         f[t]=OpenAccessFleet(PastF,pi[t-1],t,Omega,MsyProfits)
         PastF<- f[t]
       }
