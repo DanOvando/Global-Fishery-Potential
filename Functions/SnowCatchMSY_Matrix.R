@@ -320,6 +320,7 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
     
     PossibleRuns$FinalFvFmsy<- fvfmsy[,dim(fvfmsy)[2]]
     
+    PossibleRuns$FinalBvBmsy<- bvbmsy[,dim(bvbmsy)[2]]
     
     
     time_bvbmsy<- (apply(bvbmsy,2,function(x) exp(mean(log(x)))))
