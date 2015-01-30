@@ -444,11 +444,14 @@ if (RunAnalyses==TRUE)
   
   MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T) #Apply mean price to fisheries with no price
   
-  MsyData$k[MsyData$Dbase=='RAM']<-MsyData$Bmsy[MsyData$Dbase=='RAM']*2
-  
   MsyData$r[MsyData$Dbase=='RAM']<-4*MsyData$MSY[MsyData$Dbase=='RAM']/MsyData$k[MsyData$Dbase=='RAM']
   
   MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T) #FIX THIS XXX Apply mean r to fisheries with no r THIS WAS ASSIGNING ALL RAM STOCKS THE MEAN r VALUE
+  
+#   if(IncludeNEIs==TRUE)
+#   {
+#     MsyData<-NeiVersion2(MsyData,Level='All',MinStocks=2)
+#   }
   
   MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$r)==F #Identify disheries that have both MSY and r
   
@@ -480,6 +483,7 @@ if (RunAnalyses==TRUE)
     
     BiomassData<- rbind(BiomassData,NeiData$BiomassNeis)
   }
+  
   BiomassData<- BiomassData[BiomassData$BvBmsy!=999 & is.infinite(BiomassData$BvBmsy)==FALSE & is.na(BiomassData$BvBmsy)==F,]
   
   MsyData<- MsyData[is.na(MsyData$MSY)==F,]
@@ -549,11 +553,15 @@ UnlumpedProjectionData<-rbind(UnlumpedProjectionData, UnlumpedData)
 
 UnlumpedProjectionData$Country[grepl('China',UnlumpedProjectionData$Country)]<-'China'
 
-# Calculate Country level upsides for 1) All Stocks and 2) Overfished and Overfishing Stocks 
+# Calculate Country level upsides for 1) Lumped All Stocks 2) Lumped Overfished and Overfishing Stocks 3) Unlumped All Stocks 4) Unlumped Overfish 
 
-CountryUpsidesAllStocks<-UpsideCalculator(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='StatusQuoFForever',GroupingVars=c('Country','Year','Policy'),Subset='All Stocks')
+CountryUpsidesAll<-UpsideCalculator(ProjectionData,BaselineYear,DenominatorPolicy='StatusQuoFForever',GroupingVars=c('Country','Year','Policy'),Subset='All Stocks')
 
-CountryUpsidesOverfish<-UpsideCalculator(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='StatusQuoFForever',GroupingVars=c('Country','Year','Policy'),Subset='Overfish')
+CountryUpsidesOverfish<-UpsideCalculator(ProjectionData,BaselineYear,DenominatorPolicy='StatusQuoFForever',GroupingVars=c('Country','Year','Policy'),Subset='Overfish')
+
+CountryUpsidesUnlumpAll<-UpsideCalculator(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='StatusQuoFForever',GroupingVars=c('Country','Year','Policy'),Subset='All Stocks')
+
+CountryUpsidesUnlumpOverfish<-UpsideCalculator(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='StatusQuoFForever',GroupingVars=c('Country','Year','Policy'),Subset='Overfish')
 
 
 ### Plot figures for paper and diagnostics  --------------------------------------------------

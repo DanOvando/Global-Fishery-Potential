@@ -8,9 +8,9 @@
 ################################################
 
 
-# DenominatorPolicy<-'StatusQuoFForever'
-# GroupingVars<-c('Country','Year','Policy') # or c('IdOrig','Year','Policy') for Fishery level upside
-# Subset<-'All Stocks'
+DenominatorPolicy<-'StatusQuoFForever'
+GroupingVars<-c('Country','Year','Policy') # or c('IdOrig','Year','Policy') for Fishery level upside
+Subset<-'All Stocks'
 
 UpsideCalculator<-function(Data,BaselineYear,DenominatorPolicy,GroupingVars,Subset)
 {
@@ -77,17 +77,25 @@ UpsideCalculator<-function(Data,BaselineYear,DenominatorPolicy,GroupingVars,Subs
       
       FinalYear<- TimeTrend[TimeTrend$Year==max(TimeTrend$Year),]       
       
-      FinalYear$AbsChangeFromSQTotalProfits<- FinalYear$TotalProfits-FinalYear$TotalProfits[FinalYear$Policy==DenominatorPolicy] # Absolute change in total profits relative to BAU
-      
-      FinalYear$AbsChangeFromSQTotalCatch<- FinalYear$TotalCatch-FinalYear$TotalCatch[FinalYear$Policy==DenominatorPolicy] # Absolute change in total catch relative to BAU
-      
-      FinalYear$AbsChangeFromSQTotalBiomass<- FinalYear$TotalBiomass-FinalYear$TotalBiomass[FinalYear$Policy==DenominatorPolicy] # Absolute change in total biomass relative to BAU
-      
-      FinalYear$PercChangeFromSQTotalProfits<- 100*(FinalYear$TotalProfits/FinalYear$TotalProfits[FinalYear$Policy==DenominatorPolicy]-1) # Percent change in total profits relative to BAU
-      
-      FinalYear$PercChangeFromSQTotalCatch<- 100*(FinalYear$TotalCatch/FinalYear$TotalCatch[FinalYear$Policy==DenominatorPolicy]-1) # Percent change in total catch relative to BAU
-      
-      FinalYear$PercChangeFromSQTotalBiomass<- 100*(FinalYear$TotalBiomass/FinalYear$TotalBiomass[FinalYear$Policy==DenominatorPolicy]-1) # Percent change in total biomass relative to BAU
+      country<-unique(FinalYear$Country)
+  
+      for(a in 1:length(country))
+      {
+        locate<-FinalYear$Country==country[a]
+
+        FinalYear$AbsChangeFromSQTotalProfits[locate]<- FinalYear$TotalProfits[locate]-FinalYear$TotalProfits[locate & FinalYear$Policy==DenominatorPolicy] # Absolute change in total profits relative to BAU
+        
+        FinalYear$AbsChangeFromSQTotalCatch[locate]<- FinalYear$TotalCatch[locate]-FinalYear$TotalCatch[locate & FinalYear$Policy==DenominatorPolicy] # Absolute change in total catch relative to BAU
+        
+        FinalYear$AbsChangeFromSQTotalBiomass[locate]<- FinalYear$TotalBiomass[locate]-FinalYear$TotalBiomass[locate & FinalYear$Policy==DenominatorPolicy] # Absolute change in total biomass relative to BAU
+        
+        FinalYear$PercChangeFromSQTotalProfits[locate]<- 100*(FinalYear$TotalProfits[locate]/FinalYear$TotalProfits[locate & FinalYear$Policy==DenominatorPolicy]-1) # Percent change in total profits relative to BAU
+        
+        FinalYear$PercChangeFromSQTotalCatch[locate]<- 100*(FinalYear$TotalCatch[locate]/FinalYear$TotalCatch[locate & FinalYear$Policy==DenominatorPolicy]-1) # Percent change in total catch relative to BAU
+        
+        FinalYear$PercChangeFromSQTotalBiomass[locate]<- 100*(FinalYear$TotalBiomass[locate]/FinalYear$TotalBiomass[locate & FinalYear$Policy==DenominatorPolicy]-1) # Percent change in total biomass relative to BAU
+        show(a)
+      }
 
       FinalYear$Subset<-Subset
 

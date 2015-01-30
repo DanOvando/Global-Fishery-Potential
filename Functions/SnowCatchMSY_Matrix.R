@@ -176,8 +176,8 @@ ct   <- (Data$Catch[(Data[,IdVar])==stock])  ## assumes that catch is given in t
 
 bio<- pmin(1,Data$BvBmsy[Data[,IdVar]==stock]/2) #pull out bvbmsy (transposed to B/K)
 
-bioerror<- Data$BvBmsySD[Where]/10
-bioerror[is.na(bioerror)]<- CommonError/10
+bioerror<- Data$BvBmsySD[Where]/2
+bioerror[is.na(bioerror)]<- CommonError
 
 PossibleRuns<- NA
 
