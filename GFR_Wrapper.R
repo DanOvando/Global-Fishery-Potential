@@ -553,11 +553,15 @@ UnlumpedProjectionData<-rbind(UnlumpedProjectionData, UnlumpedData)
 
 UnlumpedProjectionData$Country[grepl('China',UnlumpedProjectionData$Country)]<-'China'
 
-# Calculate Country level upsides for 1) All Stocks and 2) Overfished and Overfishing Stocks 
+# Calculate Country level upsides for 1) Lumped All Stocks 2) Lumped Overfished and Overfishing Stocks 3) Unlumped All Stocks 4) Unlumped Overfish 
 
-CountryUpsidesAllStocks<-UpsideCalculator(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='StatusQuoFForever',GroupingVars=c('Country','Year','Policy'),Subset='All Stocks')
+CountryUpsidesAll<-UpsideCalculator(ProjectionData,BaselineYear,DenominatorPolicy='StatusQuoFForever',GroupingVars=c('Country','Year','Policy'),Subset='All Stocks')
 
-CountryUpsidesOverfish<-UpsideCalculator(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='StatusQuoFForever',GroupingVars=c('Country','Year','Policy'),Subset='Overfish')
+CountryUpsidesOverfish<-UpsideCalculator(ProjectionData,BaselineYear,DenominatorPolicy='StatusQuoFForever',GroupingVars=c('Country','Year','Policy'),Subset='Overfish')
+
+CountryUpsidesUnlumpAll<-UpsideCalculator(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='StatusQuoFForever',GroupingVars=c('Country','Year','Policy'),Subset='All Stocks')
+
+CountryUpsidesUnlumpOverfish<-UpsideCalculator(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='StatusQuoFForever',GroupingVars=c('Country','Year','Policy'),Subset='Overfish')
 
 
 ### Plot figures for paper and diagnostics  --------------------------------------------------
