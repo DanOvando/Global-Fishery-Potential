@@ -112,11 +112,17 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     y = b
     b[1] = b0;
     if (Policy=='StatusQuoOpenAccess'){f[1]<- fpolicy}
-    if (Policy=='CatchShare' & IsCatchShare==0)
+    if (Policy=='CatchShare' & IsCatchShare==0) # apply price cost effects of catch share policy to non-catch share stocks
     {
       p<- p*CatchSharePrice
       
       c<- c*CatchShareCost
+    }
+    
+    if(Policy=='StatusQuoOpenAccess' & IsCatchShare==1) # revert previously applied price and cost effects of catch share fisheries for Open Access policy
+    {
+      p<-p/CatchSharePrice
+      c<-c/CatchShareCost
     }
     
     MsyProfits<- MSY*p-c*(r/2)^beta
@@ -130,11 +136,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
       if (Policy!='StatusQuoOpenAccess'){ f[t] = approx(bvec,fpolicy,b[t])$y}
       if (Policy=='StatusQuoOpenAccess')
       {
-        if(IsCatchShare==1) # revert price and cost effects of catch share fisheries for Open Access policy
-        {
-          p<-p/CatchSharePrice
-          c<-c/CatchShareCost
-        }
+
         f[t]=OpenAccessFleet(PastF,pi[t-1],t,Omega,MsyProfits)
         PastF<- f[t]
       }
@@ -203,11 +205,11 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   {
     Price<-Price*CatchSharePrice
     
-    Data$Price[Where]<-Data$Price[Where]*CatchSharePrice
+    Data$Price[Where]<-Price
     
     cost<-cost*CatchShareCost
     
-    Data$MarginalCost[Where]<-Data$MarginalCost[Where]*CatchShareCost
+    Data$MarginalCost[Where]<-cost
   }
 
   MsyProfits = Price*MSY - cost*(r/2)^beta
@@ -222,7 +224,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   if(IsCatchShare==1)
   {
-    CatchSharePolicy<-  RunDynamicOpt2(MSY,r,Price,CatchShareCost*cost,beta,Discount,bvec,tol)$Policy
+    CatchSharePolicy<-  RunDynamicOpt2(MSY,r,Price,cost,beta,Discount,bvec,tol)$Policy
   }
   
   FoodPolicy<-  RunDynamicOpt2(MSY,r,1,0,beta,0,bvec,tol)$Policy

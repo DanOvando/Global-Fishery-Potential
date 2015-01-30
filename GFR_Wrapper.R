@@ -444,16 +444,14 @@ if (RunAnalyses==TRUE)
   
   MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T) #Apply mean price to fisheries with no price
   
-  MsyData$k[MsyData$Dbase=='RAM']<-MsyData$Bmsy[MsyData$Dbase=='RAM']*2
-  
   MsyData$r[MsyData$Dbase=='RAM']<-4*MsyData$MSY[MsyData$Dbase=='RAM']/MsyData$k[MsyData$Dbase=='RAM']
   
   MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T) #FIX THIS XXX Apply mean r to fisheries with no r THIS WAS ASSIGNING ALL RAM STOCKS THE MEAN r VALUE
   
-  if(IncludeNEIs==TRUE)
-  {
-    MsyData<-NeiVersion2(MsyData,Level='All',MinStocks=2)
-  }
+#   if(IncludeNEIs==TRUE)
+#   {
+#     MsyData<-NeiVersion2(MsyData,Level='All',MinStocks=2)
+#   }
   
   MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$r)==F #Identify disheries that have both MSY and r
   
@@ -475,16 +473,16 @@ if (RunAnalyses==TRUE)
   
   show("Completed Projections")
   
-#   if (IncludeNEIs==TRUE)
-#   {
-#     NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear) #Run Nearest Neighbor NEI analysis
-#     
-#     #Put NEI stocks back in the appropriate dataframes, remove stocks still missing data
-#     
-#     ProjectionData<- rbind(ProjectionData,NeiData$ProjNeis)
-#     
-#     BiomassData<- rbind(BiomassData,NeiData$BiomassNeis)
-#   }
+  if (IncludeNEIs==TRUE)
+  {
+    NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear) #Run Nearest Neighbor NEI analysis
+    
+    #Put NEI stocks back in the appropriate dataframes, remove stocks still missing data
+    
+    ProjectionData<- rbind(ProjectionData,NeiData$ProjNeis)
+    
+    BiomassData<- rbind(BiomassData,NeiData$BiomassNeis)
+  }
   
   BiomassData<- BiomassData[BiomassData$BvBmsy!=999 & is.infinite(BiomassData$BvBmsy)==FALSE & is.na(BiomassData$BvBmsy)==F,]
   

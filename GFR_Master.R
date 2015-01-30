@@ -223,9 +223,9 @@ beta<- 1.3
 
 Discount<- 0.05
 
-bvec<- seq(0.00000001,3,length.out=30)
+bvec<- seq(0.00000001,2,length.out=50)
 
-tol<- 1
+tol<- .1
 
 BOAtol<- 0.2
 
