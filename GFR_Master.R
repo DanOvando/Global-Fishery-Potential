@@ -26,7 +26,7 @@ library(reshape2)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'Jan 28 Nei2 Full Run'
+BatchFolder<- 'Jan 29 Full Run'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -213,7 +213,7 @@ Parel<- TRUE #Run SNOWFALL in parallel?
 
 # Projections -------------------------------------------------------------
 
-ProjectionTime<- 36
+ProjectionTime<- 23
 
 CatchSharePrice<- 1.31
 
