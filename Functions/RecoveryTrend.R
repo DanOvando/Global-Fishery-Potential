@@ -28,10 +28,13 @@ RecoveryTrend<-function(ProjectionData,RecoveryThreshold,OnlyOverfish)
   Trend<-rbind(HistoricTrend[HistoricTrend$Year>=1970,],RecoveryTrend)
   
   # plot recovery trend
-  pdf(file=paste(FigureFolder, 'Recovery Trajectories.pdf',sep='')) 
+  pdf(file=paste(FigureFolder, 'Recovery Trajectories.pdf',sep=''),height=10,width=12)
+  
   print(ggplot(Trend,aes(x=Year,y=PercentRecovered,color=Policy)) +
-          geom_line() +
-          labs(title='Recovery Pathways for Currently Overfished Stocks',y=paste('Percent Below B/Bmsy of ',RecoveryThreshold,sep='')))
+          geom_line(size=2) +
+          labs(title='Trends and Future Prospects for Global Fisheries',y=paste('Percent Above B/Bmsy of ',RecoveryThreshold,sep='')) +
+          theme(text=element_text(size=18)))
+  
   dev.off()
   
   return(Trend)
