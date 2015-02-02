@@ -194,10 +194,10 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   if(is.na(res)){res<- 0.5}
   
   for (i in 1){
-    start_r  <- if(res == "Very low"){c(0.015, 0.1)}
-    else if(res == "Low") {c(0.05,0.5)}
-    else if(res == "High") {c(0.6,1.5)}
-    else {c(0.2,1)} ## Medium, or default if no res is found  
+    start_r  <- if(res == "Very low"){c(0.01, 0.05)}
+    else if(res == "Low") {c(0.051,.15)}
+    else if(res == "High") {c(0.51,1.5)}
+    else {c(0.151,0.5)} ## Medium, or default if no res is found  
   }
   
   nyr  <- length(yr)    ## number of years in the time series
