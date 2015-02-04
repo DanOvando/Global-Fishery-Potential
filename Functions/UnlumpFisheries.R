@@ -50,6 +50,8 @@ UnlumpFisheries<-function(Data,RawData,BaselineYear,YearsBack,StitchIds)
       # calculate projection data results for projected policies
       unlumpproj<-lumpproj
       
+      unlumpproj$Country<-unique(RawData$Country[RawData$IdOrig==stids[b]])
+      
       unlumpproj$IdOrig<-stids[b]
       
       unlumpproj$Catch<-unlumpproj$Catch*percent$Percent[percent$IdOrig==stids[b]]
