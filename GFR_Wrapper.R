@@ -541,7 +541,7 @@ if (IncludeForageFish==FALSE)
 
 # Calculate fishery upsides on full ProjectionData prior to unlumping stocks
 
-FisheryUpside<-FisheriesUpside(ProjectionData,DenominatorPolicy='StatusQuoFForever')
+# FisheryUpside<-FisheriesUpside(ProjectionData,DenominatorPolicy='StatusQuoFForever')
 
 # Unlump lumped fisheries and create separate ProjectionData dataframe with unlumped stocks
 
