@@ -20,8 +20,8 @@ FindResilience<-function(Data)
   ResData$k[ResData$VonBertK<0.05]<-"Very Low"
   
   ResData$tm[ResData$AgeMat<1]<-"High"
-  ResData$tm[ResData$AgeMat>=2 & ResData$AgeMat<=4]<-"Medium"
-  ResData$tm[ResData$AgeMat>=5 & ResData$AgeMat<=10]<-"Low"
+  ResData$tm[ResData$AgeMat>=1 & ResData$AgeMat<=4]<-"Medium"
+  ResData$tm[ResData$AgeMat>4 & ResData$AgeMat<=10]<-"Low"
   ResData$tm[ResData$AgeMat>10]<-"Very Low"
       
   ResData$Res[grepl("Very Low", ResData$k) | grepl("Very Low", ResData$tm)]<-"Very low"
@@ -38,6 +38,8 @@ FindResilience<-function(Data)
     
     show(paste((a/nrow(ResData)*100),"% Done with Resilience",sep=""))
   }
+  
+  Data$Res[is.na(Data$Res)]<-'Medium'
   
   # Calculate frequency of resilience categories for each ISSCAAP group
   Data$Value[is.na(Data$Res)==F]<-1
@@ -63,13 +65,13 @@ FindResilience<-function(Data)
   # If no default is calculated, assign "Medium" resilience
   DefaultRes$Res[is.na(DefaultRes$Res)==T]<-'Medium'
   
-  for(b in 1:nrow(Data))
-  {
-    if(is.na(Data$Res[b]))
-    {
-      Data$Res[b]<-DefaultRes$Res[DefaultRes$SpeciesCatName==Data$SpeciesCatName[b]]
-    }
-  }
+#   for(b in 1:nrow(Data))
+#   {
+#     if(is.na(Data$Res[b]))
+#     {
+#       Data$Res[b]<-DefaultRes$Res[DefaultRes$SpeciesCatName==Data$SpeciesCatName[b]]
+#     }
+#   }
 
   write.csv(file=paste(ResultFolder,'ISSCAAP Default Resiliency.csv',sep=''),DefaultRes)
   
