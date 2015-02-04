@@ -26,7 +26,7 @@ library(reshape2)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'Jan 28 Nei2 Full Run'
+BatchFolder<- 'Feb 2 MSY Test Full Run'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -207,13 +207,13 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-NumCatchMSYIterations <- 20000  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 10000  ## number of iterations, e.g. 100000
 
 Parel<- TRUE #Run SNOWFALL in parallel?
 
 # Projections -------------------------------------------------------------
 
-ProjectionTime<- 36
+ProjectionTime<- 23
 
 CatchSharePrice<- 1.31
 
