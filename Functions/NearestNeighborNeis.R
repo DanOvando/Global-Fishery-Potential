@@ -166,7 +166,7 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
         
         for (p in 1:length(LongPols))
         {
-          results<-ddply(ComparisonStocks[ComparisonStocks$Policy==LongPols[p],],c("Year"),summarize,MedianBvBmsy=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),
+          results<-ddply(ComparisonStocks[ComparisonStocks$Policy==LongPols[p],],c("Year"),summarize,BvBmsy25=quantile(BvBmsy,c(0.25),na.rm=T),FvFmsy75=quantile(FvFmsy,c(0.75),na.rm=T),
                          MedianR=median(r,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T),MedianCost=median(MarginalCost,na.rm=T),JStocks=length(unique(IdOrig)),VarBvBmsy=var(BvBmsy,na.rm=T),VarFvFmsy=var(FvFmsy,na.rm=T))
           
           Year<-append(Year,results$Year,after=length(Year))
@@ -178,7 +178,7 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
           {
             #             WhereNei<- NEIs$SciName==NeiStats$SciName[a] & grepl((NeiStats$RegionFAO[a]),NEIs$RegionFAO ) & NEIs$Year==results$Year[b]  & is.na(NEIs$RegionFAO)==F & NEIs$Policy==LongPols[p]
             WhereNei<- NEIs$SciName==NeiStats$SciName[a] & NEIs$Year==results$Year[b] & NEIs$Policy==LongPols[p]            
-            NEIs[WhereNei,VarsToFill]<-results[b,c("MedianBvBmsy", "MedianFvFmsy", "MedianR", "MedianK","MedianPrice", "MedianCost")]
+            NEIs[WhereNei,VarsToFill]<-results[b,c("BvBmsy25", "FvFmsy75", "MedianR", "MedianK","MedianPrice", "MedianCost")]
             NEIs$CanProject[WhereNei]<- TRUE
             
           } 
