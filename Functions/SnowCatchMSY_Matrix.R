@@ -4,7 +4,7 @@
 ###################################### 
 
 #   SnowCatchMSY<- function(s)
-MatrixSnowCatchMSY<- function(s,Data,CommonError,sigR,Smooth,Display,BestValues,ManualFinalYear,n,NumCPUs,CatchMSYTrumps,stock_id,IdVar)    
+MatrixSnowCatchMSY<- function(s,Data,CommonError,CommonRange,sigR,Smooth,Display,BestValues,ManualFinalYear,n,NumCPUs,CatchMSYTrumps,stock_id,IdVar)    
 {
   RanCMSY<- FALSE
   require(zoo)
@@ -238,11 +238,9 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   #   finalbio    <- pmin(1,c((1-ErrorSize)*bio[nyr],(1+ErrorSize)*bio[nyr]))
   finalbio    <- pmin(1,pmax(0,c(qnorm(0.25,bio[nyr],bioerror[nyr]),qnorm(0.75,bio[nyr],bioerror[nyr]))))
   
-  if(bio[nyr]>=0.95) # if final stock bio is 2 or higher (such that B/K ==1) 
-  {
-    range<-0.5 # find range of starting and ending biomass distribution
-    
-    finalbio<-c(0.95-range,.95)
+  if(bio[nyr]>=0.95) # if final stock bio is 2 or higher (such that B/K ==1) distribution uses common range stocks with B/K <0.95
+  { 
+    finalbio<-c(0.95-CommonRange,.95)
   }
   
   if (is.na(bio[nyr]) | bio[nyr]==0)

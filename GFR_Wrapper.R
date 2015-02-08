@@ -409,6 +409,8 @@ if (RunAnalyses==TRUE)
   
   MsyData<- CatchMSYresults
   
+  MsyData$MSY[MsyData$SpeciesCatName==ForageFish]<-MsyData$MSY[MsyData$SpeciesCatName==ForageFish]*0.75 # reduce forage fish MSY by 25%
+  
   BiomassData$MSY<- MsyData$MSY #Assign MSY back to BiomassData estimates
   
   BiomassData$FvFmsy[MsyData$RanCatchMSY==T]<- MsyData$FvFmsy[MsyData$RanCatchMSY==T]
