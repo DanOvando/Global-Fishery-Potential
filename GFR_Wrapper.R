@@ -359,6 +359,8 @@ if (RunAnalyses==TRUE)
   
   BiomassData$BvBmsy<- BestBio
   
+  BiomassData$PRMBvBmsy<- BestBio
+  
   #   BiomassData$CommName<- as.character((BiomassData$CommName))
   
   BiomassData$SciName<- as.character((BiomassData$SciName))
@@ -624,8 +626,9 @@ ProjectionValidationData<-ProjectionValidation(ProjectionData,BaselineYear)
 CostRevenues<-CostRevCheck(ProjectionData,RawData,BaselineYear)
 
 # Plot historical status of RAM and unassessed stocks
+BiomassData<- join(BiomassData,MsyData[,c('IdOrig','CatchMSYBvBmsy_LogSd')],by='IdOrig',match='first')
 
-# StatusISSCAAP<-StatusPlots(FullData,BiomassData,BaselineYear,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+StatusISSCAAP<-StatusPlots(FullData,BiomassData,BaselineYear,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
 
 # Test C parameter sensitivity to BOA level
 
