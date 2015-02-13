@@ -327,7 +327,7 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
     mean_bvbmsy<- mean(apply(bvbmsy,1,function(x) exp(mean(log(x)))))
     LogSD_bvbmsy<- mean(apply(bvbmsy,1,function(x) (sd(log(x)))))
     
-    msy = r * k / 4
+    msy = (r * k) / 4
     Fmsy<- r/2
     
     
