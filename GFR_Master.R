@@ -26,7 +26,7 @@ library(reshape2)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'Jan 28 Nei2 Full Run'
+BatchFolder<- 'Feb 7 MSY Full Run'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -64,7 +64,7 @@ if (RunAnalyses==FALSE)
 
 SubSample<- 0
 
-NumCPUs<- 25 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 20 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 

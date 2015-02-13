@@ -4,7 +4,7 @@
 ###################################### 
 
 #   SnowCatchMSY<- function(s)
-MatrixSnowCatchMSY<- function(s,Data,CommonError,sigR,Smooth,Display,BestValues,ManualFinalYear,n,NumCPUs,CatchMSYTrumps,stock_id,IdVar)    
+MatrixSnowCatchMSY<- function(s,Data,CommonError,CommonRange,sigR,Smooth,Display,BestValues,ManualFinalYear,n,NumCPUs,CatchMSYTrumps,stock_id,IdVar)    
 {
   RanCMSY<- FALSE
   require(zoo)
@@ -56,9 +56,9 @@ MatrixSnowCatchMSY<- function(s,Data,CommonError,sigR,Smooth,Display,BestValues,
   
   colnames(EllBio)<- c('MinBio','MaxBio','InterBio','FinalBio')
   
-  Ell= EllBio$FinalBio>=ResultMat$FinalBio1 & EllBio$FinalBio <= ResultMat$FinalBio2 & EllBio$InterBio>=ResultMat$InterBio1 & EllBio$InterBio <= ResultMat$InterBio2 & EllBio$MinBio>0 & EllBio$MaxBio<ResultMat$K 
+#   Ell= EllBio$FinalBio>=ResultMat$FinalBio1 & EllBio$FinalBio <= ResultMat$FinalBio2 & EllBio$InterBio>=ResultMat$InterBio1 & EllBio$InterBio <= ResultMat$InterBio2 & EllBio$MinBio>0 & EllBio$MaxBio<ResultMat$K 
   
-#   Ell= ResultMat$StartBio==min(ResultMat$StartBio) &EllBio$FinalBio>=ResultMat$FinalBio1 & EllBio$FinalBio <= ResultMat$FinalBio2 & EllBio$InterBio>=ResultMat$InterBio1 & EllBio$InterBio <= ResultMat$InterBio2 & EllBio$MinBio>0 & EllBio$MaxBio<ResultMat$K 
+  Ell= ResultMat$StartBio==min(ResultMat$StartBio) &EllBio$FinalBio>=ResultMat$FinalBio1 & EllBio$FinalBio <= ResultMat$FinalBio2 & EllBio$InterBio>=ResultMat$InterBio1 & EllBio$InterBio <= ResultMat$InterBio2 & EllBio$MinBio>0 & EllBio$MaxBio<ResultMat$K 
   
   
   PossibleRuns<- ResultMat[Ell,]
@@ -194,10 +194,11 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   if(is.na(res)){res<- 0.5}
   
   for (i in 1){
-    start_r  <- if(res == "Very low"){c(0.015, 0.1)}
-    else if(res == "Low") {c(0.05,0.5)}
-    else if(res == "High") {c(0.6,1.5)}
-    else {c(0.2,1)} ## Medium, or default if no res is found  
+    start_r  <- if(res == "Very low"){c(0.001, 0.05)}
+    else if(res == "Low") {c(0.05,0.15)}
+    else if(res == "Medium") {c(0.15,0.5)}
+    else if(res == "High") {c(0.5,1)}
+    else {c(0.15,0.5)} ## Medium, or default if no res is found  
   }
   
   nyr  <- length(yr)    ## number of years in the time series
@@ -237,6 +238,10 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   #   finalbio    <- pmin(1,c((1-ErrorSize)*bio[nyr],(1+ErrorSize)*bio[nyr]))
   finalbio    <- pmin(1,pmax(0,c(qnorm(0.25,bio[nyr],bioerror[nyr]),qnorm(0.75,bio[nyr],bioerror[nyr]))))
   
+  if(bio[nyr]>=0.95) # if final stock bio is 2 or higher (such that B/K ==1) distribution uses common range stocks with B/K <0.95
+  { 
+    finalbio<-c(0.95-CommonRange,.95)
+  }
   
   if (is.na(bio[nyr]) | bio[nyr]==0)
   {

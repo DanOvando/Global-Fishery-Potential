@@ -8,9 +8,9 @@
 ################################################
 
 
-DenominatorPolicy<-'StatusQuoFForever'
-GroupingVars<-c('Country','Year','Policy') # or c('IdOrig','Year','Policy') for Fishery level upside
-Subset<-'All Stocks'
+# DenominatorPolicy<-'StatusQuoFForever'
+# GroupingVars<-c('Country','Year','Policy') # or c('IdOrig','Year','Policy') for Fishery level upside
+# Subset<-'All Stocks'
 
 UpsideCalculator<-function(Data,BaselineYear,DenominatorPolicy,GroupingVars,Subset)
 {

@@ -39,11 +39,30 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
     CommonError<- ErrorSize
   }
   
+  # find mean range between final bio priors to pass to SnowCatchMSY_Matrix for stocks with finalbio>1
+  MeanRange<-MsyData[is.na(MsyData$BvBmsySD)==F & MsyData$Year==2012,c('IdOrig','BvBmsy','BvBmsySD')]
+  
+  MeanRange$BoverK<-pmin(1,MeanRange$BvBmsy/2)
+  
+  MeanRange<-MeanRange[MeanRange$BoverK<0.95,]
+  
+  MeanRange$Bioerror<-MeanRange$BvBmsySD/2
+  
+  MeanRange$Bioerror[is.na(MeanRange$Bioerror)]<-CommonError
+  
+  MeanRange$FbLow<-pmax(0,qnorm(0.25,MeanRange$BoverK,MeanRange$Bioerror))
+                            
+  MeanRange$FbHigh<-pmin(1,qnorm(0.75,MeanRange$BoverK,MeanRange$Bioerror))
+  
+  MeanRange$BioRange<-MeanRange$FbHigh-MeanRange$FbLow
+  
+  CommonRange<-mean(MeanRange$BioRange,na.rm=T) # Common range to apply to all stocks with B/K >=0.95
+  
   stock_id <- unique((Data[,IdVar][Data$HasRamMSY==F & Data$BvBmsy!=999 & is.infinite(Data$BvBmsy)==F])) 
   
   if (NumCPUs>1)
   {
-    CMSYResults <- (mclapply(1:length(stock_id), MatrixSnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
+    CMSYResults <- (mclapply(1:length(stock_id), MatrixSnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,CommonRange=CommonRange,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
                              CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
     
     #      CMSYResults <- (mclapply(1:length(stock_id), SnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
@@ -60,7 +79,7 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   {    
     pdf(file=paste(FigureFolder,'Catch-MSY Diagnostics.pdf',sep=''))
     
-    CMSYResults <- (mclapply(1:length(stock_id), MatrixSnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
+    CMSYResults <- (mclapply(1:length(stock_id), MatrixSnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,CommonRange=CommonRange,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
                              CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
     
     #     CMSYResults <- (mclapply(1:length(stock_id), SnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,

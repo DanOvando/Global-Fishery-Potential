@@ -409,6 +409,8 @@ if (RunAnalyses==TRUE)
   
   MsyData<- CatchMSYresults
   
+  MsyData$MSY[MsyData$SpeciesCatName==ForageFish]<-MsyData$MSY[MsyData$SpeciesCatName==ForageFish]*0.75 # reduce forage fish MSY by 25%
+  
   BiomassData$MSY<- MsyData$MSY #Assign MSY back to BiomassData estimates
   
   BiomassData$FvFmsy[MsyData$RanCatchMSY==T]<- MsyData$FvFmsy[MsyData$RanCatchMSY==T]
@@ -444,6 +446,8 @@ if (RunAnalyses==TRUE)
   
   MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T) #Apply mean price to fisheries with no price
   
+  MsyData$k[MsyData$Dbase=='RAM']<-MsyData$Bmsy[MsyData$Dbase=='RAM']*2
+  
   MsyData$r[MsyData$Dbase=='RAM']<-4*MsyData$MSY[MsyData$Dbase=='RAM']/MsyData$k[MsyData$Dbase=='RAM']
   
   MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T) #FIX THIS XXX Apply mean r to fisheries with no r THIS WAS ASSIGNING ALL RAM STOCKS THE MEAN r VALUE
@@ -459,10 +463,10 @@ if (RunAnalyses==TRUE)
   
   MsyData$BestModel<- as.character(MsyData$BestModel)
   
-  if(SubSample>0)
-  {
+#   if(SubSample>0)
+#   {
     save.image(file=paste(ResultFolder,'Test Results Prior to Projections.rdata',sep=''))
-  }
+#   }
   
   ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs,StatusQuoPolicy) #Run projections on MSY data that can be projected
   
@@ -539,7 +543,7 @@ if (IncludeForageFish==FALSE)
 
 # Calculate fishery upsides on full ProjectionData prior to unlumping stocks
 
-FisheryUpside<-FisheriesUpside(ProjectionData,DenominatorPolicy='StatusQuoFForever')
+# FisheryUpside<-FisheriesUpside(ProjectionData,DenominatorPolicy='StatusQuoFForever')
 
 # Unlump lumped fisheries and create separate ProjectionData dataframe with unlumped stocks
 
@@ -553,24 +557,57 @@ UnlumpedProjectionData<-rbind(UnlumpedProjectionData, UnlumpedData)
 
 UnlumpedProjectionData$Country[grepl('China',UnlumpedProjectionData$Country)]<-'China'
 
-# Calculate Country level upsides for 1) Lumped All Stocks 2) Lumped Overfished and Overfishing Stocks 3) Unlumped All Stocks 4) Unlumped Overfish 
+## Calculate Country level upsides for 1) Lumped All Stocks 2) Lumped Overfished and Overfishing Stocks 3) Unlumped All Stocks 4) Unlumped Overfish 
 
-CountryUpsidesAll<-UpsideCalculator(ProjectionData,BaselineYear,DenominatorPolicy='StatusQuoFForever',GroupingVars=c('Country','Year','Policy'),Subset='All Stocks')
+# 1)
 
-CountryUpsidesOverfish<-UpsideCalculator(ProjectionData,BaselineYear,DenominatorPolicy='StatusQuoFForever',GroupingVars=c('Country','Year','Policy'),Subset='Overfish')
+SQ<-c('StatusQuoOpenAccess','StatusQuoFForever','StatusQuoBForever')
 
-CountryUpsidesUnlumpAll<-UpsideCalculator(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='StatusQuoFForever',GroupingVars=c('Country','Year','Policy'),Subset='All Stocks')
+CountryUpsidesAllSQ<-list()
 
-CountryUpsidesUnlumpOverfish<-UpsideCalculator(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='StatusQuoFForever',GroupingVars=c('Country','Year','Policy'),Subset='Overfish')
+for(a in 1:length(SQ))
+{
+  tempCountryUpsidesAll<-UpsideCalculator(ProjectionData,BaselineYear,DenominatorPolicy=SQ[a],GroupingVars=c('Country','Year','Policy'),Subset='All Stocks')
+  
+  CountryUpsidesAllSQ[[a]]<-tempCountryUpsidesAll
+}
+
+CountryUpsidesAllSQ<-ldply(CountryUpsidesAllSQ)
+
+# 2)
+
+CountryUpsidesOverfishAllSQ<-list()
+
+for(b in 1:length(SQ))
+{
+  tempCountryUpsidesOverfish<-UpsideCalculator(ProjectionData,BaselineYear,DenominatorPolicy=SQ[b],GroupingVars=c('Country','Year','Policy'),Subset='Overfish')
+  
+  CountryUpsidesOverfishAllSQ[[b]]<-tempCountryUpsidesOverfish
+}
+
+CountryUpsidesOverfishAllSQ<-ldply(CountryUpsidesOverfishAllSQ)
+
+# 3)
+CountryUpsidesUnlumpAll<-UpsideCalculator(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='StatusQuoBForever',GroupingVars=c('Country','Year','Policy'),Subset='All Stocks')
+
+# 4)
+CountryUpsidesUnlumpOverfish<-UpsideCalculator(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='StatusQuoBForever',GroupingVars=c('Country','Year','Policy'),Subset='Overfish')
 
 
 ### Plot figures for paper and diagnostics  --------------------------------------------------
 
 ### Figures ---
 
-# FIGURE 1 - Status Map
+## FIGURE 1 - Status Map
 
-# FIGURE 2 - Triple Bottom Line
+## FIGURE 2 - Triple Bottom Line
+
+# Loop over status quo policies to produce plots for the desired policy relative to each status quo scenario
+
+for(a in 1:length(SQ))
+{
+  TripleBottomLine(AllStockData=CountryUpsidesAllSQ,OverfishData=CountryUpsidesOverfishAllSQ,Policy='Opt',Limit=300,StatusQuoPolicy=SQ[a],FigureFolder)
+}
 
 # FIGURE 3 - Recovery Trajectories
 
