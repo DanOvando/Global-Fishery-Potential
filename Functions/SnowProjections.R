@@ -41,9 +41,10 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
         else
         {guess= f1[i-1]}
         
-        FishOut= optim(par=guess,fn=GFRM_funR,lower=0.0001,upper=1.99,b=b,p=p,MSY=MSY,c=c,r=r,beta=beta,V=V,bvec=bvec,delta=delta,method="L-BFGS-B")
+        #         FishOut= optim(par=guess,fn=GFRM_funR,lower=0.0001,upper=1.99,b=b,p=p,MSY=MSY,c=c,r=r,beta=beta,V=V,bvec=bvec,delta=delta,method="L-BFGS-B")
+        FishOut= nlminb(guess,GFRM_funR,lower=0.0001,upper=1.99,b=b,p=p,MSY=MSY,c=c,r=r,beta=beta,V=V,bvec=bvec,delta=delta)
         
-        Vnew[i]= -FishOut$value
+        Vnew[i]= -FishOut$objective
         f1[i]= FishOut$par
         
         
@@ -136,7 +137,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
       if (Policy!='StatusQuoOpenAccess'){ f[t] = approx(bvec,fpolicy,b[t])$y}
       if (Policy=='StatusQuoOpenAccess')
       {
-
+        
         f[t]=OpenAccessFleet(PastF,pi[t-1],t,Omega,MsyProfits)
         PastF<- f[t]
       }
@@ -211,7 +212,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     
     Data$MarginalCost[Where]<-cost
   }
-
+  
   MsyProfits = Price*MSY - cost*(r/2)^beta
   
   OptPolicy<-  RunDynamicOpt2(MSY,r,Price,cost,beta,Discount,bvec,tol)$Policy
@@ -228,7 +229,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   }
   
   FoodPolicy<-  RunDynamicOpt2(MSY,r,Price,0,beta,0,bvec,tol)$Policy
-
+  
   StatusQuoFForeverPolicy<- FStatusQuo*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])  
   
   StatusQuoBForeverPolicy<- (2-RecentStockData$BvBmsy)*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])  
@@ -243,12 +244,19 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   StatusQuoOpenAccessPolicy<- FStatusQuo
   
+  PolicyStorage<- as.data.frame(matrix(NA,nrow=length(bvec),ncol=2+length(Policies)))
   
-  for (p in 1:length(Policies))
+  colnames(PolicyStorage)<- c('IdOrig','b',Policies)
+  
+  PolicyStorage[,c('IdOrig','b')]<- data.frame(Stocks[s],bvec)
+  
+for (p in 1:length(Policies))
   {
     
     eval(parse(text=paste('Policy<-',Policies[p],'Policy',sep=''))) 
-        
+
+    eval(parse(text=paste('PolicyStorage$',Policies[p],'<-', Policies[p],'Policy',sep='' )))
+    
     Projection<- Sim_Forward(Policies[p],Policy,IsCatchShare,bvec,RecentStockData$BvBmsy,ProjectionTime,Price,MSY,cost,r,beta,delta)
     
     PolicyMatrix<- as.data.frame(matrix(NA,nrow=ProjectionTime,ncol=dim(TempMat)[2]))
@@ -278,5 +286,6 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     
   } # close policies loop
   
-  return(TempMat)
+  
+  return(list(TempMat=TempMat,PolicyStorage=PolicyStorage))
 } #Close function

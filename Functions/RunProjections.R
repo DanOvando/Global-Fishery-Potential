@@ -54,7 +54,6 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy)
                              Data=Data,BaselineYear=BaselineYear,Stocks=Stocks,IdVar=IdVar,bvec=bvec,
                              Discount=Discount,tol=tol,beta=beta,CatchSharePrice=CatchSharePrice,CatchShareCost=CatchShareCost,
                              Policies=Policies,ProjectionTime=ProjectionTime,TempStockMatrix=TempStockMatrix,StatusQuoPolicy=StatusQuoPolicy))
-    
     #     sfInit( parallel=TRUE, cpus=NumCPUs )
     #     sfExport('Data','BaselineYear','Stocks','IdVar','bvec','Discount','tol','beta','CatchSharePrice','CatchShareCost','Policies','ProjectionTime','TempStockMatrix')
     #     #   sfExportAll()
@@ -68,11 +67,18 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy)
     Projections <- (lapply(1:(length(Stocks)), SnowProjections,
                            Data=Data,BaselineYear=BaselineYear,Stocks=Stocks,IdVar=IdVar,bvec=bvec,
                            Discount=Discount,tol=tol,beta=beta,CatchSharePrice=CatchSharePrice,CatchShareCost=CatchShareCost,
-                           Policies=Policies,ProjectionTime=ProjectionTime,TempStockMatrix=TempStockMatrix,StatusQuoPolicy=StatusQuoPolicy))
-    
+                           Policies=Policies,ProjectionTime=ProjectionTime,TempStockMatrix=TempStockMatrix,StatusQuoPolicy=StatusQuoPolicy))    
   }
   
-  TempStockMatrix<- ldply(Projections,data.frame)
+  
+  PolicyStorage <- lapply(seq(along = Projections), function(i)    Projections[[i]]$PolicyStorage)
+  
+  TempMat <- lapply(seq(along = Projections), function(i)    Projections[[i]]$TempMat)
+  
+  TempStockMatrix<- ldply(TempMat,data.frame)
+
+  PolicyStorage<- ldply(PolicyStorage,data.frame)
+  
   
   Data$Policy<- NA
   
@@ -99,7 +105,7 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy)
   
   DataPlus<- rbind((Data),(TempStockMatrix))
   
-  return(DataPlus)
+  return(list(DataPlus=DataPlus,PolicyStorage=PolicyStorage))
   
 }
 
