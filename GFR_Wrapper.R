@@ -452,10 +452,10 @@ if (RunAnalyses==TRUE)
   
   MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T) #FIX THIS XXX Apply mean r to fisheries with no r THIS WAS ASSIGNING ALL RAM STOCKS THE MEAN r VALUE
   
-#   if(IncludeNEIs==TRUE)
-#   {
-#     MsyData<-NeiVersion2(MsyData,Level='All',MinStocks=2)
-#   }
+  #   if(IncludeNEIs==TRUE)
+  #   {
+  #     MsyData<-NeiVersion2(MsyData,Level='All',MinStocks=2)
+  #   }
   
   MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$r)==F #Identify disheries that have both MSY and r
   
@@ -463,12 +463,18 @@ if (RunAnalyses==TRUE)
   
   MsyData$BestModel<- as.character(MsyData$BestModel)
   
-#   if(SubSample>0)
-#   {
-    save.image(file=paste(ResultFolder,'Test Results Prior to Projections.rdata',sep=''))
-#   }
+  #   if(SubSample>0)
+  #   {
+  save.image(file=paste(ResultFolder,'Test Results Prior to Projections.rdata',sep=''))
+  #   }
   
   ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs,StatusQuoPolicy) #Run projections on MSY data that can be projected
+  
+  PolicyStorage<- ProjectionData$PolicyStorage
+  
+  write.csv(file=paste(ResultFolder,'PolicyStorage.csv',sep=''),PolicyStorage)
+  
+  ProjectionData<- ProjectionData$DataPlus
   
   pdf(file='Diagnostics/CheckOpenAccess.pdf')
   print(ggplot(data=subset(ProjectionData,Policy=='StatusQuoOpenAccess'),aes(BvBmsy,FvFmsy,group=IdOrig))+geom_line())
