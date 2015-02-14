@@ -26,9 +26,9 @@ load("Data/DBdata_102214.RData") # RData object obtained 10/22/14
 # build dataset using "timeseries.views.data as base dataset
 
 ColNames = c("Id","IdOrig","Dbase", "Year","Catch","CatchUnit", "Fmort","FmortUnit","FmortMetric", "SciName","CommName",
-             "Country","RegionFAO","SpeciesCat","SpeciesCatName","MSY",'RefValueCalcRAM', "Bmsy","SSBmsy","Umsy","Fmsy","Biomass","BiomassMetric",
+             "Country","RegionFAO","SpeciesCat","SpeciesCatName","MSY",'MSYUnit', "Bmsy","SSBmsy","Umsy","Fmsy","Biomass","BiomassMetric",
              "BiomassUnit","ExploitStatus", "VonBertK","VonBertKUnit","VonBertKSource","Temp","TempUnit",
-             "TempSource","MaxLength","MaxLengthUnit", "MaxLengthSource","AgeMat","AgeMatUnit","AgeMatSource",'ReferenceBiomass','ReferenceBiomassUnits',"BvBmsy",'UvUmsytouse')
+             "TempSource","MaxLength","MaxLengthUnit", "MaxLengthSource","AgeMat","AgeMatUnit","AgeMatSource",'ReferenceBiomass','ReferenceBiomassUnits',"BvBmsy",'BvBmsyUnit','UvUmsytouse','FvFmsyUnit')
 
 ####### Data Formatting and Subsetting ####### 
 
@@ -57,9 +57,10 @@ colnames(timeseries.views.data)<-c("IdOrig","stockid","CommName","Year","TB", "S
 # BvBmsy -> BvBmsyDrop # dropping this variable in favor of BvBmsytouse
 # BvBmsytouse -> BvBmsy
 
-timeseries.views.units<-timeseries.views.units[,1:11] # remove newly added 'touse' parameter source columns 10/22/14
+# timeseries.views.units<-timeseries.views.units[,1:11] # remove newly added 'touse' parameter source columns 10/22/14
 
-colnames(timeseries.views.units)<-c("IdOrig","stockid","stocklong","TB", "SSB", "TN", "R","TC", "TL", "F", "ER")
+colnames(timeseries.views.units)<-c("IdOrig","stockid","stocklong","TB", "SSB", "TN", "R","TC", "TL", "F", "ER",'BvBmsyDropUnit','SSBvSSBmsyUnit','FvFmsyUnit',
+                                    'UvUmsyUnit','BtouseUnit','CtouseUnit','FtouseUnit','BvBmsytouseUnit','UvUmsytouseUnit')
 
 # For datasets missing variable names, convert to data frame, name variables, and convert to character/numeric as neccessary
 
@@ -130,6 +131,8 @@ RAM$Country<-NA
 RAM$MSY<-NA
 RAM$UvUmsytouse=as.numeric(rep("",nrow(RAM)))
 RAM$UvUmsytouse[is.na(UvUmsytouse)==F]<-  UvUmsytouse[is.na(UvUmsytouse)==F]
+RAM$BvBmsyUnit<-NA
+RAM$FvFmsyUnit<-NA
 
 ####### Life History ####### 
 # run for loop to match life history paRAMeters by assessid/IdOrig to bioparams .csv
@@ -255,6 +258,17 @@ for (i in 1:length(RAMNames))
   RAM$SSBmsy[Whereref]<-bioparams.views.data[lh_match,c('SSBmsy')] #SSBmsy
   RAM$MSY[Whereref]<-bioparams.views.data[lh_match,c('MSY')] # MSY
   # filling Bmsy with Bmsytouse, which was renamed to ReferenceBiomass. Will be duplicated in ReferenceBiomass column
+}
+
+# Add in units for BvBmsy and F/Fmsy to determine if direct from assessment or estimated from model fits
+
+for(d in 1:length(RAMNames))
+{
+  whereunit<-RAM$IdOrig==RAMNames[d]
+  unitmatch<-match(RAMNames[d],timeseries.views.units[,'IdOrig'])
+  
+  RAM$BvBmsyUnit[whereunit]<-timeseries.views.units[unitmatch,'BvBmsytouseUnit']
+  RAM$FvFmsyUnit[whereunit]<-timeseries.views.units[unitmatch,'UvUmsytouseUnit']
 }
 
 # Add reference biomass
@@ -394,12 +408,14 @@ CalcMSY<-CalcMSY[is.na(CalcMSY$MeanMSY)==F,]
 
 # Add Calculated Reference Values into database
 
+RAM$MSYUnit[is.na(RAM$MSY)==F]<-'RAM Assessment'
+
 for(e in 1:nrow(CalcMSY))
 {
   needmsy<-RAM$IdOrig==CalcMSY$IdOrig[e]
   
   RAM$MSY[needmsy]<-CalcMSY$MeanMSY[e]
-  RAM$RefValueCalcRAM[needmsy]<-'Calc MSY'
+  RAM$MSYUnit[needmsy]<-'Calc MSY'
   
   show(e)
 }
@@ -410,7 +426,7 @@ for (d in 1:nrow(CalcUvUmsy))
   where<-RAM$IdOrig==CalcUvUmsy$IdOrig[d] & RAM$Year==CalcUvUmsy$Year[d]
   
   RAM$UvUmsytouse[where]<-CalcUvUmsy$CalcFvFmsy[d]
-  RAM$RefValueCalcRAM[where]<-'Calc FvFmsy'
+  RAM$FvFmsyUnit[where]<-'Calc FvFmsy'
 }
 
 # Subset RAM to only include stocks with all 3 reference values (consider making option in Master)
@@ -500,7 +516,9 @@ SOFIA$ReferenceBiomassUnits<- NA
 SOFIA$BvBmsy<-NA
 SOFIA$MSY<-NA
 SOFIA$UvUmsytouse=as.numeric(rep("",nrow(SOFIA)))
-SOFIA$RefValueCalcRAM<-NA
+SOFIA$MSYUnit<-NA
+SOFIA$BvBmsyUnit<-NA
+SOFIA$FvFmsyUnit<-NA
 
 # Populate BvBmsy by converting Exploit Status values into numbers, taking the mean of the range of U, F, and O
 underexploit<-SOFIA$ExploitStatus=="U"
@@ -621,7 +639,9 @@ FAO$ReferenceBiomassUnits<- NA
 FAO$BvBmsy<-NA
 FAO$MSY<-NA
 FAO$UvUmsytouse=as.numeric(rep("",nrow(FAO)))
-FAO$RefValueCalcRAM<-NA
+FAO$MSYUnit<-NA
+FAO$BvBmsyUnit<-NA
+FAO$FvFmsyUnit<-NA
 
 # create IdOrig for FAO entries. Use same syntax as for SOFIA = 
 FAOID=seq(from=1, to=nrow(FAO))
