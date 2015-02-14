@@ -24,7 +24,7 @@ library(reshape2)
 # library(dplyr)
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- TRUE
+RunAnalyses<- FALSE
 
 BatchFolder<- 'Feb 7 MSY Full Run'
 
@@ -46,8 +46,8 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Test Full Run'
-    
+  BatchFolder<- 'Feb 7 MSY Full Run'
+  
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
   InputFolder<- 'Data/'
