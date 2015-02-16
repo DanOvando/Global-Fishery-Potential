@@ -174,11 +174,20 @@ if (RunAnalyses==TRUE)
   
   # Run regressions ---------------------------------------------------------
   
-  RegressionResults<- RunRegressions(RamData,Regressions,'Real Stocks')
+  RegressionResultsAllRam<- RunRegressions(RamData,Regressions,'Real Stocks') # run regressions using all RAM stock values
   
-  RealModels<- RegressionResults$Models
+  RamData<- RegressionResultsAllRam$RamData # retain all RamData, not just the RamData with assesment only value
   
-  RamData<- RegressionResults$RamData
+  RealModels<- RegressionResultsAllRam$Models # use regression models estimated from assessment BvBmsy values only
+  
+  ModelFitIds<-RamData$IdOrig[grepl('-est-',RamData$BvBmsyUnit)] # find stock ids with model fit BvBmsy values
+  
+  RegressionResults<- RunRegressions(RamData[!(RamData$IdOrig %in% ModelFitIds),],Regressions,'Real Stocks') # run regressions using assesment BvBmsy values only
+  
+  if(RegressAllRam==FALSE)
+  {
+    RealModels<- RegressionResults$Models # use regression models estimated from assessment BvBmsy values only
+  }
   
   RealModelFactorLevels<- NULL
   
@@ -199,7 +208,15 @@ if (RunAnalyses==TRUE)
   
   #   RamData<- InsertFisheryPredictions(RamData,RealModels) #Add fishery predictions back into main dataframe
   
-  RealModelSdevs<- CreateSdevBins(RealModels,RamData,TransbiasBin)
+  if(RegressAllRam==TRUE) # generate SDevs depending on whether regression was run all all ram data or just assessment values
+  {
+    RealModelSdevs<- CreateSdevBins(RealModels,RamData,TransbiasBin)
+  }
+  
+  if(RegressAllRam==FALSE)
+  {
+    RealModelSdevs<- CreateSdevBins(RealModels,RegressionResults$RamData,TransbiasBin)
+  }
   
   save(RealModels,RealModelSdevs,file=paste(ResultFolder,'PrmRegressions.Rdata',sep=''))
   
@@ -319,7 +336,7 @@ if (RunAnalyses==TRUE)
   {
     PredictedData<- rbind(RamData,SofiaData,FaoSpeciesLevel) #Bind all data back together
   }
-  BiomassColumns<- (grepl('BvBmsy',colnames(PredictedData)) | grepl('Prediction',colnames(PredictedData))) & grepl('LogBvBmsy',colnames(PredictedData))==F
+  BiomassColumns<- (grepl('BvBmsy$',colnames(PredictedData)) | grepl('Prediction',colnames(PredictedData))) & grepl('LogBvBmsy',colnames(PredictedData))==F
   
   BioNames<- colnames(PredictedData)[BiomassColumns]
   
@@ -358,6 +375,8 @@ if (RunAnalyses==TRUE)
   BiomassData$BestModel<- BestModel
   
   BiomassData$BvBmsy<- BestBio
+  
+  BiomassData$PRMBvBmsy<- BestBio
   
   #   BiomassData$CommName<- as.character((BiomassData$CommName))
   
@@ -454,10 +473,10 @@ if (RunAnalyses==TRUE)
   
   MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T) #FIX THIS XXX Apply mean r to fisheries with no r THIS WAS ASSIGNING ALL RAM STOCKS THE MEAN r VALUE
   
-  #   if(IncludeNEIs==TRUE)
-  #   {
-  #     MsyData<-NeiVersion2(MsyData,Level='All',MinStocks=2)
-  #   }
+#   if(IncludeNEIs==TRUE)
+#   {
+#     MsyData<-NeiVersion2(MsyData,Level='All',MinStocks=2)
+#   }
   
   MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$r)==F #Identify disheries that have both MSY and r
   
@@ -465,18 +484,12 @@ if (RunAnalyses==TRUE)
   
   MsyData$BestModel<- as.character(MsyData$BestModel)
   
-  #   if(SubSample>0)
-  #   {
-  save.image(file=paste(ResultFolder,'Test Results Prior to Projections.rdata',sep=''))
-  #   }
+#   if(SubSample>0)
+#   {
+    save.image(file=paste(ResultFolder,'Test Results Prior to Projections.rdata',sep=''))
+#   }
   
   ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs,StatusQuoPolicy) #Run projections on MSY data that can be projected
-  
-  PolicyStorage<- ProjectionData$PolicyStorage
-  
-  write.csv(file=paste(ResultFolder,'PolicyStorage.csv',sep=''),PolicyStorage)
-  
-  ProjectionData<- ProjectionData$DataPlus
   
   pdf(file='Diagnostics/CheckOpenAccess.pdf')
   print(ggplot(data=subset(ProjectionData,Policy=='StatusQuoOpenAccess'),aes(BvBmsy,FvFmsy,group=IdOrig))+geom_line())
@@ -551,7 +564,7 @@ if (IncludeForageFish==FALSE)
 
 # Calculate fishery upsides on full ProjectionData prior to unlumping stocks
 
-# FisheryUpside<-FisheriesUpside(ProjectionData,DenominatorPolicy='StatusQuoFForever')
+FisheryUpside<-FisheriesUpsideV2(ProjectionData,DenominatorPolicy='StatusQuoFForever')
 
 # Unlump lumped fisheries and create separate ProjectionData dataframe with unlumped stocks
 
@@ -632,8 +645,9 @@ ProjectionValidationData<-ProjectionValidation(ProjectionData,BaselineYear)
 CostRevenues<-CostRevCheck(ProjectionData,RawData,BaselineYear)
 
 # Plot historical status of RAM and unassessed stocks
+BiomassData<- join(BiomassData,MsyData[,c('IdOrig','CatchMSYBvBmsy_LogSd')],by='IdOrig',match='first')
 
-# StatusISSCAAP<-StatusPlots(FullData,BiomassData,BaselineYear,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+StatusISSCAAP<-StatusPlots(FullData,BiomassData,BaselineYear,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
 
 # Test C parameter sensitivity to BOA level
 
