@@ -26,7 +26,7 @@ library(reshape2)
 
 RunAnalyses<- FALSE
 
-BatchFolder<- 'Feb 7 MSY Full Run'
+BatchFolder<- 'Feb 13 FML Test tight priors'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -46,7 +46,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Feb 7 MSY Full Run'
+  BatchFolder<- 'Feb 13 FML Test tight priors'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
