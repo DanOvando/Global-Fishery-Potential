@@ -401,7 +401,9 @@ if (RunAnalyses==TRUE)
   
   GlobalStatus$BvBmsySD[GlobalStatus$Data$Dbase=='SOFIA']<- 0.1
   
-  CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
+  arg<- sample(GlobalStatus$Data$IdOrig,100,replace=F)
+  
+  CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data[GlobalStatus$Data$IdOrig %in% arg,],ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   
   #   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data[GlobalStatus$Data$IdOrig=='10041-FAO-41-44',],ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   
