@@ -97,8 +97,15 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
     #     dev.off()
   }
   CmsyStore<- as.data.frame(matrix(NA,nrow=0,ncol=dim(CMSYResults[[1]]$CatchMSY)[2]))
+    
+  PossibleParams <- lapply(seq(along = CMSYResults), function(i)    CMSYResults[[i]]$PossibleParams)
   
+  PossibleParams<- ldply(PossibleParams)
+
+  PossibleParams<- PossibleParams[,c('IdOrig','r','K','MSY','FinalFvFmsy','FinalBvBmsy')]
+    
   pdf(file='Diagnostics/Initial Biomass Prior Diagnostic.pdf')
+  
   for (l in 1:length(CMSYResults))
   {
     CmsyResults<- CMSYResults[[l]]
@@ -134,7 +141,7 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   
   MsyData[Where,]<- CmsyStore
   
-  return(MsyData) 
+  return(list(MsyData=MsyData,PossibleParams=PossibleParams)) 
 } #Close function
 
 
