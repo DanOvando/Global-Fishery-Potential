@@ -7,7 +7,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   # Solves for optimal policy function f (as function of bvec) given model parameters.
   # last input argument "tol" is convergence tolerance (use tol=.01)
   ######################################
-  
+
   RunDynamicOpt2= function(MSY,r,p,c,beta,disc,bvec,tol)
   {
     
@@ -105,7 +105,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     return(f)
   }
   
-  Sim_Forward= function(Policy,fpolicy,IsCatchShare,bvec,b0,Time,p,MSY,c,r,beta,delta)
+  Sim_Forward= function(Policy,fpolicy,IsCatchShare,bvec,b0,Time,p,MSY,c,r,beta)
   {  
     b = matrix(0,Time,1)
     f = b
@@ -257,7 +257,7 @@ for (p in 1:length(Policies))
 
     eval(parse(text=paste('PolicyStorage$',Policies[p],'<-', Policies[p],'Policy',sep='' )))
     
-    Projection<- Sim_Forward(Policies[p],Policy,IsCatchShare,bvec,RecentStockData$BvBmsy,ProjectionTime,Price,MSY,cost,r,beta,delta)
+    Projection<- Sim_Forward(Policies[p],Policy,IsCatchShare,bvec,RecentStockData$BvBmsy,ProjectionTime,Price,MSY,cost,r,beta)
     
     PolicyMatrix<- as.data.frame(matrix(NA,nrow=ProjectionTime,ncol=dim(TempMat)[2]))
     
