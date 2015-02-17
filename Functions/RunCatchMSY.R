@@ -133,7 +133,8 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
     }
   }
     dev.off()
-  ConCatDat<- paste(MsyData$IdOrig,Data$Year,sep='-')
+
+  ConCatDat<- paste(MsyData$IdOrig,MsyData$Year,sep='-')
   
   ConCatCmsy<- paste(CmsyStore$IdOrig,CmsyStore$Year,sep='-')
   
