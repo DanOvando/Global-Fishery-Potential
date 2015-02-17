@@ -500,11 +500,6 @@ if (RunAnalyses==TRUE)
   write.csv(file=paste(ResultFolder,'PolicyStorage.csv',sep=''),PolicyStorage)
   
   ProjectionData<- ProjectionData$DataPlus
-
-#   pdf(file='Diagnostics/CheckOpenAccess.pdf')
-#   print(ggplot(data=subset(ProjectionData,Policy=='StatusQuoOpenAccess'),aes(BvBmsy,FvFmsy,group=IdOrig))+geom_line())
-#   dev.off()
-  
   
   show("Completed Projections")
   
