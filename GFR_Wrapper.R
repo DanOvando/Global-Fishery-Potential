@@ -495,15 +495,9 @@ if (RunAnalyses==TRUE)
   
   ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs,StatusQuoPolicy) #Run projections on MSY data that can be projected
   
-  PolicyStorage<- ProjectionData$PolicyStorage
-  
-  write.csv(file=paste(ResultFolder,'PolicyStorage.csv',sep=''),PolicyStorage)
-  
-  ProjectionData<- ProjectionData$DataPlus
-
-#   pdf(file='Diagnostics/CheckOpenAccess.pdf')
-#   print(ggplot(data=subset(ProjectionData,Policy=='StatusQuoOpenAccess'),aes(BvBmsy,FvFmsy,group=IdOrig))+geom_line())
-#   dev.off()
+  pdf(file='Diagnostics/CheckOpenAccess.pdf')
+  print(ggplot(data=subset(ProjectionData,Policy=='StatusQuoOpenAccess'),aes(BvBmsy,FvFmsy,group=IdOrig))+geom_line())
+  dev.off()
   
   
   show("Completed Projections")

@@ -91,9 +91,11 @@ SnowMonteCarlo<- function(i,Stocks,ProjectionData,CatchMSYPossibleParams,PolicyS
     
     CatchShareCost<- CatchShareCost  *rlnorm(1,0,ErrorSize)
     
+    BOA<- pmin(1.99,RecentStockData$BvBmsyOpenAccess[1] *rlnorm(1,0,ErrorSize))
+    
+    
     MSY<- PossParams$MSY
     
-    BOA<- pmin(1.99,RecentStockData$BvBmsyOpenAccess[1] *rlnorm(1,0,ErrorSize))
     
     r<- PossParams$r
     FStatusQuo<- PossParams$FinalFvFmsy
