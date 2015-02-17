@@ -272,7 +272,8 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   ## MAIN
   
   PossibleRuns<- MatrixCmsy(parbound,n,interbio,finalbio,startbt)
-  
+
+
   ## Get statistics on r, k, MSY and determine new bounds for r and k
   r1 	<- PossibleRuns$r
   k1 	<- PossibleRuns$K
@@ -309,6 +310,8 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
     
     ## Repeat analysis with new r-k bounds
     PossibleRuns<- MatrixCmsy(parbound,n,interbio,finalbio,startbt)
+    
+    PossibleRuns$IdOrig<- stock
     
     
     ## Get statistics on r, k and msy

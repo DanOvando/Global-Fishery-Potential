@@ -1,0 +1,185 @@
+SnowMonteCarlo<- function(i,Stocks,ProjectionData,CatchMSYPossibleParams,PolicyStorage,ErrorVars,ErrorSize,Iterations)
+{
+  OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
+  {
+    
+    if (t==1)
+    {
+      f=f
+    }
+    if (t>1)
+    {
+      f<- pmin(10,max(f+omega*(pi/MsyProfits),.0000001))
+    }
+    return(f)
+  }
+  
+  Sim_Forward= function(FStatusQuo,BStatusQuo,Policy,fpolicy,IsCatchShare,bvec,b0,Time,p,MSY,c,r,beta)
+  {  
+    b = matrix(0,Time+1,1)
+    f = b
+    pi = b
+    y = b
+    b[1] = b0;
+    if (Policy=='StatusQuoOpenAccess'){f[1]<- fpolicy}
+    if (Policy=='CatchShare' & IsCatchShare==0) # apply price cost effects of catch share policy to non-catch share stocks
+    {
+      p<- p*CatchSharePrice
+      
+      c<- c*CatchShareCost
+    }
+    
+    if(Policy=='StatusQuoOpenAccess' & IsCatchShare==1) # revert previously applied price and cost effects of catch share fisheries for Open Access policy
+    {
+      p<-p/CatchSharePrice
+      c<-c/CatchShareCost
+    }
+    
+    MsyProfits<- MSY*p-c*(r/2)^beta
+    
+    Omega<- 0.1
+    
+    PastF<- f[1]
+    
+    for (t in 1:(Time+1))
+    {
+      if (Policy!='StatusQuoOpenAccess'){ f[t] = approx(bvec,fpolicy,b[t])$y}
+      if (Policy=='StatusQuoOpenAccess')
+      {
+        
+        f[t]=OpenAccessFleet(PastF,pi[t-1],t,Omega,MsyProfits)
+        PastF<- f[t]
+      }
+      if (t==1)
+      {
+        f[t]<- FStatusQuo
+        b[t]<- BStatusQuo
+      }
+      pi[t] = p*MSY*f[t]*b[t] - c*(f[t]*r/2)^beta
+      y[t] = MSY*f[t]*b[t]
+      if (t<Time)
+      {b[t+1] =max(min(bvec), b[t] + r*b[t]*(1-b[t]/2) - r/2*b[t]*f[t])}
+    }
+    
+    Projection<- data.frame(f,b,y,pi)
+    
+    colnames(Projection)<- c('FvFmsy','BvBmsy','Yields','Profits')
+    
+    return(Projection)
+  }
+  
+  ErrorVars<- c('Price','BOA')
+  
+  PossibleParams<- subset(CatchMSYPossibleParams,IdOrig==Stocks[i])
+  
+  ProjectionMat<- NULL
+  
+  for (k in 1:Iterations)
+  {
+    
+    Grab<- sample(1:dim(PossibleParams)[1],1,replace=T)
+    
+    PossParams<- PossibleParams[Grab,]
+    
+    PolicyFuncs<- subset(PolicyStorage,IdOrig==Stocks[i])
+    
+    RecentStockData<- subset(ProjectionData,IdOrig==Stocks[i] & Year==BaselineYear)
+    
+    Price<- RecentStockData$Price[1] *rlnorm(1,0,ErrorSize)
+    
+    CatchSharePrice<- CatchSharePrice  *rlnorm(1,0,ErrorSize)
+    
+    CatchShareCost<- CatchShareCost  *rlnorm(1,0,ErrorSize)
+    
+    MSY<- PossParams$MSY
+    
+    BOA<- pmin(1.99,RecentStockData$BvBmsyOpenAccess[1] *rlnorm(1,0,ErrorSize))
+    
+    r<- PossParams$r
+    FStatusQuo<- PossParams$FinalFvFmsy
+    BStatusQuo<- PossParams$FinalBvBmsy
+    IsCatchShare<- RecentStockData$CatchShare[1]
+    c_num <-  Price*(2-BOA)*BOA*MSY*2^beta
+    
+    c_den = ((2-BOA)*r)^beta
+    
+    cost = c_num/c_den
+    
+    if(IsCatchShare==1) # adjust prices and costs for catch share fisheries before dynamic optimization
+    {
+      Price<-Price*CatchSharePrice
+      
+      Data$Price[Where]<-Price
+      
+      cost<-cost*CatchShareCost
+    }
+    
+    MsyProfits = Price*MSY - cost*(r/2)^beta
+    
+    Policies<- colnames(PolicyFuncs)
+    
+    Policies<- Policies[!(Policies %in% c('IdOrig','b'))]
+    
+    bvec<- PolicyFuncs$b
+    
+    for (j in 1:length(Policies))
+    {
+      Where<- which(colnames(PolicyFuncs)==Policies[j])
+      eval(parse(text=paste(Policies[j],'Policy<- PolicyFuncs[,',Where,']',sep='')))    
+    }
+    
+    
+    
+    StatusQuoFForeverPolicy<- FStatusQuo*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])  
+    
+    StatusQuoBForeverPolicy<- (2-BStatusQuo)*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])  
+    
+    StatusQuoOpenAccessPolicy<- FStatusQuo
+    
+    
+    for (p in 1:length(Policies))
+    {
+      
+      eval(parse(text=paste('Policy<-',Policies[p],'Policy',sep=''))) 
+      
+      Projection<- Sim_Forward(FStatusQuo,BStatusQuo,Policies[p],Policy,IsCatchShare,bvec,BStatusQuo,ProjectionTime,Price,MSY,cost,r,beta)
+      
+      Projection$IdOrig<- Stocks[i]
+      
+      Projection$Country<- RecentStockData$Country[1]
+      
+      Projection$Dbase<- RecentStockData$Dbase[1]
+      
+      Projection$MSY<- MSY
+      
+      Projection$r<- r
+      
+      Projection$Price<- Price
+      
+      Projection$Cost<- cost
+      
+      Projection$BOA<- BOA
+      
+      Projection$Year<- RecentStockData$Year+(0:(ProjectionTime))
+      
+      Projection$SciName<- RecentStockData$SciName
+      
+      Projection$CommName<- RecentStockData$CommName
+      
+      Projection$IdLevel<- RecentStockData$IdLevel
+      
+      Projection$Policy<- Policies[p]
+      
+      Projection$SpeciesCatName<- RecentStockData$SpeciesCatName
+      
+      Projection$Iteration<- k
+
+      ProjectionMat<- rbind(ProjectionMat,Projection)
+      
+    } # close policies loop
+    
+  }
+  return(ProjectionMat)
+  
+  
+} #Close Function
