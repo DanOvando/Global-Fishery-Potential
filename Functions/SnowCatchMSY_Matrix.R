@@ -56,7 +56,7 @@ MatrixSnowCatchMSY<- function(s,Data,CommonError,CommonRange,sigR,Smooth,Display
   
   colnames(EllBio)<- c('MinBio','MaxBio','InterBio','FinalBio')
   
-#   Ell= EllBio$FinalBio>=ResultMat$FinalBio1 & EllBio$FinalBio <= ResultMat$FinalBio2 & EllBio$InterBio>=ResultMat$InterBio1 & EllBio$InterBio <= ResultMat$InterBio2 & EllBio$MinBio>0 & EllBio$MaxBio<ResultMat$K 
+  #   Ell= EllBio$FinalBio>=ResultMat$FinalBio1 & EllBio$FinalBio <= ResultMat$FinalBio2 & EllBio$InterBio>=ResultMat$InterBio1 & EllBio$InterBio <= ResultMat$InterBio2 & EllBio$MinBio>0 & EllBio$MaxBio<ResultMat$K 
   
   Ell= ResultMat$StartBio==min(ResultMat$StartBio) &EllBio$FinalBio>=ResultMat$FinalBio1 & EllBio$FinalBio <= ResultMat$FinalBio2 & EllBio$InterBio>=ResultMat$InterBio1 & EllBio$InterBio <= ResultMat$InterBio2 & EllBio$MinBio>0 & EllBio$MaxBio<ResultMat$K 
   
@@ -209,10 +209,10 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   ## PARAMETER SECTION
   
   start_k     <- c(max(ct,na.rm=T),50*max(ct,na.rm=T)) ## default for upper k e.g. 100 * max catch
-  ## startbio 	<- c(0.8,1)   ## assumed biomass range at start of time series, as fraction of k
+  startbio 	<- c(0.6,1)   ## assumed biomass range at start of time series, as fraction of k
   
-  startbio    <- pmin(1,pmax(0,c(qnorm(0.45,bio[1],bioerror[1]),qnorm(0.55,bio[1],bioerror[1]))))
-  
+#     startbio    <- pmin(1,pmax(0,c(qnorm(0.45,bio[1],bioerror[1]),qnorm(0.55,bio[1],bioerror[1]))))
+
   
   #   startbio    <- pmin(1,c((1-ErrorSize)*bio[1],(1+ErrorSize)*bio[1]))
   
@@ -225,9 +225,11 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   
   #   interbio 	<- pmin(1,c((1-ErrorSize)*bio[interyr],(1+ErrorSize)*bio[interyr])) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
   
-  interbio   <-  pmin(1,pmax(0,c(qnorm(0.45,bio[interyr],bioerror[interyr]),qnorm(0.55,bio[interyr],bioerror[interyr])))) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
+#     interbio   <-  pmin(1,pmax(0,c(qnorm(0.45,bio[interyr],bioerror[interyr]),qnorm(0.55,bio[interyr],bioerror[interyr])))) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
   
+  interbio   <- c(0, 1) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
   
+
   if (is.na(bio[interyr]) | bio[interyr]==0)
   {
     interbio 	<- c(0, 1) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
@@ -251,7 +253,7 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   
   #       sigR        <- 0.0      ## process error; 0 if deterministic model; 0.05 reasonable value? 0.2 is too high
   startbt     <- seq(startbio[1], startbio[2], length.out = 10) ## apply range of start biomass in steps of 0.05	
-#   startbt     <- seq(startbio[1], startbio[2], by = 0.05) ## apply range of start biomass in steps of 0.05  
+  #   startbt     <- seq(startbio[1], startbio[2], by = 0.05) ## apply range of start biomass in steps of 0.05  
   
   
   parbound <- list(r = start_r, k = start_k, lambda = finalbio, sigR=sigR)
@@ -272,17 +274,17 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   ## MAIN
   
   PossibleRuns<- MatrixCmsy(parbound,n,interbio,finalbio,startbt)
-
-
+  
+  
   ## Get statistics on r, k, MSY and determine new bounds for r and k
   r1 	<- PossibleRuns$r
   k1 	<- PossibleRuns$K
   
-#   msy1  <- r1*k1/4
-#   mean_msy1 <- exp(mean(log(msy1))) 
-#   max_k1a  <- min(k1[r1<1.1*parbound$r[1]],na.rm=T) ## smallest k1 near initial lower bound of r
-#   max_k1b  <- max(k1[r1*k1/4<mean_msy1],na.rm=T) ## largest k1 that gives mean MSY
-#   max_k1 <- if(max_k1a < max_k1b) {max_k1a} else {max_k1b}
+  #   msy1  <- r1*k1/4
+  #   mean_msy1 <- exp(mean(log(msy1))) 
+  #   max_k1a  <- min(k1[r1<1.1*parbound$r[1]],na.rm=T) ## smallest k1 near initial lower bound of r
+  #   max_k1b  <- max(k1[r1*k1/4<mean_msy1],na.rm=T) ## largest k1 that gives mean MSY
+  #   max_k1 <- if(max_k1a < max_k1b) {max_k1a} else {max_k1b}
   
   if(length(r1)<10) {
     cat("Too few (", length(r1), ") possible r-k combinations, check input parameters","\n")

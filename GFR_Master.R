@@ -24,9 +24,9 @@ library(reshape2)
 # library(dplyr)
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- FALSE
+RunAnalyses<- TRUE
 
-BatchFolder<- 'Feb 15 Full tight priors'
+BatchFolder<- 'Feb 17 Full final bio priors only'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -209,7 +209,7 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-NumCatchMSYIterations <- 20000  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 40000  ## number of iterations, e.g. 100000
 
 Parel<- TRUE #Run SNOWFALL in parallel?
 
