@@ -51,7 +51,7 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   MeanRange$Bioerror[is.na(MeanRange$Bioerror)]<-CommonError
   
   MeanRange$FbLow<-pmax(0,qnorm(0.25,MeanRange$BoverK,MeanRange$Bioerror))
-                            
+  
   MeanRange$FbHigh<-pmin(1,qnorm(0.75,MeanRange$BoverK,MeanRange$Bioerror))
   
   MeanRange$BioRange<-MeanRange$FbHigh-MeanRange$FbLow
@@ -96,44 +96,56 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
     #   
     #     dev.off()
   }
+  
   CmsyStore<- as.data.frame(matrix(NA,nrow=0,ncol=dim(CMSYResults[[1]]$CatchMSY)[2]))
-    
+
   PossibleParams <- lapply(seq(along = CMSYResults), function(i)    CMSYResults[[i]]$PossibleParams)
   
-  PossibleParams<- ldply(PossibleParams)
-
-  PossibleParams<- PossibleParams[,c('IdOrig','r','K','MSY','FinalFvFmsy','FinalBvBmsy')]
-    
-  pdf(file='Diagnostics/Initial Biomass Prior Diagnostic.pdf')
+  EmptyParams <- lapply(seq(along = PossibleParams), function(i)   sum(is.na(PossibleParams[[i]]))==0)
   
-  for (l in 1:length(CMSYResults))
-  {
-    CmsyResults<- CMSYResults[[l]]
-    if (CmsyResults$RanCatchMSY==T)
-      
-    {
-      
-            ParamSpace<- CmsyResults$PossibleParams
-            
-            BioData<- ParamSpace[,grepl('X',colnames(ParamSpace))]
-            
-            ParamSpace$FinalBvBmsy<- 2*(BioData[,dim(BioData)[2]]/ParamSpace$K)
-                
-            print(ggplot(data=ParamSpace,aes(StartBio,FinalBvBmsy))+geom_point()+geom_smooth(method='lm')+ylab('FinalBvBmsy')+xlab('StartBvBmsy'))
-            
-            print(ggplot(data=ParamSpace,aes(StartBio,MSY))+geom_point()+geom_smooth(method='lm')+xlab('StartBvBmsy')+ylab('MSY'))
-
-            print(ggplot(data=ParamSpace,aes(StartBio,FinalFvFmsy))+geom_point()+geom_smooth(method='lm')+xlab('StartBvBmsy')+ylab('FinalFvFmsy'))
-            
-            
-            
-            
-#             print(ggplot(data=ParamSpace,aes(StartBio))+geom_histogram(binwidth=.025))      
-      CmsyStore<- rbind(CmsyStore,CmsyResults$CatchMSY)
-    }
-  }
-    dev.off()
-
+  HasData<- ldply(EmptyParams)
+  
+  PossibleParams<- PossibleParams[which(HasData==T)]
+  
+  CmsyStore <- lapply(seq(along = CMSYResults), function(i)    CMSYResults[[i]]$CatchMSY)
+  
+  PossibleParams<- ldply(PossibleParams)
+  
+  PossibleParams<- PossibleParams[,c('IdOrig','r','K','MSY','FinalFvFmsy','FinalBvBmsy')]
+  
+  CmsyStore<- ldply(CmsyStore)
+  
+  
+  #   pdf(file='Diagnostics/Initial Biomass Prior Diagnostic.pdf')
+  
+  #   for (l in 1:length(CMSYResults))
+  #   {
+  #     CmsyResults<- CMSYResults[[l]]
+  #     if (CmsyResults$RanCatchMSY==T)
+  #       
+  #     {
+  #       show(i)
+  #             ParamSpace<- CmsyResults$PossibleParams
+  #             
+  #             BioData<- ParamSpace[,grepl('X',colnames(ParamSpace))]
+  #             
+  #             ParamSpace$FinalBvBmsy<- 2*(BioData[,dim(BioData)[2]]/ParamSpace$K)
+  #                 
+  #             print(ggplot(data=ParamSpace,aes(StartBio,FinalBvBmsy))+geom_point()+geom_smooth(method='lm')+ylab('FinalBvBmsy')+xlab('StartBvBmsy'))
+  #             
+  #             print(ggplot(data=ParamSpace,aes(StartBio,MSY))+geom_point()+geom_smooth(method='lm')+xlab('StartBvBmsy')+ylab('MSY'))
+  # 
+  #             print(ggplot(data=ParamSpace,aes(StartBio,FinalFvFmsy))+geom_point()+geom_smooth(method='lm')+xlab('StartBvBmsy')+ylab('FinalFvFmsy'))
+  #             
+  #             
+  #             
+  #             
+  # #             print(ggplot(data=ParamSpace,aes(StartBio))+geom_histogram(binwidth=.025))      
+  #       CmsyStore<- rbind(CmsyStore,CmsyResults$CatchMSY)
+  #     }
+  #   }
+  #     dev.off()
+  
   ConCatDat<- paste(MsyData$IdOrig,MsyData$Year,sep='-')
   
   ConCatCmsy<- paste(CmsyStore$IdOrig,CmsyStore$Year,sep='-')
