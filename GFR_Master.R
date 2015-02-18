@@ -21,12 +21,12 @@ library(parallel)
 library(ggplot2)
 library(gridExtra)
 library(reshape2)
-# library(dplyr)
+library(dplyr)
 # Basic Controls -------------------------------------------------------------
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'Feb 17 Full final bio priors only'
+BatchFolder<- 'WHAT THE FUDGE'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -62,9 +62,9 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0
+SubSample<- 0.9
 
-NumCPUs<- 20 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 4 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
@@ -209,7 +209,7 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-NumCatchMSYIterations <- 40000  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 2000  ## number of iterations, e.g. 100000
 
 Parel<- TRUE #Run SNOWFALL in parallel?
 

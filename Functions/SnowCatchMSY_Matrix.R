@@ -275,7 +275,6 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   
   PossibleRuns<- MatrixCmsy(parbound,n,interbio,finalbio,startbt)
   
-  
   ## Get statistics on r, k, MSY and determine new bounds for r and k
   r1 	<- PossibleRuns$r
   k1 	<- PossibleRuns$K
