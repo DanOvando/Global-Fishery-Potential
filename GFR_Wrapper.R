@@ -420,11 +420,11 @@ if (RunAnalyses==TRUE)
   
   GlobalStatus$BvBmsySD[GlobalStatus$Data$Dbase=='SOFIA']<- 0.1
   
-#   arg<- sample(GlobalStatus$Data$IdOrig,100,replace=F)
+  #   arg<- sample(GlobalStatus$Data$IdOrig,100,replace=F)
   
   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
-
-#   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data[GlobalStatus$Data$IdOrig %in% arg,],ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
+  
+  #   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data[GlobalStatus$Data$IdOrig %in% arg,],ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   
   #   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data[GlobalStatus$Data$IdOrig=='10041-FAO-41-44',],ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   
@@ -477,21 +477,21 @@ if (RunAnalyses==TRUE)
   
   MsyData$r[is.na(MsyData$r)]<- mean(MsyData$r,na.rm=T) #FIX THIS XXX Apply mean r to fisheries with no r THIS WAS ASSIGNING ALL RAM STOCKS THE MEAN r VALUE
   
-#   if(IncludeNEIs==TRUE)
-#   {
-#     MsyData<-NeiVersion2(MsyData,Level='All',MinStocks=2)
-#   }
+  #   if(IncludeNEIs==TRUE)
+  #   {
+  #     MsyData<-NeiVersion2(MsyData,Level='All',MinStocks=2)
+  #   }
   
   MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$r)==F #Identify disheries that have both MSY and r
   
-  save(file='MsyData.rdata',MsyData)
+  save(file=paste(ResultFolder,"MsyData.rdata",sep=""),MsyData)
   
   MsyData$BestModel<- as.character(MsyData$BestModel)
   
-#   if(SubSample>0)
-#   {
-    save.image(file=paste(ResultFolder,'Test Results Prior to Projections.rdata',sep=''))
-#   }
+  #   if(SubSample>0)
+  #   {
+  save.image(file=paste(ResultFolder,'Test Results Prior to Projections.rdata',sep=''))
+  #   }
   
   ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs,StatusQuoPolicy) #Run projections on MSY data that can be projected
   
