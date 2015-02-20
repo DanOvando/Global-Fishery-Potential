@@ -6,11 +6,11 @@ load('Results/2_18_15 Complete Run/Data/Global Fishery Recovery Results.rdata')
 library(parallel)
 library(plyr)
 library(ggplot2)
-library(proftools)
-library(shiny)
+# library(proftools)
+# library(shiny)
 source('Diagnostics/SnowMonteCarlo.R')
 
-NumCPUs<- 4
+NumCPUs<- 8
 
 Stocks<- unique(ProjectionData$IdOrig[is.na(ProjectionData$IdOrig)==F & ProjectionData$Year==BaselineYear])
 
