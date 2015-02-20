@@ -19,17 +19,13 @@ show(ResultFolder)
 
 save(Stocks,NumCPUs,file=paste(ResultFolder,'MonteCarlo_Test.Rdata',sep=''))
 
-Rprof(tmp <- tempfile())
+# Rprof(tmp <- tempfile())
 
-MonteMat<- mclapply(1:3,SnowMonteCarlo,mc.cores=NumCPUs,Stocks=Stocks,ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
-                    PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=ErrorSize,Iterations=12)
-Rprof()
-summaryRprof(tmp)
-unlink(tmp)
-
-Rprof(NULL)
- RProfData<- readProfileData('Rprof.out')
- flatProfile(RProfData,byTotal=TRUE)
+MonteMat<- mclapply(1:length(Stocks),SnowMonteCarlo,mc.cores=NumCPUs,Stocks=Stocks,ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
+                    PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=ErrorSize,Iterations=250)
+# Rprof()
+# summaryRprof(tmp)
+# unlink(tmp)
 
 MonteMat<- ldply(MonteMat)
 
