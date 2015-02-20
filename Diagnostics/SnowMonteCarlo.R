@@ -57,33 +57,35 @@ SnowMonteCarlo<- function(i,Stocks,ProjectionData,CatchMSYPossibleParams,PolicyS
       }
       pi[t] = p*MSY*f[t]*b[t] - c*(f[t]*r/2)^beta
       y[t] = MSY*f[t]*b[t]
-      if (t<Time)
+      if (t<Time+1)
       {b[t+1] =max(min(bvec), b[t] + r*b[t]*(1-b[t]/2) - r/2*b[t]*f[t])}
     }
     
     Projection<- data.frame(f,b,y,pi)
+    Projection<- Projection[c(1,dim(Projection)[1]),]
     
     colnames(Projection)<- c('FvFmsy','BvBmsy','Yields','Profits')
     
     return(Projection)
   }
   
-  ErrorVars<- c('Price','BOA')
   
-  PossibleParams<- subset(CatchMSYPossibleParams,IdOrig==Stocks[i])
-  
-  ProjectionMat<- NULL
-  
-  for (k in 1:Iterations)
+  McIterations<- function(k,PossibleParams,PolicyStorage,Stocks,ErrorSize)
   {
     
     Grab<- sample(1:dim(PossibleParams)[1],1,replace=T)
     
     PossParams<- PossibleParams[Grab,]
     
-    PolicyFuncs<- subset(PolicyStorage,IdOrig==Stocks[i])
+    #     PolicyFuncs<- subset(PolicyStorage,IdOrig==Stocks[i])
     
-    RecentStockData<- subset(ProjectionData,IdOrig==Stocks[i] & Year==BaselineYear)
+    PolicyFuncs<- PolicyStorage[PolicyStorage$IdOrig==Stocks[i],]
+    
+    
+    #     RecentStockData<- subset(ProjectionData,IdOrig==Stocks[i] & Year==BaselineYear)
+    
+    RecentStockData<- ProjectionData[ProjectionData$IdOrig==Stocks[i] & ProjectionData$Year==BaselineYear,]
+    
     
     Price<- RecentStockData$Price[1] *rlnorm(1,0,ErrorSize)
     
@@ -111,7 +113,7 @@ SnowMonteCarlo<- function(i,Stocks,ProjectionData,CatchMSYPossibleParams,PolicyS
     {
       Price<-Price*CatchSharePrice
       
-      Data$Price[Where]<-Price
+      #       Data$Price[Where]<-Price
       
       cost<-cost*CatchShareCost
     }
@@ -138,9 +140,16 @@ SnowMonteCarlo<- function(i,Stocks,ProjectionData,CatchMSYPossibleParams,PolicyS
     
     StatusQuoOpenAccessPolicy<- FStatusQuo
     
+#     ProjectionMat<- (matrix(NA,nrow=(ProjectionTime+1)*length(Policies),ncol=19))
+
+    ProjectionMat<- (matrix(NA,nrow=2*length(Policies),ncol=19))
+    
+    cc<- 0
     
     for (p in 1:length(Policies))
     {
+      
+      cc<- cc+1
       
       eval(parse(text=paste('Policy<-',Policies[p],'Policy',sep=''))) 
       
@@ -162,7 +171,9 @@ SnowMonteCarlo<- function(i,Stocks,ProjectionData,CatchMSYPossibleParams,PolicyS
       
       Projection$BOA<- BOA
       
-      Projection$Year<- RecentStockData$Year+(0:(ProjectionTime))
+#       Projection$Year<- RecentStockData$Year+(0:(ProjectionTime))
+
+      Projection$Year<- RecentStockData$Year+c(0,(ProjectionTime))
       
       Projection$SciName<- RecentStockData$SciName
       
@@ -175,13 +186,32 @@ SnowMonteCarlo<- function(i,Stocks,ProjectionData,CatchMSYPossibleParams,PolicyS
       Projection$SpeciesCatName<- RecentStockData$SpeciesCatName
       
       Projection$Iteration<- k
-
-      ProjectionMat<- rbind(ProjectionMat,Projection)
       
-    } # close policies loop
+      ProjectionMat[cc:(cc-1+dim(Projection)[1]),]<- as.matrix(Projection)
+      
+      cc<- (cc-1)+dim(Projection)[1]
+      
+    }
     
+    ProjectionMat<- as.data.frame(ProjectionMat)
+    colnames(ProjectionMat)<- colnames(Projection)
+    return(ProjectionMat)
   }
-  return(ProjectionMat)
   
   
+  ErrorVars<- c('Price','BOA')
+  
+  PossibleParams<- subset(CatchMSYPossibleParams,IdOrig==Stocks[i])
+  
+#   PossibleParams<- CatchMSYPossibleParams[CatchMSYPossibleParams$IdOrig==Stocks[i],]
+    
+  Projections<- lapply(1:Iterations,McIterations,PossibleParams=PossibleParams,PolicyStorage=PolicyStorage,Stocks=Stocks,ErrorSize=ErrorSize)
+  
+  Projections<- ldply(Projections)
+  
+  PercDone<- round(100*(i/length(Stocks)),2)
+  
+  write.table(paste(PercDone, '% done with Monte Carlo',sep=''), file = 'MonteCarloProgess.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
+  
+  return(Projections)
 } #Close Function
