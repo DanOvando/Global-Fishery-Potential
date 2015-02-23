@@ -19,9 +19,9 @@ show(ResultFolder)
 save(Stocks,NumCPUs,file=paste(ResultFolder,'MonteCarlo_Test.Rdata',sep=''))
 
 # Rprof(tmp <- tempfile(),line.profiling=T)
-NumCPUs<- 8
+NumCPUs<- 1
 
-MonteMat<- SnowMonteCarlo(500,Stocks=Stocks[1:250],ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
+MonteMat<- SnowMonteCarlo(50,Stocks=Stocks[1:50],ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
                     PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.2)
 # Rprof()
 # summaryRprof(tmp)
@@ -35,7 +35,6 @@ MonteCarlo<- ddply(MonteMat,c('Iteration','Year','Policy'),summarize,MSY=sum(MSY
                    Catch=sum(Yields,na.rm=T))
 
 save(MonteCarlo,MonteMat,file=paste(ResultFolder,'MonteCarlo_Results.Rdata',sep=''))
-
 
 quartz()
 ggplot(data=subset(MonteCarlo,Year==2013 & Policy=='Opt'),aes(MSY))+geom_density(fill='steelblue2')
