@@ -6,11 +6,10 @@ load('Results/2_18_15 Complete Run/Data/Global Fishery Recovery Results.rdata')
 library(parallel)
 library(plyr)
 library(ggplot2)
+library(reshape2)
 # library(proftools)
 # library(shiny)
 source('Diagnostics/SnowMonteCarlo.R')
-
-NumCPUs<- 8
 
 Stocks<- unique(ProjectionData$IdOrig[is.na(ProjectionData$IdOrig)==F & ProjectionData$Year==BaselineYear])
 
@@ -19,15 +18,16 @@ show(ResultFolder)
 
 save(Stocks,NumCPUs,file=paste(ResultFolder,'MonteCarlo_Test.Rdata',sep=''))
 
-# Rprof(tmp <- tempfile())
+# Rprof(tmp <- tempfile(),line.profiling=T)
+NumCPUs<- 8
 
-MonteMat<- mclapply(1:length(Stocks),SnowMonteCarlo,mc.cores=NumCPUs,Stocks=Stocks,ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
-                    PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=ErrorSize,Iterations=250)
+MonteMat<- SnowMonteCarlo(500,Stocks=Stocks[1:250],ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
+                    PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.2)
 # Rprof()
 # summaryRprof(tmp)
 # unlink(tmp)
 
-MonteMat<- ldply(MonteMat)
+# MonteMat<- ldply(MonteMat)
 
 MonteMat<- MonteMat[is.infinite(MonteMat$FvFmsy)==F,]
 
