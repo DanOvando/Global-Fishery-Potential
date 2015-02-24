@@ -7,6 +7,7 @@ library(parallel)
 library(plyr)
 library(ggplot2)
 library(reshape2)
+
 # library(proftools)
 # library(shiny)
 source('Diagnostics/SnowMonteCarlo.R')
@@ -16,32 +17,34 @@ Stocks<- unique(ProjectionData$IdOrig[is.na(ProjectionData$IdOrig)==F & Projecti
 Stocks<- Stocks[Stocks %in% CatchMSYPossibleParams$IdOrig ]
 show(ResultFolder)
 
-save(Stocks,NumCPUs,file=paste(ResultFolder,'MonteCarlo_Test.Rdata',sep=''))
 
 # Rprof(tmp <- tempfile(),line.profiling=T)
-NumCPUs<- 1
+NumCPUs<- 2
 
-MonteMat<- SnowMonteCarlo(50,Stocks=Stocks[1:50],ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
-                    PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.2)
+MonteMat<- SnowMonteCarlo(100,Stocks=Stocks[1:100],ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
+                    PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.1)
 # Rprof()
 # summaryRprof(tmp)
 # unlink(tmp)
+# quartz()
+# ggplot(data=subset(ProjectionData,Policy=='StatusQuoOpenAccess'),aes(x=BvBmsy,y=FvFmsy,group=IdOrig))
+# +geom_line()
+  # MonteMat<- ldply(MonteMat)
+save(MonteMat,file=paste(ResultFolder,'MonteCarlo_Results.Rdata',sep=''))
+# load('Results/2_18_15 Complete Run/Data/MonteCarlo_Results.Rdata')
+# 
 
-# MonteMat<- ldply(MonteMat)
 
-MonteMat<- MonteMat[is.infinite(MonteMat$FvFmsy)==F,]
-
-MonteCarlo<- ddply(MonteMat,c('Iteration','Year','Policy'),summarize,MSY=sum(MSY,na.rm=T),Profits=sum(Profits,na.rm=T),
-                   Catch=sum(Yields,na.rm=T))
-
-save(MonteCarlo,MonteMat,file=paste(ResultFolder,'MonteCarlo_Results.Rdata',sep=''))
-
-quartz()
-ggplot(data=subset(MonteCarlo,Year==2013 & Policy=='Opt'),aes(MSY))+geom_density(fill='steelblue2')
-
-quartz()
-ggplot(data=subset(MonteCarlo,Year==2012 | Year==2047),aes(Catch,fill=factor(Year)))+geom_density(alpha=0.2)+facet_wrap(~Policy)
-
+# MonteCarlo<- ddply(MonteMat,c('Iteration','Year','Policy'),summarize,MSY=sum(MSY,na.rm=T),Profits=sum(Profits,na.rm=T),
+#                    Catch=sum(Yields,na.rm=T))
+# 
+# 
+# quartz()
+# ggplot(data=subset(MonteCarlo,Year==2013 & Policy=='Opt'),aes(MSY))+geom_density(fill='steelblue2')
+# 
+# quartz()
+# ggplot(data=subset(MonteCarlo,Year==2012 | Year==2047),aes(Catch,fill=factor(Year)))+geom_density(alpha=0.2)+facet_wrap(~Policy)
+# 
 
 
 

@@ -1,22 +1,8 @@
 SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParams,PolicyStorage,ErrorVars,ErrorSize)
 {
-  OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
-  {
-    
-    if (t==1)
-    {
-      f=f
-    }
-    if (t>1)
-    {
-      f<- pmin(10,max(f+omega*(pi/MsyProfits),.0000001))
-    }
-    return(f)
-  }
-  
+
   Sim_Forward= function(FStatusQuo,BStatusQuo,Policy,Policies,IsCatchShare,bvec,b0,Time,p,MSY,c,r,beta)
   {  
-    
     FindF<- function(i,Stocks,CurrentB,Policy,Policies)
     {
       StockPol<- Policies[Policies$IdOrig==Stocks[i],]
@@ -25,6 +11,19 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
       return(NextF)
     }
     
+    OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
+    {
+      
+      if (t==1)
+      {
+        f=f
+      }
+      if (t>1)
+      {
+        f<- pmax(f+omega*(pi/MsyProfits),.0000001)
+      }
+      return(f)
+    }
     
     b = matrix(0,Time+1,length(FStatusQuo))
     f = b
@@ -69,9 +68,8 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
       pi[t,] = p*MSY*f[t,]*b[t,] - c*(f[t,]*r/2)^beta
       y[t,] = MSY*f[t,]*b[t,]
       if (t<Time+1)
-      {b[t+1,] =max(min(bvec), b[t,] + r*b[t,]*(1-b[t,]/2) - r/2*b[t,]*f[t,])}
+      {b[t+1,] =pmax(min(bvec), b[t,] + r*b[t,]*(1-b[t,]/2) - r/2*b[t,]*f[t,])}
     }
-    
     colnames(f)<- Stocks
     colnames(b)<- Stocks
     colnames(y)<- Stocks
@@ -94,11 +92,11 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     piFlat$Metric<- 'Profits'
     
     Projection<- rbind(fFlat,bFlat,yFlat,piFlat)
-    
+
     Projection$Year<- Projection$Year+(BaselineYear-1)
-    
-    subset(Projection,Year==BaselineYear | Year==max(Year))
-    
+
+    Projection<- subset(Projection,Year==BaselineYear | Year==max(Year))
+
     return(Projection)
   }
   
@@ -140,7 +138,7 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     CatchShareCost<- CatchShareCost  *rlnorm(1,0,ErrorSize)
     
     #     BOA<- pmin(1.99,RecentStockData$BvBmsyOpenAccess[1] *rlnorm(1,0,ErrorSize))
-    BOA<- pmin(1.99,RecentStockData$BvBmsyOpenAccess *rlnorm(dim(RecentStockData)[1],0,.1))
+    BOA<- pmin(1.99,RecentStockData$BvBmsyOpenAccess *rlnorm(dim(RecentStockData)[1],0,ErrorSize))
     
     MSY<- PossParams$MSY
     
@@ -155,6 +153,8 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     c_den = ((2-BOA)*r)^beta
     
     cost = c_num/c_den
+    
+#     Price*MSY*BOA*(2-BOA)-cost*(2-BOA*(r/2))^beta
     
     #     if(IsCatchShare==1) # adjust prices and costs for catch share fisheries before dynamic optimization
     #     {
