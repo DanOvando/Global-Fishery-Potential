@@ -2,7 +2,7 @@
 AssignEconomicData<- function(Data,BvBmsyOpenAccess)
 {
   
-  Data<- FullData
+#   Data<- BiomassData
   
 #   PriceData<- read.csv('Data/Species Category Prices.csv') # Original EDF export prices
   
@@ -39,7 +39,7 @@ for(l in 1:length(sci))
     
     Data$Price[Data$SciName==sci[l]]<-catprices2011$MeanPrice[catprices2011$SpeciesCatName==cat]
   }
-  
+#  show(l) 
 }
 
 ### ADD IN BIOMASS AT OPEN ACCESS

@@ -368,7 +368,9 @@ for (i in 1:length(SpecNames)) # match species name to group code
   }
 }
 
-RAM$SpeciesCat[RAM$SciName=='Litopenaeus setiferus']<-45 # add SpeciesCat to missing RAM stock
+# add SpeciesCat to missing RAM stock
+RAM$SpeciesCat[RAM$SciName=='Litopenaeus setiferus']<-45 
+RAM$SpeciesCat[RAM$SciName=='Neoplatycephalus richardsoni']<-33 # 'Neo' not included in AFSIS list
 
 GroupNums<-unique(na.omit(RAM$SpeciesCat))
 
