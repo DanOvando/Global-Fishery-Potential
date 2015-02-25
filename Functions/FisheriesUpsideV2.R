@@ -8,14 +8,14 @@
 ##
 ############################################
 
-SubsetName<-'Overfish Only'
+# SubsetName<-'Overfish Only'
 
 
 FisheriesUpsideV2<-function(ProjectionData,LumpedName,SubsetName)
 {
   # Define data subsets to analyze with different status quo policies------------------------
   
-  groups<-c('ram','cs','other')
+  groups<-c('ram','cs','overFunderB','McToefids')
   
   tempUpside<-list()
   
@@ -37,13 +37,20 @@ FisheriesUpsideV2<-function(ProjectionData,LumpedName,SubsetName)
       DenominatorPolicy<-'Opt'
     }
     
-    if(groups[a]=='other') # all other stocks get Open Access
+    if(groups[a]=='overFunderB') # all other stocks get Open Access
     {
-      Data<-ProjectionData[ProjectionData$Dbase!='RAM' & ProjectionData$CatchShare!=1,]
+      Data<-ProjectionData[ProjectionData$Dbase!='RAM' & ProjectionData$CatchShare!=1 & (ProjectionData$FvFmsy>1 | ProjectionData$BvBmsy<1),]
       
       DenominatorPolicy<-'StatusQuoOpenAccess'
     }
   
+    if(groups[a]=='McToefids') # all other stocks get Open Access
+    {
+      Data<-ProjectionData[ProjectionData$Dbase!='RAM' & ProjectionData$CatchShare!=1 & ProjectionData$BvBmsy>1,]
+      
+      DenominatorPolicy<-'StatusQuoBForever'
+    }
+    
     # Choose to run upside on all stocks or just overfished
     
     if (SubsetName=='Overfish Only') 
@@ -202,7 +209,7 @@ FisheriesUpsideV2<-function(ProjectionData,LumpedName,SubsetName)
   
   CountryUpsides$AbsChangeFromSQFood<-CountryUpsides$TotalFood-CountryUpsides$TotalFoodSQ
   
-  write.csv(FisheryUpside,file=paste(ResultFolder,LumpedName,SubsetName,' Country Upsides.csv',sep=''))
+  write.csv(CountryUpsides,file=paste(ResultFolder,LumpedName,SubsetName,' Country Upsides.csv',sep=''))
   
   return(list(FisheryUpside=FisheryUpside,TripBottomLine=PercentTripleBottom,CountryUpsides=CountryUpsides))
   

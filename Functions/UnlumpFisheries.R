@@ -58,17 +58,21 @@ UnlumpFisheries<-function(Data,RawData,BaselineYear,YearsBack,StitchIds)
       
       unlumpproj$Biomass<-unlumpproj$Biomass*percent$Percent[percent$IdOrig==stids[b]]
       
+      unlumpproj$MSY<-unlumpproj$MSY*percent$Percent[percent$IdOrig==stids[b]]
+      
+      unlumpproj$k<-unlumpproj$k*percent$Percent[percent$IdOrig==stids[b]]
+      
       unlumpproj$Profits<-unlumpproj$Profits*percent$Percent[percent$IdOrig==stids[b]]
       
       unlumpproj$DiscProfits<-unlumpproj$DiscProfits*percent$Percent[percent$IdOrig==stids[b]]
       
-      if(YearsBack==0) # if not calculating country catch averages, replace baseline year catch with actual catch data
-      {
-        unlumpproj$Catch[unlumpproj$Year==BaselineYear]<-raw$Catch[raw$IdOrig==stids[b]]
-        
-        unlumpproj<-unlumpproj[unlumpproj$Year>=BaselineYear,]
-      
-      } # close if
+#       if(YearsBack==0) # if not calculating country catch averages, replace baseline year catch with actual catch data
+#       {
+#         unlumpproj$Catch[unlumpproj$Year==BaselineYear]<-raw$Catch[raw$IdOrig==stids[b]]
+#         
+#         unlumpproj<-unlumpproj[unlumpproj$Year>=BaselineYear,]
+#       
+#       } # close if
       
       UnLumped<-rbind(UnLumped,unlumpproj)
       

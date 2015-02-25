@@ -1,8 +1,9 @@
-# 
+# RecoveryData<-UnlumpedProjectionData
 # OnlyOverfish<-FALSE
 # RecoveryThreshold<-0.9
+# StartYear<-2012
 
-RecoveryTrend<-function(ProjectionData,RecoveryThreshold,OnlyOverfish)
+RecoveryTrend<-function(ProjectionData,RecoveryThreshold,OnlyOverfish,StartYear)
 {
   
   RecoveryData<-ProjectionData
@@ -36,11 +37,11 @@ RecoveryTrend<-function(ProjectionData,RecoveryThreshold,OnlyOverfish)
                        Stocks=length(unique(IdOrig)),TotalRecovered=sum(Recovered,na.rm=T),
                        PercentHealthy=100*(sum(Recovered,na.rm=T)/length(unique(IdOrig))))
   
-  PlotTrend<-melt(RecoveryTrend[RecoveryTrend$Year>=1950,],measure.vars=c('PercentHealthy','TotalCatch','TotalProfit'))
+  PlotTrend<-melt(RecoveryTrend[RecoveryTrend$Year>=StartYear,],measure.vars=c('PercentHealthy','TotalCatch','TotalProfit'))
   
   ### Upside trajectory plots------------------------------------------------------------------
 
-pdf(file=paste(FigureFolder, 'Recovery Trajectories.pdf',sep=''),height=10,width=16)  
+pdf(file=paste(FigureFolder, '2015 Recovery Trajectories.pdf',sep=''),height=10,width=16)  
   
 print(ggplot(PlotTrend[PlotTrend$Policy %in% c('Historic','Fmsy','Opt','CatchShare','Business As Usual'),],aes(x=Year,y=value,color=Policy)) +
     geom_line(size=2) +

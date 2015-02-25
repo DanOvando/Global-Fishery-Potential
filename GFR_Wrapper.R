@@ -38,6 +38,10 @@ if (RunAnalyses==TRUE)
     
     FullData<- fulldata
     
+    ### TEMPORARY ###
+    
+    FullData<-FullData[!(FullData$IdOrig %in% c('SEFSC-RSNAPGM-1872-2011-HIVELY')),] # GoMex Red Snapper
+    
     if (SubSample>0)
     {
       
@@ -58,6 +62,8 @@ if (RunAnalyses==TRUE)
     StitchIds<-CleanedData$StitchIds
     
     FullData<- CleanedData$CleanedData
+    
+    AllOverlap<-CleanedData$AllOverlap
     
     FullData<- FindFishbase(FullData)
     
@@ -579,6 +585,8 @@ UnlumpedProjectionData<-ProjectionData[!grepl('Lumped',ProjectionData$IdOrig),]
 
 UnlumpedProjectionData<-rbind(UnlumpedProjectionData, UnlumpedData)
 
+write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
+
 # Calculate fishery upsides from UnlumpedProjectionData
 
 UnlumpedUpsideAllStocks<-FisheriesUpsideV2(UnlumpedProjectionData,LumpedName='UnLumped Projection Data',SubsetName='All Stocks')
@@ -597,14 +605,14 @@ UnlumpedUpsideOverfishOnly<-FisheriesUpsideV2(UnlumpedProjectionData,LumpedName=
 
 # Loop over status quo policies to produce plots for the desired policy relative to each status quo scenario
 
-for(a in 1:length(SQ))
-{
-  TripleBottomLine(AllStockData=CountryUpsidesAllSQ,OverfishData=CountryUpsidesOverfishAllSQ,Policy='Opt',Limit=300,StatusQuoPolicy=SQ[a],FigureFolder)
-}
+# for(a in 1:length(SQ))
+# {
+#   TripleBottomLine(AllStockData=CountryUpsidesAllSQ,OverfishData=CountryUpsidesOverfishAllSQ,Policy='Opt',Limit=300,StatusQuoPolicy=SQ[a],FigureFolder)
+# }
 
 # FIGURE 3 - Recovery Trajectories
 
-RecoveryTrend<-RecoveryTrend(ProjectionData,RecoveryThreshold=0.95,OnlyOverfish=FALSE)
+RecoveryTrend<-RecoveryTrend(ProjectionData=UnlumpedProjectionData,RecoveryThreshold=0.95,OnlyOverfish=FALSE,StartYear=BaselineYear)
 
 # Global Kobe Plot
 

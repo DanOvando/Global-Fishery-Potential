@@ -21,12 +21,12 @@ library(parallel)
 library(ggplot2)
 library(gridExtra)
 library(reshape2)
-library(dplyr)
+# library(dplyr)
 # Basic Controls -------------------------------------------------------------
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'WHAT THE FUDGE'
+BatchFolder<- 'NEI 2 TEST'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -64,7 +64,7 @@ if (RunAnalyses==FALSE)
 
 SubSample<- 0.9
 
-NumCPUs<- 4 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 2 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
@@ -215,7 +215,7 @@ Parel<- TRUE #Run SNOWFALL in parallel?
 
 # Projections -------------------------------------------------------------
 
-ProjectionTime<- 36
+ProjectionTime<- 10
 
 CatchSharePrice<- 1.31
 
