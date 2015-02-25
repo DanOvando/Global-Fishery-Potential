@@ -2,7 +2,7 @@
 AssignEconomicData<- function(Data,BvBmsyOpenAccess)
 {
   
-  Data<- FullData
+#   Data<- FullData
   
 #   PriceData<- read.csv('Data/Species Category Prices.csv') # Original EDF export prices
   
