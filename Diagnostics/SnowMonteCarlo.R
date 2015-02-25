@@ -1,13 +1,29 @@
 SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParams,PolicyStorage,ErrorVars,ErrorSize)
 {
-
+  
   Sim_Forward= function(FStatusQuo,BStatusQuo,Policy,Policies,IsCatchShare,bvec,b0,Time,p,MSY,c,r,beta)
   {  
-    FindF<- function(i,Stocks,CurrentB,Policy,Policies)
+    FindF<- function(Stocks,CurrentB,Policy,Policies,BCount)
     {
-      StockPol<- Policies[Policies$IdOrig==Stocks[i],]
+
+      BvecMat=matrix(Policies$b,nrow=BCount,ncol=length(Stocks))
+            
+      CurrentBMat<- matrix(rep(CurrentB,BCount),nrow=BCount,ncol=length(CurrentB),byrow=T)
       
-      NextF<- approx(StockPol$b,StockPol[,Policy],CurrentB[i])$y
+      FVecMat<- matrix(Policies[,Policy],nrow=BCount,ncol=length(CurrentB))
+      
+      BDiff=(BvecMat-CurrentBMat)^2
+      
+      ClosestB<- apply(BDiff, 2, function(x) max(which(x == min(x, na.rm = TRUE))))
+      
+      FFun= function(x,FVecMat,ClosestB)
+      {
+        y=FVecMat[ClosestB[x],x]
+      }
+      
+      NextF<- sapply(1:length(Stocks),FFun,FVecMat=FVecMat,ClosestB=ClosestB)     
+#       NextF<- FVecMat[ClosestB,]
+      #       NextF<- approx(StockPol$b,StockPol[,Policy],CurrentB[i])$y
       return(NextF)
     }
     
@@ -20,16 +36,17 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
       }
       if (t>1)
       {
-        f<- pmax(f+omega*(pi/MsyProfits),.0000001)
+        f<- pmin(4,pmax(f+omega*(pi/MsyProfits),.0000001))
       }
       return(f)
     }
-    
     b = matrix(0,Time+1,length(FStatusQuo))
     f = b
     pi = b
     y = b
     b[1,] = b0;
+    BCount=ddply(Policies,c('IdOrig'),summarize,NumB=length(b))
+    BCount=unique(BCount$NumB)
     if (Policy=='StatusQuoOpenAccess'){f[1,]<- FStatusQuo}
     if (Policy=='CatchShare') # apply price cost effects of catch share policy to non-catch share stocks
     {
@@ -46,14 +63,19 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     
     MsyProfits<- MSY*p-c*(r/2)^beta
     
-    Omega<- 0.1
+    Omega<- .125
     
     PastF<- FStatusQuo
     
     for (t in 1:(Time+1))
     {
+      if (Policy!='StatusQuoOpenAccess')
+      { 
+#         browser()
+#         f[t,]<- system.time(lapply(1:length(Stocks),FindF,Stocks=Stocks,CurrentB=b[t,],Policy,Policies))
+        f[t,]<- (FindF(Stocks=Stocks,CurrentB=b[t,],Policy,Policies,BCount))
+      }
       
-      if (Policy!='StatusQuoOpenAccess'){ f[t,]<- sapply(1:length(Stocks),FindF,Stocks=Stocks,CurrentB=b[t,],Policy,Policies)}
       if (Policy=='StatusQuoOpenAccess')
       {
         
@@ -76,34 +98,41 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     colnames(pi)<- Stocks
     
     fFlat<- melt(f)
-    colnames(fFlat)<- c('Year','IdOrig','Value')
-    fFlat$Metric<- 'FvFmsy'
+    colnames(fFlat)<- c('Year','IdOrig','FvFmsy')
+    #     fFlat$Metric<- 'FvFmsy'
     
     bFlat<- melt(b)
-    colnames(bFlat)<- c('Year','IdOrig','Value')
-    bFlat$Metric<- 'BvBmsy'
+    colnames(bFlat)<- c('Year','IdOrig','BvBmsy')
+    #     bFlat$Metric<- 'BvBmsy'
     
     yFlat<- melt(y)
-    colnames(yFlat)<- c('Year','IdOrig','Value')
-    yFlat$Metric<- 'Catch'
+    colnames(yFlat)<- c('Year','IdOrig','Catch')
+    #     yFlat$Metric<- 'Catch'
     
     piFlat<- melt(pi)
-    colnames(piFlat)<- c('Year','IdOrig','Value')
-    piFlat$Metric<- 'Profits'
+    colnames(piFlat)<- c('Year','IdOrig','Profits')
+    #     piFlat$Metric<- 'Profits'
     
-    Projection<- rbind(fFlat,bFlat,yFlat,piFlat)
+    Projection<- data.frame(fFlat,bFlat[,'BvBmsy'],yFlat[,'Catch'],piFlat[,'Profits'])
+    
+    colnames(Projection)<- c('Year','IdOrig','FvFmsy','BvBmsy','Catch','Profits')
 
+#     browser()
+    #     quartz()
+    #     ggplot(data=Projection,aes(x=BvBmsy,y=FvFmsy))+geom_line()+facet_wrap(~IdOrig)
+    #     
+    #     quartz()
+    #     ggplot(data=Projection,aes(x=Year,y=BvBmsy))+geom_line()+facet_wrap(~IdOrig)
+    #     
     Projection$Year<- Projection$Year+(BaselineYear-1)
-
+    
     Projection<- subset(Projection,Year==BaselineYear | Year==max(Year))
-
     return(Projection)
   }
   
   
   McIterations<- function(k,Iterations,Index,PossibleParams,PolicyStorage,Stocks,ErrorSize)
   {
-    
     #     Index<- matrix(NA,nrow=length(Stocks),ncol=1)
     #     
     #     for (i in 1:length(Stocks))
@@ -154,7 +183,7 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     
     cost = c_num/c_den
     
-#     Price*MSY*BOA*(2-BOA)-cost*(2-BOA*(r/2))^beta
+    #     Price*MSY*BOA*(2-BOA)-cost*(2-BOA*(r/2))^beta
     
     #     if(IsCatchShare==1) # adjust prices and costs for catch share fisheries before dynamic optimization
     #     {
@@ -202,6 +231,7 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
       Projection$Iteration<- k
       
       ProjectionMat<- rbind(ProjectionMat,Projection)
+
       #       
       #       ProjectionMat[cc:(cc-1+dim(Projection)[1]),]<- as.matrix(Projection)
       #       
@@ -226,6 +256,7 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
   {
     Index[i,]<- sample(which(PossibleParams$IdOrig==Stocks[i]),Iterations,replace=T)
   }
+  
   Projections<- mclapply(1:Iterations,McIterations,mc.cores=NumCPUs,Index=Index,Iterations=Iterations,PossibleParams=PossibleParams,PolicyStorage=PolicyStorage,Stocks=Stocks,ErrorSize=ErrorSize)
   
   Projections<- ldply(Projections)
