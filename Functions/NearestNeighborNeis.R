@@ -123,11 +123,11 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
                     VarsToFill=VarsToFill,NumCPUs=NumCPUs))
   }
 
-show('Completed Stats mclapply')
+show('Completed NEI Stats mclapply')
 
   NEIs<-ldply(tempNEIs,data.frame)
 
-show("Completed ldply")
+show("Completed NEI ldply")
 #   JStocks<-NA# fill this vector with the number of Jstocks for each nei group 
 #   VarBvBmsy<-NA # fill this vector with the variance in BvBmsy for each nei group 
 #   VarFvFmsy<-NA # fill this vector with the variance in FvFmsy for each nei group
