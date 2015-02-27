@@ -211,8 +211,8 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   start_k     <- c(max(ct,na.rm=T),50*max(ct,na.rm=T)) ## default for upper k e.g. 100 * max catch
   startbio 	<- c(0.6,1)   ## assumed biomass range at start of time series, as fraction of k
   
-#     startbio    <- pmin(1,pmax(0,c(qnorm(0.45,bio[1],bioerror[1]),qnorm(0.55,bio[1],bioerror[1]))))
-
+  #     startbio    <- pmin(1,pmax(0,c(qnorm(0.45,bio[1],bioerror[1]),qnorm(0.55,bio[1],bioerror[1]))))
+  
   
   #   startbio    <- pmin(1,c((1-ErrorSize)*bio[1],(1+ErrorSize)*bio[1]))
   
@@ -225,11 +225,11 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   
   #   interbio 	<- pmin(1,c((1-ErrorSize)*bio[interyr],(1+ErrorSize)*bio[interyr])) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
   
-#     interbio   <-  pmin(1,pmax(0,c(qnorm(0.45,bio[interyr],bioerror[interyr]),qnorm(0.55,bio[interyr],bioerror[interyr])))) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
+  #     interbio   <-  pmin(1,pmax(0,c(qnorm(0.45,bio[interyr],bioerror[interyr]),qnorm(0.55,bio[interyr],bioerror[interyr])))) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
   
   interbio   <- c(0, 1) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
   
-
+  
   if (is.na(bio[interyr]) | bio[interyr]==0)
   {
     interbio 	<- c(0, 1) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
@@ -284,13 +284,15 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   #   max_k1a  <- min(k1[r1<1.1*parbound$r[1]],na.rm=T) ## smallest k1 near initial lower bound of r
   #   max_k1b  <- max(k1[r1*k1/4<mean_msy1],na.rm=T) ## largest k1 that gives mean MSY
   #   max_k1 <- if(max_k1a < max_k1b) {max_k1a} else {max_k1b}
-  
   if(length(r1)<10) {
+    
     cat("Too few (", length(r1), ") possible r-k combinations, check input parameters","\n")
     flush.console()
   }
   
   if(length(r1)>=10) {
+    
+    
     msy1  <- (r1*k1)/4
     mean_msy1 <- exp(mean(log(msy1))) 
     max_k1a  <- min(k1[r1<1.1*parbound$r[1]],na.rm=T) ## smallest k1 near initial lower bound of r
@@ -311,6 +313,8 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
     
     ## Repeat analysis with new r-k bounds
     PossibleRuns<- MatrixCmsy(parbound,n,interbio,finalbio,startbt)
+    
+    PossibleRuns$Fail<- 0
     
     PossibleRuns$IdOrig<- stock
     

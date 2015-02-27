@@ -19,9 +19,9 @@ Stocks<- Stocks[Stocks %in% CatchMSYPossibleParams$IdOrig ]
 # Rprof(tmp <- tempfile(),line.profiling=T)
 NumCPUs<- 3
 
-MonteMat<- SnowMonteCarlo(100,Stocks=Stocks,ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
-                    PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.5)
-# Rprof()
+MonteMat<- SnowMonteCarlo(250,Stocks=Stocks,ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
+                    PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=1)
+# Rprof() 
 # summaryRprof(tmp)
 # unlink(tmp)
 # quartz()
