@@ -285,6 +285,7 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   #   max_k1b  <- max(k1[r1*k1/4<mean_msy1],na.rm=T) ## largest k1 that gives mean MSY
   #   max_k1 <- if(max_k1a < max_k1b) {max_k1a} else {max_k1b}
   if(length(r1)<10) {
+    PossibleRuns$Fail<- 0
     
     cat("Too few (", length(r1), ") possible r-k combinations, check input parameters","\n")
     flush.console()
