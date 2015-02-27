@@ -13,13 +13,15 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
   # calculate revenue
   eTest$Revenue<-eTest$Price * eTest$MSY * eTest$FvFmsy * eTest$BvBmsy
   
-  # calculate cost and cost:revenue ratio
+  # calculate cost, cost per ton and cost:revenue ratio
   eTest$Cost<-eTest$MarginalCost * (eTest$FvFmsy * eTest$r / 2)^beta
+  
+  eTest$CostPerTon<-eTest$Cost/eTest$Catch
   
   eTest$CostRevRatio<-eTest$Cost/eTest$Revenue
   
   eTest<-eTest[is.na(eTest$SpeciesCatName)==F,]
-  
+    
   # Summarize revenue by country
   CountryRevenues<-ddply(eTest,c("Country"),summarize,TotalRevenue=sum(Revenue,na.rm=T), TotalCatch=sum(Catch,na.rm=T),TotalStocks=length(unique(IdOrig)))
   
@@ -82,7 +84,10 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
   
   SummaryTable<-data.frame(matrix(nrow=length(SpCats),ncol=9))
   colnames(SummaryTable)<-c('ISSCAAP Group','Stocks', 'Min','1st Quart','Median','Mean','3rd Quart','Max')
-  
+
+  SummaryTable2<-data.frame(matrix(nrow=length(SpCats),ncol=9))
+  colnames(SummaryTable2)<-c('ISSCAAP Group','Stocks', 'Min','1st Quart','Median','Mean','3rd Quart','Max')
+
   for(b in 1:length(SpCats))
   {
     temp<-eTest$CostRevRatio[eTest$SpeciesCatName==SpCats[b]]
@@ -92,9 +97,20 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
     SummaryTable[b,1]<-SpCats[b] # name of category
     SummaryTable[b,2]<-length(temp) # number of stocks
     SummaryTable[b,3:9]<-x[1:7] # stats
+    
+    temp2<-eTest$CostPerTon[eTest$SpeciesCatName==SpCats[b]]
+    
+    x<-summary(temp2)
+    
+    SummaryTable2[b,1]<-SpCats[b] # name of category
+    SummaryTable2[b,2]<-length(temp) # number of stocks
+    SummaryTable2[b,3:9]<-x[1:7] # stats
+    
   }
   
   write.csv(file=paste(ResultFolder,'Catch_Revenue_Ratios_ISSCAAP.csv',sep=''),SummaryTable)
+  write.csv(file=paste(ResultFolder,'CostPerTon_Ratios_ISSCAAP.csv',sep=''),SummaryTable2)
+
   write.csv(file=paste(ResultFolder,'Catch_Revenue_Ratio_AllData.csv',sep=''),OverallCostRevSummary)
   
   # subset fisheries with outlier cost:revenue ratios to look for causes

@@ -587,11 +587,17 @@ UnlumpedProjectionData<-rbind(UnlumpedProjectionData, UnlumpedData)
 
 write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
 
+# UnlumpedProjectionData<-read.csv(paste(ResultFolder,'Unlumped Projection Data.csv',sep=''))
+
 # Calculate fishery upsides from UnlumpedProjectionData
 
-UnlumpedUpsideAllStocks<-FisheriesUpsideV2(UnlumpedProjectionData,LumpedName='UnLumped Projection Data',SubsetName='All Stocks')
+UnlumpedUpsideAllStocks<-FisheriesUpsideV2(UnlumpedProjectionData,BaselineYear,LumpedName='UnLumped Projection Data',SubsetName='All Stocks')
 
-UnlumpedUpsideOverfishOnly<-FisheriesUpsideV2(UnlumpedProjectionData,LumpedName='UnLumped Projection Data',SubsetName='Overfish Only')
+write.csv(file=paste(ResultFolder,'Unlumped Country Upsides All Stocks.csv',sep=''),UnlumpedUpsideAllStocks$CountryUpsides)
+
+UnlumpedUpsideOverfishOnly<-FisheriesUpsideV2(UnlumpedProjectionData,BaselineYear,LumpedName='UnLumped Projection Data',SubsetName='Overfish Only')
+
+write.csv(file=paste(ResultFolder,'Unlumped Country Upsides Overfish Only.csv',sep=''),UnlumpedUpsideOverfishOnly$CountryUpsides)
 
 ### Plot figures for paper and diagnostics  --------------------------------------------------
 
@@ -612,7 +618,7 @@ UnlumpedUpsideOverfishOnly<-FisheriesUpsideV2(UnlumpedProjectionData,LumpedName=
 
 # FIGURE 3 - Recovery Trajectories
 
-RecoveryTrend<-RecoveryTrend(ProjectionData=UnlumpedProjectionData,RecoveryThreshold=0.95,OnlyOverfish=FALSE,StartYear=BaselineYear)
+RecoveryTrend<-RecoveryTrend(ProjectionData=ProjectionData,RecoveryThreshold=0.8,OnlyOverfish=FALSE,StartYear=1980)
 
 # Global Kobe Plot
 
