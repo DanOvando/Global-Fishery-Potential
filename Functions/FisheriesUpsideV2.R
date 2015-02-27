@@ -9,13 +9,23 @@
 ############################################
 
 # SubsetName<-'Overfish Only'
+# LumpedName<-'Unlumped Projection Data'
 
-
-FisheriesUpsideV2<-function(ProjectionData,LumpedName,SubsetName)
+FisheriesUpsideV2<-function(ProjectionData,BaselineYear,LumpedName,SubsetName)
 {
+    
   # Define data subsets to analyze with different status quo policies------------------------
   
-  groups<-c('ram','cs','overFunderB','McToefids')
+  if(SubsetName=='All Stocks')
+  {
+    groups<-c('ram','cs','overFunderB','McToefids')
+  }
+  
+  if(SubsetName=='Overfish Only')
+  {
+    groups<-c('ram','cs','overFunderB')
+  }
+  
   
   tempUpside<-list()
   
@@ -39,14 +49,21 @@ FisheriesUpsideV2<-function(ProjectionData,LumpedName,SubsetName)
     
     if(groups[a]=='overFunderB') # all other stocks get Open Access
     {
-      Data<-ProjectionData[ProjectionData$Dbase!='RAM' & ProjectionData$CatchShare!=1 & (ProjectionData$FvFmsy>1 | ProjectionData$BvBmsy<1),]
+      offids<-ProjectionData$IdOrig[ProjectionData$Year==BaselineYear & ProjectionData$Dbase!='RAM' & ProjectionData$CatchShare!=1 &
+                                      ((ProjectionData$FvFmsy>1 & ProjectionData$BvBmsy<1) | (ProjectionData$FvFmsy>1 & ProjectionData$BvBmsy>1) |
+                                         (ProjectionData$FvFmsy<1 & ProjectionData$BvBmsy<1))]
+      
+      Data<-ProjectionData[ProjectionData$IdOrig %in% offids,]
       
       DenominatorPolicy<-'StatusQuoOpenAccess'
     }
   
-    if(groups[a]=='McToefids') # all other stocks get Open Access
+    if(SubsetName=='All Stocks' & groups[a]=='McToefids') # all other stocks get Open Access
     {
-      Data<-ProjectionData[ProjectionData$Dbase!='RAM' & ProjectionData$CatchShare!=1 & ProjectionData$BvBmsy>1,]
+      Mctofids<-ProjectionData$IdOrig[ProjectionData$Year==BaselineYear & ProjectionData$Dbase!='RAM' & ProjectionData$CatchShare!=1 & 
+                                        (ProjectionData$FvFmsy<1 & ProjectionData$BvBmsy>1)]
+      
+      Data<-ProjectionData[ProjectionData$IdOrig %in% Mctofids,]
       
       DenominatorPolicy<-'StatusQuoBForever'
     }
@@ -118,7 +135,7 @@ FisheriesUpsideV2<-function(ProjectionData,LumpedName,SubsetName)
     
     # Find steady state values for each fishery
     
-    FinalYr<-TimeTrend[TimeTrend$Year==max(Data$Year),]
+    FinalYr<-TimeTrend[TimeTrend$Year==max(Data$Year,na.rm=T),]
     
     denominator2<-FinalYr[FinalYr$Policy==DenominatorPolicy,c('Country','IdOrig','Year','Catch','Biomass','Profits','BvBmsy')]
     
