@@ -24,9 +24,9 @@ library(reshape2)
 # library(dplyr)
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- TRUE
+RunAnalyses<- FALSE
 
-BatchFolder<- 'Dans Myctophids'
+BatchFolder<- 'Mycothpids Ahoy 2_25_15 copy'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -46,7 +46,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Feb 13 FML Test tight priors'
+  BatchFolder<- 'Mycothpids Ahoy 2_25_15'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
