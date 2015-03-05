@@ -1,0 +1,52 @@
+---
+title: "GFR SOM Sensitivities"
+author: "Dan Ovando"
+date: "February 26, 2015"
+output:
+  pdf_document: default
+  word_document:
+    fig_caption: yes
+    fig_height: 2
+    fig_width: 3
+---
+
+# Model Robustness and Sensitivity Analysis
+
+We performed a series of tests to evaluate the predictive ability of our methods, as well as sensitivity of results to parameter values. 
+
+## Robustness
+
+We performed two jackknife routines to evaluate the ability of our model to predict out of sample. For both routines, we consider only RAM stocks, as these are the only instances we have "true" values for the parameters of interest (MSY, BvBmsy, FvFmsy). 
+
+Our first check is an individual jackknife. We sequentially removed each RAM stock (n=369 from the regression block and re-estimated the PRM. We then predicted the status of the omitted stock using the re-estimated regression.  This predicted status was passed to CatchMSY, and the resulting predictions for MSY, BvBmsy, and FvFmsy for the ommitted RAM stock is stored. 
+
+Our jackknifed 
+
+```{r,echo=T,message=F,warning=FALSE}
+setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
+
+```
+
+However, we might expect the predictive power of our model to be fairly good when simply omitting and predicting one single fishery. Our results though depend on the ability of our model to precit fisheries that are very much out of sample (i.e. we are trying to predict Indonesia using Alaska). As such, we also performed a regional jackknifing routine. In this procedure, we sequentially removed all the RAM stocks in each unique region (roughly country) in RAM. We then re-estimated the PRM omitting all the RAM stocks from that region, and then predicted the ommitted region. The predictions were then passed to CatchMSY, and the individual predictions for MSY, BvBmsy, and FvFmsy for each omitted fishery are stored. 
+
+Our methods ability to predict out of sample suffered substantially from the regional jackknifing. 
+
+![Distrubition of total MSY from Monte Carlo \label{MCMSY}](MonteCarlo_MSY.pdf)
+
+## Sensitivity
+
+We performed a Monte-Carlo routine to evaluate the sensitivity of components of our final results (e.g. total MSY, change in profits, change in BvBmsy, et)c. We do not consider potential errors in the underlying catch data, or a complete range of potential starting biomass levels. We do consider the sensitivity of our results in response to limited ranges of starting BvBmsy,as well as estimated intrinsic growth rates *r*, MSY, prices, costs, and catch-share economic benefits. 
+
+CatchMSY provides a range of plausible values for *r* and MSY (often thousands of individual estimates). For each iteration of the Monte-Carlo, we draw randon *r* and MSY pairs from CatchMSY for each fishery.  For each fishery in each iteration we also apply a multiplicative  log-normal error term (~ln(0,0.75)) to price, BvBmsy at open access (which implicity affects costs), and the "catch share effect" (the price and cost changes resulting from moving to a catch share policy). We ran 250 iterations of each fishery and stored results. 
+
+The Monte Carlo currently only evaluates "unasssesed" stocks (i.e. not RAM) at the species level. As a result this process provides an assessment of the degree of variability in our metrics of interest resulting from reasonably uncertainty in our parameter values. It is not a true assessment of the variability in our final results. 
+
+Our results suggest that our estimates of MSY for the unassessed stocks is relatively consistent (within our simulation runs ( Fig.XX ). 
+
+```{r}
+plot(1:10)
+```
+
+![Distrubition of total MSY from Monte Carlo \label{MCMSY}](MonteCarlo_MSY.pdf)
+
+
