@@ -7,6 +7,8 @@
 FisheriesUpsideV3<-function(ProjectionData,BaselineYear,DenominatorPolicy,RecoveryThreshold,LumpedName,SubsetName)
 {
   
+  Data<-ProjectionData
+  
   # Choose to run upside on all stocks or just overfished
   
   if (SubsetName=='Overfish Only') 
