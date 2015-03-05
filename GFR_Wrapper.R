@@ -571,11 +571,18 @@ if (IncludeForageFish==FALSE)
   ProjectionData<- ProjectionData[ProjectionData$SpeciesCatName%in%ForageFish==F,]
 }
 
+# Add new "Business as Usual Policies" by combining the results of the respective status quo policies for certain types of stocks, outlined in the function
+
+ProjectionData<-BuildPolicyBAUs(ProjectionData,BaselineYear)
+
 # Calculate fishery upsides on full ProjectionData prior to unlumping stocks
 
-UpsideAllStocks<-FisheriesUpsideV2(ProjectionData,LumpedName='Lumped Projection Data',SubsetName='All Stocks')
+UpsideAllStocks<-FisheriesUpsideV3(ProjectionData,BaselineYear,DenominatorPolicy='Business As Usual Optimistic',
+                                   RecoveryThreshold=0.8,LumpedName='Lumped Projection Data',SubsetName='All Stocks')
 
-UpsideOverfishOnly<-FisheriesUpsideV2(ProjectionData,LumpedName='Lumped Projection Data',SubsetName='Overfish Only')
+UpsideOverfishOnly<-FisheriesUpsideV3(ProjectionData,BaselineYear,DenominatorPolicy='Business As Usual Optimistic',
+                                      RecoveryThreshold=0.8,LumpedName='Lumped Projection Data',SubsetName='Overfish Only')
+
 
 # Unlump lumped fisheries and create separate ProjectionData dataframe with unlumped stocks
 
@@ -587,34 +594,28 @@ UnlumpedProjectionData<-rbind(UnlumpedProjectionData, UnlumpedData)
 
 write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
 
-# UnlumpedProjectionData<-read.csv(paste(ResultFolder,'Unlumped Projection Data.csv',sep=''))
 
 # Calculate fishery upsides from UnlumpedProjectionData
 
-UnlumpedUpsideAllStocks<-FisheriesUpsideV2(UnlumpedProjectionData,BaselineYear,LumpedName='UnLumped Projection Data',SubsetName='All Stocks')
+UnlumpedUpsideAllStocks<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='Business As Usual Optimistic',
+                                           RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='All Stocks')
 
 write.csv(file=paste(ResultFolder,'Unlumped Country Upsides All Stocks.csv',sep=''),UnlumpedUpsideAllStocks$CountryUpsides)
 
-UnlumpedUpsideOverfishOnly<-FisheriesUpsideV2(UnlumpedProjectionData,BaselineYear,LumpedName='UnLumped Projection Data',SubsetName='Overfish Only')
+UnlumpedUpsideOverfishOnly<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='Business As Usual Optimistic',
+                                              RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='Overfish Only')
 
 write.csv(file=paste(ResultFolder,'Unlumped Country Upsides Overfish Only.csv',sep=''),UnlumpedUpsideOverfishOnly$CountryUpsides)
 
+
+# Calculate global upsides relative to Trevor denominator
+
+GlobalUpsideTrevor<-TrevorDenominator(GlobalUpsideOverF=UnlumpedUpsideOverfishOnly$GlobalUpside,GlobalUpsideAll=UnlumpedUpsideAllStocks$GlobalUpside,Discount) 
+
+
 ### Plot figures for paper and diagnostics  --------------------------------------------------
 
-### Figures ---
-
-## FIGURE 1 - Status Map
-
-## FIGURE 2 - Triple Bottom Line
-
-
-
-# Loop over status quo policies to produce plots for the desired policy relative to each status quo scenario
-
-# for(a in 1:length(SQ))
-# {
-#   TripleBottomLine(AllStockData=CountryUpsidesAllSQ,OverfishData=CountryUpsidesOverfishAllSQ,Policy='Opt',Limit=300,StatusQuoPolicy=SQ[a],FigureFolder)
-# }
+## ******* INSERT CODY'S PLOT SCRIPTS *************** 
 
 # FIGURE 3 - Recovery Trajectories
 
@@ -624,7 +625,7 @@ RecoveryTrend<-RecoveryTrend(ProjectionData=ProjectionData,RecoveryThreshold=0.8
 
 MakeKobePlot(ProjectionData,BaselineYear,'Global Kobe Plot.pdf')
 
-### Diagnostics ---
+### Diagnostics and Summary Tables -----------------------------------------------------------------------------
 
 # Projection validation data for Chris
 
@@ -636,15 +637,15 @@ CostRevenues<-CostRevCheck(ProjectionData,RawData,BaselineYear)
 
 # Plot historical status of RAM and unassessed stocks
 
-StatusISSCAAP<-StatusPlots(FullData,BiomassData,BaselineYear,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+# StatusISSCAAP<-StatusPlots(FullData,BiomassData,BaselineYear,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
 
 # Test C parameter sensitivity to BOA level
 
-SensitivityCParam<-CParamSensitivity(Data=MsyData,BaselineYear,beta)
+# SensitivityCParam<-CParamSensitivity(Data=MsyData,BaselineYear,beta)
 
 # Plot histograms of steady state status for chosen subset of projection data
 
-SteadyStateStatus(Data=ProjectionData,Subset=c('Steady State Status Analyzed Projection Data.pdf')) # histograms of b by policy for complete ProjectionData
+# SteadyStateStatus(Data=ProjectionData,Subset=c('Steady State Status Analyzed Projection Data.pdf')) # histograms of b by policy for complete ProjectionData
 
 # Save final image
 
@@ -654,45 +655,6 @@ save.image(file=paste(ResultFolder,'Global Fishery Recovery Complete Results.rda
 
 
 
-
-
-# Country Upsides when all stocks have same SQ denominator---------------------------------------------
-
-# ## Calculate Country level upsides for 1) Lumped All Stocks 2) Lumped Overfished and Overfishing Stocks 3) Unlumped All Stocks 4) Unlumped Overfish 
-# 
-# # 1)
-# 
-# SQ<-c('StatusQuoOpenAccess','StatusQuoFForever','StatusQuoBForever')
-# 
-# CountryUpsidesAllSQ<-list()
-# 
-# for(a in 1:length(SQ))
-# {
-#   tempCountryUpsidesAll<-UpsideCalculator(ProjectionData,BaselineYear,DenominatorPolicy=SQ[a],GroupingVars=c('Country','Year','Policy'),Subset='All Stocks')
-#   
-#   CountryUpsidesAllSQ[[a]]<-tempCountryUpsidesAll
-# }
-# 
-# CountryUpsidesAllSQ<-ldply(CountryUpsidesAllSQ)
-# 
-# # 2)
-# 
-# CountryUpsidesOverfishAllSQ<-list()
-# 
-# for(b in 1:length(SQ))
-# {
-#   tempCountryUpsidesOverfish<-UpsideCalculator(ProjectionData,BaselineYear,DenominatorPolicy=SQ[b],GroupingVars=c('Country','Year','Policy'),Subset='Overfish')
-#   
-#   CountryUpsidesOverfishAllSQ[[b]]<-tempCountryUpsidesOverfish
-# }
-# 
-# CountryUpsidesOverfishAllSQ<-ldply(CountryUpsidesOverfishAllSQ)
-# 
-# # 3)
-# CountryUpsidesUnlumpAll<-UpsideCalculator(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='StatusQuoBForever',GroupingVars=c('Country','Year','Policy'),Subset='All Stocks')
-# 
-# # 4)
-# CountryUpsidesUnlumpOverfish<-UpsideCalculator(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='StatusQuoBForever',GroupingVars=c('Country','Year','Policy'),Subset='Overfish')
 
 
 

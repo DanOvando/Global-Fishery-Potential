@@ -74,6 +74,8 @@ FisheriesUpsideV2<-function(ProjectionData,BaselineYear,LumpedName,SubsetName)
     {
       OverfishIds<-Data$IdOrig[Data$Year==2012 & (Data$BvBmsy<1 | Data$FvFmsy>1)]
       
+      TrevorDenomData<-Data
+      
       Data<-Data[Data$IdOrig %in% OverfishIds,]
     }
     
@@ -228,6 +230,48 @@ FisheriesUpsideV2<-function(ProjectionData,BaselineYear,LumpedName,SubsetName)
   
   write.csv(CountryUpsides,file=paste(ResultFolder,LumpedName,SubsetName,' Country Upsides.csv',sep=''))
   
-  return(list(FisheryUpside=FisheryUpside,TripBottomLine=PercentTripleBottom,CountryUpsides=CountryUpsides))
+  # Global--------------------------------------
+  
+  GlobalUpsides<-ddply(FisheryUpside,c('Policy'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),TotalProfits=sum(Profits,na.rm=T),
+                        TotalBaselineCatch=sum(BaselineCatch,na.rm=T),TotalBaselineBiomass=sum(BaselineBiomass,na.rm=T),TotalBaselineProfits=sum(BaselineProfits,na.rm=T),
+                        TotalNPV=sum(FinalNPV,na.rm=T),TotalCatchSQ=sum(CatchSQ,na.rm=T),TotalBiomassSQ=sum(BiomassSQ,na.rm=T),TotalProfitsSQ=sum(ProfitsSQ,na.rm=T),
+                        TotalNPVSQ=sum(NPVSQ,na.rm=T),TotalFood=sum(TotalFood,na.rm=T),TotalFoodSQ=sum(FoodSQ,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
+  
+  GlobalUpsides$PercChangeTotalProfits<-100*((GlobalUpsides$TotalProfits/GlobalUpsides$TotalBaselineProfits)-1) #Percent change in  profits from current
+  
+  GlobalUpsides$PercChangeTotalCatch<-100*((GlobalUpsides$TotalCatch/GlobalUpsides$TotalBaselineCatch)-1) #Percent change in  catch from current
+  
+  GlobalUpsides$PercChangeTotalBiomass<-100*((GlobalUpsides$TotalBiomass/GlobalUpsides$TotalBaselineBiomass)-1) #Percent change in  biomass from current
+  
+  GlobalUpsides$AbsChangeTotalProfits<-GlobalUpsides$TotalProfits-GlobalUpsides$TotalBaselineProfits # Absolute change in  profits from current
+  
+  GlobalUpsides$AbsChangeTotalCatch<-GlobalUpsides$TotalCatch-GlobalUpsides$TotalBaselineCatch # Absolute change in  catch from current
+  
+  GlobalUpsides$AbsChangeTotalBiomass<-GlobalUpsides$TotalBiomass-GlobalUpsides$TotalBaselineBiomass # Absolute change in  biomass from current
+  
+  GlobalUpsides$PercChangeFromSQTotalCatch<-100*((GlobalUpsides$TotalCatch/GlobalUpsides$TotalCatchSQ)-1)
+  
+  GlobalUpsides$PercChangeFromSQTotalBiomass<-100*((GlobalUpsides$TotalBiomass/GlobalUpsides$TotalBiomassSQ)-1)
+  
+  GlobalUpsides$PercChangeFromSQProfits<-100*((GlobalUpsides$TotalProfits/GlobalUpsides$TotalProfitsSQ)-1)
+  
+  GlobalUpsides$PercChangeFromSQNPV<-100*((GlobalUpsides$TotalNPV/GlobalUpsides$TotalNPVSQ)-1)
+  
+  GlobalUpsides$PercChangeFromSQFood<-100*((GlobalUpsides$TotalFood/GlobalUpsides$TotalFoodSQ)-1)
+  
+  GlobalUpsides$AbsChangeFromSQTotalCatch<-GlobalUpsides$TotalCatch-GlobalUpsides$TotalCatchSQ
+  
+  GlobalUpsides$AbsChangeFromSQTotalBiomass<-GlobalUpsides$TotalBiomass-GlobalUpsides$TotalBiomassSQ
+  
+  GlobalUpsides$AbsChangeFromSQProfits<-GlobalUpsides$TotalProfits-GlobalUpsides$TotalProfitsSQ
+  
+  GlobalUpsides$AbsChangeFromSQNPV<-GlobalUpsides$TotalNPV-GlobalUpsides$TotalNPVSQ
+  
+  GlobalUpsides$AbsChangeFromSQFood<-GlobalUpsides$TotalFood-GlobalUpsides$TotalFoodSQ
+  
+  write.csv(GlobalUpsides,file=paste(ResultFolder,LumpedName,SubsetName,' Global Upsides.csv',sep=''))
+  
+  
+  return(list(FisheryUpside=FisheryUpside,TripBottomLine=PercentTripleBottom,CountryUpsides=CountryUpsides,GlobalUpside=GlobalUpsides))
   
 } # close function
