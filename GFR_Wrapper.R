@@ -627,9 +627,18 @@ MakeKobePlot(ProjectionData,BaselineYear,'Global Kobe Plot.pdf')
 
 ### Diagnostics and Summary Tables -----------------------------------------------------------------------------
 
+
 # Projection validation data for Chris
 
 ProjectionValidationData<-ProjectionValidation(ProjectionData,BaselineYear)
+
+# Produce Country Summary table and Stock List (returns list with Country summaries and Stock list, writes csvs of both)
+
+PercentCoverage<-StockAndCountrySummary(UnlumpedProjectionData,StitchIds,BaselineYear)
+
+# Summarize current status by ISSCAAP and FAO Region
+
+StatusByRegionAndISSCAAP<-RegionFaoAndISSCAAPSummary(ProjectionData,BaselineYear)
 
 # Evaluate cost:revenue ratios of full Projection data before CountriesToRun analysis
 
