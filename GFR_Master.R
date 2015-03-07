@@ -26,7 +26,7 @@ library(reshape2)
 
 RunAnalyses<- FALSE
 
-BatchFolder<- 'Mycothpids Ahoy 2_25_15 copy'
+BatchFolder<- 'Myctophid 2_27_15'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -46,7 +46,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Mycothpids Ahoy 2_25_15'
+  BatchFolder<- 'Myctophid 2_27_15'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
