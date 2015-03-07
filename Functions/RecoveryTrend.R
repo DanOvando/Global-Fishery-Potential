@@ -68,5 +68,5 @@ dev.off()
 #   
 #   dev.off()
   
-  return(Trend)
+  return()
 }

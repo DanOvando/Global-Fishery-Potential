@@ -11,8 +11,10 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
   eTest<-ProjectionData[is.na(ProjectionData$BvBmsy)==F & is.na(ProjectionData$FvFmsy)==F & ProjectionData$Year==BaselineYear,]
   
   # calculate revenue
-  eTest$Revenue<-eTest$Price * eTest$MSY * eTest$FvFmsy * eTest$BvBmsy
+#   eTest$Revenue<-eTest$Price * eTest$MSY * eTest$FvFmsy * eTest$BvBmsy
   
+  eTest$Revenue<-eTest$Price * eTest$Catch
+
   # calculate cost, cost per ton and cost:revenue ratio
   eTest$Cost<-eTest$MarginalCost * (eTest$FvFmsy * eTest$r / 2)^beta
   
@@ -108,10 +110,10 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
     
   }
   
-  write.csv(file=paste(ResultFolder,'Catch_Revenue_Ratios_ISSCAAP.csv',sep=''),SummaryTable)
+  write.csv(file=paste(ResultFolder,'Cost_Revenue_Ratios_ISSCAAP.csv',sep=''),SummaryTable)
   write.csv(file=paste(ResultFolder,'CostPerTon_Ratios_ISSCAAP.csv',sep=''),SummaryTable2)
 
-  write.csv(file=paste(ResultFolder,'Catch_Revenue_Ratio_AllData.csv',sep=''),OverallCostRevSummary)
+  write.csv(file=paste(ResultFolder,'Cost_Revenue_Ratio_AllData.csv',sep=''),OverallCostRevSummary)
   
   # subset fisheries with outlier cost:revenue ratios to look for causes
   OutlierRatios<-eTest[(eTest$CostRevRatio>2 | eTest$CostRevRatio<0.2) & is.na(eTest$IdOrig)==F,
