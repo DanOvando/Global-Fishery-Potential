@@ -98,9 +98,9 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
                          | StockStats$TooFewCatchYears |
                            StockStats$PercentMissingTooHigh | StockStats$NoCatch | StockStats$NoRamOrSofiaBiomass==T]<- 1
   
-  DroppedStocks<- StockStats[StockStats$DropFishery==1,]
+  DroppedStocks2<- StockStats[StockStats$DropFishery==1,]
   
-  Data$Drop<- Data[,IdVar] %in% DroppedStocks[,IdVar]
+  Data$Drop<- Data[,IdVar] %in% DroppedStocks2[,IdVar]
   
   Data<- Data[Data$Drop==F,] #Remove unusable fisheries
     
@@ -132,10 +132,12 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
   #   Data$Country[Data$Dbase=="SOFIA" & grepl(", ",Data$Country)==T] <- "Multinational" # rename Country for multinational Sofia stocks to "Multinational"
   #   
   AllOverlap<-Overlap$AllOverlap
+
+  MultinationalOverlap<-Overlap$MultinationalOverlap
   
   OverlapToRemove<- c('Ram','Sofia','SofiaRam')
   
-  return(list(CleanedData=Data,DroppedStocks= DroppedStocks,AllOverlap=AllOverlap,StitchIds=StitchIds))
+  return(list(CleanedData=Data,DroppedStocks= DroppedStocks,AllOverlap=AllOverlap,StitchIds=StitchIds,MultinationalOverlapIds=MultinationalOverlap,DroppedStocks2= DroppedStocks2))
   
 }
 

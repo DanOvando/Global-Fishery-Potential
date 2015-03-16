@@ -14,7 +14,14 @@ RemoveOverlap<- function(Data,OverlapMode,stringsAsFactors=F)
 
 #     Data<- FullData
 # Data$Country<- as.character(levels(Data$Country))[Data$Country]
+  
   yrs<-c(1950:2013) # filter only years from 1950-2013
+  
+  # Create list to store multinational ids in to later reattribute benefits
+  
+  MultinationalOverlap<-list()
+  
+  # loop over years to filter
   
   for (r in 1:length(yrs))
   {
@@ -146,6 +153,8 @@ for (i in 1:nrow(faostocks)){
 multinational<-subset(newRam,Country=="Multinational")
 RamMultiNatOverlap<-NA
 
+RamMultiNatIds<-data.frame(matrix(nrow=0,ncol=5))
+colnames(RamMultiNatIds)<-c('Year','RamIdOrig','SciName','RegionFAO','OverlapIds')
 
 for (i in 1:nrow(multinational)){
   
@@ -157,8 +166,28 @@ for (i in 1:nrow(multinational)){
   if(num>0){
     
     RamMultiNatOverlap<- (c(RamMultiNatOverlap,as.character(overlapstocks)))
+    
+    temp<-data.frame(matrix(nrow=1,ncol=5))
+    colnames(temp)<-c('Year','RamIdOrig','SciName','RegionFAO','OverlapIds')
+    
+    temp$Year<-yrs[r]
+    
+    temp$RamIdOrig<-multinational$IdOrig[i]
+    
+    temp$SciName<-multinational$SciName[i]
+    
+    temp$RegionFAO<-multinational$RegionFAO[i]
+    
+    temp$OverlapIds<-paste(overlapstocks,collapse='_')
+    
+    RamMultiNatIds<-rbind(RamMultiNatIds,temp)
   }
 }
+
+# store year results for multinational overlap
+
+MultinationalOverlap[[r]]<-RamMultiNatIds
+
 ### Join FAO stocks that overlap with national and multinational RAM stocks
 
 # natOverlap<-unique(newRam$FOverlapId) # unique FAO stocks that match ram country level assessments
@@ -260,9 +289,15 @@ if(r>1){
 # show(yrs[r])
 } # close loop on yrs
 
+# sort final cleaned dataset
 FinalData<-CleanedData[order(CleanedData$IdOrig, CleanedData$Year),] # sort columns to return to sequential order by id
 
-return(list(FilteredData=FinalData,AllOverlap=AllOverlapFinal,RamOverlap=RamOverlapFinal,SofiaOverlap=SofiaOverlapFinal,SofiaRamOverlap=SofiaRamOverlapFinal,SofiaWithoutDataIds=SofiaWithoutDataIdsFinal))
+# flatten multinational list
+
+MultinationalOverlap<-ldply(MultinationalOverlap)
+
+return(list(FilteredData=FinalData,AllOverlap=AllOverlapFinal,RamOverlap=RamOverlapFinal,SofiaOverlap=SofiaOverlapFinal,
+            SofiaRamOverlap=SofiaRamOverlapFinal,SofiaWithoutDataIds=SofiaWithoutDataIdsFinal,MultinationalOverlap=MultinationalOverlap))
 
 }
 # FaoOverlap<-subset(FaoStocks,Overlap==1)

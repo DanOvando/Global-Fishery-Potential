@@ -8,7 +8,7 @@
 
 
 
-StockAndCountrySummary<-function(UnlumpedProjectionData,StitchIds,BaselineYear)
+StockAndCountrySummary<-function(UnlumpedProjectionData,ProjectionData,StitchIds,BaselineYear)
 {
   # Create list of stocks
   
@@ -125,6 +125,35 @@ StockAndCountrySummary<-function(UnlumpedProjectionData,StitchIds,BaselineYear)
   
   write.csv(CountrySummary,file=paste(ResultFolder,'Country Data Summary.csv',sep=''))
   
+  # Calculate global coverage and produce pie chart
+
+  GlobalCoverage<-ddply(ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$CanProject==T,],c('Year'),summarize,Stocks=length(unique(IdOrig)),
+        TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
+
+  GlobalCoverage$PercTotalCatch<-100*(GlobalCoverage$TotalCatch/79502164)
+
+  GlobalCoverage$PercTotalCatchMissing<-100*((79502164-GlobalCoverage$TotalCatch)/79502164)
+
+  # pie chart of global coverage 
+
+  slices<-c(GlobalCoverage$PercTotalCatch,GlobalCoverage$PercTotalCatchMissing)
+  lbls<-c('Included Catch\n(75%, ~60 mill. MT)','Unaccounted Catch\n(25%, ~80 mill. MT)')
+  
+  png(filename=paste(FigureFolder,'Pie Chart of Global Catch Accounted.png'),width=1440,height=1080)
+    pie(slices,labels=lbls,col=rainbow(2),main='Fraction of Total Global Catch Reported by FAO Included in Analysis',cex=3,cex.main=3,oma=c(0,0,2,0))
+    dev.off()
+
+  IdLevelCoverage<-ddply(ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$CanProject==T,],c('Year','IdLevel'),summarize,Stocks=length(unique(IdOrig)),
+        TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
+
+  IdLevelCoverage$PercOfDataset<-100*(IdLevelCoverage$TotalCatch/sum(IdLevelCoverage$TotalCatch))
+  
+  slices<-c(IdLevelCoverage$TotalCatch[2],IdLevelCoverage$TotalCatch[1])
+  lbls<-c('Species Level\n(79%, ~47.5 mill. MT)','Nei Level\n(21%, ~12.5 mill. MT)')
+  
+  png(filename=paste(FigureFolder,'Pie Chart of Catch by Id Level.png'),width=1440,height=1080)
+    pie(slices,labels=lbls,col=rainbow(2),main='Identification Level of Stocks Included in Analysis',cex=3,cex.main=3,oma=c(0,0,2,0))
+  dev.off()
   ### Plot coverage statistics
   
   # Percent coverage all countries

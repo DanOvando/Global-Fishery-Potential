@@ -22,7 +22,7 @@ if (RunAnalyses==TRUE)
     
     Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes 
     
-    Spec_Region_RAM=read.csv("Data/Ram_Regions_102814.csv",stringsAsFactors=F) # list of RAM Assessed IDs previously matched to species code and FAO Region
+    Spec_Region_RAM=read.csv('Data/Ram_Regions_031115.csv',stringsAsFactors=F) # list of RAM Assessed IDs previously matched to species code and FAO Region
     
     Spec_Region_RAM$RegionFAO<- gsub("/",",",Spec_Region_RAM$RegionFAO,fixed=T) # change / to , for use in string parsing during filtering function
     
@@ -55,6 +55,8 @@ if (RunAnalyses==TRUE)
     
     rm(fulldata)
     
+    FullData<-RamSciNameAdjuster(FullData,VersionToUse='SciNameToUse') # adjust SciNames of RAM stocks that have synonyms and other variations not found in AFSIS list
+    
     CleanedData<- MaidService(FullData,OverlapMode,BaselineYear) #Filter out unusable stocks, prepare data for regression and use
     
     DroppedStocks<- CleanedData$DroppedStocks
@@ -64,6 +66,10 @@ if (RunAnalyses==TRUE)
     FullData<- CleanedData$CleanedData
     
     AllOverlap<-CleanedData$AllOverlap
+    
+    MultinationalOverlap<-CleanedData$MultinationalOverlapIds
+    
+    FullData<-RamSciNameAdjuster(FullData,VersionToUse='scientificname') # adjust SciNames of RAM stocks back to original names for FindFishbase
     
     FullData<- FindFishbase(FullData)
     
@@ -78,7 +84,7 @@ if (RunAnalyses==TRUE)
     #     quartz()
     #     matplot(m[,2:3])
     
-    rm(CleanedData)
+#     rm(CleanedData)
     
     write.csv(file=paste(ResultFolder,'Cleaned Compiled Database.csv',sep=''),FullData)
     
@@ -154,8 +160,8 @@ if (RunAnalyses==TRUE)
   #     RamData$FvFmsy[RamData$FvFmsy>1.9]<- 1.9
   #   }
   #   
-  Fisheries<- (unique(SyntheticData$IdOrig))
-  
+  Fisheries<- (unique(SyntheticData$IdOrig[SyntheticData$Catch>0]))
+
   SyntheticFormatRegressionResults<- mclapply(1:(length(Fisheries)), FormatForRegression,mc.cores=NumCPUs,Data=SyntheticData,Fisheries=Fisheries,DependentVariable=DependentVariable,CatchVariables=CatchVariables,CatchLags=CatchLags,LifeHistoryVars=LifeHistoryVars,IsLog=IsLog,IdVar=IdVar) 
   
   SyntheticData <- ldply (SyntheticFormatRegressionResults, data.frame)
@@ -594,6 +600,9 @@ UnlumpedProjectionData<-rbind(UnlumpedProjectionData, UnlumpedData)
 
 write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
 
+# Distribute benefits of multinational RAM stocks to countries 
+
+UnlumpedProjectionData<-DivyMultinational(Data=UnlumpedProjectionData,RawData,BaselineYear,YearsBack=4)
 
 # Calculate fishery upsides from UnlumpedProjectionData
 
@@ -619,7 +628,7 @@ GlobalUpsideTrevor<-TrevorDenominator(GlobalUpsideOverF=UnlumpedUpsideOverfishOn
 
 # FIGURE 3 - Recovery Trajectories
 
-RecoveryTrend<-RecoveryTrend(ProjectionData=ProjectionData,RecoveryThreshold=0.8,OnlyOverfish=FALSE,StartYear=1980)
+RecoveryTrends<-RecoveryTrend(ProjectionData=ProjectionData,RecoveryThreshold=0.8,OnlyOverfish=FALSE,StartYear=1980)
 
 # Global Kobe Plot
 
@@ -634,7 +643,7 @@ ProjectionValidationData<-ProjectionValidation(ProjectionData,BaselineYear)
 
 # Produce Country Summary table and Stock List (returns list with Country summaries and Stock list, writes csvs of both)
 
-PercentCoverage<-StockAndCountrySummary(UnlumpedProjectionData,StitchIds,BaselineYear)
+PercentCoverage<-StockAndCountrySummary(UnlumpedProjectionData,ProjectionData,StitchIds,BaselineYear)
 
 # Summarize current status by ISSCAAP and FAO Region
 
