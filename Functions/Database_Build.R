@@ -18,8 +18,9 @@ DatabaseBuild<- function()
 
 # load("Data/DBdata.RData") # Load R data pack
 
-load("Data/DBdata_102214.RData") # RData object obtained 10/22/14
+# load("Data/DBdata_102214.RData") # RAM version 2.93 RData object obtained 10/22/14
 
+load("Data/DBdata_020215.RData") # RAM version 2.95 RData object obtained 03/06/15
 ############################################################################################################
 ############ RAM DATABASE ############
 
@@ -285,7 +286,7 @@ RAM$ReferenceBiomassUnits[WhereRefB]<-"Bmsy"
 # read in .csvs with matched RAM assessids and FAO regions and species scientific names and ISSCAAP codes
 
 Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes 
-Spec_Region_RAM=read.csv("Data/Ram_Regions_102814.csv",stringsAsFactors=F) # list of RAM Assessed IDs previously matched to species code and FAO Region
+Spec_Region_RAM=read.csv("Data/Ram_Regions_031115.csv",stringsAsFactors=F) # list of RAM Assessed IDs previously matched to species code and FAO Region
 Spec_Region_RAM$RegionFAO<- gsub("/",",",Spec_Region_RAM$RegionFAO,fixed=T) # change / to , for use in string parsing during filtering function
 
 # Spec_Region_RAM$assessid=as.character(levels(Spec_Region_RAM$assessid))[Spec_Region_RAM$assessid] # convert ID to character
@@ -371,6 +372,12 @@ for (i in 1:length(SpecNames)) # match species name to group code
 # add SpeciesCat to missing RAM stock
 RAM$SpeciesCat[RAM$SciName=='Litopenaeus setiferus']<-45 
 RAM$SpeciesCat[RAM$SciName=='Neoplatycephalus richardsoni']<-33 # 'Neo' not included in AFSIS list
+RAM$SpeciesCat[RAM$CommName=='Blue Squat Lobster Chilean']<-44 # squat lobster 
+RAM$SpeciesCat[RAM$CommName=='Chilean Herring Chile Region V-X']<-35 # herring
+RAM$SpeciesCat[RAM$CommName=='Southern Pink Shrimp West Africa']<-45 # shrimp
+RAM$SpeciesCat[RAM$SciName=='Sprattus fuengensis']<-35 # sprates included in herring category
+RAM$SpeciesCat[RAM$SciName=='Zearaja chilensis']<-38 # skate
+
 
 GroupNums<-unique(na.omit(RAM$SpeciesCat))
 
@@ -398,6 +405,8 @@ NeedRefs$CalcFvFmsy<-NA
 
 NeedRefs$CalcMSY<-NeedRefs$Catch/(NeedRefs$UvUmsytouse*NeedRefs$BvBmsy)
 
+NeedRefs$CalcMSY[is.infinite(NeedRefs$CalcMSY)]<-NA
+
 NeedRefs$CalcFvFmsy<-(NeedRefs$Catch/NeedRefs$MSY)/NeedRefs$BvBmsy
 
 CalcUvUmsy<-NeedRefs[is.na(NeedRefs$CalcFvFmsy)==F,]
@@ -419,7 +428,7 @@ for(e in 1:nrow(CalcMSY))
   RAM$MSY[needmsy]<-CalcMSY$MeanMSY[e]
   RAM$MSYUnit[needmsy]<-'Calc MSY'
   
-  show(e)
+#   show(e)
 }
 
 
@@ -583,6 +592,8 @@ sofia$SciName<-gsub("Haemulidae (= Pomadasyidae)","Haemulidae (=Pomadasyidae)",s
 
 sofia<-sofia[!(sofia$Country=="0" | sofia$Country==""),] # remove sofia entries with no country
 
+sofia<-sofia[is.na(sofia$BvBmsy)==F,] # remove sofia entries with no status estimates
+
 ############################################################################################################
 ############ FAO DATABASE ############
 
@@ -694,8 +705,6 @@ fao$SciName[fao$SciName=='']<-'Missing'
 
 # bind
 fulldata=rbind(RAM,fao,sofia)
-
-# clean up names/values for Country, SpeciesCatName, SciName, etc.
 
 # SpeciesCatName
 fulldata$SpeciesCatName<- gsub("^\\s+|\\s+$","",fulldata$SpeciesCatName) # trim leading and trailing space
