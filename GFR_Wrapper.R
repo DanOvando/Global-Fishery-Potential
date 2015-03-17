@@ -26,7 +26,7 @@ if (RunAnalyses==TRUE)
     
     Spec_Region_RAM$RegionFAO<- gsub("/",",",Spec_Region_RAM$RegionFAO,fixed=T) # change / to , for use in string parsing during filtering function
     
-    
+    fulldata$phi<- DefaultPhi
     
     write.csv(file=paste(ResultFolder,"fulldata.csv",sep=""),fulldata)
     
@@ -121,51 +121,51 @@ if (RunAnalyses==TRUE)
   
   show('Raw Data Processed')
   
-  # Create synthetic stocks -------------------------------------------------
-  
-  if (GroupMethod=='All')
-  {
-    Groups<- unique(FullData$SpeciesCatName,na.rm=T)
-    
-    Groups<- Groups[is.na(Groups)==F]
-  }
-  if (GroupMethod=='Nei')
-  {
-    Groups<- unique(FaoData$SpeciesCatName[ (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F])
-  }
-  
-  SyntheticData<- StitchFish(RawData[RawData$Dbase=='RAM' ,],IdVar,Groups,GroupSamples,Iterations) 
-  
-  SyntheticData$BvBmsy[SyntheticData$BvBmsy>OutlierBvBmsy]<- NA
-  
-  show('Synthetic Stocks Created')
-  
-  for (m in 1:length(ModelNames))
-  {
-    
-    eval(parse(text=paste('SyntheticData$',ModelNames[m],'Marker<- FALSE',sep='')))
-    
-    eval(parse(text=paste('SyntheticData$',ModelNames[m],'Prediction<- NA',sep='')))
-    
-  }
+#   # Create synthetic stocks -------------------------------------------------
+#   
+#   if (GroupMethod=='All')
+#   {
+#     Groups<- unique(FullData$SpeciesCatName,na.rm=T)
+#     
+#     Groups<- Groups[is.na(Groups)==F]
+#   }
+#   if (GroupMethod=='Nei')
+#   {
+#     Groups<- unique(FaoData$SpeciesCatName[ (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F])
+#   }
+#   
+#   SyntheticData<- StitchFish(RawData[RawData$Dbase=='RAM' ,],IdVar,Groups,GroupSamples,Iterations) 
+#   
+#   SyntheticData$BvBmsy[SyntheticData$BvBmsy>OutlierBvBmsy]<- NA
+#   
+#   show('Synthetic Stocks Created')
+#   
+#   for (m in 1:length(ModelNames))
+#   {
+#     
+#     eval(parse(text=paste('SyntheticData$',ModelNames[m],'Marker<- FALSE',sep='')))
+#     
+#     eval(parse(text=paste('SyntheticData$',ModelNames[m],'Prediction<- NA',sep='')))
+#     
+#   }
   
   # Prepare data for regression ---------------------------------------------
   
-  library(proftools)
-  
-  #   if (CapRefs==T)
-  #   {
-  #     RamData$BvBmsy[RamData$BvBmsy>1.9]<- 1.9
-  # 
-  #     RamData$FvFmsy[RamData$FvFmsy>1.9]<- 1.9
-  #   }
-  #   
-  Fisheries<- (unique(SyntheticData$IdOrig[SyntheticData$Catch>0]))
-
-  SyntheticFormatRegressionResults<- mclapply(1:(length(Fisheries)), FormatForRegression,mc.cores=NumCPUs,Data=SyntheticData,Fisheries=Fisheries,DependentVariable=DependentVariable,CatchVariables=CatchVariables,CatchLags=CatchLags,LifeHistoryVars=LifeHistoryVars,IsLog=IsLog,IdVar=IdVar) 
-  
-  SyntheticData <- ldply (SyntheticFormatRegressionResults, data.frame)
-  
+#   library(proftools)
+#   
+#   #   if (CapRefs==T)
+#   #   {
+#   #     RamData$BvBmsy[RamData$BvBmsy>1.9]<- 1.9
+#   # 
+#   #     RamData$FvFmsy[RamData$FvFmsy>1.9]<- 1.9
+#   #   }
+#   #   
+#   Fisheries<- (unique(SyntheticData$IdOrig[SyntheticData$Catch>0]))
+# 
+#   SyntheticFormatRegressionResults<- mclapply(1:(length(Fisheries)), FormatForRegression,mc.cores=NumCPUs,Data=SyntheticData,Fisheries=Fisheries,DependentVariable=DependentVariable,CatchVariables=CatchVariables,CatchLags=CatchLags,LifeHistoryVars=LifeHistoryVars,IsLog=IsLog,IdVar=IdVar) 
+#   
+#   SyntheticData <- ldply (SyntheticFormatRegressionResults, data.frame)
+#   
   #   sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SyntheticRegressionFormatProgress.txt" )
   #   
   #   
@@ -232,34 +232,34 @@ if (RunAnalyses==TRUE)
   
   save(RealModels,RealModelSdevs,file=paste(ResultFolder,'PrmRegressions.Rdata',sep=''))
   
-  NeiRegressions<- list()
-  
-  NeiRegressions$M6<- Regressions$M6
-  
-  NeiRegressions$M7<- Regressions$M7
-  
-  SyntheticData$ExtendedTime<- FALSE
-  
-  NeiModels<- RunRegressions(SyntheticData,NeiRegressions,'Synthetic Stocks')
-  
-  SyntheticData<- NeiModels$RamData
-  
-  NeiModels<- NeiModels$Model
-  
-  NeiModelFactorLevels<- NULL
-  
-  for (m in 1:length(names(Regressions)))
-  {
-    Model<- names(Regressions)[m]
-    
-    eval(parse(text=paste('NeiModelFactorLevels$',Model,'<- NeiModels$',Model,'$xlevels$SpeciesCatName',sep='')))
-    
-  }
-  
-  #     SyntheticData<- InsertFisheryPredictions(SyntheticData,NeiModels) #Add fishery predictions back into main dataframe
-  
-  NeiModelSdevs<- CreateSdevBins(NeiModels,SyntheticData,TransbiasBin)
-  
+#   NeiRegressions<- list()
+#   
+#   NeiRegressions$M6<- Regressions$M6
+#   
+#   NeiRegressions$M7<- Regressions$M7
+#   
+#   SyntheticData$ExtendedTime<- FALSE
+#   
+#   NeiModels<- RunRegressions(SyntheticData,NeiRegressions,'Synthetic Stocks')
+#   
+#   SyntheticData<- NeiModels$RamData
+#   
+#   NeiModels<- NeiModels$Model
+#   
+#   NeiModelFactorLevels<- NULL
+#   
+#   for (m in 1:length(names(Regressions)))
+#   {
+#     Model<- names(Regressions)[m]
+#     
+#     eval(parse(text=paste('NeiModelFactorLevels$',Model,'<- NeiModels$',Model,'$xlevels$SpeciesCatName',sep='')))
+#     
+#   }
+#   
+#   #     SyntheticData<- InsertFisheryPredictions(SyntheticData,NeiModels) #Add fishery predictions back into main dataframe
+#   
+#   NeiModelSdevs<- CreateSdevBins(NeiModels,SyntheticData,TransbiasBin)
+#   
   # Prepare data for regression application ---------------------------------
   
   WhereFaoNeis<- (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F #Find unassessed NEIs
@@ -313,12 +313,12 @@ if (RunAnalyses==TRUE)
     eval(parse(text=paste('FaoSpeciesLevel$',TempModelName,'Prediction<- Predictions',sep='')))    
   }
   
-  TempLevel<- NeiModelFactorLevels$M6 
-  
-  ProxyCats<- AssignNearestSpeciesCategory(FaoNeiLevel,TempLevel,AllPossible)$Data
-  
-  Predictions<- predict(NeiModels$M6,ProxyCats) #Apply nei model
-  
+#   TempLevel<- NeiModelFactorLevels$M6 
+#   
+#   ProxyCats<- AssignNearestSpeciesCategory(FaoNeiLevel,TempLevel,AllPossible)$Data
+#   
+#   Predictions<- predict(NeiModels$M6,ProxyCats) #Apply nei model
+#   
   FaoNeiLevel$M6Prediction<- 999
   
   FaoMarineFishLevel$M7Prediction<- 999
