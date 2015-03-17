@@ -18,15 +18,19 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   
   MsyData<- Data
   
-  MsyData$r<- NA
+  #   MsyData$r<- NA
   
-  #   MsyData$g<- NA
+  MsyData$BtoKRatio<- 1/((MsyData$phi+1)^(1/MsyData$phi))
+  
+  MsyData$g<- NA
   
   MsyData$k<- NA
   
   MsyData$MSYLogSd<- NA
   
-  MsyData$rLogSd<- NA
+  #   MsyData$rLogSd<- NA
+  
+  MsyData$gLogSd<- NA
   
   MsyData$KLogSd<- NA
   
@@ -44,11 +48,16 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   # find mean range between final bio priors to pass to SnowCatchMSY_Matrix for stocks with finalbio>1
   MeanRange<-MsyData[is.na(MsyData$BvBmsySD)==F & MsyData$Year==2012,c('IdOrig','BvBmsy','BvBmsySD')]
   
-  MeanRange$BoverK<-pmin(1,MeanRange$BvBmsy/2)
+  #   MeanRange$BoverK<-pmin(1,MeanRange$BvBmsy/2)
+  
+  MeanRange$BoverK<-pmin(1,MeanRange$BvBmsy*MeanRange$BtoKRatio)
+  
   
   MeanRange<-MeanRange[MeanRange$BoverK<0.95,]
   
-  MeanRange$Bioerror<-MeanRange$BvBmsySD/2
+#   MeanRange$Bioerror<-MeanRange$BvBmsySD/2
+  
+  MeanRange$Bioerror<-MeanRange$BvBmsySD*BtoKRatio
   
   MeanRange$Bioerror[is.na(MeanRange$Bioerror)]<-CommonError
   
