@@ -16,11 +16,12 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   
   Data$HasRamBvBmsy<- is.na(Data$BvBmsy)==F & Data$Dbase=='RAM'
   
+  Data$BtoKRatio<- 1/((Data$phi+1)^(1/Data$phi))
+  
   MsyData<- Data
   
   #   MsyData$r<- NA
   
-  MsyData$BtoKRatio<- 1/((MsyData$phi+1)^(1/MsyData$phi))
   
   MsyData$g<- NA
   
@@ -46,7 +47,7 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   }
   
   # find mean range between final bio priors to pass to SnowCatchMSY_Matrix for stocks with finalbio>1
-  MeanRange<-MsyData[is.na(MsyData$BvBmsySD)==F & MsyData$Year==2012,c('IdOrig','BvBmsy','BvBmsySD')]
+  MeanRange<-MsyData[is.na(MsyData$BvBmsySD)==F & MsyData$Year==2012,c('IdOrig','BvBmsy','BvBmsySD','BtoKRatio')]
   
   #   MeanRange$BoverK<-pmin(1,MeanRange$BvBmsy/2)
   
@@ -55,9 +56,9 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   
   MeanRange<-MeanRange[MeanRange$BoverK<0.95,]
   
-#   MeanRange$Bioerror<-MeanRange$BvBmsySD/2
+  #   MeanRange$Bioerror<-MeanRange$BvBmsySD/2
   
-  MeanRange$Bioerror<-MeanRange$BvBmsySD*BtoKRatio
+  MeanRange$Bioerror<-MeanRange$BvBmsySD*MeanRange$BtoKRatio
   
   MeanRange$Bioerror[is.na(MeanRange$Bioerror)]<-CommonError
   
@@ -98,7 +99,7 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
     
     
     dev.off()
-    
+
     #     pdf(file=paste(FigureFolder,'Catch-MSY Diagnostics Normal.pdf',sep=''))
     #     
     #     
@@ -123,7 +124,7 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   PossibleParams<- ldply(PossibleParams)
   if (dim(PossibleParams)[1]>0 & sum(PossibleParams$Fail==0,na.rm=T)>1)
   {
-    PossibleParams<- PossibleParams[,c('IdOrig','r','K','MSY','FinalFvFmsy','FinalBvBmsy')]
+    PossibleParams<- PossibleParams[,c('IdOrig','g','K','MSY','FinalFvFmsy','FinalBvBmsy')]
   }
   
   CmsyStore<- ldply(CmsyStore)
