@@ -162,8 +162,6 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   write.table(paste(  round(100*(s/length(Stocks)),2),'% Done with Projections',sep=''), file = 'Projection Analysis Progress.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
   
-  
-  
   TempMat<- TempStockMatrix
   
   Where<- Data[,IdVar]==Stocks[s]
