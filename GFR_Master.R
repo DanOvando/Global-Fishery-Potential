@@ -26,7 +26,7 @@ library(reshape2)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'Myctophid 2_27_15'
+BatchFolder<- 'PT Development'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -64,7 +64,7 @@ if (RunAnalyses==FALSE)
 
 SubSample<- 0.9
 
-NumCPUs<- 2 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 1 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
@@ -130,6 +130,8 @@ AsianCountries<-c('Afghanistan','Bahrain','Bangladesh', 'Bhutan','Brunei Darussa
 
 # Data Processing ---------------------------------------------------------
 
+DefaultPhi<- 0.188
+
 MinimumCatchYears<- 10 #Minimum length of catch history
 
 OutlierBvBmsy<- 40 #Maximum BvBmsy that is allowed in the analysis 
@@ -183,15 +185,6 @@ TransbiasBin<- 0.9
 
 TransbiasIterations<- 1000
 
-# Synthetic Stock Settings ------------------------------------------------
-
-GroupMethod<- 'All'
-
-GroupSamples<- 10 #The number of stocks to put in each synthetic nei. This can be a single number, or a vector for each group of interest
-
-Iterations<- 10 #Number of synthetic stocks to create within each group
-
-IdVar<- 'IdOrig' #Id variable to use in creating synthetic stocks
 
 
 # Catch-MSY ---------------------------------------------------------------
