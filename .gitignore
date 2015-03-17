@@ -15,3 +15,6 @@ Results**/*.*
 **/*.txt
 Presentations**/*.*
 Results/
+**/*.docx
+Paper**/*.csv
+Paper**/*.*
