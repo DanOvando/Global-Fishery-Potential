@@ -20,6 +20,8 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   
   MsyData$r<- NA
   
+  #   MsyData$g<- NA
+  
   MsyData$k<- NA
   
   MsyData$MSYLogSd<- NA
@@ -98,7 +100,7 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   }
   
   CmsyStore<- as.data.frame(matrix(NA,nrow=0,ncol=dim(CMSYResults[[1]]$CatchMSY)[2]))
-
+  
   PossibleParams <- lapply(seq(along = CMSYResults), function(i)    CMSYResults[[i]]$PossibleParams)
   
   EmptyParams <- lapply(seq(along = PossibleParams), function(i)   sum(is.na(PossibleParams[[i]]))==0)
@@ -108,11 +110,11 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   PossibleParams<- PossibleParams[which(HasData==T)]
   
   CmsyStore <- lapply(seq(along = CMSYResults), function(i)    CMSYResults[[i]]$CatchMSY)
-
+  
   PossibleParams<- ldply(PossibleParams)
   if (dim(PossibleParams)[1]>0 & sum(PossibleParams$Fail==0,na.rm=T)>1)
   {
-  PossibleParams<- PossibleParams[,c('IdOrig','r','K','MSY','FinalFvFmsy','FinalBvBmsy')]
+    PossibleParams<- PossibleParams[,c('IdOrig','r','K','MSY','FinalFvFmsy','FinalBvBmsy')]
   }
   
   CmsyStore<- ldply(CmsyStore)
