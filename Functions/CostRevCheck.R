@@ -16,7 +16,7 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
   eTest$Revenue<-eTest$Price * eTest$Catch
 
   # calculate cost, cost per ton and cost:revenue ratio
-  eTest$Cost<-eTest$MarginalCost * (eTest$FvFmsy * eTest$r / 2)^beta
+  eTest$Cost<-eTest$MarginalCost * (eTest$FvFmsy * eTest$g)^beta
   
   eTest$CostPerTon<-eTest$Cost/eTest$Catch
   
@@ -122,7 +122,7 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
   
   # subset eTest to include only economically relevent columns
   eTest<-eTest[,c('IdOrig','SpeciesCatName', 'CommName','Year','Catch','Fmort','BvBmsy','FvFmsy','Price',
-                  'Revenue','Cost','CostRevRatio','MSY','r','MarginalCost')]
+                  'Revenue','Cost','CostRevRatio','MSY','g','MarginalCost')]
 
 
   

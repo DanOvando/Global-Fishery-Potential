@@ -14,7 +14,7 @@ StockAndCountrySummary<-function(UnlumpedProjectionData,ProjectionData,StitchIds
   
   StockList<-UnlumpedProjectionData[UnlumpedProjectionData$Year==BaselineYear & is.na(UnlumpedProjectionData$MSY)==F & UnlumpedProjectionData$CanProject==T,
                                     c('IdOrig','Country','SpeciesCatName','IdLevel','CommName','SciName','Dbase','CatchShare','Year','Catch','MSY','BvBmsy',
-                                      'FvFmsy','r','k')]
+                                      'FvFmsy','g','k')]
   
   # find ids of all lumped stocks
   

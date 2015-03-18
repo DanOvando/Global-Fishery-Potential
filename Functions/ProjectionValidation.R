@@ -8,12 +8,12 @@
 
 ProjectionValidation<-function(ProjectionData,BaselineYear)
 {
-  input<-ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$IdLevel=='Species',c('IdOrig','Country','CatchShare','Year','BvBmsy','FvFmsy','MSY','r','Price','MarginalCost')]
+#   input<-ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$IdLevel=='Species',c('IdOrig','Country','CatchShare','Year','BvBmsy','FvFmsy','MSY','','Price','MarginalCost')]
 
-#   input<-ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$IdLevel=='Species',c('IdOrig','Country','CatchShare','Year','BvBmsy','FvFmsy','MSY','g','phi','Price','MarginalCost')]
+  input<-ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$IdLevel=='Species',c('IdOrig','Country','CatchShare','Year','BvBmsy','FvFmsy','MSY','g','phi','Price','MarginalCost')]
   
   output<-ProjectionData[ProjectionData$Year==max(ProjectionData$Year,na.rm=T) & ProjectionData$IdOrig %in% input$IdOrig,
-                         c('IdOrig','Country','CatchShare','Year','Policy','BvBmsy','FvFmsy','MSY','r','MarginalCost','Profits','Biomass','Catch')]
+                         c('IdOrig','Country','CatchShare','Year','Policy','BvBmsy','FvFmsy','MSY','g','phi','MarginalCost','Profits','Biomass','Catch')]
 
   npv<-ddply(ProjectionData[ProjectionData$IdOrig %in% output$IdOrig & ProjectionData$Policy!='Historic',],c('IdOrig','Policy'),summarize,FinalNPV=sum(DiscProfits,na.rm=T))
   
