@@ -67,7 +67,9 @@ DivyMultinational<-function(Data,RawData,BaselineYear,YearsBack)
     if(nrow(tempF)>0)
     {
       
-    cntrys<-ddply(tempF,c('Country'),summarize,TotalCatch=sum(Catch,na.rm=T),PercOfTotal=(sum(Catch,na.rm=T)/sum(tempF$Catch)))
+    cntrys<-ddply(tempF,c('Country'),summarize,TotalCatch=sum(Catch,na.rm=T))
+    
+    cntrys$PercOfTotal<-cntrys$TotalCatch/sum(cntrys$TotalCatch,na.rm=T)
     
     cntryIds<-unique(cntrys$Country)
     
@@ -84,7 +86,7 @@ DivyMultinational<-function(Data,RawData,BaselineYear,YearsBack)
       
       unlumpMulti$Country<-cntryIds[d]
       
-      unlumpMulti$IdOrig<-MultiIds[h]
+      unlumpMulti$IdOrig<-paste(MultiIds[h],cntryIds[d],sep='_')
       
       unlumpMulti$Catch<-unlumpMulti$Catch*cntrys$PercOfTotal[cntrys$Country==cntryIds[d]]
       
@@ -104,7 +106,7 @@ DivyMultinational<-function(Data,RawData,BaselineYear,YearsBack)
     
     DivyMulti[[h]]<-NewMulti
     
-    show(h)
+#     show(h)
     
     } # close if statement for if fao stocks exist
     
@@ -115,7 +117,7 @@ DivyMultinational<-function(Data,RawData,BaselineYear,YearsBack)
       
 #       print('No matching FAO country stocks')
 #       
-      show(h)
+#       show(h)
     }
     
   } # close Multinational stock loop
@@ -131,7 +133,7 @@ DivyMultinational<-function(Data,RawData,BaselineYear,YearsBack)
 
   FinalData<-rbind(FinalData,DivyMultiFinal)
   
-  return(DivyMultinational=FinalData)
+  return(FinalData)
 }
   
   

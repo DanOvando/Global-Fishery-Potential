@@ -72,7 +72,7 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
   
   Data<-Overlap$FilteredData
   
-  Data$Country[Data$Dbase=="SOFIA" & grepl(", ",Data$Country)==T] <- "Multinational" # rename Country for multinational Sofia stocks to "Multinational"
+#   Data$Country[Data$Dbase=="SOFIA" & grepl(", ",Data$Country)==T] <- "Multinational" # rename Country for multinational Sofia stocks to "Multinational"
   
   StitchedData<- LumpFisheries(Data,SpeciesCategoriesToLump)
   

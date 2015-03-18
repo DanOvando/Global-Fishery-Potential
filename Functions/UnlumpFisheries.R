@@ -84,9 +84,14 @@ UnlumpFisheries<-function(Data,RawData,BaselineYear,YearsBack,StitchIds)
   
   } # close lumped stock loop
   
-  UnLumpedData<-ldply(UnlumpedData, data.frame) # flatten to one dataframe
+  # flatten to one dataframe
+  UnLumpedData<-ldply(UnlumpedData, data.frame) 
   
-  return(UnLumpedData)
+  FinalData<-Data[!(grepl('Lumped',Data$IdOrig)),]
+
+  FinalData<-rbind(UnLumpedData,FinalData)
+
+  return(FinalData)
   
 }  
   

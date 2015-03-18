@@ -589,20 +589,19 @@ UpsideAllStocks<-FisheriesUpsideV3(ProjectionData,BaselineYear,DenominatorPolicy
 UpsideOverfishOnly<-FisheriesUpsideV3(ProjectionData,BaselineYear,DenominatorPolicy='Business As Usual Optimistic',
                                       RecoveryThreshold=0.8,LumpedName='Lumped Projection Data',SubsetName='Overfish Only')
 
-
 # Unlump lumped fisheries and create separate ProjectionData dataframe with unlumped stocks
 
-UnlumpedData<-UnlumpFisheries(ProjectionData,RawData,BaselineYear,YearsBack=0,StitchIds)
+UnlumpedData<-DivyUpSofia(ProjectionData,RawData) # Divide up SOFIA multinational
 
-UnlumpedProjectionData<-ProjectionData[!grepl('Lumped',ProjectionData$IdOrig),]
+UnlumpedData<-DivyMultinational(Data=UnlumpedData,RawData,BaselineYear,YearsBack=4) # Divide up RAM multinational
 
-UnlumpedProjectionData<-rbind(UnlumpedProjectionData, UnlumpedData)
+UnlumpedData<-UnlumpFisheries(UnlumpedData,RawData,BaselineYear,YearsBack=4,StitchIds) # Divide up lumped FAO fisheries
+
+UnlumpedProjectionData<-UnlumpedData
+
+rm(UnlumpedData)
 
 write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
-
-# Distribute benefits of multinational RAM stocks to countries 
-
-UnlumpedProjectionData<-DivyMultinational(Data=UnlumpedProjectionData,RawData,BaselineYear,YearsBack=4)
 
 # Calculate fishery upsides from UnlumpedProjectionData
 
