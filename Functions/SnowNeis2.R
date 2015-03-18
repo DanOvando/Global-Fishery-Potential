@@ -69,7 +69,7 @@ SnowNEIs2<-function(s,nei_stock,NEIs,SpeciesLevel,NeiStats,Spec_ISSCAAP,VarsToFi
       if(nrow(ComparisonStocks)>0)
       {
           results<-ddply(ComparisonStocks,c("Year",'Policy'),summarize,BvBmsy25=quantile(BvBmsy,c(0.25),na.rm=T),FvFmsy75=quantile(FvFmsy,c(0.75),na.rm=T),
-                         MedianR=median(r,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T),MedianCost=median(MarginalCost,na.rm=T),JStocks=length(unique(IdOrig)),VarBvBmsy=var(BvBmsy,na.rm=T),VarFvFmsy=var(FvFmsy,na.rm=T))
+                         MedianG=median(g,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T),MedianCost=median(MarginalCost,na.rm=T),JStocks=length(unique(IdOrig)),VarBvBmsy=var(BvBmsy,na.rm=T),VarFvFmsy=var(FvFmsy,na.rm=T))
           
           if(length(unique(results$Policy))>1)
           {
@@ -77,7 +77,7 @@ SnowNEIs2<-function(s,nei_stock,NEIs,SpeciesLevel,NeiStats,Spec_ISSCAAP,VarsToFi
             {
               #             WhereNei<- NEIs$SciName==NeiStats$SciName[a] & grepl((NeiStats$RegionFAO[a]),NEIs$RegionFAO ) & NEIs$Year==results$Year[b]  & is.na(NEIs$RegionFAO)==F & NEIs$Policy==LongPols[p]
               WhereNei<- neis$SciName==NeiCat & neis$Year==results$Year[b] & neis$Policy==results$Policy[b]            
-              neis[WhereNei,VarsToFill]<-results[b,c("BvBmsy25", "FvFmsy75", "MedianR", "MedianK","MedianPrice", "MedianCost")]
+              neis[WhereNei,VarsToFill]<-results[b,c("BvBmsy25", "FvFmsy75", "MedianG", "MedianK","MedianPrice", "MedianCost")]
               neis$CanProject[WhereNei]<- TRUE
               
             } 
@@ -89,7 +89,7 @@ SnowNEIs2<-function(s,nei_stock,NEIs,SpeciesLevel,NeiStats,Spec_ISSCAAP,VarsToFi
             {
               #             WhereNei<- NEIs$SciName==NeiStats$SciName[a] & grepl((NeiStats$RegionFAO[a]),NEIs$RegionFAO ) & NEIs$Year==results$Year[b]  & is.na(NEIs$RegionFAO)==F & NEIs$Policy==LongPols[p]
               WhereNei<- neis$SciName==NeiCat & neis$Year==results$Year[b] & neis$Policy==results$Policy[b]            
-              neis[WhereNei,VarsToFill]<-results[b,c("BvBmsy25", "FvFmsy75", "MedianR", "MedianK","MedianPrice", "MedianCost")]
+              neis[WhereNei,VarsToFill]<-results[b,c("BvBmsy25", "FvFmsy75", "MedianG", "MedianK","MedianPrice", "MedianCost")]
             } 
           }
           

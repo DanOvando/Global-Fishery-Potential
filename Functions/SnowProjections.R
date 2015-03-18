@@ -7,12 +7,12 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   # Solves for optimal policy function f (as function of bvec) given model parameters.
   # last input argument "tol" is convergence tolerance (use tol=.01)
   ######################################
-
-  RunDynamicOpt2= function(MSY,r,p,c,beta,disc,bvec,tol)
+  
+  RunDynamicOpt2= function(MSY,g,phi,p,cost,beta,disc,bvec,tol)
   {
     
     # MSY<- RecentStockData$MSY
-    # r<- RecentStockData$r
+    # g<- RecentStockData$g
     # p<- RecentStockData$Price
     # c<- cost
     # beta<- Beta
@@ -20,14 +20,12 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     # bvec<- bvec
     # tol<- tol
     #   
-    
     delta= 1/(1+disc) #Discount parameter
     t=0
     
     f1= matrix(1,length(bvec),1)
     Vnew= matrix(0,length(bvec),1)
     diff= 10*tol
-    
     while (t<4 | diff>tol)
     {
       t= t+1
@@ -40,10 +38,8 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
         {guess= 1}
         else
         {guess= f1[i-1]}
-        
-        #         FishOut= optim(par=guess,fn=GFRM_funR,lower=0.0001,upper=1.99,b=b,p=p,MSY=MSY,c=c,r=r,beta=beta,V=V,bvec=bvec,delta=delta,method="L-BFGS-B")
-        FishOut= nlminb(guess,GFRM_funR,lower=0.0001,upper=1.99,b=b,p=p,MSY=MSY,c=c,r=r,beta=beta,V=V,bvec=bvec,delta=delta)
-        
+        #         FishOut= optim(par=guess,fn=GFRM_funR,lower=0.0001,upper=1.99,b=b,p=p,MSY=MSY,c=c,g=g,beta=beta,V=V,bvec=bvec,delta=delta,method="L-BFGS-B")
+        FishOut= nlminb(guess,GFRM_funR,lower=0.0001,upper=3,b=b,p=p,MSY=MSY,cost=cost,phi=phi,gar=g,beta=beta,V=V,bvec=bvec,delta=delta)
         Vnew[i]= -FishOut$objective
         f1[i]= FishOut$par
         
@@ -68,15 +64,19 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   ######################################
   # Internal Optimization Function 
-  # To be used with RunDynamicOptimization2.R
+  # To be used with RunDynamicOptimization2.g
   # Gives (negative) value function value for value function iteration code--------------------------------------------------
   ######################################
   
-  GFRM_funR= function(f,b,p,MSY,c,r,beta,V,bvec,delta)
+  GFRM_funR= function(f,b,p,MSY,cost,phi,gar,beta,V,bvec,delta)
   {  
-    profit= p*MSY*f*b - c*(f*r/2)^beta
+    g<- gar
     
-    bnext= max(min(bvec),b + r*b*(1-b/2) - r/2*b*f)
+    profit= p*MSY*f*b - cost*(f*g)^beta
+    
+    bnext= max(min(bvec), b + ((phi+1)/phi)*g*b*(1-b^phi/(phi+1)) - g*b*f)
+    
+    #     bnext= max(min(bvec),b + g*b*(1-b/2) - g/2*b*f)
     bnext=min(max(bvec),bnext)
     out= approx(bvec,t(V),bnext) #spline(bvec,V,xout=bnext)
     Vnext= out$y
@@ -105,7 +105,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     return(f)
   }
   
-  Sim_Forward= function(Policy,fpolicy,IsCatchShare,bvec,b0,Time,p,MSY,c,r,beta)
+  Sim_Forward= function(Policy,fpolicy,IsCatchShare,bvec,b0,Time,p,MSY,c,g,phi,beta)
   {  
     b = matrix(0,Time,1)
     f = b
@@ -126,7 +126,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
       c<-c/CatchShareCost
     }
     
-    MsyProfits<- MSY*p-c*(r/2)^beta
+    MsyProfits<- MSY*p-c*(g)^beta
     
     Omega<- 0.1
     
@@ -141,10 +141,14 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
         f[t]=OpenAccessFleet(PastF,pi[t-1],t,Omega,MsyProfits)
         PastF<- f[t]
       }
-      pi[t] = p*MSY*f[t]*b[t] - c*(f[t]*r/2)^beta
+      pi[t] = p*MSY*f[t]*b[t] - c*(f[t]*g)^beta
       y[t] = MSY*f[t]*b[t]
       if (t<Time)
-      {b[t+1] =max(min(bvec), b[t] + r*b[t]*(1-b[t]/2) - r/2*b[t]*f[t])}
+      {
+        #         b[t+1] =max(min(bvec), b[t] + g*b[t]*(1-b[t]/2) - g/2*b[t]*f[t])
+        b[t+1] =max(min(bvec), b[t] + ((phi+1)/phi)*g*b[t]*(1-b[t]^phi/(phi+1)) - g*b[t]*f[t])
+        
+      }
     }
     
     Projection<- data.frame(f,b,y,pi)
@@ -154,7 +158,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     return(Projection)
   }
   
-  #   sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
+  #   sapply(list.files(pattern="[.]g$", path="Functions", full.names=TRUE), source)
   
   counter<- 1
   
@@ -182,7 +186,9 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   Price<- RecentStockData$Price
   MSY<- RecentStockData$MSY
   BOA<- RecentStockData$BvBmsyOpenAccess
-  r<- RecentStockData$r
+  g<- RecentStockData$g
+  phi<- RecentStockData$phi
+  BtoKRatio<- RecentStockData$BtoKRatio
   FStatusQuo<- RecentStockData$FvFmsy
   IsCatchShare<-RecentStockData$CatchShare
   
@@ -192,9 +198,11 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   Where<- Data[,IdVar]==Stocks[s]
   
-  c_num <-  Price*(2-BOA)*BOA*MSY*2^beta
+  FOA<- ((phi+1)/phi)*(1-BOA^phi/(phi+1))
   
-  c_den = ((2-BOA)*r)^beta
+  c_num <-  Price*FOA*BOA*MSY
+  
+  c_den = (g*FOA)^beta
   
   cost = c_num/c_den
   
@@ -211,28 +219,30 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     Data$MarginalCost[Where]<-cost
   }
   
-  MsyProfits = Price*MSY - cost*(r/2)^beta
+  MsyProfits = Price*MSY - cost*(g)^beta
   
-  OptPolicy<-  RunDynamicOpt2(MSY,r,Price,cost,beta,Discount,bvec,tol)$Policy
+  OptPolicy<-  RunDynamicOpt2(MSY,g,phi,Price,cost,beta,Discount,bvec,tol)$Policy
   
   # Only apply catch share economic effects to non-catch share stocks. Should make Opt and CatchShare Identical for CS stocks
-  if(IsCatchShare==0)
-  {
-    CatchSharePolicy<-  RunDynamicOpt2(MSY,r,CatchSharePrice*Price,CatchShareCost*cost,beta,Discount,bvec,tol)$Policy
-  }
-  
-  if(IsCatchShare==1)
-  {
-    CatchSharePolicy<-  RunDynamicOpt2(MSY,r,Price,cost,beta,Discount,bvec,tol)$Policy
-  }
-  
+  #   if(IsCatchShare==0)
+  #   {
+  #     CatchSharePolicy<-  RunDynamicOpt2(MSY,g,CatchSharePrice*Price,CatchShareCost*cost,beta,Discount,bvec,tol)$Policy
+  #   }
+  #   
+  #   if(IsCatchShare==1)
+  #   {
+  #     CatchSharePolicy<-  RunDynamicOpt2(MSY,g,Price,cost,beta,Discount,bvec,tol)$Policy
+  #   }
+  #   
   CatchSharePolicy<- OptPolicy
   
-  FoodPolicy<-  RunDynamicOpt2(MSY,r,Price,0,beta,0,bvec,tol)$Policy
+#   FoodPolicy<-  RunDynamicOpt2(MSY,g,phi,Price,0,beta,0,bvec,tol)$Policy
   
   StatusQuoFForeverPolicy<- FStatusQuo*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])  
   
-  StatusQuoBForeverPolicy<- (2-RecentStockData$BvBmsy)*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])  
+  FSQ<- (RecentStockData$phi+1)/(RecentStockData$phi)*(1-RecentStockData$BvBmsy^RecentStockData$phi/(RecentStockData$phi+1))
+  
+  StatusQuoBForeverPolicy<- (FSQ)*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])  
   
   FmsyPolicy<- matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])
   
@@ -250,14 +260,14 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   PolicyStorage[,c('IdOrig','b')]<- data.frame(Stocks[s],bvec)
   
-for (p in 1:length(Policies))
+  for (p in 1:length(Policies))
   {
     
     eval(parse(text=paste('Policy<-',Policies[p],'Policy',sep=''))) 
-
+    
     eval(parse(text=paste('PolicyStorage$',Policies[p],'<-', Policies[p],'Policy',sep='' )))
     
-    Projection<- Sim_Forward(Policies[p],Policy,IsCatchShare,bvec,RecentStockData$BvBmsy,ProjectionTime,Price,MSY,cost,r,beta)
+    Projection<- Sim_Forward(Policies[p],Policy,IsCatchShare,bvec,RecentStockData$BvBmsy,ProjectionTime,Price,MSY,cost,g,phi,beta)
     
     PolicyMatrix<- as.data.frame(matrix(NA,nrow=ProjectionTime,ncol=dim(TempMat)[2]))
     
@@ -285,7 +295,8 @@ for (p in 1:length(Policies))
     
     
   } # close policies loop
-  
+    
+  TempMat$Biomass<- (TempMat$BvBmsy* (TempMat$Bmsy))
   
   return(list(TempMat=TempMat,PolicyStorage=PolicyStorage))
 } #Close function

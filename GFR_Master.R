@@ -4,6 +4,7 @@
 # to estimate B/Bmsy 
 ######################################
 rm(list=ls())
+set.seed(423)
 library(car)
 library(plyr)
 library(lattice)
@@ -130,6 +131,8 @@ AsianCountries<-c('Afghanistan','Bahrain','Bangladesh', 'Bhutan','Brunei Darussa
 
 # Data Processing ---------------------------------------------------------
 
+DefaultPhi<- 1
+
 MinimumCatchYears<- 10 #Minimum length of catch history
 
 OutlierBvBmsy<- 40 #Maximum BvBmsy that is allowed in the analysis 
@@ -181,17 +184,8 @@ Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCat
 
 TransbiasBin<- 0.9
 
-TransbiasIterations<- 1000
+TransbiasIterations<- 2000
 
-# Synthetic Stock Settings ------------------------------------------------
-
-GroupMethod<- 'All'
-
-GroupSamples<- 10 #The number of stocks to put in each synthetic nei. This can be a single number, or a vector for each group of interest
-
-Iterations<- 10 #Number of synthetic stocks to create within each group
-
-IdVar<- 'IdOrig' #Id variable to use in creating synthetic stocks
 
 
 # Catch-MSY ---------------------------------------------------------------
@@ -209,7 +203,7 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-NumCatchMSYIterations <- 2000  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 1000  ## number of iterations, e.g. 100000
 
 Parel<- TRUE #Run SNOWFALL in parallel?
 

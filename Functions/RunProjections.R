@@ -25,9 +25,12 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy)
   
   #   Policies<- c('Opt','CatchShare','Food','SQ','Fmsy','CloseDown')
   
-  Policies<- c('StatusQuoOpenAccess','Opt','CatchShare','Food','StatusQuoFForever','StatusQuoBForever','Fmsy','CloseDown')
+#   Policies<- c('StatusQuoOpenAccess','Opt','CatchShare','Food','StatusQuoFForever','StatusQuoBForever','Fmsy','CloseDown')
+
+  Policies<- c('StatusQuoOpenAccess','Opt','CatchShare','StatusQuoFForever','StatusQuoBForever','Fmsy','CloseDown')
   
-  Data$BvBmsy<- pmin(1.99,Data$BvBmsy) #Note capping projection data now
+
+  Data$BvBmsy<- pmin(1/Data$BtoKRatio,Data$BvBmsy) #Note capping projection data now
   
   Stocks<- unique(Data[Data$Year==BaselineYear,IdVar])
   
@@ -95,13 +98,13 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy)
   
   c_num<- Data$Price[HistoricData] * (2-Data$BvBmsyOpenAccess[HistoricData]) * Data$BvBmsyOpenAccess[HistoricData] * Data$MSY[HistoricData]*2^beta  
   
-  c_den<- ((2-Data$BvBmsyOpenAccess[HistoricData])*Data$r[HistoricData])^beta
+  c_den<- ((2-Data$BvBmsyOpenAccess[HistoricData])*Data$g[HistoricData])^beta
   
   Costs<- c_num/c_den
   
   Data$MarginalCost[HistoricData]<- Costs
   
-  Data$Profits[HistoricData]= Data$Price[HistoricData]*Data$MSY[HistoricData]*Data$FvFmsy[HistoricData]*Data$BvBmsy[HistoricData] - Data$MarginalCost[HistoricData]*(Data$FvFmsy[HistoricData]*Data$r[HistoricData]/2)^beta
+  Data$Profits[HistoricData]= Data$Price[HistoricData]*Data$MSY[HistoricData]*Data$FvFmsy[HistoricData]*Data$BvBmsy[HistoricData] - Data$MarginalCost[HistoricData]*(Data$FvFmsy[HistoricData]*Data$g[HistoricData]/2)^beta
   
   DataPlus<- rbind((Data),(TempStockMatrix))
   
