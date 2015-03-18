@@ -27,7 +27,7 @@ library(reshape2)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'PT Development'
+BatchFolder<- 'Myctophid 2_27_15'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -63,9 +63,9 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0.95
+SubSample<- 0.9
 
-NumCPUs<- 1 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 2 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
@@ -184,7 +184,7 @@ Regressions<- list(M1=c(DependentName,CatchVariables,LifeHistoryVars,'SpeciesCat
 
 TransbiasBin<- 0.9
 
-TransbiasIterations<- 1000
+TransbiasIterations<- 2000
 
 
 
