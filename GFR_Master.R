@@ -24,7 +24,7 @@ library(reshape2)
 # library(dplyr)
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- TRUE
+RunAnalyses<- FALSE
 
 BatchFolder<- 'Myctophid 2_27_15'
 
