@@ -45,7 +45,10 @@ FindOpenAccess<-function(MsyData,BaselineYear,BOAtol)
   OpenAccess$OrigBOA<-OpenAccess$BvBmsyOpenAccess
   
   # cap BOA for species categories with higher than expected BOA
-  OpenAccess$BvBmsyOpenAccess[(OpenAccess$BvBmsyOpenAccess)>=0.3]<- 0.3 # limit BOA to 0.3
+#   OpenAccess$BvBmsyOpenAccess[(OpenAccess$BvBmsyOpenAccess)>=0.3]<- 0.3 # limit BOA to 0.3
+  
+  OpenAccess$BvBmsyOpenAccess[(OpenAccess$BvBmsyOpenAccess)>=MaxOpenAccess]<- MaxOpenAccess # limit BOA to 0.3
+  
   
   # plot original BOA estimates
   PlotOpenAccess<-OpenAccess
