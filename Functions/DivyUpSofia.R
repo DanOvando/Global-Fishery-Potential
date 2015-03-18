@@ -39,15 +39,19 @@ DivyUpSofia<-function(ProjectionData,RawData)
   {
     sofiaRef$NumCntrys[a]<-length(unlist(str_split(sofiaRef$Country[a],pattern=',')))
   }
-    
   # Find individual country sofia stocks
   sofiaIndivIds<-sofiaRef$IdOrig[sofiaRef$NumCntrys==1]
 
   # save ProjectionData results for individual sofia stocks
   sofiaIndiv<-sofia[sofia$IdOrig %in% sofiaIndivIds,]
   
+  
   # subset sofiaRef to only include multinational stocks that need unlumping
   sofiaRef<-sofiaRef[sofiaRef$NumCntrys>1,]
+  
+  if (dim(sofiaRef)[1]>0)
+  {
+    
   
   # remove multinations sofia stocks from original projection data and add unlumped versions back in at end of function
   sofia<-sofia[!(sofia$IdOrig %in% sofiaRef$IdOrig),]
@@ -117,7 +121,7 @@ DivyUpSofia<-function(ProjectionData,RawData)
       
       # create new IdOrig that combines original sofia ID with country name
       unlumpSofia$IdOrig<-paste(sofiaIds[n],cntrys[d],sep='_') 
-      
+
       unlumpSofia$Catch<-unlumpSofia$Catch*cntryPercs$PercOfTotal[cntryPercs$Country==cntrys[d]]
       
       unlumpSofia$Biomass<-unlumpSofia$Biomass*cntryPercs$PercOfTotal[cntryPercs$Country==cntrys[d]]
@@ -140,16 +144,29 @@ DivyUpSofia<-function(ProjectionData,RawData)
   } # close sofia stock loop
 
 # flatten unlumped sofia list
+
 DivySofia<-ldply(DivySofia)
 
 # Combine results for country-level and multinational sofia stocks
 UnlumpSofia<-rbind(sofiaIndiv,DivySofia)
 
-# Combine Sofia data with rest of ProjectionData
-
 Data<-Data[!(Data$Dbase=='SOFIA'),]
 
 FinalData<-rbind(Data,UnlumpSofia)
+
+
+  } #close if
+
+if (dim(sofiaRef)[1]==0)
+{
+  
+  Data<-Data[!(Data$Dbase=='SOFIA'),]
+  
+  FinalData<- Data
+  
+}
+# Combine Sofia data with rest of ProjectionData
+
 
 # return ProjectionData with unlumped SOFIA data
 show(dim(FinalData))
