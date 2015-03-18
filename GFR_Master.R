@@ -25,9 +25,9 @@ library(reshape2)
 # library(dplyr)
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- FALSE
+RunAnalyses<- TRUE
 
-BatchFolder<- 'Myctophid 2_27_15'
+BatchFolder<- 'Merged PT Run'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -63,9 +63,9 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0.9
+SubSample<- 0.95
 
-NumCPUs<- 2 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 1 #Number of CPUs to use for parallel computing of CatchMSY
 
 CapRefs<- TRUE
 
@@ -219,7 +219,7 @@ beta<- 1.3
 
 Discount<- 0.05
 
-bvec<- seq(0.00000001,2,length.out=50)
+bvec<- seq(0.00000001,2.5,length.out=50)
 
 tol<- .1
 
