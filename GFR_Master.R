@@ -4,6 +4,7 @@
 # to estimate B/Bmsy 
 ######################################
 rm(list=ls())
+set.seed(423)
 library(car)
 library(plyr)
 library(lattice)
@@ -62,7 +63,7 @@ if (RunAnalyses==FALSE)
 
 # Analysis ----------------------------------------------------------------
 
-SubSample<- 0.9
+SubSample<- 0.95
 
 NumCPUs<- 1 #Number of CPUs to use for parallel computing of CatchMSY
 
@@ -130,7 +131,7 @@ AsianCountries<-c('Afghanistan','Bahrain','Bangladesh', 'Bhutan','Brunei Darussa
 
 # Data Processing ---------------------------------------------------------
 
-DefaultPhi<- 0.188
+DefaultPhi<- 1
 
 MinimumCatchYears<- 10 #Minimum length of catch history
 
@@ -202,7 +203,7 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-NumCatchMSYIterations <- 2000  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 1000  ## number of iterations, e.g. 100000
 
 Parel<- TRUE #Run SNOWFALL in parallel?
 
