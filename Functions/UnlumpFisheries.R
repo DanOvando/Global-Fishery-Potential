@@ -9,8 +9,8 @@
 # This code only runs during CountriesToRun. When evaluating individual fisheries, the stock will remained lumped
 
 # StitchIds<-CleanedData$StitchIds
-# data<-ProjectionData[ProjectionData$IdOrig %in% StitchIds$LumpedID,]
-# YearsBack<-0
+# Data<-ProjectionData
+# YearsBack<-4
 
 UnlumpFisheries<-function(Data,RawData,BaselineYear,YearsBack,StitchIds)
 {
@@ -19,7 +19,7 @@ UnlumpFisheries<-function(Data,RawData,BaselineYear,YearsBack,StitchIds)
   
   ids<-unique(data$IdOrig)
   
-  UnlumpedData<-list()
+  UnlumpedFaoData<-list()
   
   for(a in 1:length(ids))
   {
@@ -38,6 +38,8 @@ UnlumpFisheries<-function(Data,RawData,BaselineYear,YearsBack,StitchIds)
     
     percent<-ddply(raw,c('IdOrig','Country'),summarize,Percent=sum(Catch,na.rm=T)/sum(YearTotal,na.rm=T)) # calculate percent of 5 year total catch
       
+    stids<-unique(percent$IdOrig[(percent$Percent>0)])
+    
     ## create new stocks for country upside analysis and apply percentages to the projections of the lumped stock
     lumpproj<-tempdata
     
@@ -66,30 +68,22 @@ UnlumpFisheries<-function(Data,RawData,BaselineYear,YearsBack,StitchIds)
       
       unlumpproj$DiscProfits<-unlumpproj$DiscProfits*percent$Percent[percent$IdOrig==stids[b]]
       
-#       if(YearsBack==0) # if not calculating country catch averages, replace baseline year catch with actual catch data
-#       {
-#         unlumpproj$Catch[unlumpproj$Year==BaselineYear]<-raw$Catch[raw$IdOrig==stids[b]]
-#         
-#         unlumpproj<-unlumpproj[unlumpproj$Year>=BaselineYear,]
-#       
-#       } # close if
-      
       UnLumped<-rbind(UnLumped,unlumpproj)
       
     } # close stids loop
     
-    UnlumpedData[[a]]<-UnLumped
+    UnlumpedFaoData[[a]]<-UnLumped
     
     show(a)
   
   } # close lumped stock loop
   
   # flatten to one dataframe
-  UnLumpedData<-ldply(UnlumpedData, data.frame) 
+  UnLumpedFaoData<-ldply(UnlumpedFaoData, data.frame) 
   
   FinalData<-Data[!(grepl('Lumped',Data$IdOrig)),]
 
-  FinalData<-rbind(UnLumpedData,FinalData)
+  FinalData<-rbind(UnLumpedFaoData,FinalData)
 
   return(FinalData)
   
