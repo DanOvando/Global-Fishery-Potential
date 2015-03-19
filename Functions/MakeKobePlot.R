@@ -17,9 +17,9 @@ if (any(Data$BvBmsy<0,na.rm=T)){Data$BvBmsy<- exp(Data$BvBmsy)}
   
 BaselineData<- subset(Data,subset=Year==PlotYear & is.na(FvFmsy)==F & is.na(BvBmsy)==F)
 
-BaselineData$FvFmsy[BaselineData$FvFmsy>2]<- 2
+BaselineData$FvFmsy[BaselineData$FvFmsy>4]<- 4
 
-BaselineData$BvBmsy[BaselineData$BvBmsy>2]<- 2
+BaselineData$BvBmsy[BaselineData$BvBmsy>2.5]<- 2.5
 
 DensityData<- (kde2d(BaselineData$BvBmsy,BaselineData$FvFmsy,n=500))
 
