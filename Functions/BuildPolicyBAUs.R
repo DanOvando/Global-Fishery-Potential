@@ -35,7 +35,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear)
   
   BAUpess<-rbind(ram,cs,other)
   
-  BAUpess$Policy<-'BAU Pessimistic'
+  BAUpess$Policy<-'Business As Usual Pessimistic'
   
   
   # 2) "Business As Usual Current Management"
@@ -58,7 +58,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear)
   
   BAUoptim<-rbind(ram,cs,overff,mctofid)
   
-  BAUoptim$Policy<-'Current Management'
+  BAUoptim$Policy<-'Business As Usual'
   
   # 3) "Business As Usual Current Fishing Mortality" - Ram stocks projected under current fishing mortality
   
