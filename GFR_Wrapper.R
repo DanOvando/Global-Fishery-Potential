@@ -478,11 +478,11 @@ if (RunAnalyses==F) #Load baseline versions of key dataframes for analysis after
   
   NoBmsy<- is.na(ProjectionData$Bmsy)
     
-#   ProjectionData$k[NoBmsy]<- ((ProjectionData$MSY/ProjectionData$g)*(1/ProjectionData$BtoKRatio))[NoBmsy]
-#   
-#   ProjectionData$Bmsy[NoBmsy]<- (ProjectionData$MSY/ProjectionData$g)[NoBmsy]
-#   
-#   ProjectionData$Biomass[NoBmsy]<- (ProjectionData$BvBmsy*ProjectionData$Bmsy)[NoBmsy]
+  ProjectionData$k[NoBmsy]<- ((ProjectionData$MSY/ProjectionData$g)*(1/ProjectionData$BtoKRatio))[NoBmsy]
+  
+  ProjectionData$Bmsy[NoBmsy]<- (ProjectionData$MSY/ProjectionData$g)[NoBmsy]
+  
+  ProjectionData$Biomass[is.na(ProjectionData$Biomass) | ProjectionData$Biomass==0]<- (ProjectionData$BvBmsy*ProjectionData$Bmsy)[is.na(ProjectionData$Biomass) | ProjectionData$Biomass==0]
   
 }
 
