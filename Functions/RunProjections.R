@@ -25,11 +25,11 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy)
   
   #   Policies<- c('Opt','CatchShare','Food','SQ','Fmsy','CloseDown')
   
-#   Policies<- c('StatusQuoOpenAccess','Opt','CatchShare','Food','StatusQuoFForever','StatusQuoBForever','Fmsy','CloseDown')
-
+  #   Policies<- c('StatusQuoOpenAccess','Opt','CatchShare','Food','StatusQuoFForever','StatusQuoBForever','Fmsy','CloseDown')
+  
   Policies<- c('StatusQuoOpenAccess','Opt','CatchShare','StatusQuoFForever','StatusQuoBForever','Fmsy','CloseDown')
   
-
+  
   Data$BvBmsy<- pmin(1/Data$BtoKRatio,Data$BvBmsy) #Note capping projection data now
   
   Stocks<- unique(Data[Data$Year==BaselineYear,IdVar])
@@ -79,7 +79,7 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy)
   TempMat <- lapply(seq(along = Projections), function(i)    Projections[[i]]$TempMat)
   
   TempStockMatrix<- ldply(TempMat,data.frame)
-
+  
   PolicyStorage<- ldply(PolicyStorage,data.frame)
   
   
@@ -96,15 +96,17 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy)
   
   Data$FvFmsy[HistoricFData]<- (Data$Catch[HistoricFData]/Data$MSY[HistoricFData])/Data$BvBmsy[HistoricFData]
   
-  c_num<- Data$Price[HistoricData] * (2-Data$BvBmsyOpenAccess[HistoricData]) * Data$BvBmsyOpenAccess[HistoricData] * Data$MSY[HistoricData]*2^beta  
+  FOA<- ((Data$phi+1)/Data$phi)*(1-Data$BvBmsyOpenAccess^Data$phi/(Data$phi+1))
   
-  c_den<- ((2-Data$BvBmsyOpenAccess[HistoricData])*Data$g[HistoricData])^beta
+  c_num <-  Data$Price*FOA*Data$BvBmsyOpenAccess*Data$MSY
   
-  Costs<- c_num/c_den
+  c_den = (Data$g*FOA)^beta
   
-  Data$MarginalCost[HistoricData]<- Costs
+  cost = (c_num/c_den)[HistoricData]
   
-  Data$Profits[HistoricData]= Data$Price[HistoricData]*Data$MSY[HistoricData]*Data$FvFmsy[HistoricData]*Data$BvBmsy[HistoricData] - Data$MarginalCost[HistoricData]*(Data$FvFmsy[HistoricData]*Data$g[HistoricData]/2)^beta
+  Data$MarginalCost[HistoricData]<- cost
+  
+  Data$Profits[HistoricData]= Data$Price[HistoricData]*Data$MSY[HistoricData]*Data$FvFmsy[HistoricData]*Data$BvBmsy[HistoricData] - Data$MarginalCost[HistoricData]*(Data$FvFmsy[HistoricData]*Data$g[HistoricData])^beta
   
   DataPlus<- rbind((Data),(TempStockMatrix))
   
