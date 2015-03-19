@@ -1,13 +1,14 @@
 SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParams,PolicyStorage,ErrorVars,ErrorSize)
 {
   
-  Sim_Forward= function(FStatusQuo,BStatusQuo,Policy,Policies,IsCatchShare,bvec,b0,Time,p,MSY,c,r,beta)
+  Sim_Forward= function(FStatusQuo,BStatusQuo,Policy,Policies,IsCatchShare,bvec,b0,Time,p,MSY,c,g,phi,beta)
   {  
-    FindF<- function(Stocks,CurrentB,Policy,Policies,BCount)
+    #Function to move each fishery forward in time simultaneously
+    FindF<- function(Stocks,CurrentB,Policy,Policies,BCount) #Function that finds f for each fishery by it's closeest match from bvec
     {
-
+      
       BvecMat=matrix(Policies$b,nrow=BCount,ncol=length(Stocks))
-            
+      
       CurrentBMat<- matrix(rep(CurrentB,BCount),nrow=BCount,ncol=length(CurrentB),byrow=T)
       
       FVecMat<- matrix(Policies[,Policy],nrow=BCount,ncol=length(CurrentB))
@@ -15,21 +16,22 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
       BDiff=(BvecMat-CurrentBMat)^2
       
       ClosestB<- apply(BDiff, 2, function(x) max(which(x == min(x, na.rm = TRUE))))
+      #Find the closest value in bvec for each fishery
       
       FFun= function(x,FVecMat,ClosestB)
       {
         y=FVecMat[ClosestB[x],x]
       }
       
-      NextF<- sapply(1:length(Stocks),FFun,FVecMat=FVecMat,ClosestB=ClosestB)     
-#       NextF<- FVecMat[ClosestB,]
+      NextF<- sapply(1:length(Stocks),FFun,FVecMat=FVecMat,ClosestB=ClosestB)    #Calculate next f based on current b 
+      #       NextF<- FVecMat[ClosestB,]
       #       NextF<- approx(StockPol$b,StockPol[,Policy],CurrentB[i])$y
       return(NextF)
     }
     
     OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
     {
-      
+      #Change f in response to profits
       if (t==1)
       {
         f=f
@@ -40,6 +42,7 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
       }
       return(f)
     }
+    
     b = matrix(0,Time+1,length(FStatusQuo))
     f = b
     pi = b
@@ -61,7 +64,7 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
       c[IsCatchShare==1]<-c[IsCatchShare==1]/CatchShareCost
     }
     
-    MsyProfits<- MSY*p-c*(r/2)^beta
+    MsyProfits<- MSY*p-c*(g)^beta
     
     Omega<- .125
     
@@ -71,8 +74,8 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     {
       if (Policy!='StatusQuoOpenAccess')
       { 
-#         browser()
-#         f[t,]<- system.time(lapply(1:length(Stocks),FindF,Stocks=Stocks,CurrentB=b[t,],Policy,Policies))
+        #         browser()
+        #         f[t,]<- system.time(lapply(1:length(Stocks),FindF,Stocks=Stocks,CurrentB=b[t,],Policy,Policies))
         f[t,]<- (FindF(Stocks=Stocks,CurrentB=b[t,],Policy,Policies,BCount))
       }
       
@@ -87,10 +90,14 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
         f[t,]<- FStatusQuo
         b[t,]<- BStatusQuo
       }
-      pi[t,] = p*MSY*f[t,]*b[t,] - c*(f[t,]*r/2)^beta
+      pi[t,] = p*MSY*f[t,]*b[t,] - c*(f[t,]*g)^beta
       y[t,] = MSY*f[t,]*b[t,]
       if (t<Time+1)
-      {b[t+1,] =pmax(min(bvec), b[t,] + r*b[t,]*(1-b[t,]/2) - r/2*b[t,]*f[t,])}
+      {
+#         b[t+1,] =pmax(min(bvec), b[t,] + r*b[t,]*(1-b[t,]/2) - r/2*b[t,]*f[t,])
+        b[t+1] =pmax(min(bvec), b[t,] + ((phi+1)/phi)*g*b[t,]*(1-b[t,]^phi/(phi+1)) - g*b[t,]*f[t,])
+        
+      }
     }
     colnames(f)<- Stocks
     colnames(b)<- Stocks
@@ -116,8 +123,8 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     Projection<- data.frame(fFlat,bFlat[,'BvBmsy'],yFlat[,'Catch'],piFlat[,'Profits'])
     
     colnames(Projection)<- c('Year','IdOrig','FvFmsy','BvBmsy','Catch','Profits')
-
-#     browser()
+    
+    #     browser()
     #     quartz()
     #     ggplot(data=Projection,aes(x=BvBmsy,y=FvFmsy))+geom_line()+facet_wrap(~IdOrig)
     #     
@@ -171,15 +178,20 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     
     MSY<- PossParams$MSY
     
-    r<- PossParams$r
+    g<- PossParams$g
+    
+    phi<- PossParams$phi
+    
     FStatusQuo<- PossParams$FinalFvFmsy
     BStatusQuo<- PossParams$FinalBvBmsy
     #     IsCatchShare<- RecentStockData$CatchShare[1]
     IsCatchShare<- RecentStockData$CatchShare
     
-    c_num <-  Price*(2-BOA)*BOA*MSY*2^beta
+    FOA<- ((phi+1)/phi)*(1-BOA^phi/(phi+1))
     
-    c_den = ((2-BOA)*r)^beta
+    c_num <-  Price*FOA*BOA*MSY
+    
+    c_den = (g*FOA)^beta
     
     cost = c_num/c_den
     
@@ -194,7 +206,7 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     cost[IsCatchShare==1]<-cost[IsCatchShare==1]*CatchShareCost
     #     }
     
-    MsyProfits = Price*MSY - cost*(r/2)^beta
+    MsyProfits = Price*MSY - cost*(g)^beta
     
     PossParams$Price<- Price
     
@@ -220,9 +232,9 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
       cc<- cc+1
       #       eval(parse(text=paste('Policy<-',Policies[p],'Policy',sep=''))) 
       
-      Projection<- Sim_Forward(FStatusQuo,BStatusQuo,Policies[p],PolicyFuncs,IsCatchShare,bvec,BStatusQuo,ProjectionTime,Price,MSY,cost,r,beta)
+      Projection<- Sim_Forward(FStatusQuo,BStatusQuo,Policies[p],PolicyFuncs,IsCatchShare,bvec,BStatusQuo,ProjectionTime,Price,MSY,cost,g,phi,beta)
       
-      Projection<- join(Projection,PossParams[,c('IdOrig','MSY','r','K','Price','Cost','MsyProfits','BOA')],by='IdOrig',match='first')
+      Projection<- join(Projection,PossParams[,c('IdOrig','MSY','g','phi','K','Price','Cost','MsyProfits','BOA')],by='IdOrig',match='first')
       
       Projection<- join(Projection,RecentStockData[,c('IdOrig','Country','Dbase','SciName','CommName','IdLevel','SpeciesCatName')],by='IdOrig',match='first')        
       
@@ -231,7 +243,7 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
       Projection$Iteration<- k
       
       ProjectionMat<- rbind(ProjectionMat,Projection)
-
+      
       #       
       #       ProjectionMat[cc:(cc-1+dim(Projection)[1]),]<- as.matrix(Projection)
       #       

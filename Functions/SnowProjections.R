@@ -10,7 +10,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   RunDynamicOpt2= function(MSY,g,phi,p,cost,beta,disc,bvec,tol)
   {
-    
+    ### Function to run the dynamic optimiztion of f as a function of b
     # MSY<- RecentStockData$MSY
     # g<- RecentStockData$g
     # p<- RecentStockData$Price
@@ -39,6 +39,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
         else
         {guess= f1[i-1]}
         #         FishOut= optim(par=guess,fn=GFRM_funR,lower=0.0001,upper=1.99,b=b,p=p,MSY=MSY,c=c,g=g,beta=beta,V=V,bvec=bvec,delta=delta,method="L-BFGS-B")
+        #Optimize f for each bvec
         FishOut= nlminb(guess,GFRM_funR,lower=0.0001,upper=3,b=b,p=p,MSY=MSY,cost=cost,phi=phi,gar=g,beta=beta,V=V,bvec=bvec,delta=delta)
         Vnew[i]= -FishOut$objective
         f1[i]= FishOut$par
@@ -70,6 +71,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   GFRM_funR= function(f,b,p,MSY,cost,phi,gar,beta,V,bvec,delta)
   {  
+   #Dynamic Optimization workhorse function 
     g<- gar
     
     profit= p*MSY*f*b - cost*(f*g)^beta
@@ -93,7 +95,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
   {
-    
+    #Function to adjust f in response to prior profits
     if (t==1)
     {
       f=f
@@ -107,6 +109,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   Sim_Forward= function(Policy,fpolicy,IsCatchShare,bvec,b0,Time,p,MSY,c,g,phi,beta)
   {  
+    #Functino to simulate fishery populations over time
     b = matrix(0,Time,1)
     f = b
     pi = b
@@ -143,7 +146,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
       }
       pi[t] = p*MSY*f[t]*b[t] - c*(f[t]*g)^beta
       y[t] = MSY*f[t]*b[t]
-      if (t<Time)
+      if (t<Time) #Move pella tomlinson forward
       {
         #         b[t+1] =max(min(bvec), b[t] + g*b[t]*(1-b[t]/2) - g/2*b[t]*f[t])
         b[t+1] =max(min(bvec), b[t] + ((phi+1)/phi)*g*b[t]*(1-b[t]^phi/(phi+1)) - g*b[t]*f[t])
@@ -299,6 +302,11 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   if (any(is.na(TempMat$Bmsy)==F))
   {
     TempMat$Bmsy<- TempMat$k * TempMat$BtoKRatio
+    
+    TempMat$k<- ((TempMat$MSY/TempMat$g)*(1/TempMat$BtoKRatio))
+    
+    TempMat$Bmsy<- (TempMat$MSY/TempMat$g)
+        
   }
   
   TempMat$Biomass<- (TempMat$BvBmsy* (TempMat$Bmsy))

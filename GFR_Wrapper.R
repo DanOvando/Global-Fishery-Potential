@@ -121,63 +121,6 @@ if (RunAnalyses==TRUE)
   
   show('Raw Data Processed')
   
-  #   # Create synthetic stocks -------------------------------------------------
-  #   
-  #   if (GroupMethod=='All')
-  #   {
-  #     Groups<- unique(FullData$SpeciesCatName,na.rm=T)
-  #     
-  #     Groups<- Groups[is.na(Groups)==F]
-  #   }
-  #   if (GroupMethod=='Nei')
-  #   {
-  #     Groups<- unique(FaoData$SpeciesCatName[ (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F])
-  #   }
-  #   
-  #   SyntheticData<- StitchFish(RawData[RawData$Dbase=='RAM' ,],IdVar,Groups,GroupSamples,Iterations) 
-  #   
-  #   SyntheticData$BvBmsy[SyntheticData$BvBmsy>OutlierBvBmsy]<- NA
-  #   
-  #   show('Synthetic Stocks Created')
-  #   
-  #   for (m in 1:length(ModelNames))
-  #   {
-  #     
-  #     eval(parse(text=paste('SyntheticData$',ModelNames[m],'Marker<- FALSE',sep='')))
-  #     
-  #     eval(parse(text=paste('SyntheticData$',ModelNames[m],'Prediction<- NA',sep='')))
-  #     
-  #   }
-  
-  # Prepare data for regression ---------------------------------------------
-  
-  #   library(proftools)
-  #   
-  #   #   if (CapRefs==T)
-  #   #   {
-  #   #     RamData$BvBmsy[RamData$BvBmsy>1.9]<- 1.9
-  #   # 
-  #   #     RamData$FvFmsy[RamData$FvFmsy>1.9]<- 1.9
-  #   #   }
-  #   #   
-  #   Fisheries<- (unique(SyntheticData$IdOrig[SyntheticData$Catch>0]))
-  # 
-  #   SyntheticFormatRegressionResults<- mclapply(1:(length(Fisheries)), FormatForRegression,mc.cores=NumCPUs,Data=SyntheticData,Fisheries=Fisheries,DependentVariable=DependentVariable,CatchVariables=CatchVariables,CatchLags=CatchLags,LifeHistoryVars=LifeHistoryVars,IsLog=IsLog,IdVar=IdVar) 
-  #   
-  #   SyntheticData <- ldply (SyntheticFormatRegressionResults, data.frame)
-  #   
-  #   sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SyntheticRegressionFormatProgress.txt" )
-  #   
-  #   
-  #   
-  #   sfExport('Data','Fisheries','DependentVariable','CatchVariables','CatchLags','LifeHistoryVars','IsLog','IdVar')
-  #   
-  #   SyntheticFormatRegressionResults <- (sfClusterApplyLB(1:(length(Fisheries)), FormatForRegression))      
-  #   
-  #   sfStop()
-  #   
-  #   rm(Data)
-  
   show('Data prepared for regression')
   
   # Rprof(NULL)
@@ -232,34 +175,7 @@ if (RunAnalyses==TRUE)
   
   save(RealModels,RealModelSdevs,file=paste(ResultFolder,'PrmRegressions.Rdata',sep=''))
   
-  #   NeiRegressions<- list()
-  #   
-  #   NeiRegressions$M6<- Regressions$M6
-  #   
-  #   NeiRegressions$M7<- Regressions$M7
-  #   
-  #   SyntheticData$ExtendedTime<- FALSE
-  #   
-  #   NeiModels<- RunRegressions(SyntheticData,NeiRegressions,'Synthetic Stocks')
-  #   
-  #   SyntheticData<- NeiModels$RamData
-  #   
-  #   NeiModels<- NeiModels$Model
-  #   
-  #   NeiModelFactorLevels<- NULL
-  #   
-  #   for (m in 1:length(names(Regressions)))
-  #   {
-  #     Model<- names(Regressions)[m]
-  #     
-  #     eval(parse(text=paste('NeiModelFactorLevels$',Model,'<- NeiModels$',Model,'$xlevels$SpeciesCatName',sep='')))
-  #     
-  #   }
-  #   
-  #   #     SyntheticData<- InsertFisheryPredictions(SyntheticData,NeiModels) #Add fishery predictions back into main dataframe
-  #   
-  #   NeiModelSdevs<- CreateSdevBins(NeiModels,SyntheticData,TransbiasBin)
-  #   
+  
   # Prepare data for regression application ---------------------------------
   
   WhereFaoNeis<- (grepl('nei',FaoData$CommName) | grepl('spp',FaoData$SciName)) & grepl('not identified',FaoData$SpeciesCatName)==F #Find unassessed NEIs
@@ -559,6 +475,14 @@ if (RunAnalyses==F) #Load baseline versions of key dataframes for analysis after
   MsyData<- OriginalMsyData #Fisheries that have B/Bmsy and MSY
   
   ProjectionData<- OriginalProjectionData #Fisheries that have B/Bmsy, MSY, and we've run the projections
+  
+  NoBmsy<- is.na(ProjectionData$Bmsy)
+    
+  ProjectionData$k[NoBmsy]<- ((ProjectionData$MSY/ProjectionData$g)*(1/ProjectionData$BtoKRatio))[NoBmsy]
+  
+  ProjectionData$Bmsy[NoBmsy]<- (ProjectionData$MSY/ProjectionData$g)[NoBmsy]
+  
+  ProjectionData$Biomass[is.na(ProjectionData$Biomass) | ProjectionData$Biomass==0]<- (ProjectionData$BvBmsy*ProjectionData$Bmsy)[is.na(ProjectionData$Biomass) | ProjectionData$Biomass==0]
   
 }
 

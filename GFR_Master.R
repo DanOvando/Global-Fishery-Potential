@@ -27,7 +27,7 @@ library(reshape2)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'PT High Cost'
+BatchFolder<- 'PT 1.0'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -63,19 +63,19 @@ if (RunAnalyses==FALSE)
 
 # Key Parameters ----------------------------------------------------------------
 
-SubSample<- 0.95
+SubSample<- 0
 
-NumCPUs<- 1 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 4 #Number of CPUs to use for parallel computing of CatchMSY
 
 DefaultPhi<- .188
 
-NumCatchMSYIterations <- 1000  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 25000  ## number of iterations, e.g. 100000
 
-ProjectionTime<- 20
+ProjectionTime<- 38
 
 bvec<- seq(0.00000001,2.5,length.out=30)
 
-MaxOpenAccess<- 0.6
+MaxOpenAccess<- 0.5
 
 # Data Options -------------------------
 
@@ -219,7 +219,6 @@ Parel<- TRUE #Run SNOWFALL in parallel?
 
 # Projections -------------------------------------------------------------
 
-ProjectionTime<- 20
 
 CatchSharePrice<- 1.31
 

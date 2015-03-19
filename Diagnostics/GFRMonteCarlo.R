@@ -1,8 +1,8 @@
 # GFRMonteCarlo<- function(CatchMSYPossibleParams,PolicyStorage,ErrorVars,ErrorSize)
 # {
 #   
-
-load('Results/Mycothpids Ahoy 2_25_15/Data/Global Fishery Recovery Results.rdata')
+rm(list=ls())
+load('Results/Preflight Check/Data/Global Fishery Recovery Results.rdata')
 library(parallel)
 library(plyr)
 library(ggplot2)
@@ -19,6 +19,7 @@ Stocks<- Stocks[Stocks %in% CatchMSYPossibleParams$IdOrig ]
 # Rprof(tmp <- tempfile(),line.profiling=T)
 NumCPUs<- 3
 
+
 MonteMat<- SnowMonteCarlo(250,Stocks=Stocks,ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
                           PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=1)
 # Rprof() 
@@ -29,7 +30,7 @@ MonteMat<- SnowMonteCarlo(250,Stocks=Stocks,ProjectionData=ProjectionData,CatchM
 # +geom_line()
 # MonteMat<- ldply(MonteMat)
 save(MonteMat,file=paste(ResultFolder,'MonteCarlo_Results.Rdata',sep=''))
-load('Results/Mycothpids Ahoy 2_25_15/Data/MonteCarlo_Results.Rdata')
+# load('Results/Mycothpids Ahoy 2_25_15/Data/MonteCarlo_Results.Rdata')
 
 
 MonteCarlo<- ddply(MonteMat,c('Iteration','Year','Policy'),summarize,MSY=sum(MSY,na.rm=T),Profits=sum(Profits,na.rm=T),
@@ -54,7 +55,7 @@ dev.off()
 # dev.off()
 
 pdf(file=paste(FigureFolder,'MC_Profits.pdf',sep=''))
-MCProfits<- (ggplot(data=subset(MonteCarlo,Year==2048),aes(Profits,fill=Policy))+
+MCProfits<- (ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(Profits,fill=Policy))+
                geom_density(alpha=0.3)+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))+
                geom_vline(aes(xintercept=0),size=2)+
                coord_cartesian(xlim=c(-3e11,2e11))
@@ -64,7 +65,7 @@ print(MCProfits)
 dev.off()
 
 pdf(file=paste(FigureFolder,'MC_Catch.pdf',sep=''))
-MCCatch<- (ggplot(data=subset(MonteCarlo,Year==2048),aes(Catch,fill=Policy))+
+MCCatch<- (ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(Catch,fill=Policy))+
              geom_density(alpha=0.5)+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))
 )
 print(MCCatch)
@@ -72,19 +73,19 @@ dev.off()
 
 
 pdf(file=paste(FigureFolder,'MC_BvBmsy.pdf',sep=''))
-MCBvB<-(ggplot(data=subset(MonteCarlo,Year==2048),aes(BvBmsy,fill=(Policy)))+
+MCBvB<-(ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(BvBmsy,fill=(Policy)))+
           geom_density(alpha=0.7)+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9)))
 print(MCBvB)
 dev.off()
 
 pdf(file=paste(FigureFolder,'MC_BvBmsy_OA.pdf',sep=''))
-MCBvB_OA<-(ggplot(data=subset(MonteCarlo,Year==2048 & Policy=='StatusQuoOpenAccess'),aes(BvBmsy,fill=(Policy)))+
+MCBvB_OA<-(ggplot(data=subset(MonteCarlo,Year==max(Year) & Policy=='StatusQuoOpenAccess'),aes(BvBmsy,fill=(Policy)))+
           geom_density(alpha=0.7)+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9)))
 print(MCBvB_OA)
 dev.off()
 
 pdf(file=paste(FigureFolder,'MC_FvFmsy.pdf',sep=''))
-MCFvF<-(ggplot(data=subset(MonteCarlo,Year==2048 ),aes(jitter(FvFmsy,factor=.1),fill=(Policy)))+
+MCFvF<-(ggplot(data=subset(MonteCarlo,Year==max(Year) ),aes(jitter(FvFmsy,factor=.1),fill=(Policy)))+
           geom_density(alpha=0.7)+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))
         + coord_cartesian(ylim=c(0,25))+xlab('FvFmsy'))
         
