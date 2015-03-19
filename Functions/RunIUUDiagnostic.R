@@ -1,4 +1,4 @@
-RunIUUDiagnostic<- function(Data,Regressions,IUULevel,CMSYIterations,)
+RunIUUDiagnostic<- function(Data,Regressions,IUULevel,CMSYIterations)
 {
   Data<- MsyData
   
