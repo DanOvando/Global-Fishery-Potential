@@ -27,7 +27,7 @@ library(reshape2)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'Merged PT Run'
+BatchFolder<- 'PT High Cost'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -47,7 +47,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Myctophid 2_27_15'
+  BatchFolder<- 'Merged PT Full Run'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
@@ -61,11 +61,23 @@ if (RunAnalyses==FALSE)
   
 }
 
-# Analysis ----------------------------------------------------------------
+# Key Parameters ----------------------------------------------------------------
 
 SubSample<- 0.95
 
 NumCPUs<- 1 #Number of CPUs to use for parallel computing of CatchMSY
+
+DefaultPhi<- .188
+
+NumCatchMSYIterations <- 1000  ## number of iterations, e.g. 100000
+
+ProjectionTime<- 20
+
+bvec<- seq(0.00000001,2.5,length.out=30)
+
+MaxOpenAccess<- 0.6
+
+# Data Options -------------------------
 
 CapRefs<- TRUE
 
@@ -131,7 +143,6 @@ AsianCountries<-c('Afghanistan','Bahrain','Bangladesh', 'Bhutan','Brunei Darussa
 
 # Data Processing ---------------------------------------------------------
 
-DefaultPhi<- 1
 
 MinimumCatchYears<- 10 #Minimum length of catch history
 
@@ -203,7 +214,6 @@ BestValues<- 1 # 1 subs in RAM F/Fmsy and MSY values where possible
 
 ManualFinalYear<- 0 #Set year you want to run all analyses for
 
-NumCatchMSYIterations <- 1000  ## number of iterations, e.g. 100000
 
 Parel<- TRUE #Run SNOWFALL in parallel?
 
@@ -219,7 +229,6 @@ beta<- 1.3
 
 Discount<- 0.05
 
-bvec<- seq(0.00000001,2.5,length.out=50)
 
 tol<- .1
 
