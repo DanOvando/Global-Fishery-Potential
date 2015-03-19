@@ -132,7 +132,9 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
     else if(res == "High") {c(0.5,1)}
     else {c(0.15,0.5)} ## Medium, or default if no res is found  
   }
-  start_g<- start_g/2 #To account for g instead of r
+  phi<- unique(Data$phi)
+  
+  start_g<- start_g*(phi/(1+phi)) #To account for g instead of r
   
   nyr  <- length(yr)    ## number of years in the time series
   
