@@ -587,10 +587,10 @@ ProjectionData<-BuildPolicyBAUs(ProjectionData,BaselineYear)
 
 # Calculate fishery upsides on full ProjectionData prior to unlumping stocks
 
-UpsideAllStocks<-FisheriesUpsideV3(ProjectionData,BaselineYear,DenominatorPolicy='Business As Usual Optimistic',
+UpsideAllStocks<-FisheriesUpsideV3(ProjectionData,BaselineYear,DenominatorPolicy='Current Management',
                                    RecoveryThreshold=0.8,LumpedName='Lumped Projection Data',SubsetName='All Stocks')
 
-UpsideOverfishOnly<-FisheriesUpsideV3(ProjectionData,BaselineYear,DenominatorPolicy='Business As Usual Optimistic',
+UpsideOverfishOnly<-FisheriesUpsideV3(ProjectionData,BaselineYear,DenominatorPolicy='Current Management',
                                       RecoveryThreshold=0.8,LumpedName='Lumped Projection Data',SubsetName='Overfish Only')
 
 # Unlump lumped fisheries and create separate ProjectionData dataframe with unlumped stocks
@@ -609,12 +609,12 @@ write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),Unlumpe
 
 # Calculate fishery upsides from UnlumpedProjectionData
 
-UnlumpedUpsideAllStocks<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='Business As Usual Optimistic',
+UnlumpedUpsideAllStocks<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='Current Management',
                                            RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='All Stocks')
 
 write.csv(file=paste(ResultFolder,'Unlumped Country Upsides All Stocks.csv',sep=''),UnlumpedUpsideAllStocks$CountryUpsides)
 
-UnlumpedUpsideOverfishOnly<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='Business As Usual Optimistic',
+UnlumpedUpsideOverfishOnly<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='Current Management',
                                               RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='Overfish Only')
 
 write.csv(file=paste(ResultFolder,'Unlumped Country Upsides Overfish Only.csv',sep=''),UnlumpedUpsideOverfishOnly$CountryUpsides)
