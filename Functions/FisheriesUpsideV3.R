@@ -42,8 +42,8 @@ FisheriesUpsideV3<-function(ProjectionData,BaselineYear,DenominatorPolicy,Recove
   
   NPV$AbsChangeFromSQNPV<-NPV$FinalNPV-NPV$NPVSQ
   
-#   NPV$PercChangeFromSQFood<-100*((NPV$TotalFood-NPV$FoodSQ)/abs(NPV$FoodSQ)-1)
-
+  #   NPV$PercChangeFromSQFood<-100*((NPV$TotalFood-NPV$FoodSQ)/abs(NPV$FoodSQ)-1)
+  
   NPV$PercChangeFromSQFood<-PercChange(NPV$TotalFood,NPV$FoodSQ)
   
   
@@ -56,7 +56,7 @@ FisheriesUpsideV3<-function(ProjectionData,BaselineYear,DenominatorPolicy,Recove
   Baseline<-Data[Data$Year==BaselineYear & Data$Policy=='Historic',]
   
   # Analyze time trends in metrics
-  
+
   TimeTrend<-Data[Data$Year>BaselineYear,c('IdOrig','Policy','Year','CommName','Country','BvBmsy','FvFmsy','MSY','Catch','Profits','DiscProfits','Biomass')]
   
   TimeTrend<-TimeTrend[with(TimeTrend,order(IdOrig,Year)),]
@@ -75,25 +75,25 @@ FisheriesUpsideV3<-function(ProjectionData,BaselineYear,DenominatorPolicy,Recove
   
   # Time trend values
   
-#   TimeTrend$PercChangeTotalProfits<-100*((TimeTrend$Profits-TimeTrend$BaselineProfits)/abs(TimeTrend$BaselineProfits)-1) #Percent change in  profits from current
-#   
-#   TimeTrend$PercChangeTotalCatch<-100*((TimeTrend$Catch/TimeTrend$BaselineCatch)-1) #Percent change in  catch from current
-#   
-#   TimeTrend$PercChangeTotalBiomass<-100*((TimeTrend$Biomass/TimeTrend$BaselineBiomass)-1) #Percent change in  biomass from current
-#   
-TimeTrend$PercChangeTotalProfits<- PercChange(TimeTrend$Profits,TimeTrend$BaselineProfits)  #Percent change in  profits from current
+  #   TimeTrend$PercChangeTotalProfits<-100*((TimeTrend$Profits-TimeTrend$BaselineProfits)/abs(TimeTrend$BaselineProfits)-1) #Percent change in  profits from current
+  #   
+  #   TimeTrend$PercChangeTotalCatch<-100*((TimeTrend$Catch/TimeTrend$BaselineCatch)-1) #Percent change in  catch from current
+  #   
+  #   TimeTrend$PercChangeTotalBiomass<-100*((TimeTrend$Biomass/TimeTrend$BaselineBiomass)-1) #Percent change in  biomass from current
+  #   
+  TimeTrend$PercChangeTotalProfits<- PercChange(TimeTrend$Profits,TimeTrend$BaselineProfits)  #Percent change in  profits from current
+  
+  TimeTrend$PercChangeTotalCatch<- PercChange(TimeTrend$Catch,TimeTrend$BaselineCatch) #Percent change in  catch from current
 
-TimeTrend$PercChangeTotalCatch<- PercChange(TimeTrend$Catch,TimeTrend$BaselineCatch) #Percent change in  catch from current
-
-TimeTrend$PercChangeTotalBiomass<- PercChange(TimeTrend$Biomass,TimeTrend$BaselineBiomass) #Percent change in  biomass from current
-
-
+  TimeTrend$PercChangeTotalBiomass<- PercChange(TimeTrend$Biomass,TimeTrend$BaselineBiomass) #Percent change in  biomass from current
+  
+  
   TimeTrend$AbsChangeTotalProfits<-TimeTrend$Profits-TimeTrend$BaselineProfits #absolute change in  profits from current
   
   TimeTrend$AbsChangeTotalCatch<-TimeTrend$Catch-TimeTrend$BaselineCatch #Percent change in  catch from current
   
   TimeTrend$AbsChangeTotalBiomass<-TimeTrend$Biomass-TimeTrend$BaselineBiomass #Percent change in  biomass from current
-
+  
   # Add in SQ values
   
   denominator2<-TimeTrend[TimeTrend$Policy==DenominatorPolicy,c('Country','IdOrig','Year','Catch','Biomass','Profits','BvBmsy')]
@@ -106,18 +106,18 @@ TimeTrend$PercChangeTotalBiomass<- PercChange(TimeTrend$Biomass,TimeTrend$Baseli
   
   # Calculate % relative to SQ
   
-#   TimeTrend$PercChangeFromSQTotalCatch<-100*((TimeTrend$Catch/TimeTrend$CatchSQ)-1)
-#   
-#   TimeTrend$PercChangeFromSQTotalBiomass<-100*((TimeTrend$Biomass/TimeTrend$BiomassSQ)-1)
-#   
-#   TimeTrend$PercChangeFromSQProfits<-100*((TimeTrend$Profits/TimeTrend$ProfitsSQ)-1)
+  #   TimeTrend$PercChangeFromSQTotalCatch<-100*((TimeTrend$Catch/TimeTrend$CatchSQ)-1)
+  #   
+  #   TimeTrend$PercChangeFromSQTotalBiomass<-100*((TimeTrend$Biomass/TimeTrend$BiomassSQ)-1)
+  #   
+  #   TimeTrend$PercChangeFromSQProfits<-100*((TimeTrend$Profits/TimeTrend$ProfitsSQ)-1)
   
-TimeTrend$PercChangeFromSQTotalCatch<-PercChange(TimeTrend$Catch,TimeTrend$CatchSQ)
-
-TimeTrend$PercChangeFromSQTotalBiomass<- PercChange(TimeTrend$Biomass,TimeTrend$BiomassSQ)
-
-TimeTrend$PercChangeFromSQProfits<-PercChange(TimeTrend$Profits,TimeTrend$ProfitsSQ)
-
+  TimeTrend$PercChangeFromSQTotalCatch<-PercChange(TimeTrend$Catch,TimeTrend$CatchSQ)
+  
+  TimeTrend$PercChangeFromSQTotalBiomass<- PercChange(TimeTrend$Biomass,TimeTrend$BiomassSQ)
+  
+  TimeTrend$PercChangeFromSQProfits<-PercChange(TimeTrend$Profits,TimeTrend$ProfitsSQ)
+  
   TimeTrend$AbsChangeFromSQTotalCatch<-TimeTrend$Catch-TimeTrend$CatchSQ
   
   TimeTrend$AbsChangeFromSQTotalBiomass<-TimeTrend$Biomass-TimeTrend$BiomassSQ
@@ -127,11 +127,11 @@ TimeTrend$PercChangeFromSQProfits<-PercChange(TimeTrend$Profits,TimeTrend$Profit
   TimeTrend$Recovered[TimeTrend$BvBmsy>=RecoveryThreshold]<-TRUE
   
   TimeTrend$Recovered[TimeTrend$BvBmsy<RecoveryThreshold]<-FALSE
-    
+  
   # Indicate the denominator policy used to make all the SQ calculations
   
   TimeTrend$DenominatorPolicy<-DenominatorPolicy
-    
+  
   # If desired later plot and calculate triple bottom line trajectories here
   
   # Find steady state values for each fishery
@@ -141,7 +141,7 @@ TimeTrend$PercChangeFromSQProfits<-PercChange(TimeTrend$Profits,TimeTrend$Profit
   # Add in NPV values
   
   FinalYr<-merge(FinalYr,NPV)
-    
+  
   FisheryUpside<-FinalYr
   
   ## Find fisheries satisfying triple bottom line over time----------------------------------------------------------
@@ -164,45 +164,45 @@ TimeTrend$PercChangeFromSQProfits<-PercChange(TimeTrend$Profits,TimeTrend$Profit
                         TotalNPV=sum(FinalNPV,na.rm=T),TotalCatchSQ=sum(CatchSQ,na.rm=T),TotalBiomassSQ=sum(BiomassSQ,na.rm=T),TotalProfitsSQ=sum(ProfitsSQ,na.rm=T),
                         TotalNPVSQ=sum(NPVSQ,na.rm=T),TotalFood=sum(TotalFood,na.rm=T),TotalFoodSQ=sum(FoodSQ,na.rm=T),TotalMSY=sum(MSY,na.rm=T),Stocks=length(unique(IdOrig)))
   
-#   CountryUpsides$PercChangeTotalProfits<-100*((CountryUpsides$TotalProfits/CountryUpsides$TotalBaselineProfits)-1) #Percent change in  profits from current
-#   
-#   CountryUpsides$PercChangeTotalCatch<-100*((CountryUpsides$TotalCatch/CountryUpsides$TotalBaselineCatch)-1) #Percent change in  catch from current
-#   
-#   CountryUpsides$PercChangeTotalBiomass<-100*((CountryUpsides$TotalBiomass/CountryUpsides$TotalBaselineBiomass)-1) #Percent change in  biomass from current
-#   
-
-CountryUpsides$PercChangeTotalProfits<-PercChange(CountryUpsides$TotalProfits,CountryUpsides$TotalBaselineProfits)#Percent change in  profits from current
-
-CountryUpsides$PercChangeTotalCatch<- PercChange(CountryUpsides$TotalCatch,CountryUpsides$TotalBaselineCatch)#Percent change in  catch from current
-
-CountryUpsides$PercChangeTotalBiomass<- PercChange(CountryUpsides$TotalBiomass,CountryUpsides$TotalBaselineBiomass) #Percent change in  biomass from current
-
-
+  #   CountryUpsides$PercChangeTotalProfits<-100*((CountryUpsides$TotalProfits/CountryUpsides$TotalBaselineProfits)-1) #Percent change in  profits from current
+  #   
+  #   CountryUpsides$PercChangeTotalCatch<-100*((CountryUpsides$TotalCatch/CountryUpsides$TotalBaselineCatch)-1) #Percent change in  catch from current
+  #   
+  #   CountryUpsides$PercChangeTotalBiomass<-100*((CountryUpsides$TotalBiomass/CountryUpsides$TotalBaselineBiomass)-1) #Percent change in  biomass from current
+  #   
+  
+  CountryUpsides$PercChangeTotalProfits<-PercChange(CountryUpsides$TotalProfits,CountryUpsides$TotalBaselineProfits)#Percent change in  profits from current
+  
+  CountryUpsides$PercChangeTotalCatch<- PercChange(CountryUpsides$TotalCatch,CountryUpsides$TotalBaselineCatch)#Percent change in  catch from current
+  
+  CountryUpsides$PercChangeTotalBiomass<- PercChange(CountryUpsides$TotalBiomass,CountryUpsides$TotalBaselineBiomass) #Percent change in  biomass from current
+  
+  
   CountryUpsides$AbsChangeTotalProfits<-CountryUpsides$TotalProfits-CountryUpsides$TotalBaselineProfits #absolute change in  profits from current
   
   CountryUpsides$AbsChangeTotalCatch<-CountryUpsides$TotalCatch-CountryUpsides$TotalBaselineCatch #Percent change in  catch from current
   
   CountryUpsides$AbsChangeTotalBiomass<-CountryUpsides$TotalBiomass-CountryUpsides$TotalBaselineBiomass #Percent change in  biomass from current
   
-#   CountryUpsides$PercChangeFromSQTotalCatch<-100*((CountryUpsides$TotalCatch/CountryUpsides$TotalCatchSQ)-1)
-#   
-#   CountryUpsides$PercChangeFromSQTotalBiomass<-100*((CountryUpsides$TotalBiomass/CountryUpsides$TotalBiomassSQ)-1)
-#   
-#   CountryUpsides$PercChangeFromSQProfits<-100*((CountryUpsides$TotalProfits/CountryUpsides$TotalProfitsSQ)-1)
-#   
-#   CountryUpsides$PercChangeFromSQNPV<-100*((CountryUpsides$TotalNPV/CountryUpsides$TotalNPVSQ)-1)
-#   
-#   CountryUpsides$PercChangeFromSQFood<-100*((CountryUpsides$TotalFood/CountryUpsides$TotalFoodSQ)-1)
-
-CountryUpsides$PercChangeFromSQTotalCatch<- PercChange(CountryUpsides$TotalCatch,CountryUpsides$TotalCatchSQ)
-
-CountryUpsides$PercChangeFromSQTotalBiomass<- PercChange(CountryUpsides$TotalBiomass,CountryUpsides$TotalBiomassSQ)
-
-CountryUpsides$PercChangeFromSQProfits<- PercChange(CountryUpsides$TotalProfits,CountryUpsides$TotalProfitsSQ)
-
-CountryUpsides$PercChangeFromSQNPV<- PercChange(CountryUpsides$TotalNPV,CountryUpsides$TotalNPVSQ)
-
-CountryUpsides$PercChangeFromSQFood<- PercChange(CountryUpsides$TotalFood,CountryUpsides$TotalFoodSQ)
+  #   CountryUpsides$PercChangeFromSQTotalCatch<-100*((CountryUpsides$TotalCatch/CountryUpsides$TotalCatchSQ)-1)
+  #   
+  #   CountryUpsides$PercChangeFromSQTotalBiomass<-100*((CountryUpsides$TotalBiomass/CountryUpsides$TotalBiomassSQ)-1)
+  #   
+  #   CountryUpsides$PercChangeFromSQProfits<-100*((CountryUpsides$TotalProfits/CountryUpsides$TotalProfitsSQ)-1)
+  #   
+  #   CountryUpsides$PercChangeFromSQNPV<-100*((CountryUpsides$TotalNPV/CountryUpsides$TotalNPVSQ)-1)
+  #   
+  #   CountryUpsides$PercChangeFromSQFood<-100*((CountryUpsides$TotalFood/CountryUpsides$TotalFoodSQ)-1)
+  
+  CountryUpsides$PercChangeFromSQTotalCatch<- PercChange(CountryUpsides$TotalCatch,CountryUpsides$TotalCatchSQ)
+  
+  CountryUpsides$PercChangeFromSQTotalBiomass<- PercChange(CountryUpsides$TotalBiomass,CountryUpsides$TotalBiomassSQ)
+  
+  CountryUpsides$PercChangeFromSQProfits<- PercChange(CountryUpsides$TotalProfits,CountryUpsides$TotalProfitsSQ)
+  
+  CountryUpsides$PercChangeFromSQNPV<- PercChange(CountryUpsides$TotalNPV,CountryUpsides$TotalNPVSQ)
+  
+  CountryUpsides$PercChangeFromSQFood<- PercChange(CountryUpsides$TotalFood,CountryUpsides$TotalFoodSQ)
   
   CountryUpsides$AbsChangeFromSQTotalCatch<-CountryUpsides$TotalCatch-CountryUpsides$TotalCatchSQ
   
@@ -223,44 +223,44 @@ CountryUpsides$PercChangeFromSQFood<- PercChange(CountryUpsides$TotalFood,Countr
                        TotalNPV=sum(FinalNPV,na.rm=T),TotalCatchSQ=sum(CatchSQ,na.rm=T),TotalBiomassSQ=sum(BiomassSQ,na.rm=T),TotalProfitsSQ=sum(ProfitsSQ,na.rm=T),
                        TotalNPVSQ=sum(NPVSQ,na.rm=T),TotalFood=sum(TotalFood,na.rm=T),TotalFoodSQ=sum(FoodSQ,na.rm=T),TotalMSY=sum(MSY,na.rm=T),Stocks=length(unique(IdOrig)))
   
-#   GlobalUpsides$PercChangeTotalProfits<-100*((GlobalUpsides$TotalProfits/GlobalUpsides$TotalBaselineProfits)-1) #Percent change in  profits from current
-#   
-#   GlobalUpsides$PercChangeTotalCatch<-100*((GlobalUpsides$TotalCatch/GlobalUpsides$TotalBaselineCatch)-1) #Percent change in  catch from current
-#   
-#   GlobalUpsides$PercChangeTotalBiomass<-100*((GlobalUpsides$TotalBiomass/GlobalUpsides$TotalBaselineBiomass)-1) #Percent change in  biomass from current
-#   
-GlobalUpsides$PercChangeTotalProfits<-PercChange(GlobalUpsides$TotalProfits,GlobalUpsides$TotalBaselineProfits) #Percent change in  profits from current
-
-GlobalUpsides$PercChangeTotalCatch<- PercChange(GlobalUpsides$TotalCatch,GlobalUpsides$TotalBaselineCatch) #Percent change in  catch from current
-
-GlobalUpsides$PercChangeTotalBiomass<- PercChange(GlobalUpsides$TotalBiomass,GlobalUpsides$TotalBaselineBiomass) #Percent change in  biomass from current
-
-
+  #   GlobalUpsides$PercChangeTotalProfits<-100*((GlobalUpsides$TotalProfits/GlobalUpsides$TotalBaselineProfits)-1) #Percent change in  profits from current
+  #   
+  #   GlobalUpsides$PercChangeTotalCatch<-100*((GlobalUpsides$TotalCatch/GlobalUpsides$TotalBaselineCatch)-1) #Percent change in  catch from current
+  #   
+  #   GlobalUpsides$PercChangeTotalBiomass<-100*((GlobalUpsides$TotalBiomass/GlobalUpsides$TotalBaselineBiomass)-1) #Percent change in  biomass from current
+  #   
+  GlobalUpsides$PercChangeTotalProfits<-PercChange(GlobalUpsides$TotalProfits,GlobalUpsides$TotalBaselineProfits) #Percent change in  profits from current
+  
+  GlobalUpsides$PercChangeTotalCatch<- PercChange(GlobalUpsides$TotalCatch,GlobalUpsides$TotalBaselineCatch) #Percent change in  catch from current
+  
+  GlobalUpsides$PercChangeTotalBiomass<- PercChange(GlobalUpsides$TotalBiomass,GlobalUpsides$TotalBaselineBiomass) #Percent change in  biomass from current
+  
+  
   GlobalUpsides$AbsChangeTotalProfits<-GlobalUpsides$TotalProfits-GlobalUpsides$TotalBaselineProfits # Absolute change in  profits from current
   
   GlobalUpsides$AbsChangeTotalCatch<-GlobalUpsides$TotalCatch-GlobalUpsides$TotalBaselineCatch # Absolute change in  catch from current
   
   GlobalUpsides$AbsChangeTotalBiomass<-GlobalUpsides$TotalBiomass-GlobalUpsides$TotalBaselineBiomass # Absolute change in  biomass from current
   
-#   GlobalUpsides$PercChangeFromSQTotalCatch<-100*((GlobalUpsides$TotalCatch/GlobalUpsides$TotalCatchSQ)-1)
-#   
-#   GlobalUpsides$PercChangeFromSQTotalBiomass<-100*((GlobalUpsides$TotalBiomass/GlobalUpsides$TotalBiomassSQ)-1)
-#   
-#   GlobalUpsides$PercChangeFromSQProfits<-100*((GlobalUpsides$TotalProfits/GlobalUpsides$TotalProfitsSQ)-1)
-#   
-#   GlobalUpsides$PercChangeFromSQNPV<-100*((GlobalUpsides$TotalNPV/GlobalUpsides$TotalNPVSQ)-1)
-#   
-#   GlobalUpsides$PercChangeFromSQFood<-100*((GlobalUpsides$TotalFood/GlobalUpsides$TotalFoodSQ)-1)
-
-GlobalUpsides$PercChangeFromSQTotalCatch<- PercChange(GlobalUpsides$TotalCatch,GlobalUpsides$TotalCatchSQ)
-
-GlobalUpsides$PercChangeFromSQTotalBiomass<- PercChange(GlobalUpsides$TotalBiomass,GlobalUpsides$TotalBiomassSQ)
-
-GlobalUpsides$PercChangeFromSQProfits<- PercChange(GlobalUpsides$TotalProfits,GlobalUpsides$TotalProfitsSQ)
-
-GlobalUpsides$PercChangeFromSQNPV<- PercChange(GlobalUpsides$TotalNPV,GlobalUpsides$TotalNPVSQ)
-
-GlobalUpsides$PercChangeFromSQFood<- PercChange(GlobalUpsides$TotalFood,GlobalUpsides$TotalFoodSQ)
+  #   GlobalUpsides$PercChangeFromSQTotalCatch<-100*((GlobalUpsides$TotalCatch/GlobalUpsides$TotalCatchSQ)-1)
+  #   
+  #   GlobalUpsides$PercChangeFromSQTotalBiomass<-100*((GlobalUpsides$TotalBiomass/GlobalUpsides$TotalBiomassSQ)-1)
+  #   
+  #   GlobalUpsides$PercChangeFromSQProfits<-100*((GlobalUpsides$TotalProfits/GlobalUpsides$TotalProfitsSQ)-1)
+  #   
+  #   GlobalUpsides$PercChangeFromSQNPV<-100*((GlobalUpsides$TotalNPV/GlobalUpsides$TotalNPVSQ)-1)
+  #   
+  #   GlobalUpsides$PercChangeFromSQFood<-100*((GlobalUpsides$TotalFood/GlobalUpsides$TotalFoodSQ)-1)
+  
+  GlobalUpsides$PercChangeFromSQTotalCatch<- PercChange(GlobalUpsides$TotalCatch,GlobalUpsides$TotalCatchSQ)
+  
+  GlobalUpsides$PercChangeFromSQTotalBiomass<- PercChange(GlobalUpsides$TotalBiomass,GlobalUpsides$TotalBiomassSQ)
+  
+  GlobalUpsides$PercChangeFromSQProfits<- PercChange(GlobalUpsides$TotalProfits,GlobalUpsides$TotalProfitsSQ)
+  
+  GlobalUpsides$PercChangeFromSQNPV<- PercChange(GlobalUpsides$TotalNPV,GlobalUpsides$TotalNPVSQ)
+  
+  GlobalUpsides$PercChangeFromSQFood<- PercChange(GlobalUpsides$TotalFood,GlobalUpsides$TotalFoodSQ)
   
   GlobalUpsides$AbsChangeFromSQTotalCatch<-GlobalUpsides$TotalCatch-GlobalUpsides$TotalCatchSQ
   
