@@ -15,9 +15,9 @@
 BuildPolicyBAUs<-function(ProjectionData,BaselineYear)
 {
   
-  # 1) "Business As Usual Pessimistic" Where all non RAM and Catch share stocks go to Open Access
+  ### 1) "Business As Usual Pessimistic" Where all non RAM and Catch share stocks go to Open Access
   
-  # RAM - Fmsy
+  # RAM - F current forever
   # Catch shares - Opt
   # All others - Open Access
   
@@ -38,7 +38,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear)
   BAUpess$Policy<-'Business As Usual Pessimistic'
   
   
-  # 2) "Business As Usual Current Management"
+  ### 2) "Business As Usual Current Management"
   
   # RAM - Fmsy
   # Catch shares - Opt
@@ -60,23 +60,33 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear)
   
   BAUoptim$Policy<-'Business As Usual'
   
-  # 3) "Business As Usual Current Fishing Mortality" - Ram stocks projected under current fishing mortality
+  ### 3 & 4) "Catch Share Three" and "Fmsy Three" - Adjust results for CS and Fmsy policies so that the policy is not applied to underfished/underfishing stocks
   
-  # RAM - StatusQuoFForever (only change from 'Current Management')
-  # Catch shares - Opt
-  # Overfished and Overfishing - Open Access
-  # Myctophids - StatusQuoBForever
+  PolicyOverFFids<-ProjectionData$IdOrig[ProjectionData$Year==BaselineYear & (ProjectionData$BvBmsy<1 | ProjectionData$FvFmsy>1)] # overfished/overfishing stocks
   
-  # just change policy used for ram stocks and bind to cs, overff, and mctofid
-#   ramF<-ProjectionData[ProjectionData$Policy=='StatusQuoFForever' & ProjectionData$Dbase=='RAM' & ProjectionData$CatchShare!=1,]
-#   
-#   BAUcurrF<-rbind(ramF,cs,overff,mctofid)
-#   
-#   BAUcurrF$Policy<-'BAU Current Fishing Mortality'
+  PolicyUnderFFids<-ProjectionData$IdOrig[ProjectionData$Year==BaselineYear & (ProjectionData$BvBmsy>1 & ProjectionData$FvFmsy<1)] # underfished/underfishing stocks
   
-  # Bind New policies to original Projection Data
+  PolicyMcTofids<-ProjectionData[(ProjectionData$IdOrig %in% PolicyUnderFFids) & ProjectionData$Policy=='StatusQuoBForever',] # mctofid subset set to B current forever
   
-  ProjectionData<-rbind(ProjectionData,BAUpess,BAUoptim)
+  # 3) Catch Share 
+  
+  CsThree<-ProjectionData[(ProjectionData$IdOrig %in% PolicyOverFFids) & ProjectionData$Policy=='CatchShare',]
+    
+  CatchShareThree<-rbind(PolicyMcTofids,CsThree) # combine Catch Share results for overfished/overfishing results with B current forever results for mctofids
+  
+  CatchShareThree$Policy<-'Catch Share Three'
+  
+  # 4) Fmsy 
+  
+  fThree<-ProjectionData[(ProjectionData$IdOrig %in% PolicyOverFFids) & ProjectionData$Policy=='Fmsy',]
+  
+  FmsyThree<-rbind(PolicyMcTofids,fThree) # combine Catch Share results for overfished/overfishing results with B current forever results for mctofids
+  
+  FmsyThree$Policy<-'Fmsy Three'
+  
+  ### Bind all composite policies to ProjectionData
+  
+  ProjectionData<-rbind(ProjectionData,BAUpess,BAUoptim,CatchShareThree,FmsyThree)
   
   return(ProjectionData)
 }

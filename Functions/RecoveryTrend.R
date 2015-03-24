@@ -10,18 +10,18 @@ RecoveryTrend<-function(ProjectionData,RecoveryThreshold,OnlyOverfish,StartYear)
   
   if(OnlyOverfish==TRUE)
   {
-    OverfishedIds<-ProjectionData$IdOrig[ProjectionData$Year==2012 & ProjectionData$BvBmsy<1]
+    OverfishedIds<-ProjectionData$IdOrig[ProjectionData$Year==2012 & (ProjectionData$BvBmsy<1 | ProjectionData$FvFmsy>1)]
     
     RecoveryData<-ProjectionData[ProjectionData$IdOrig %in% OverfishedIds,]
   }
   
   RecoveryData$Recovered[RecoveryData$BvBmsy>RecoveryThreshold]<-TRUE
   
-  RecoveryTrend<-ddply(RecoveryData,c('Policy','Year'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalProfit=sum(Profits,na.rm=T),
+  RecoveryTrend<-ddply(RecoveryData,c('Policy','Year'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalProfit=sum(Profits,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),
                        Stocks=length(unique(IdOrig)),TotalRecovered=sum(Recovered,na.rm=T),
                        PercentHealthy=100*(sum(Recovered,na.rm=T)/length(unique(IdOrig))))
   
-  PlotTrend<-melt(RecoveryTrend[RecoveryTrend$Year>=StartYear,],measure.vars=c('PercentHealthy','TotalCatch','TotalProfit'))
+  PlotTrend<-melt(RecoveryTrend[RecoveryTrend$Year>=StartYear,],measure.vars=c('PercentHealthy','TotalCatch','TotalProfit','TotalBiomass'))
   
   write.csv(PlotTrend,file=paste(ResultFolder,'PlotTrend.csv',sep=''))
   
