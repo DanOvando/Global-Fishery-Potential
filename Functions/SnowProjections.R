@@ -299,9 +299,9 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     
   } # close policies loop
   #   
-  if (any(is.na(TempMat$Bmsy)==F))
+  if (any(is.na(TempMat$Bmsy)))
   {
-    TempMat$Bmsy<- TempMat$k * TempMat$BtoKRatio
+#     TempMat$Bmsy<- TempMat$k * TempMat$BtoKRatio
     
     TempMat$k<- ((TempMat$MSY/TempMat$g)*(1/TempMat$BtoKRatio))
     
