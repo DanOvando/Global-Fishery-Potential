@@ -189,8 +189,8 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
       Data$BvBmsySD<- TempBioSd
       
       
-      BioStats<- ddply(Data,.(Year),summarize,Median=median((BvBmsy)),Q2.5=quantile((BvBmsy),c(0.025)),Q25=quantile((BvBmsy),c(0.25)),
-                       Q75=quantile((BvBmsy),c(0.75)),Q97.5=quantile((BvBmsy),c(0.975)))
+      BioStats<- ddply(Data,.(Year),summarize,Median=median((BvBmsy),na.rm=T),Q2.5=quantile((BvBmsy),c(0.025),na.rm=T),Q25=quantile((BvBmsy),c(0.25),na.rm=T),
+                       Q75=quantile((BvBmsy),c(0.75),na.rm=T),Q97.5=quantile((BvBmsy),c(0.975),na.rm=T))
       
       BioStats<- BioStats[is.na(BioStats$Median)==F,]      
       
