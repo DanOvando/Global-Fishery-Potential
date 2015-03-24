@@ -25,9 +25,9 @@ library(reshape2)
 # library(dplyr)
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- TRUE
+RunAnalyses<- FALSE
 
-BatchFolder<- 'PT 1.0'
+BatchFolder<- 'PT 1.1 LowCost'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -47,7 +47,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'Merged PT Full Run'
+  BatchFolder<- 'PT 1.1 LowCost'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
@@ -75,7 +75,7 @@ ProjectionTime<- 38
 
 bvec<- seq(0.00000001,2.5,length.out=30)
 
-MaxOpenAccess<- 0.5
+MaxOpenAccess<- 0.3
 
 # Data Options -------------------------
 
@@ -237,7 +237,7 @@ BOAtol<- 0.2
 
 #Figure fonts, formats etc. 
 
-save.image(file=paste(BatchFolder,'Controlfile Settings.rdata'))
+# save.image(file=paste(BatchFolder,'Controlfile Settings.rdata'))
 
 # Run Analysis ------------------------------------------------------------
 
