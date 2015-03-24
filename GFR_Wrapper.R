@@ -452,6 +452,14 @@ if (RunAnalyses==TRUE)
   
   ProjectionData$DiscProfits<- ProjectionData$Profits * (1+Discount)^-(ProjectionData$Year-BaselineYear)
   
+  NoBmsy<- is.na(ProjectionData$Bmsy)
+  
+  ProjectionData$k[NoBmsy]<- ((ProjectionData$MSY/ProjectionData$g)*(1/ProjectionData$BtoKRatio))[NoBmsy]
+  
+  ProjectionData$Bmsy[NoBmsy]<- (ProjectionData$MSY/ProjectionData$g)[NoBmsy]
+  
+  ProjectionData$Biomass[is.na(ProjectionData$Biomass) | ProjectionData$Biomass==0]<- (ProjectionData$BvBmsy*ProjectionData$Bmsy)[is.na(ProjectionData$Biomass) | ProjectionData$Biomass==0]
+  
   OriginalProjectionData<- ProjectionData
   
   OriginalFullData<- FullData
@@ -483,8 +491,6 @@ if (RunAnalyses==F) #Load baseline versions of key dataframes for analysis after
   ProjectionData$Bmsy[NoBmsy]<- (ProjectionData$MSY/ProjectionData$g)[NoBmsy]
   
   ProjectionData$Biomass[is.na(ProjectionData$Biomass) | ProjectionData$Biomass==0]<- (ProjectionData$BvBmsy*ProjectionData$Bmsy)[is.na(ProjectionData$Biomass) | ProjectionData$Biomass==0]
-  
-  
   
 }
 
