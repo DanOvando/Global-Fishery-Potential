@@ -339,8 +339,10 @@ CodyPlots<- function(ResultFolder,FigureFolder,Policy)
   #==plot
   #==Select a policy
   #==only show catch share--no optimal
-  chosen<-c("CatchShare","Fmsy","Business As Usual Pessimistic","Business As Usual","Historic")
-  plotLabs<-c("Catch share",expression('F'[MSY]),"Business as usual
+#   chosen<-c("CatchShare","Fmsy","Business As Usual Pessimistic","Business As Usual","Historic")
+chosen<-c("Catch Share Three","Fmsy Three","Business As Usual Pessimistic","Business As Usual","Historic")
+
+plotLabs<-c("Catch share",expression('F'[MSY]),"Business as usual
               (pessimistic)","Business as usual") 
   
   #==reformat
@@ -348,7 +350,7 @@ CodyPlots<- function(ResultFolder,FigureFolder,Policy)
   newDF<-InPlotTrend[InPlotTrend$variable=="TotalCatch",]
   newDF$TotProfit<-InPlotTrend$value[InPlotTrend$variable=="TotalProfit"]
   newDF$PerHealth<-InPlotTrend$value[InPlotTrend$variable=="PercentHealthy"]
-  newDF<-rbind(newDF,newDF[newDF$Year==2050&newDF$Policy=="CatchShare",],
+  newDF<-rbind(newDF,newDF[newDF$Year==2050&newDF$Policy=="Catch Share Three",],
                newDF[newDF$Year==2050&newDF$Policy=="Business As Usual",])
   
   newDF$PerHealth[nrow(newDF)]<-17
@@ -389,7 +391,6 @@ CodyPlots<- function(ResultFolder,FigureFolder,Policy)
   plot(-100000,las=1,ylab="",xlab="",ylim=ylimIn,xlim=xlimIn)
   abline(h=0,lty=2)
   par(new=T)
-  
   symbols(x=newDF$Year,y=as.numeric(newDF$PerHealth),circles=as.numeric(newDF$value),
           bg=useCol,fg='black',inches=sizeCirc,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,yaxt='n',xaxt='n')
