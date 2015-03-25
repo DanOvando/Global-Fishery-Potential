@@ -10,16 +10,16 @@ RunIUUDiagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,Batc
   Samp<- sample(unique(Data$IdOrig),(1-SubSample)*NumSamples,replace=F)
   
   Data<- subset(Data,IdOrig %in% Samp )
-    
+  
   Models<- names(Regressions)
   
   Data<- subset(Data,IdLevel=='Species' & Dbase=='FAO')
   
   CheckData<- subset(Data,IdLevel=='Species' & Dbase=='FAO')
   
-#   IUULevel<- 1.2
+  #   IUULevel<- 1.2
   
-#   NumCatchMSYIterations<- 5000
+  #   NumCatchMSYIterations<- 5000
   
   ErrorSize=.95
   
@@ -42,12 +42,15 @@ RunIUUDiagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,Batc
   
   Data$OriginalFvFmsy<- Data$FvFmsy
   
+  Data$Originalg<- Data$g
+  
   Data$BvBmsy<- NA
   
   Data$MSY<- NA
   
   Data$FvFmsy<- NA
   
+  Data$g<- NA
   
   ## Apply Regression
   
@@ -126,7 +129,7 @@ RunIUUDiagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,Batc
   BiomassData$SpeciesCatName<- as.character(BiomassData$SpeciesCatName)
   
   BiomassData$RanCatchMSY<- F
-    
+  
   # Run First Analisis of Current Status --------------------------------------------------
   
   BiomassData$CatchMSYBvBmsy_LogSd<- NA
@@ -146,20 +149,23 @@ RunIUUDiagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,Batc
   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   
   PostData<- CatchMSYresults$MsyData  
-
+  
   PostData$bPE<- 100*((PostData$BvBmsy-PostData$OriginalBvBmsy)/PostData$OriginalBvBmsy)
-
+  
   PostData$fPE<- 100*((PostData$FvFmsy-PostData$OriginalFvFmsy)/PostData$OriginalFvFmsy)
   
   PostData$MSYPE<- 100*((PostData$MSY-PostData$OriginalMSY)/PostData$OriginalMSY)
   
-
+  PostData$gPE<- 100*((PostData$g-PostData$Originalg)/PostData$Originalg)
+  
+  
   Diagnostics<- melt(PostData[,c('bPE','fPE','MSYPE')])
+  
   pdf(paste(FigureFolder,'IUU Effect.pdf',sep=''))
   print(ggplot(data=Diagnostics,aes(x=value))
-  +geom_density(fill='steelblue2',alpha=0.6)+geom_vline(aes(xintercept = 0))+geom_vline(aes(xintercept=100*(IUULevel-1)),color='red')
-  +facet_wrap(~variable,scale='free')+xlab('Proportional Error %'))
+        +geom_density(fill='steelblue2',alpha=0.6)+geom_vline(aes(xintercept = 0))+geom_vline(aes(xintercept=100*(IUULevel-1)),color='red')
+        +facet_wrap(~variable,scale='free')+xlab('Proportional Error %')+xlim(c(-50,100)))
   dev.off()
-
+  
   return(PostData)
 }
