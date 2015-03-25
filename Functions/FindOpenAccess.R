@@ -23,10 +23,14 @@ FindOpenAccess<-function(MsyData,BaselineYear,BOAtol)
     b<- CategoryStocks$BvBmsy
     
     phi<- CategoryStocks$phi
+   
+    CategoryStocks$FOA<- ((phi+1)/phi)*(1-b^phi/(phi+1))
     
     CategoryStocks$EQSum<- b+((phi+1)/phi)*(1-b^phi/(phi+1))
     
-    KobeSpace<-ddply(CategoryStocks,c('IdOrig'),summarize,KobeSpot=abs((EQSum-FvFmsy-BvBmsy))) 
+#     KobeSpace<-ddply(CategoryStocks,c('IdOrig'),summarize,KobeSpot=abs((EQSum-FvFmsy-BvBmsy))) 
+    KobeSpace<-ddply(CategoryStocks,c('IdOrig'),summarize,KobeSpot=abs((FOA-FvFmsy))) 
+    
     # Any stock on the equilibrium line has a value of 2 for the sum of BvBmsy and FvFmsy
     # This ddply calculates the distance from the equilibrium line for each stock
     # subset this dataset to only include stocks within a desired tolerance, make option on Master
@@ -36,6 +40,7 @@ FindOpenAccess<-function(MsyData,BaselineYear,BOAtol)
     OpenAccess$SpeciesCatName[s]<-SpeciesCats[s] # store species category
    
     OpenAccess$BvBmsyOpenAccess[s]<-quantile(CategoryStocks$BvBmsy[CategoryStocks$IdOrig %in% IdsBOA],c(0.1,0.25))[1] # store BvBmsy of 25 percentile 
+  
   }
   
   # remove species categories without data (fisheries considered to be in equilibrium)
