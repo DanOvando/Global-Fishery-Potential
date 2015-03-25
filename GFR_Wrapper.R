@@ -579,27 +579,9 @@ PercentCoverage<-StockAndCountrySummary(UnlumpedProjectionData,ProjectionData,St
 
 StatusByRegionAndISSCAAP<-RegionFaoAndISSCAAPSummary(ProjectionData,BaselineYear)
 
-# Evaluate cost:revenue ratios of full Projection data before CountriesToRun analysis
-
 CostRevenues<-CostRevCheck(ProjectionData,RawData,BaselineYear)
 
-# Plot historical status of RAM and unassessed stocks
-
-# StatusISSCAAP<-StatusPlots(FullData,BiomassData,BaselineYear,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
-
-# Test C parameter sensitivity to BOA level
-
-# SensitivityCParam<-CParamSensitivity(Data=MsyData,BaselineYear,beta)
-
-# Plot histograms of steady state status for chosen subset of projection data
-
-# SteadyStateStatus(Data=ProjectionData,Subset=c('Steady State Status Analyzed Projection Data.pdf')) # histograms of b by policy for complete ProjectionData
-
-# Save final image
-
-# CodyPlots()
-
-CodyPlots(ResultFolder,FigureFolder,Policy='CatchShare')
+CodyPlots(ResultFolder,FigureFolder,Policy='Catch Share Three')
 
 save.image(file=paste(ResultFolder,'Global Fishery Recovery Complete Results.rdata',sep=''))
 
