@@ -483,8 +483,9 @@ NPVSQ		<-rep(0,length(unqPols))
 
 labName 	<-c("BAU","BAU(Pessimistic)","Catch share",expression('F'[MSY]),"Today")
 labNameSimp	<-c("BAU","BAU(Pessimistic)","Catch share","Fmsy","Today")
-
-indPol<-c(1,2,3,5)
+# indPol<-c(1,2,3,5)
+WantPols<- c('Catch Share Three','Fmsy Three','Business As Usual','Business As Usual Pessimistic')
+indPol<- which(unqPols %in% WantPols)
 #==select a policy, sum the benefits, record
 for(x in 1:length(unqPols))
 {
@@ -515,6 +516,7 @@ GlobalMSY 		<-sum(AllSub$TotalMSY)
 
 #=make colors==
 catIn<-c(CatCur[indPol],baseCat)
+browser()
 colrange<-seq(min(catIn[indPol]),max(catIn[indPol]))
 col <-colorRampPalette(c("red","blue"))(length(colrange))
 for(i in 1:length(col ))
