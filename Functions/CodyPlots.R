@@ -17,7 +17,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   library(SDMTools)
   
   ############# Figure 1 #############
-  workLocal<-0
+  workLocal<-1
   if(workLocal==1)
   {
   ResultFolder<-"C:/Users/Cody/Desktop/UpsideData/Pt figures/"
@@ -82,7 +82,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   #==find annuity
   overfishAnn		<-OverfishStocks$TotalNPV*discRt/(1-(1+discRt)^-TimeHor)
   
-  #==quantities that determin the color
+  #==quantities that determine the color
   colQuant  		<-100*(overfishAnn-OverfishStocks$TotalBaselineProfits)/OverfishStocks$TotalBaselineProfits*sign(OverfishStocks$TotalBaselineProfits)
   colQuant3			<-100*(overfishAnn-OverfishStocks$TotalBaselineProfits)/AllStocks$TotalBaselineProfits*sign(AllStocks$TotalBaselineProfits)
   
@@ -138,10 +138,10 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   # output figure data for comparisons
   #=====================================
   #=figure data
-  outs	<-cbind(OverfishStocks$PercChangeTotalBiomass,OverfishStocks$PercChangeTotalCatch,radius2,colQuant,as.character(OverfishStocks$Country ))
-  outs2	<-cbind(OverfishStocks$PercChangeFromSQTotalBiomass,OverfishStocks$PercChangeFromSQTotalCatch,radius2,colQuant2,as.character(OverfishStocks$Country ))
-  outs3	<-cbind(trevPercChangeBioCur,trevPercChangeCatchCur,radius,colQuant3,as.character(OverfishStocks$Country ))
-  outs4	<-cbind(trevPercChangeBioSQ,trevPercChangeCatchSQ,radius,colQuant4,as.character(OverfishStocks$Country ))
+  outs	<-cbind(OverfishStocks$PercChangeTotalBiomass,OverfishStocks$PercChangeTotalCatch,OverfishStocks$TotalMSY,colQuant,as.character(OverfishStocks$Country ))
+  outs2	<-cbind(OverfishStocks$PercChangeFromSQTotalBiomass,OverfishStocks$PercChangeFromSQTotalCatch,OverfishStocks$TotalMSY,colQuant2,as.character(OverfishStocks$Country ))
+  outs3	<-cbind(trevPercChangeBioCur,trevPercChangeCatchCur,AllStocks$TotalMSY,colQuant3,as.character(OverfishStocks$Country ))
+  outs4	<-cbind(trevPercChangeBioSQ,trevPercChangeCatchSQ,AllStocks$TotalMSY,colQuant4,as.character(OverfishStocks$Country ))
   
   colnames(outs)<-c("Bio","Catch","MSY","Profit","Country")
   colnames(outs2)<-c("Bio","Catch","MSY","Profit","Country")
@@ -279,18 +279,18 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   AllStocks			<-AllStocks[useInd,]
   
   #==find which countries have the maximum of a quantity (NPV here)
-  OverfishStocks<-OverfishStocks[order(AllStocks$AbsChangeFromSQNPV,decreasing=T),]
-  AllStocks<-AllStocks[order(AllStocks$AbsChangeFromSQNPV,decreasing=T),]
-  OverfishStocks<-OverfishStocks[1:topCut,]
-  AllStocks<-AllStocks[1:topCut,]
-  OverfishStocks<-OverfishStocks[OverfishStocks$Country!="Multinational",]
+  OverfishStocks  <-OverfishStocks[order(AllStocks$AbsChangeFromSQNPV,decreasing=T),]
+  AllStocks       <-AllStocks[order(AllStocks$AbsChangeFromSQNPV,decreasing=T),]
+  OverfishStocks  <-OverfishStocks[1:topCut,]
+  AllStocks       <-AllStocks[1:topCut,]
+  OverfishStocks  <-OverfishStocks[OverfishStocks$Country!="Multinational",]
   
   
   #==calculate quantities to graph
   xQuant			<-OverfishStocks$AbsChangeFromSQTotalBiomass/1000000
   yQuant			<-OverfishStocks$AbsChangeFromSQNPV/1000000000
   zQuant			<-OverfishStocks$TotalMSY
-  colQuant			<-OverfishStocks$AbsChangeFromSQTotalCatch/1000000
+  colQuant		<-OverfishStocks$AbsChangeFromSQTotalCatch/1000000
   yQuant			<-yQuant*discRt/(1-(1+discRt)^-TimeHor)
   
   labs<-c(as.character(OverfishStocks$Country),round(max(zQuant)/1000000,1),round(min(zQuant)/1000000,1))
@@ -324,7 +324,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   # output figure data for comparisons
   #=====================================
   #=figure data
-  outs	<-cbind(xQuant[1:topCut],yQuant[1:topCut],radius[1:topCut],colQuant[1:topCut],labs[1:topCut])
+  outs	<-cbind(xQuant[1:topCut],yQuant[1:topCut],zQuant[1:topCut],colQuant[1:topCut],labs[1:topCut])
   colnames(outs)<-c("Bio","Profit","MSY","Catch","Country")
   
   #==CHANGE THIS TO OUTPUT WHEREEVER YOU WANAT
