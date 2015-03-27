@@ -516,8 +516,7 @@ GlobalMSY 		<-sum(AllSub$TotalMSY)
 
 #=make colors==
 catIn<-c(CatCur[indPol],baseCat)
-browser()
-colrange<-seq(min(catIn[indPol]),max(catIn[indPol]))
+colrange<-seq(min(CatCur[indPol]),max(CatCur[indPol]))
 col <-colorRampPalette(c("red","blue"))(length(colrange))
 for(i in 1:length(col ))
 {
