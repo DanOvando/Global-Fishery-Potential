@@ -1,6 +1,5 @@
 CodyPlots<- function(FigureFolder,ResultFolder,Policy)
 {
-#   Policy<- 'CatchShare'
   #================================
   # compare: upside (optimal) to current for overfished stocks (trevor denominator)
   # compare: upside (optimal) to status quo for overfished stocks (trevor denominator)
@@ -18,6 +17,14 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   library(SDMTools)
   
   ############# Figure 1 #############
+  workLocal<-0
+  if(workLocal==1)
+  {
+  ResultFolder<-"C:/Users/Cody/Desktop/UpsideData/Pt figures/"
+  FigureFolder<-ResultFolder
+  Policy<-"CatchShare"
+  source("C:/Users/Cody/Desktop/UpsideData/colorlegend2.R")
+  }
   
   data<-read.csv(paste(ResultFolder,'Unlumped Projection DataAll Stocks Country Upsides.csv',sep=''))
   data2<-read.csv(paste(ResultFolder,'Unlumped Projection DataOverfish Only Country Upsides.csv',sep=''))
@@ -26,12 +33,13 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   #data<-read.csv("C:/Users/Cody/Desktop/UpsideData/PT figures/Lumped Projection DataAll Stocks Country Upsides.csv")
   #data2<-read.csv("C:/Users/Cody/Desktop/UpsideData/PT figures/Lumped Projection DataOverfish Only Country Upsides.csv")
   pdf(file=paste(FigureFolder,'Figure 1.pdf',sep=''))
+  
   #==hardcoded numbers
   discRt  		<- 0.05	# discount rate in annuity calculation
   TimeHor			<- max(PlotTrend$Year)-2012		# time horizon in annuity calculation
   cutin				<- -75	# minimum value for figures
   cutoff			<- 250	# maximum value in figures
-  sizeCirc			<-.35		# size of circles in figures
+  sizeCirc			<-.4		# size of circles in figures
   NPVcut			<-1000 	# cuttoff for NPV
   colCut			<-500		# cutoff for the largest % change in profit for coloring
   xlimIn<-c(cutin,cutoff)
@@ -75,8 +83,9 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   overfishAnn		<-OverfishStocks$TotalNPV*discRt/(1-(1+discRt)^-TimeHor)
   
   #==quantities that determin the color
-  colQuant			<-100*(overfishAnn-OverfishStocks$TotalBaselineProfits)/OverfishStocks$TotalBaselineProfits
-  colQuant3			<-100*(overfishAnn-AllStocks$TotalBaselineProfits)/AllStocks$TotalBaselineProfits
+  colQuant  		<-100*(overfishAnn-OverfishStocks$TotalBaselineProfits)/OverfishStocks$TotalBaselineProfits*sign(OverfishStocks$TotalBaselineProfits)
+  colQuant3			<-100*(overfishAnn-OverfishStocks$TotalBaselineProfits)/AllStocks$TotalBaselineProfits*sign(AllStocks$TotalBaselineProfits)
+  
   colQuant4			<-trevPercChangeNPV
   colQuant2			<-OverfishStocks$PercChangeFromSQNPV
   
@@ -94,15 +103,25 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   radius 			<- sqrt( AllStocks$TotalMSY/ pi )
   radius2 			<- sqrt( OverfishStocks$TotalMSY/ pi )
   
+  #==select large stocks to plot the name of
+  plotCountries<-as.character(OverfishStocks$Country)
+  for(x in 1:length(radius2))
+    if(radius2[x]<550) plotCountries[x]<-""
+
+  #==select large stocks to plot the name of for all stocks
+  plotCountriesAll<-as.character(OverfishStocks$Country)
+  for(x in 1:length(radius))
+    if(radius[x]<700) plotCountriesAll[x]<-""
+  
   #==scales circle size between two graphs
   sizeCirc2			<-sizeCirc*max(radius2, na.rm=T)/max(radius,na.rm=T)
   
   #==make colors for catch
-  bound	<-max(c((colQuant),(colQuant2),(colQuant3),(colQuant4)),na.rm=T)
+  bound	  <-max(c((colQuant),(colQuant2),(colQuant3),(colQuant4)),na.rm=T)
   bound2	<-min(c((colQuant),(colQuant2),(colQuant3),(colQuant4)),na.rm=T)
   bigBnd	<-max(bound,abs(bound2))
   colrange	<-seq(-bigBnd,bigBnd,(bound-bound2)/150)			
-  col 		<-colorRampPalette(c("lightgreen","white","blue"))(length(colrange))
+  col 		<-colorRampPalette(c("green","white","blue"))(length(colrange))
   
   for(i in 1:length(col ))
   {
@@ -113,6 +132,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   for(i in 1:length(useCol))
     try(useCol[i] <- col[which(abs(colrange-colQuant[i]) == min(abs(colrange-colQuant[i])))] )
   
+  legendCol<-col[(which(abs(colrange-bound2) == min(abs(colrange-bound2)))):(which(abs(colrange-bound) == min(abs(colrange-bound))))]
   
   #=====================================
   # output figure data for comparisons
@@ -139,6 +159,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   #=========================================
   #dev.new(width=6,height=6)
   #pdf("C:/Users/Cody/Desktop/Figure1.pdf",height=6,width=6)
+  #windows()
   par(mfrow=c(2,2),mar=c(.1,.1,.1,.1),oma=c(4,4,2,1)) 
   
   plot(-100000,las=1,ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,xaxt='n')
@@ -149,16 +170,15 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   symbols(x=OverfishStocks$PercChangeTotalBiomass,y=OverfishStocks$PercChangeTotalCatch,circles=radius2,
           bg=useCol,fg='black',inches=sizeCirc2,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,xaxt='n')
-  #text(OverfishStocks$PercChangeTotalBiomass,jitter(OverfishStocks$PercChangeTotalCatch,factor=10),
-  #    OverfishStocks$Country,cex=.5)
+  text(OverfishStocks$PercChangeTotalBiomass,OverfishStocks$PercChangeTotalCatch,plotCountries,cex=.5)
   
   legend(x=1.25*cutin,y=cutoff, "Today",bty='n',cex=.8)
   
   par(xpd=NA)
   text(x=.5*cutoff,y=1.12*cutoff,"% change in profit",cex=.8)
-  color.legend2(0,cutoff*1.07,cutoff*.94,1.09*cutoff,rect.col=col,legend="")
+  color.legend2(0,cutoff*1.07,cutoff*.94,1.09*cutoff,rect.col=legendCol,legend="")
   par(xpd=NA)
-  text(x=-20,y=1.09*cutoff,paste("<",bound2),cex=.65)
+  text(x=-20,y=1.09*cutoff,paste("<",round(bound2)),cex=.65)
   text(x=cutoff*1.025,y=1.09*cutoff,paste(">",bound),cex=.65)
   par(xpd=FALSE)
   
@@ -178,8 +198,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
           bg=useCol,fg='black',inches=sizeCirc2,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,yaxt='n',xaxt='n')
   legend(x=1.4*cutin,y=cutoff, "BAU",bty='n',cex=.8)
-  #text(OverfishStocks$PercChangeFromSQTotalBiomass,jitter(OverfishStocks$PercChangeFromSQTotalCatch,factor=10),
-  #    OverfishStocks$Country,cex=.5)
+  text(OverfishStocks$PercChangeFromSQTotalBiomass,OverfishStocks$PercChangeFromSQTotalCatch,plotCountries,cex=.5)
   #=========================================
   # plot third panel
   #=========================================
@@ -196,7 +215,8 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   symbols(x=trevPercChangeBioCur,y=trevPercChangeCatchCur,circles=radius,
           bg=useCol,fg='black',inches=sizeCirc,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,xaxt='n')
-  
+  text(trevPercChangeBioCur,trevPercChangeCatchCur,plotCountriesAll,cex=.5) 
+
   #legend.bubble(x=450,y=450, z=c(2,8,17), maxradius = 175, n = 3, round = 0, bty = "n", mab = 1.2, 
   #    bg = NULL, inset = 0, pch = 21, pt.bg = NULL, txt.cex = 1, 
   #    txt.col = NULL, font = NULL)
@@ -223,6 +243,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   mtext(side=1,outer=T,"% change in biomass",line=2)
   mtext(side=2,outer=T,"% change in catch",line=2.3)
   legend(x=1.4*cutin,y=cutoff, "BAU",bty='n',cex=.8)
+  text(trevPercChangeBioSQ,trevPercChangeCatchSQ,plotCountriesAll,cex=.5) 
   
   dev.off()
   
