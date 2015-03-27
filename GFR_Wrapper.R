@@ -581,7 +581,13 @@ StatusByRegionAndISSCAAP<-RegionFaoAndISSCAAPSummary(ProjectionData,BaselineYear
 
 CostRevenues<-CostRevCheck(ProjectionData,RawData,BaselineYear)
 
-CodyPlots(ResultFolder,FigureFolder,Policy='Catch Share Three')
+CodyPlots(FigureFolder,ResultFolder,Policy='Catch Share Three')
+
+write.csv(file=paste(ResultFolder,'Projection Data.csv',sep=''),ProjectionData)
+
+write.csv(file=paste(ResultFolder,'UnlumpedProjection Data.csv',sep=''),UnlumpedProjectionData)
+
+save(ProjectionData,UnlumpedProjectionData,file=paste(ResultFolder,'ProjectionData Data.rdata',sep=''))
 
 save.image(file=paste(ResultFolder,'Global Fishery Recovery Complete Results.rdata',sep=''))
 
