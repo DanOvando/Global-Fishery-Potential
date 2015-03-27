@@ -3,21 +3,29 @@ title: "GFR SOM Sensitivities"
 author: "Dan Ovando"
 date: "February 26, 2015"
 output:
-  word_document:
-    fig_caption: yes
-    fig_height: 5
-    fig_width: 5
   pdf_document:
     fig_caption: yes
     fig_height: 3
     fig_width: 6
+  word_document:
+    fig_caption: yes
+    fig_height: 5
+    fig_width: 5
 ---
+# IUU
+
+Stock assessed fisheries make up a substantial portion of the catch and global MSY in our analysis. However, XX% of fisheries, XX% of catch, and XX% of MSY in our analysis are derived from unassessed fisheries, through our paired PRM-Catch MSY process. Both the PRM and Catch MSY depend on the reported catch history in order to reach results; while life history variables are included the catch is the basis of the method. The quality of catch records for these unassessed fisheries is highly variable, and in many instances missreporting occurs. This may take the form of IUU (illegal, unreportred, and unregulated) fishing, which would suggest that more catch is occuring than is being reported, overreporting of catches (as occured with Chinese catches), or random misreporting. Given the recent focus on the problem of IUU, we tested the robustness of our estimates of B/B~MSY~ F/F~MSY~, and MSY to the presence of IUU. 
+
+We increased the catches of each unassessed stock by 25%. We then re-estimated B/B~MSY~ using the PRM with the new IUU adjusted catch. Note that raw catch only enters the PRM through the max catch variables; if we assume a constant rate of IUU then all other catch statistics in the PRM remain the same, as they are all scaled relative to max catch. THe IUU based estiamtes of B/B~MSY~ were then fed to Catch MSY as the priors on final depletion, and MSY, F/F~MSY~,B/B~MSY~, and *g* were estimated. These metrics resulting from the IUU adjustted catch were then compared to the original values estiamted with the raw reported catch data. 
+
+
+
 # Model Validation
 
 We performed a series of jackknifing and Monte Carlo routines to evaluate the performance of our models across a variety of metrics including
 
 * Out of sample prediction of B/Bmsy, F/Fmsy, and MSY
-* Sensitivity to uncertainty of our predicted future values in 
+* Sensitivity of our predicted future values to uncertainty in
   * MSY
   * Profits
   * Catch
@@ -27,11 +35,11 @@ We performed a series of jackknifing and Monte Carlo routines to evaluate the pe
 ## Key Results
 
 * Our median estimates of B/Bmsy appear to be relatively unbiased, but our ability to predict the status of any one stock is quite low
-* We are not very good at estimating B/Bmsy values lower than 0.5, and in fact we generally estimate excessively high values for those stocks
-* We don't seem to be any better or worse at estimating B/Bmsy for bigger or smaller fisheries
-* Our model generally overestimates F/Fmsy by roughly 50%
-* Our model has a tendency to underestimate MSY by approximately 25%
-* There doesn't appear to be much of any relationship between our error in MSY and the size of the fishery
+* Our model is very poor at estimating B/Bmsy values lower than 0.5, and in fact we generally estimate excessively high values for those stocks
+* Our model is not better or worse at estimating B/Bmsy for bigger or smaller fisheries
+* Our model overestimates F/Fmsy by on average 50%
+* Our model on average underestimates MSY by 25%
+* There doesn't appear to be a significant relationship between our error in MSY and the size of the fishery
 * There is some evidence that we may especially underestimate B/Bmsy in regions un-represented in our regression
 * We consistently underestimate MSY in all the countries represented by RAM
 * Our estimates of total MSY do not vary very much as a result of uncertainty
@@ -44,7 +52,7 @@ We performed a series of jackknifing and Monte Carlo routines to evaluate the pe
 
 We performed two jackknife routines to evaluate the ability of our model to predict out of sample. For both routines, we consider only RAM stocks, as these are the only instances we have "true" values for the parameters of interest (MSY, BvBmsy, FvFmsy). 
 
-Our first check is an individual jackknife. We sequentially removed each RAM stock (n=369 from the regression block and re-estimated the PRM. We then predicted the status of the omitted stock using the re-estimated regression.  This predicted status was passed to CatchMSY, and the resulting predictions for BvBmsy, FvFmsy, and MSY for the omitted RAM stock is stored. 
+We first performed an individual jackknife. We sequentially removed each RAM stock (n=369XX) from the regression block and re-estimated the PRM. We then predicted the status of the omitted stock using the re-estimated regression.  This predicted status was passed to CatchMSY as the prior on final depletion, and the resulting predictions for BvBmsy, FvFmsy, and MSY for the omitted RAM stock were stored. 
 
 Our median proportional error in BvBmsy was relatively good, ~ 10%. However, there is substantial variation in our estimates (Fig.1). This suggests that while our aggregate results (mean/median) are likely to be relatively unbiased, our prediction for B/Bmsy for any individual fishery is less robust. 
 
@@ -88,14 +96,14 @@ F_Error_By_Time
 
 ```
 
-Our individual jackknifing suggests that our estimates of MSY are negatively biased, on average we are underestimating MSY (Fig.XX). 
+Our individual jackknifing suggests that our estimates of MSY are negatively biased; on average we are underestimating MSY (Fig.XX). 
 
 ```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Proportional error in MSY' }
 
 MSY_Error
 ```
 
-However, there appears to be little correlation between our error in MSY and the size of the fishery (as defined by lifetime catch, Fig.XX), suggesting that we simply underestimate MSY for most of the jackknifed fisheries. 
+However, there appears to be little correlation between our error in MSY and the size of the fishery (as defined by lifetime catch, Fig.XX), suggesting that we simply underestimate MSY for most of the RAM stocks. 
 
 ```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Proportional error in MSY by lifetime catch' }
 

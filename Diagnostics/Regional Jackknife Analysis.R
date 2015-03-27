@@ -10,8 +10,8 @@
 # 
 # 6. Store Real B/Bmsy, F/Fmsy, MSY, PRM B/Bmsy, MSY BvBmsy, FvFmsy, MSY with and without priors, and year
 rm(list=ls())
-load('Results/Mycothpids Ahoy 2_25_15/Data/Global Fishery Recovery Results.rdata')
-NumCPUs<- 1
+load('Results/PT 1.2/Data/Global Fishery Recovery Results.rdata')
+NumCPUs<- 3
 FigureFolder<- paste(BatchFolder,'Diagnostics/Regional Jackknife/',sep='')
 dir.create(FigureFolder,recursive=T)
 
@@ -238,11 +238,11 @@ colnames(SpeciesInfo)<- c('Id','SpeciesCatName','MaxLength','AgeMat','VonBertK')
 
 PlotJack<- join(PlotJack, SpeciesInfo,by='Id',match='first')
 
-save(PlotJack,JackStore,file=paste(FigureFolder,'Regional JackKnife.rdata',sep=''))
+save(PlotJack,JackStore,file=paste(ResultFolder,'Regional JackKnife.rdata',sep=''))
 
-load(file='Results/Mycothpids Ahoy 2_25_15/Diagnostics/Regional Jackknife/Regional JackKnife.rdata')
+# load(file='Results/Mycothpids Ahoy 2_25_15/Diagnostics/Regional Jackknife/Regional JackKnife.rdata')
 
-PlotJack$ModelBvBmsy[PlotJack$ModelBvBmsy>2]<- 2
+PlotJack$ModelBvBmsy[PlotJack$ModelBvBmsy>2.5]<- 2.5
 
 PlotJack$ProportionalError<- 100*((PlotJack$ModelBvBmsy-PlotJack$RamBvBmsy)/PlotJack$RamBvBmsy)
 

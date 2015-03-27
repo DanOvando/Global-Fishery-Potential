@@ -9,51 +9,90 @@
 # 5. Run catchMSY with priors
 # 
 # 6. Store Real B/Bmsy, F/Fmsy, MSY, PRM B/Bmsy, MSY BvBmsy, FvFmsy, MSY with and without priors, and year
+rm(list=ls())
+load('Results/PT 1.2/Data/Global Fishery Recovery Results.rdata')
+NumCPUs<- 1
+FigureFolder<- paste(BatchFolder,'Diagnostics/Individual Jackknife/',sep='')
+dir.create(FigureFolder,recursive=T)
+
+library(plyr)
+library(lattice)
+library(rfishbase)
+library(stringr)
+library(RCurl)
+library(XML)
+library(MASS)
+library(prettyR)
+library(zoo)
+library(proftools)
+library(snowfall)
+library(parallel)
+# library(shiny)
+library(ggplot2)
+library(gridExtra)
+library(reshape2)
+sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
+
+
+
+
+RamData<- RamData[RamData$Year<=BaselineYear,]
+
+Regions<- unique(RamData$Country)
 
 RamIds<- unique(RamData$IdOrig)
 
-JackStore<- as.data.frame(matrix(NA,nrow=0,ncol=12))
+JackStore<- as.data.frame(matrix(NA,nrow=0,ncol=14))
 
-colnames(JackStore)<- c('Assessid','Year','RamB','RamF','RamMSY','PrmB','CmsyB','CmsyF','CmsyMSY','CmsyBnoP','CmsyFnoP','CmsyMSYnoP')
+colnames(JackStore)<- c('Assessid','Year','Country','Catch','RamB','RamF','RamMSY','PrmB','CmsyB','CmsyF','CmsyMSY','CmsyBnoP','CmsyFnoP','CmsyMSYnoP')
 
-NumCatchMSYIterations<- 5000
+NumCatchMSYIterations<- 10000
 
-ErrorSize=.95
+ErrorSize<- 0.95
 
 TransbiasIterations<- 1000
 
-sigR<- 0.05
+NumCPUs<- 2
+
+sigR<- 0
+
+# NewRam<- MaidService(RawData[RawData$Dbase=='RAM',],OverlapMode,BaselineYear) #Filter out unusable stocks, prepare data for regression and use
+
+
+# for (n in 1:length(Regions))
+# {
+
+RamIds<- unique(RamData$IdOrig)
 
 for (r in 1:length(RamIds))
 {
   
-  Omit<- RamData[RamData$IdOrig==RamIds[r],]
+  Omit<- RamData[RamData$IdOrig%in%RamIds[r],]
   
   if (sum(is.na(Omit$Catch))==0)
   {
     
-    FirstCatch<- which(is.na(Omit$Catch)==F)[1]
-    
-    Omit<- Omit[(FirstCatch+4):dim(Omit)[1],]
+    #       FirstCatch<- which(is.na(Omit$Catch)==F)[1]
+    #       
+    #       Omit<- Omit[(FirstCatch+4):dim(Omit)[1],]
     
     Omit$CatchToRollingMax[is.na(Omit$CatchToRollingMax)]<- 0
     
-    Omit$Catch<- na.approx(Omit$Catch)
+    #       Omit$Catch<- na.approx(Omit$Catch)
     
-    Jacked<- RamData[RamData$IdOrig!=RamIds[r],]
+    Jacked<- RamData[!(RamData$IdOrig%in%RamIds[r]),]
     
-    TempJack<- as.data.frame(matrix(NA,nrow=dim(Omit)[1],ncol=12))
+    TempJack<- as.data.frame(matrix(NA,nrow=dim(Omit)[1],ncol=14))
     
-    colnames(TempJack)<- c('Assessid','Year','RamB','RamF','RamMSY','PrmB','CmsyB','CmsyF','CmsyMSY','CmsyBnoP','CmsyFnoP','CmsyMSYnoP')
+    colnames(TempJack)<- c('Assessid','Year','Country','Catch','RamB','RamF','RamMSY','PrmB','CmsyB','CmsyF','CmsyMSY','CmsyBnoP','CmsyFnoP','CmsyMSYnoP')
     
-    TempJack[,c('Assessid','Year','RamB','RamF','RamMSY')]<- Omit[,c('IdOrig','Year','BvBmsy','FvFmsy','MSY')]
+    TempJack[,c('Assessid','Year','Country','Catch','RamB','RamF','RamMSY')]<- Omit[,c('IdOrig','Year','Country','Catch','BvBmsy','FvFmsy','MSY')]
     
     JackModel<- RunRegressions(Jacked,Regressions,'Real Stocks')
     
     RealModelFactorLevels<- NULL
     
     Models<- names(Regressions)
-    
     
     TempOmitted<- NULL
     
@@ -65,7 +104,7 @@ for (r in 1:length(RamIds))
     
     Jacked<- InsertFisheryPredictions(Jacked,JackModel) #Add fishery predictions back into main dataframe
     
-    RealModelSdevs<- CreateSdevBins(JackModel,Jacked,TransbiasBin)
+    RealModelSdevs<- CreateSdevBins(JackModel$Models,Jacked,TransbiasBin)
     
     
     AllPossible<- unique(data.frame(I(Jacked$SpeciesCatName),I(Jacked$SpeciesCat)))
@@ -104,9 +143,18 @@ for (r in 1:length(RamIds))
     
     BiomassData$MSY<- NA
     
-    BiomassColumns<- (grepl('BvBmsy',colnames(Omit)) | grepl('Prediction',colnames(Omit))) & grepl('LogBvBmsy',colnames(Omit))==F
+    BiomassColumns<- (grepl('BvBmsy$',colnames(Omit)) | grepl('Prediction',colnames(Omit))) & grepl('LogBvBmsy',colnames(Omit))==F
+    
     
     AvailableBio<- (BiomassData[,BiomassColumns])
+    
+    HasSomething<-  rowSums(is.na(AvailableBio))<dim(AvailableBio)[2]
+    
+    BiomassData<- BiomassData[HasSomething,]
+    
+    AvailableBio<- AvailableBio[HasSomething,]
+    
+    TempJack<- TempJack[HasSomething,]
     
     AvailableBioMarker<- matrix(rep((1:dim(AvailableBio)[2]),dim(AvailableBio)[1]), dim(AvailableBio)[1],dim(AvailableBio)[2],byrow=TRUE)
     
@@ -136,28 +184,29 @@ for (r in 1:length(RamIds))
     
     BiomassData$BvBmsy<- BestBio
     
-    BiomassData<- AssignEconomicData(BiomassData) #Assign price and cost data to each stock
+    BiomassData<- AssignEconomicData(BiomassData,BvBmsyOpenAccess) #Assign price and cost data to each stock
     
     BiomassData$RanCatchMSY<- F
     
     BiomassData$IdLevel<- 'Species'
     
-    BiomassData$BestModel<- unique(BiomassData$BestModel[is.na(BiomassData$BestModel)==F])
-    
+    #       BiomassData$BestModel<- unique(BiomassData$BestModel[is.na(BiomassData$BestModel)==F])
     
     BiomassData$Dbase<- 'FAO'
+    
+    BiomassData$CatchMSYBvBmsy_LogSd<- NA
     
     OmitStatus<- AnalyzeFisheries(BiomassData,'JackStat','Year',min(BiomassData$Year):max(BiomassData$Year),RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
     
     TempJack[,c('PrmB')]<- OmitStatus$Data$BvBmsy
     
-    CatchMSYresults<- (RunCatchMSY(OmitStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
+    CatchMSYresults<- (RunCatchMSY(OmitStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps)$MsyData)
     
     TempJack[,c('CmsyB','CmsyF','CmsyMSY')]<- CatchMSYresults[,c('CatchMSYBvBmsy','FvFmsy','MSY')]
     
     OmitStatus$Data$BvBmsySD<- NA
     
-    CatchMSYresults<- (RunCatchMSY(OmitStatus$Data,1,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
+    CatchMSYresults<- (RunCatchMSY(OmitStatus$Data,1,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps)$MsyData)
     
     TempJack[,c('CmsyBnoP','CmsyFnoP','CmsyMSYnoP')]<- CatchMSYresults[,c('CatchMSYBvBmsy','FvFmsy','MSY')]
     
@@ -165,93 +214,41 @@ for (r in 1:length(RamIds))
     
     JackStore<- rbind(JackStore,TempJack)
   } #Close if all catch loop
-}
+} #Close stock loop
 
 
+Prm<- cbind(JackStore[,c('Assessid','Year','Country','Catch','RamB','PrmB','RamMSY','CmsyMSY','RamF','CmsyF')],'PRM')
 
-Prm<- cbind(JackStore[,c('Assessid','Year','RamB','PrmB')],'PRM')
+CmsyB<- cbind(JackStore[,c('Assessid','Year','Country','Catch','RamB','CmsyB','RamMSY','CmsyMSY','RamF','CmsyF')],'CmsyB')
 
-CmsyB<- cbind(JackStore[,c('Assessid','Year','RamB','CmsyB')],'CmsyB')
+CmsyBnoP<- cbind(JackStore[,c('Assessid','Year','Country','Catch','RamB','CmsyBnoP','RamMSY','CmsyMSY','RamF','CmsyF')],'CmsyBnoP')
 
-CmsyBnoP<- cbind(JackStore[,c('Assessid','Year','RamB','CmsyBnoP')],'CmsyBnoP')
+colnames(Prm)<- c('Id','Year','Country','Catch','RamBvBmsy','ModelBvBmsy','RamMSY','CmsyMSY','RamF','CmsyF','Model')
 
-colnames(Prm)<- c('Id','Year','RamBvBmsy','ModelBvBmsy','Model')
+colnames(CmsyB)<- c('Id','Year','Country','Catch','RamBvBmsy','ModelBvBmsy','RamMSY','CmsyMSY','RamF','CmsyF','Model')
 
-colnames(CmsyB)<- c('Id','Year','RamBvBmsy','ModelBvBmsy','Model')
-
-colnames(CmsyBnoP)<- c('Id','Year','RamBvBmsy','ModelBvBmsy','Model')
+colnames(CmsyBnoP)<- c('Id','Year','Country','Catch','RamBvBmsy','ModelBvBmsy','RamMSY','CmsyMSY','RamF','CmsyF','Model')
 
 PlotJack<- rbind(Prm,CmsyB,CmsyBnoP)
 
-save(PlotJack,JackStore,file='Diagnostics/JackKnife.rdata')
+SpeciesInfo<- RamData[,c('IdOrig','SpeciesCatName','MaxLength','AgeMat','VonBertK')]
 
-pdf(file='Diagnostics/Observed vs Predicted Diagnostic Plots.pdf')
-xyplot((ModelBvBmsy) ~ (RamBvBmsy) | Model,subset=Year>2005,data=PlotJack,xlab=' Log RAM B/Bmsy',ylab='Log Predicted B/Bmsy', panel=function(x,y,...)
-{
-  panel.xyplot(x,y,...)
-  panel.abline(a=0,b=1,lty=2)
-  panel.lmline(x,y,col='Salmon',...)
-}
-)
-dev.off()
+colnames(SpeciesInfo)<- c('Id','SpeciesCatName','MaxLength','AgeMat','VonBertK')
 
-pdf(file='Diagnostics/Year by Year Observed vs Predicted Diagnostic Plots.pdf')
-xyplot((ModelBvBmsy) ~ (RamBvBmsy) | as.factor(Year),subset=Model=='PRM',data=PlotJack,xlab=' Log RAM B/Bmsy',ylab='Log Predicted B/Bmsy', panel=function(x,y,...)
-{
-  panel.xyplot(x,y,...)
-  panel.abline(a=0,b=1,lty=2)
-  panel.lmline(x,y,col='Salmon',...)
-}
-)
-dev.off()
+PlotJack<- join(PlotJack, SpeciesInfo,by='Id',match='first')
 
+save(PlotJack,JackStore,file=paste(ResultFolder,'Individual JackKnife.rdata',sep=''))
 
+# load(file='Results/Mycothpids Ahoy 2_25_15/Diagnostics/Individual Jackknife/Individual JackKnife.rdata')
 
+PlotJack$ModelBvBmsy[PlotJack$ModelBvBmsy>2.5]<- 2.5
 
-pdf(file='Diagnostics/Observed vs Predicted FvFmsy Diagnostic Plots.pdf')
-xyplot((CmsyF) ~ (RamF),subset=Year>2005,data=JackStore,xlab=' RAM F/Fmsy',ylab=' Predicted F/Fmsy', panel=function(x,y,...)
-{
-  panel.xyplot(x,y,...)
-  panel.abline(a=0,b=1,lty=2)
-  panel.lmline(x,y,col='Salmon',...)
-}
-)
-dev.off()
+PlotJack$ProportionalError<- 100*((PlotJack$ModelBvBmsy-PlotJack$RamBvBmsy)/PlotJack$RamBvBmsy)
 
-pdf(file='Diagnostics/Observed vs Predicted MSY Diagnostic Plots.pdf')
-xyplot(log(CmsyMSY) ~ log(RamMSY),subset=Year>2005,data=JackStore,xlab='Log RAM MSY',ylab=' Log  Predicted MSY', panel=function(x,y,...)
-{
-  panel.xyplot(x,y,...)
-  panel.abline(a=0,b=1,lty=2)
-  panel.lmline(x,y,col='Salmon',...)
-}
-)
-dev.off()
+PlotJack$ProportionalMSYError<- 100*((PlotJack$CmsyMSY-PlotJack$RamMSY)/PlotJack$RamMSY)
 
+PlotJack$ProportionalFError<- 100*((PlotJack$CmsyF-PlotJack$RamF)/PlotJack$RamF)
 
-
-pdf(file='Diagnostics/PRM and CMSY MSY Proportional Error Boxplots.pdf')
-boxplot(((CmsyMSY-RamMSY)/RamMSY)~ Year,data=JackStore,outline=FALSE,horizontal=FALSE,xlab='Year',ylab='CatchMSY MSY Proportional Error')
-abline(h=0)
-dev.off()
-
-pdf(file='Diagnostics/PRM and CMSY FvFmsy Proportional Error Boxplots.pdf')
-boxplot(((CmsyF-RamF)/RamF)~ Year,data=JackStore,outline=FALSE,horizontal=FALSE,ylab='CatchMSY FvFmsy Proportional Error')
-abline(h=0)
-dev.off()
-
-pdf(file='Diagnostics/PRM and CMSY BvBmsy Proportional Error Boxplots.pdf')
-# par(mfrow=c(2,1))
-boxplot(((CmsyB-RamB)/RamB)~ Year,data=JackStore,outline=FALSE,horizontal=FALSE,ylab='CatchMSY BvBmsy With Prior Proportional Error')
-abline(h=0)
-# 
-# boxplot(((CmsyBnoP-RamB)/RamB)~ Year,data=JackStore,outline=FALSE,horizontal=FALSE,ylab='CatchMSY BvBmsy no Prior Proportional Error')
-# abline(h=0)
-dev.off()
-
-
-pdf(file='Diagnostics/PRM and CMSY Proportional Error Boxplots.pdf')
-boxplot( 100*((ModelBvBmsy-RamBvBmsy)/RamBvBmsy)~Model ,data=PlotJack,outline=F,ylab='% Proportional Error')
-dev.off()
+JackknifePlots(PlotJack,FigureFolder)
 
 
