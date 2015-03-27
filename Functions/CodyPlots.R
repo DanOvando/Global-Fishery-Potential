@@ -302,11 +302,14 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   
   #==represent MSY by area rather than radius
   radius 	<- sqrt( zQuant/ pi )
-  
+ 
   #==make colors for profit
-  bound	<-max(abs(colQuant),na.rm=T)
-  colrange	<-seq(-bound,bound,(2*bound)/100)		
-  col 		<-colorRampPalette(c("white","lightblue","blue"))(length(colrange))
+  bound    <-max(colQuant,na.rm=T)
+  bound2	<-min(colQuant,na.rm=T)
+  bigBnd	<-max(bound,abs(bound2))
+  colrange	<-seq(-bigBnd,bigBnd,(bound-bound2)/150)			
+  col 		<-colorRampPalette(c("green","white","blue"))(length(colrange))
+
   for(i in 1:length(col ))
   {
     if(col [i]!=0)
@@ -319,6 +322,8 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   #==for legend
   useCol[length(useCol)]<-"white"
   useCol[length(useCol)-1]<-"white"
+  
+  legendCol<-col[(which(abs(colrange-bound2) == min(abs(colrange-bound2)))):(which(abs(colrange-bound) == min(abs(colrange-bound))))]
   
   #=====================================
   # output figure data for comparisons
@@ -333,6 +338,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   #==Plot the plot
   #dev.new(width=6,height=6)
   #pdf("C:/Users/Cody/Desktop/Figure2a.pdf",height=6,width=6)
+  windows()
   par(mar=c(.1,.1,.1,.1),oma=c(4,4,4,4)) 
   
   plot(-exp(50),las=1,ylab="",xlab="",ylim=ylimIn,xlim=xlimIn)
@@ -349,7 +355,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   par(xpd=NA)
   #text(x=.5*cutoff,y=1.11*cutoff,"% change in catch",cex=.8)
   mtext(side=3,"Change in catch (million MT)",line=.8,cex=.8)
-  color.legend2(0,ycut*1.06,xcut*.94,1.08*ycut,rect.col=col,legend="")
+  color.legend2(0,ycut*1.06,xcut*.94,1.08*ycut,rect.col=legendCol,legend="")
   par(xpd=NA)
   text(x=-3,y=1.075*ycut,round(min(colQuant),2),cex=.85)
   text(x=xcut,y=1.075*ycut,round(max(colQuant),2),cex=.85)
