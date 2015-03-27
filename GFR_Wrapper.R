@@ -530,6 +530,8 @@ UnlumpedData<-UnlumpFisheries(UnlumpedData,RawData,BaselineYear,YearsBack=4,Stit
 
 UnlumpedProjectionData<-UnlumpedData
 
+UnlumpedProjectionData<-CheckDuplicates(UnlumpedProjectionData[UnlumpedProjectionData$CanProject==T,]) # Final check for duplicated RAM and FAO stocks
+
 rm(UnlumpedData)
 
 write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
@@ -545,7 +547,6 @@ UnlumpedUpsideOverfishOnly<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYea
                                               RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='Overfish Only')
 
 write.csv(file=paste(ResultFolder,'Unlumped Country Upsides Overfish Only.csv',sep=''),UnlumpedUpsideOverfishOnly$CountryUpsides)
-
 
 # Calculate global upsides relative to Trevor denominator
 
