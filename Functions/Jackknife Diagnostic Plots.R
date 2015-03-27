@@ -3,12 +3,12 @@ JackknifePlots<- function(PlotJack,FigureFolder)
   PlotJack$ProportionalError[PlotJack$ProportionalError>500]<- 500
   
   pdf(file=paste(FigureFolder,'Observed vs Predicted BvBmsy.pdf',sep=''))
-  (ggplot(data=subset(PlotJack,Model='PRM'),aes(y=ModelBvBmsy,x=RamBvBmsy))+geom_point(alpha=0.2)+facet_wrap(~Model)
+  print(ggplot(data=subset(PlotJack,Model='PRM'),aes(y=ModelBvBmsy,x=RamBvBmsy))+geom_point(alpha=0.2)+facet_wrap(~Model)
    +geom_smooth(method='lm')+geom_abline(intercept=0,slope=1,color='red'))
   dev.off()
   
   pdf(file=paste(FigureFolder,'Observed vs Predicted MSY.pdf',sep=''))
-  (ggplot(data=subset(PlotJack,Model='Cmsy'),aes(y=CmsyMSY,x=RamMSY))+geom_point(alpha=0.2)+facet_wrap(~Model)
+  print(ggplot(data=subset(PlotJack,Model='Cmsy'),aes(y=CmsyMSY,x=RamMSY))+geom_point(alpha=0.2)+facet_wrap(~Model)
    +geom_smooth(method='lm')+geom_abline(intercept=0,slope=1,color='red'))
   dev.off()
   
@@ -156,7 +156,6 @@ JackknifePlots<- function(PlotJack,FigureFolder)
                       geom_point(color='steelblue2',alpha=0.6)+
                       #   coord_cartesian(ylim = range(boxplot(PlotJack$ProportionalError, plot=FALSE)$stats)*c(.8, 1.5))+
                       geom_abline(intercept=0,slope=0)+
-                      geom_smooth(method='lm')+
                       ylab('Proportional Error (%) in BvBmsy')+
                       xlab('RAM BvBmsy'))
  
