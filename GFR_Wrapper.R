@@ -440,7 +440,7 @@ if (RunAnalyses==TRUE)
     #Put NEI stocks back in the appropriate dataframes, remove stocks still missing data
     
     ProjectionData<- rbind(ProjectionData,NeiData$ProjNeis)
-    browser()
+
     BiomassData<- rbind(BiomassData,NeiData$BiomassNeis)
   }
   
