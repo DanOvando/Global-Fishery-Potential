@@ -23,6 +23,10 @@ FisheriesUpsideV3<-function(ProjectionData,BaselineYear,DenominatorPolicy,Recove
     
     PC<- ((A-B)/(B))*100*sign(B)
     
+    PC[B<=0 & (A-B)>0]<- 999
+    
+    PC[B<=0 & (A-B)<=0]<- -999
+    
     return(PC)
     
   }
