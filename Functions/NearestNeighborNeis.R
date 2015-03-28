@@ -8,16 +8,7 @@
 NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
 {
   
-  #     Data<- MsyData
   
-  #           ProjData<- ProjectionData
-  
-  #   MsyData<- RamMsy
-  
-  #   ProjData<- RamProj
-  
-  #   BaselineYear<- 2011
-  #   
   data(fishbase)  
   
   Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
@@ -60,15 +51,7 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   BaselineYear<- OrigBaselineYear
   
   
-  #   sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="NeiExtendTimeSeriesProgress.txt" )
   
-  
-  #   Data<- NEIs
-  #   sfExport('Data','BaselineYear')
-  
-  #   ExtendResults <- (sfClusterApplyLB(1:(length(Stocks)), ExtendTimeSeries))      
-  #   sfStop()
-  #   rm(Data)
   
   NEIs <- ldply (ExtendResults, data.frame)
   
@@ -232,16 +215,17 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
     {
       
       Where<- NEIs$IdOrig==Stocks[s] & NEIs$Policy==LongPols[p]
+      #       Where<- NEIs$IdOrig==Stocks[s] & NEIs$Policy=='CatchShare'
       
       WhereBase<- NEIs$IdOrig==Stocks[s]  & NEIs$Policy=='Historic' & NEIs$Year==BaselineYear
       
-      WhereHistoric<- NEIs$IdOrig==Stocks[s]  & NEIs$Policy=='Historic' 
+      #       WhereHistoric<- NEIs$IdOrig==Stocks[s]  & NEIs$Policy=='Historic' 
       
       msy<-NEIs$Catch[WhereBase]/(NEIs$BvBmsy[WhereBase]*NEIs$FvFmsy[WhereBase])
       
       NEIs$MSY[Where]<- msy
       
-      NEIs$MSY[WhereHistoric]<- msy[1]
+      #       NEIs$MSY[WhereHistoric]<- msy[1]
       
       NEIs$Catch[Where]<- NEIs$MSY[Where]*(NEIs$BvBmsy[Where]*NEIs$FvFmsy[Where])
       
@@ -250,7 +234,7 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
       #       c_den = ((2-NEIs$BvBmsyOpenAccess[Where])*NEIs$g[Where])^beta
       
       BOA<- NEIs$BvBmsyOpenAccess
-     
+      
       phi<- NEIs$phi
       
       FOA<- (((phi+1)/phi)*(1-BOA^phi/(phi+1)))
@@ -262,10 +246,10 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
       cost = c_num/c_den
       
       cost<- cost[Where]
-          
+      
       NEIs$MarginalCost[Where]<- cost
       
-      NEIs$MarginalCost[WhereHistoric]<- cost[1]
+      #       NEIs$MarginalCost[WhereHistoric]<- cost[1]
       
       NEIs$Profits[Where]<- NEIs$Price[Where]*NEIs$MSY[Where]*(NEIs$BvBmsy[Where]*NEIs$FvFmsy[Where])-NEIs$MarginalCost[Where]*(NEIs$FvFmsy[Where]*NEIs$g[Where])^beta
       
