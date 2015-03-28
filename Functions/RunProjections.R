@@ -5,27 +5,10 @@
 
 RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy)
 {
-  
-  #   Data<-  MsyData[MsyData$CanProject==T,]
-  #   Data<- MsyData[MsyData$CanProject==T & MsyData$IdOrig=='AFSC-REYEROCKBSAI-1974-2011-STACHURA',]
-  
-  #   #  
-  #        BaselineYear<- 2011
-  
+
   Data$MarginalCost<- NA
   
-  #   Data$FvFmsy[Data$FvFmsy>=1.9]<- 1.9
-  # 
-  #   Data$BvBmsy[Data$BvBmsy>=1.9]<- 1.9
-  
-  
-  
-  
   # Loop over Each Stock ----------------------------------------------------
-  
-  #   Policies<- c('Opt','CatchShare','Food','SQ','Fmsy','CloseDown')
-  
-  #   Policies<- c('StatusQuoOpenAccess','Opt','CatchShare','Food','StatusQuoFForever','StatusQuoBForever','Fmsy','CloseDown')
   
   Policies<- c('StatusQuoOpenAccess','Opt','CatchShare','StatusQuoFForever','StatusQuoBForever','Fmsy','CloseDown')
   
