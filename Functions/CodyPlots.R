@@ -17,7 +17,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   library(SDMTools)
   
   ############# Figure 1 #############
-  workLocal<-1
+  workLocal<-0
   if(workLocal==1)
   {
   ResultFolder<-"C:/Users/Cody/Desktop/UpsideData/Pt figures/"
@@ -38,10 +38,10 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   discRt  		<- 0.05	# discount rate in annuity calculation
   TimeHor			<- max(PlotTrend$Year)-2012		# time horizon in annuity calculation
   cutin				<- -75	# minimum value for figures
-  cutoff			<- 250	# maximum value in figures
+  cutoff			<- 1000	# maximum value in figures
   sizeCirc			<-.4		# size of circles in figures
   NPVcut			<-1000 	# cuttoff for NPV
-  colCut			<-500		# cutoff for the largest % change in profit for coloring
+  colCut			<-1000		# cutoff for the largest % change in profit for coloring
   xlimIn<-c(cutin,cutoff)
   ylimIn<-c(cutin,cutoff)
   
@@ -66,6 +66,11 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   trevPercChangeBioSQ	<-100*OverfishStocks$AbsChangeFromSQTotalBiomass/AllStocks$TotalBiomassSQ
   trevPercChangeCatchSQ	<-100*OverfishStocks$AbsChangeFromSQTotalCatch/AllStocks$TotalCatchSQ
   trevPercChangeNPV		<-(100*(OverfishStocks$TotalNPV-OverfishStocks$TotalNPVSQ)/AllStocks$TotalNPVSQ)*sign(AllStocks$TotalNPVSQ)
+ 
+  trevPercChangeNPV[AllStocks$TotalNPVSQ<=0 & (OverfishStocks$TotalNPV-OverfishStocks$TotalNPVSQ)>0]<- 999
+  
+  trevPercChangeNPV[AllStocks$TotalNPVSQ<=0 & (OverfishStocks$TotalNPV-OverfishStocks$TotalNPVSQ)<=0]<- -999
+  
   
   #==bound x and y
   trevPercChangeNPV[trevPercChangeNPV>NPVcut]		<-NPVcut
@@ -84,7 +89,17 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   
   #==quantities that determine the color
   colQuant  		<-100*(overfishAnn-OverfishStocks$TotalBaselineProfits)/OverfishStocks$TotalBaselineProfits*sign(OverfishStocks$TotalBaselineProfits)
+  
+  colQuant[OverfishStocks$TotalBaselineProfits<=0 & (overfishAnn-OverfishStocks$TotalBaselineProfits)>0]<- 999
+
+  colQuant[OverfishStocks$TotalBaselineProfits<=0 & (overfishAnn-OverfishStocks$TotalBaselineProfits)<=0]<- -999
+  
   colQuant3			<-100*(overfishAnn-OverfishStocks$TotalBaselineProfits)/AllStocks$TotalBaselineProfits*sign(AllStocks$TotalBaselineProfits)
+  
+  colQuant3[AllStocks$TotalBaselineProfits<=0 & (overfishAnn-OverfishStocks$TotalBaselineProfits)>0]<- 999
+  
+  colQuant3[AllStocks$TotalBaselineProfits<=0 & (overfishAnn-OverfishStocks$TotalBaselineProfits)<=0]<- -999
+  
   
   colQuant4			<-trevPercChangeNPV
   colQuant2			<-OverfishStocks$PercChangeFromSQNPV
@@ -176,6 +191,8 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   
   par(xpd=NA)
   text(x=.5*cutoff,y=1.12*cutoff,"% change in profit",cex=.8)
+  
+  show(round(bound))
   color.legend2(0,cutoff*1.07,cutoff*.94,1.09*cutoff,rect.col=legendCol,legend="")
   par(xpd=NA)
   text(x=-20,y=1.09*cutoff,paste("<",round(bound2)),cex=.65)
@@ -338,7 +355,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   #==Plot the plot
   #dev.new(width=6,height=6)
   #pdf("C:/Users/Cody/Desktop/Figure2a.pdf",height=6,width=6)
-  windows()
+#   windows()
   par(mar=c(.1,.1,.1,.1),oma=c(4,4,4,4)) 
   
   plot(-exp(50),las=1,ylab="",xlab="",ylim=ylimIn,xlim=xlimIn)

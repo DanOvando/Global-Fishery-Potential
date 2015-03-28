@@ -435,12 +435,12 @@ if (RunAnalyses==TRUE)
   
   if (IncludeNEIs==TRUE)
   {
-    NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear) #Run Nearest Neighbor NEI analysis
-    
+   
+    NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear) #Run Nearest Neighbor NEI analysis    
     #Put NEI stocks back in the appropriate dataframes, remove stocks still missing data
     
     ProjectionData<- rbind(ProjectionData,NeiData$ProjNeis)
-    
+    browser()
     BiomassData<- rbind(BiomassData,NeiData$BiomassNeis)
   }
   
@@ -512,6 +512,10 @@ if (IncludeForageFish==FALSE)
 
 ProjectionData<-BuildPolicyBAUs(ProjectionData,BaselineYear)
 
+ProjectionData<- ddply(ProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
+
+ProjectionData$NPV[ProjectionData$Policy=='Historic']<- NA
+
 # Calculate fishery upsides on full ProjectionData prior to unlumping stocks
 
 UpsideAllStocks<-FisheriesUpsideV3(ProjectionData,BaselineYear,DenominatorPolicy='Business As Usual',
@@ -533,6 +537,10 @@ UnlumpedProjectionData<-UnlumpedData
 UnlumpedProjectionData<-CheckDuplicates(UnlumpedProjectionData[UnlumpedProjectionData$CanProject==T,]) # Final check for duplicated RAM and FAO stocks
 
 rm(UnlumpedData)
+
+UnlumpedProjectionData<- ddply(UnlumpedProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
+
+UnlumpedProjectionData$NPV[UnlumpedProjectionData$Policy=='Historic']<- NA
 
 write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
 
@@ -570,7 +578,7 @@ MakeKobePlot(ProjectionData,BaselineYear,'Global Kobe Plot.pdf')
 
 # Projection validation data for Chris
 
-ProjectionValidationData<-ProjectionValidation(ProjectionData,BaselineYear)
+ProjectionValidationData<-ProjectionValidation(UnlumpedProjectionData,BaselineYear)
 
 # Produce Country Summary table and Stock List (returns list with Country summaries and Stock list, writes csvs of both)
 
