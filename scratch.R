@@ -8,9 +8,9 @@ quartz()
 ggplot(data=change,aes(x=Year,y=Profits,color=Policy))+geom_point()
 
 arg=ddply((UnlumpedProjectionData),c('Country'),
-      summarize,CSProfits=sum(Catch[Policy=='CatchShare' & Year==max(Year)],na.rm=T),
-      SQProfits=sum(Catch[Policy=='Business As Usual' & Year==max(Year)],na.rm=T),
-      CurrentProfits=sum(Catch[Policy=='Business As Usual' & Year==2013],na.rm=T))
+      summarize,CSProfits=sum(Biomass[Policy=='CatchShare' & Year==max(Year)],na.rm=T),
+      SQProfits=sum(Biomass[Policy=='Business As Usual' & Year==max(Year)],na.rm=T),
+      CurrentProfits=sum(Biomass[Policy=='Business As Usual' & Year==2013],na.rm=T))
 
 arg$Futurewtf<- ((arg$CSProfits-arg$SQProfits)/arg$SQProfits)*100*sign(arg$SQProfits) 
 
