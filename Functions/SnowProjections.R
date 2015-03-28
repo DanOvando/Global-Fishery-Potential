@@ -154,9 +154,9 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
       }
     }
     
-    Projection<- data.frame(f,b,y,pi)
+    Projection<- data.frame(f,b,y,pi,p,c)
     
-    colnames(Projection)<- c('FvFmsy','BvBmsy','Yields','Profits')
+    colnames(Projection)<- c('FvFmsy','BvBmsy','Yields','Profits','Price','MarginalCost')
     
     return(Projection)
   }
@@ -279,6 +279,10 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     colnames(PolicyMatrix)<- c(colnames(RecentStockData),'Policy','Profits')
     
     PolicyMatrix$Catch<- Projection$Yields
+
+    PolicyMatrix$Price<- Projection$Price
+    
+    PolicyMatrix$MarginalCost<- Projection$MarginalCost
     
     PolicyMatrix$BvBmsy<- Projection$BvBmsy
     
@@ -289,9 +293,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     PolicyMatrix$Profits<- Projection$Profits
     
     PolicyMatrix$Policy<- Policies[p]
-    
-    PolicyMatrix$MarginalCost<- cost
-    
+        
     TempMat[counter:(counter+-1+(dim(PolicyMatrix)[1])),]<- I(PolicyMatrix)
     #     
     counter<- (counter+(dim(PolicyMatrix)[1]))
