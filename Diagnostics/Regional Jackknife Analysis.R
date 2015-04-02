@@ -10,8 +10,8 @@
 # 
 # 6. Store Real B/Bmsy, F/Fmsy, MSY, PRM B/Bmsy, MSY BvBmsy, FvFmsy, MSY with and without priors, and year
 rm(list=ls())
-load('Results/PT 1.2/Data/Global Fishery Recovery Results.rdata')
-NumCPUs<- 3
+load('Results/2.5/Data/Global Fishery Recovery Results.rdata')
+NumCPUs<- 4
 FigureFolder<- paste(BatchFolder,'Diagnostics/Regional Jackknife/',sep='')
 dir.create(FigureFolder,recursive=T)
 
@@ -46,13 +46,13 @@ JackStore<- as.data.frame(matrix(NA,nrow=0,ncol=14))
 
 colnames(JackStore)<- c('Assessid','Year','Country','Catch','RamB','RamF','RamMSY','PrmB','CmsyB','CmsyF','CmsyMSY','CmsyBnoP','CmsyFnoP','CmsyMSYnoP')
 
-NumCatchMSYIterations<- 10000
+NumCatchMSYIterations<- 25000
 
 ErrorSize<- 0.95
 
 TransbiasIterations<- 1000
 
-NumCPUs<- 2
+NumCPUs<- 4
 
 sigR<- 0
 
@@ -199,17 +199,17 @@ for (n in 1:length(Regions))
       OmitStatus<- AnalyzeFisheries(BiomassData,'JackStat','Year',min(BiomassData$Year):max(BiomassData$Year),RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
       
       TempJack[,c('PrmB')]<- OmitStatus$Data$BvBmsy
-      
+
       CatchMSYresults<- (RunCatchMSY(OmitStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps)$MsyData)
       
       TempJack[,c('CmsyB','CmsyF','CmsyMSY')]<- CatchMSYresults[,c('CatchMSYBvBmsy','FvFmsy','MSY')]
       
-      OmitStatus$Data$BvBmsySD<- NA
+#       OmitStatus$Data$BvBmsySD<- NA
       
-      CatchMSYresults<- (RunCatchMSY(OmitStatus$Data,1,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps)$MsyData)
-      
-      TempJack[,c('CmsyBnoP','CmsyFnoP','CmsyMSYnoP')]<- CatchMSYresults[,c('CatchMSYBvBmsy','FvFmsy','MSY')]
-      
+#       CatchMSYresults<- (RunCatchMSY(OmitStatus$Data,1,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps)$MsyData)
+#       
+#       TempJack[,c('CmsyBnoP','CmsyFnoP','CmsyMSYnoP')]<- CatchMSYresults[,c('CatchMSYBvBmsy','FvFmsy','MSY')]
+#       
       show(paste(100*(r/length(RamIds)),' % Done with JackKnife',sep=''))
       
       JackStore<- rbind(JackStore,TempJack)
@@ -218,19 +218,22 @@ for (n in 1:length(Regions))
 } #Close regions loop
 
 
+
 Prm<- cbind(JackStore[,c('Assessid','Year','Country','Catch','RamB','PrmB','RamMSY','CmsyMSY','RamF','CmsyF')],'PRM')
 
-CmsyB<- cbind(JackStore[,c('Assessid','Year','Country','Catch','RamB','CmsyB','RamMSY','CmsyMSY','RamF','CmsyF')],'CmsyB')
+CmsyB<- cbind(JackStore[,c('Assessid','Year','Country','Catch','RamB','CmsyB','RamMSY','CmsyMSY','RamF','CmsyF')],'Cmsy')
 
-CmsyBnoP<- cbind(JackStore[,c('Assessid','Year','Country','Catch','RamB','CmsyBnoP','RamMSY','CmsyMSY','RamF','CmsyF')],'CmsyBnoP')
+# CmsyBnoP<- cbind(JackStore[,c('Assessid','Year','Country','Catch','RamB','CmsyBnoP','RamMSY','CmsyMSY','RamF','CmsyF')],'CmsyBnoP')
 
 colnames(Prm)<- c('Id','Year','Country','Catch','RamBvBmsy','ModelBvBmsy','RamMSY','CmsyMSY','RamF','CmsyF','Model')
 
 colnames(CmsyB)<- c('Id','Year','Country','Catch','RamBvBmsy','ModelBvBmsy','RamMSY','CmsyMSY','RamF','CmsyF','Model')
 
-colnames(CmsyBnoP)<- c('Id','Year','Country','Catch','RamBvBmsy','ModelBvBmsy','RamMSY','CmsyMSY','RamF','CmsyF','Model')
+# colnames(CmsyBnoP)<- c('Id','Year','Country','Catch','RamBvBmsy','ModelBvBmsy','RamMSY','CmsyMSY','RamF','CmsyF','Model')
 
-PlotJack<- rbind(Prm,CmsyB,CmsyBnoP)
+# PlotJack<- rbind(Prm,CmsyB,CmsyBnoP)
+
+PlotJack<- rbind(Prm,CmsyB)
 
 SpeciesInfo<- RamData[,c('IdOrig','SpeciesCatName','MaxLength','AgeMat','VonBertK')]
 
@@ -240,11 +243,17 @@ PlotJack<- join(PlotJack, SpeciesInfo,by='Id',match='first')
 
 save(PlotJack,JackStore,file=paste(ResultFolder,'Regional JackKnife.rdata',sep=''))
 
+# load(paste(ResultFolder,'Regional JackKnife.rdata',sep=''))
+# 
+# FigureFolder<- paste(BatchFolder,'Diagnostics/Regional Jackknife/',sep='')
+
 # load(file='Results/Mycothpids Ahoy 2_25_15/Diagnostics/Regional Jackknife/Regional JackKnife.rdata')
 
-PlotJack$ModelBvBmsy[PlotJack$ModelBvBmsy>2.5]<- 2.5
+# PlotJack$ModelBvBmsy[PlotJack$ModelBvBmsy>2.5]<- 2.5
 
-PlotJack$ProportionalError<- 100*((PlotJack$ModelBvBmsy-PlotJack$RamBvBmsy)/PlotJack$RamBvBmsy)
+PlotJack<- subset(PlotJack,is.na(CmsyMSY)==F)
+
+PlotJack$ProportionalBError<- 100*((PlotJack$ModelBvBmsy-PlotJack$RamBvBmsy)/PlotJack$RamBvBmsy)
 
 PlotJack$ProportionalMSYError<- 100*((PlotJack$CmsyMSY-PlotJack$RamMSY)/PlotJack$RamMSY)
 
