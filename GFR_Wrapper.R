@@ -346,11 +346,12 @@ if (RunAnalyses==TRUE)
   
   sigR<- 0
   
-  GlobalStatus$BvBmsySD[GlobalStatus$Data$Dbase=='SOFIA']<- 0.1
+  GlobalStatus$Data$BvBmsySD[GlobalStatus$Data$Dbase=='SOFIA']<- 0.1
   
   #   arg<- sample(GlobalStatus$Data$IdOrig,100,replace=F)
   
-  CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
+#   CatchMSYresults<- (RunCatchMSY(subset(GlobalStatus$Data,IdOrig=='2013-FAO-61-34'),ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
+  CatchMSYresults<- (RunCatchMSY((GlobalStatus$Data),ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   
   #   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data[GlobalStatus$Data$IdOrig %in% arg,],ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   
@@ -542,7 +543,7 @@ UnlumpedProjectionData<- ddply(UnlumpedProjectionData,c('IdOrig','Policy'),mutat
 
 UnlumpedProjectionData$NPV[UnlumpedProjectionData$Policy=='Historic']<- NA
 
-write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
+# write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
 
 # Calculate fishery upsides from UnlumpedProjectionData
 
@@ -594,13 +595,14 @@ CodyPlots(FigureFolder,ResultFolder,Policy='Catch Share Three')
 
 write.csv(file=paste(ResultFolder,'Projection Data.csv',sep=''),ProjectionData)
 
-write.csv(file=paste(ResultFolder,'UnlumpedProjection Data.csv',sep=''),UnlumpedProjectionData)
+write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
 
 save(ProjectionData,UnlumpedProjectionData,file=paste(ResultFolder,'ProjectionData Data.rdata',sep=''))
 
 save.image(file=paste(ResultFolder,'Global Fishery Recovery Complete Results.rdata',sep=''))
 
 # Publish in Science ------------------------------------------------------
-
-
+# IUULevel<- 1.25
+# RunIUUDiagnostic(MsyData,RealModels,IUULevel=IUULevel,s,BatchFolder,SubSample=0)
+# 
 
