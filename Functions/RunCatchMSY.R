@@ -122,7 +122,7 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   CmsyStore <- lapply(seq(along = CMSYResults), function(i)    CMSYResults[[i]]$CatchMSY)
   
   PossibleParams<- ldply(PossibleParams)
-  if (dim(PossibleParams)[1]>0 & sum(PossibleParams$Fail==0,na.rm=T)>1)
+  if (dim(PossibleParams)[1]>0 & sum(PossibleParams$Fail==0,na.rm=T)>=1)
   {
     PossibleParams<- PossibleParams[,c('IdOrig','g','phi','K','MSY','FinalFvFmsy','FinalBvBmsy')]
   }
