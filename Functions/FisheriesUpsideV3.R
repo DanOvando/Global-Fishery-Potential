@@ -4,10 +4,10 @@
 # RecoveryThreshold<-0.8
 # SubsetName<-'All Stocks'
 
-FisheriesUpsideV3<-function(ProjectionData,BaselineYear,DenominatorPolicy,RecoveryThreshold,LumpedName,SubsetName)
+FisheriesUpsideV3<-function(Data,BaselineYear,DenominatorPolicy,RecoveryThreshold,LumpedName,SubsetName)
 {
   
-  Data<-ProjectionData
+#   Data<-ProjectionData
   
   # Choose to run upside on all stocks or just overfished
   
