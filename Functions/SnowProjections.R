@@ -203,6 +203,8 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   FOA<- ((phi+1)/phi)*(1-BOA^phi/(phi+1))
   
+  FStatusQuo<- pmin(FStatusQuo,FOA)
+  
   c_num <-  Price*FOA*BOA*MSY
   
   c_den = (g*FOA)^beta
