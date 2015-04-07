@@ -66,7 +66,7 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     
     MsyProfits<- MSY*p-c*(g)^beta
     
-    Omega<- .125
+    Omega<- 0.1
     
     PastF<- FStatusQuo
     
@@ -94,8 +94,8 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
       y[t,] = MSY*f[t,]*b[t,]
       if (t<Time+1)
       {
-#         b[t+1,] =pmax(min(bvec), b[t,] + r*b[t,]*(1-b[t,]/2) - r/2*b[t,]*f[t,])
-        b[t+1] =pmax(min(bvec), b[t,] + ((phi+1)/phi)*g*b[t,]*(1-b[t,]^phi/(phi+1)) - g*b[t,]*f[t,])
+        #         b[t+1,] =pmax(min(bvec), b[t,] + r*b[t,]*(1-b[t,]/2) - r/2*b[t,]*f[t,])
+        b[t+1,] =pmax(min(bvec), b[t,] + ((phi+1)/phi)*g*b[t,]*(1-b[t,]^phi/(phi+1)) - g*b[t,]*f[t,])
         
       }
     }
@@ -123,14 +123,11 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     Projection<- data.frame(fFlat,bFlat[,'BvBmsy'],yFlat[,'Catch'],piFlat[,'Profits'])
     
     colnames(Projection)<- c('Year','IdOrig','FvFmsy','BvBmsy','Catch','Profits')
-    
-    #     browser()
-    #     quartz()
-    #     ggplot(data=Projection,aes(x=BvBmsy,y=FvFmsy))+geom_line()+facet_wrap(~IdOrig)
-    #     
-    #     quartz()
-    #     ggplot(data=Projection,aes(x=Year,y=BvBmsy))+geom_line()+facet_wrap(~IdOrig)
-    #     
+    if (any(b==0))
+    {
+      browser()
+    }
+ 
     Projection$Year<- Projection$Year+(BaselineYear-1)
     
     Projection<- subset(Projection,Year==BaselineYear | Year==max(Year))
@@ -174,7 +171,7 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     CatchShareCost<- CatchShareCost  *rlnorm(1,0,ErrorSize)
     
     #     BOA<- pmin(1.99,RecentStockData$BvBmsyOpenAccess[1] *rlnorm(1,0,ErrorSize))
-    BOA<- pmin(1.99,RecentStockData$BvBmsyOpenAccess *rlnorm(dim(RecentStockData)[1],0,ErrorSize))
+    BOA<- pmin(0.9*((RecentStockData$phi+1)^(1/(RecentStockData$phi))),RecentStockData$BvBmsyOpenAccess *rlnorm(dim(RecentStockData)[1],0,ErrorSize))
     
     MSY<- PossParams$MSY
     
@@ -233,7 +230,10 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
       #       eval(parse(text=paste('Policy<-',Policies[p],'Policy',sep=''))) 
       
       Projection<- Sim_Forward(FStatusQuo,BStatusQuo,Policies[p],PolicyFuncs,IsCatchShare,bvec,BStatusQuo,ProjectionTime,Price,MSY,cost,g,phi,beta)
-      
+      if (any(Projection$BvBmsy==0))
+      {
+        browser()
+      }
       Projection<- join(Projection,PossParams[,c('IdOrig','MSY','g','phi','K','Price','Cost','MsyProfits','BOA')],by='IdOrig',match='first')
       
       Projection<- join(Projection,RecentStockData[,c('IdOrig','Country','Dbase','SciName','CommName','IdLevel','SpeciesCatName')],by='IdOrig',match='first')        

@@ -1,8 +1,0 @@
----
-title: "test"
-author: "Dan Ovando"
-date: "March 26, 2015"
-output: pdf_document
----
-
-Does this work? B/B~MSY~

@@ -32,7 +32,7 @@ MonteMat<- SnowMonteCarlo(500,Stocks=Stocks,ProjectionData=ProjectionData,CatchM
 # +geom_line()
 # MonteMat<- ldply(MonteMat)
 save(MonteMat,file=paste(ResultFolder,'MonteCarlo_Results.Rdata',sep=''))
-# load('Results/2.5/Data/MonteCarlo_Results.Rdata')
+# load('Results/Mycothpids Ahoy 2_25_15/Data/MonteCarlo_Results.Rdata')
 
 
 MonteCarlo<- ddply(subset(MonteMat),c('Iteration','Year','Policy'),summarize,MSY=sum(MSY,na.rm=T),Profits=sum(Profits,na.rm=T),
@@ -59,9 +59,8 @@ dev.off()
 pdf(file=paste(FigureFolder,'MC_Profits.pdf',sep=''))
 MCProfits<- (ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(Profits,fill=Policy))+
                geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))+
-               geom_vline(aes(xintercept=0,alpha=0.8),color='red',linetype='longdash',size=1)+facet_wrap(~Policy)+ylab("Scaled Density")
-             +scale_fill_discrete(name = "Management Alternative")
-             #                coord_cartesian(xlim=c(-3e11,2e11))
+               geom_vline(aes(xintercept=0,alpha=0.8),linetype='longdash',size=1)+facet_wrap(~Policy,scale='free')+ylab("Scaled Density")
+#                coord_cartesian(xlim=c(-3e11,2e11))
              
 )
 print(MCProfits)
@@ -69,15 +68,15 @@ dev.off()
 
 pdf(file=paste(FigureFolder,'MC_Catch.pdf',sep=''))
 MCCatch<- (ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(Catch,fill=Policy))+
-             geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))+
-             facet_wrap(~Policy)+ylab("Scaled Density")+scale_fill_discrete(name = "Management Alternative")
-           #                coord_cartesian(xlim=c(-3e11,2e11))
-           
+               geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))+
+               facet_wrap(~Policy)+ylab("Scaled Density")
+             #                coord_cartesian(xlim=c(-3e11,2e11))
+             
 )
 print(MCCatch)
 dev.off()
 
-# 
+
 # pdf(file=paste(FigureFolder,'MC_Catch.pdf',sep=''))
 # MCCatch<- (ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(Catch,fill=Policy))+
 #              geom_density(alpha=0.5)+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))
@@ -88,32 +87,29 @@ dev.off()
 
 pdf(file=paste(FigureFolder,'MC_BvBmsy.pdf',sep=''))
 MCBvB<-(ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(BvBmsy,fill=(Policy)))+
-          geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))
-        +geom_vline(aes(xintercept=1),color='red',linetype='longdash')+xlim(c(0,2.5))+
-          facet_wrap(~Policy)+scale_fill_discrete(name = "Management Alternative"))
+          geom_density(alpha=0.7)+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))+facet_wrap(~Policy,scale='free'))
 print(MCBvB)
 dev.off()
 
 pdf(file=paste(FigureFolder,'MC_BvBmsy_OA.pdf',sep=''))
 MCBvB_OA<-(ggplot(data=subset(MonteCarlo,Year==max(Year) & Policy=='CatchShare'),aes(MedianBOA,fill=(Policy)))+
-             geom_density(alpha=0.7)+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9)))
+          geom_density(alpha=0.7)+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9)))
 print(MCBvB_OA)
 dev.off()
 
 pdf(file=paste(FigureFolder,'MC_FvFmsy.pdf',sep=''))
 MCFvF<-(ggplot(data=subset(MonteCarlo,Year==max(Year) ),aes(jitter(FvFmsy,factor=.1),fill=(Policy)))+
           geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))
-        +xlab('F/Fmsy')+facet_wrap(~Policy)+scale_fill_discrete(name = "Management Alternative")+xlim(c(0,2))
-        +geom_vline(aes(xintercept=1),color='red',linetype='longdash')
-        #         + coord_cartesian(ylim=c(0,25))+xlab('FvFmsy'))
+#         + coord_cartesian(ylim=c(0,25))+xlab('FvFmsy'))
 )
-
-print(MCFvF)
-dev.off()
-
-
-
-
-save(MCProfits,MCCatch,MCBvB,MCFvF,MCMSY,file=paste(FigureFolder,'MonteCarlo Plots.rdata',sep=''))
+        
+        print(MCFvF)
+        dev.off()
+        
 
 
+        
+        save(MCProfits,MCCatch,MCBvB,MCFvF,MCMSY,file=paste(FigureFolder,'MonteCarlo Plots.rdata',sep=''))
+        
+        
+        

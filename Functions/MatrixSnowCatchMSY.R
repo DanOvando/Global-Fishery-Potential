@@ -15,7 +15,7 @@ MatrixSnowCatchMSY<- function(s,Data,CommonError,CommonRange,sigR,Smooth,Display
     
     with(as.list(parbound),
 {
-
+  
   gi = rep(exp(runif(n, log(start_g[1]), log(start_g[2]))),length(startbt))  ## get N values between g[1] and g[2], assign to ri
   
   ki = rep(exp(runif(n, log(start_k[1]), log(start_k[2]))),length(startbt))  ## get N 
@@ -39,10 +39,10 @@ MatrixSnowCatchMSY<- function(s,Data,CommonError,CommonRange,sigR,Smooth,Display
   btMat[,1]<- ParamSpace$K*ParamSpace$StartBio*exp(rnorm(1,0, ParamSpace$sigR))
   
   xt<- rnorm(1,0, sigR)
-
+  
   for (y in 2:length(ct))
   {
-#     btMat[,y]<- btMat[,y-1]+ParamSpace$r*btMat[,y-1]*(1-btMat[,y-1]/ParamSpace$K)-ct[y-1]*exp(xt)
+    #     btMat[,y]<- btMat[,y-1]+ParamSpace$r*btMat[,y-1]*(1-btMat[,y-1]/ParamSpace$K)-ct[y-1]*exp(xt)
     btMat[,y]<- btMat[,y-1]+((phi+1)/phi)*ParamSpace$g*btMat[,y-1]*(1-(btMat[,y-1]/ParamSpace$K)^phi)-ct[y-1]*exp(xt)    
   }
   
@@ -59,7 +59,7 @@ MatrixSnowCatchMSY<- function(s,Data,CommonError,CommonRange,sigR,Smooth,Display
   colnames(EllBio)<- c('MinBio','MaxBio','InterBio','FinalBio')
   
   #   Ell= EllBio$FinalBio>=ResultMat$FinalBio1 & EllBio$FinalBio <= ResultMat$FinalBio2 & EllBio$InterBio>=ResultMat$InterBio1 & EllBio$InterBio <= ResultMat$InterBio2 & EllBio$MinBio>0 & EllBio$MaxBio<ResultMat$K 
-
+  
   Ell= ResultMat$StartBio==min(ResultMat$StartBio) & EllBio$FinalBio>=ResultMat$FinalBio1 & EllBio$FinalBio <= ResultMat$FinalBio2 & EllBio$InterBio>=ResultMat$InterBio1 & EllBio$InterBio <= ResultMat$InterBio2 & EllBio$MinBio>0 & EllBio$MaxBio<ResultMat$K 
   
   Missing<- is.na(EllBio$FinalBio)
@@ -109,11 +109,13 @@ bio<- pmin(1,(Data$BvBmsy*Data$BtoKRatio)[Data[,IdVar]==stock]) #pull out bvbmsy
 
 bioerror<- (Data$BvBmsySD*Data$BtoKRatio)[Where]
 
+# bioerror<- bioerror*1.4
+
 bioerror[is.na(bioerror)]<- CommonError
 
 PossibleRuns<- NA
 
-if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct) >1)
+if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0 & length(LastCatchYear)>0 & length(ct)>1)
 {
   
   
@@ -174,7 +176,7 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   
   #   finalbio    <- pmin(1,c((1-ErrorSize)*bio[nyr],(1+ErrorSize)*bio[nyr]))
   finalbio    <- pmin(1,pmax(0,c(qnorm(0.45,bio[nyr],bioerror[nyr]),qnorm(0.55,bio[nyr],bioerror[nyr]))))
-  
+
   if(bio[nyr]>=0.95) # if final stock bio is 2 or higher set priors to BvBmsy 1.4-1.7
   { 
     finalbio<-c(0.7,0.85)
@@ -219,6 +221,18 @@ if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0& length(LastCatchYear)>0 & length(ct)
   #   max_k1a  <- min(k1[r1<1.1*parbound$r[1]],na.rm=T) ## smallest k1 near initial lower bound of r
   #   max_k1b  <- max(k1[r1*k1/4<mean_msy1],na.rm=T) ## largest k1 that gives mean MSY
   #   max_k1 <- if(max_k1a < max_k1b) {max_k1a} else {max_k1b}
+  
+  if(length(g1)<10) 
+  {        
+    
+    finalbio<- pmax(0,pmin(1,finalbio+c(-.065,.065)))
+    PossibleRuns<- MatrixCmsy(parbound,n,interbio,finalbio,startbt)
+    ## Get statistics on g, k, MSY and determine new bounds for g and k
+    g1   <- PossibleRuns$g
+    k1 	<- PossibleRuns$K
+    
+  }
+  
   if(length(g1)<10) {    
     cat("Too few (", length(g1), ") possible g-k combinations, check input parameters","\n")
     flush.console()

@@ -25,9 +25,9 @@ library(reshape2)
 # library(dplyr)
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- TRUE
+RunAnalyses<- FALSE
 
-BatchFolder<- 'FUCK YOU RAM'
+BatchFolder<- '2.5'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -47,7 +47,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- 'PT 1.2'
+  BatchFolder<- '2.5'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
@@ -63,13 +63,13 @@ if (RunAnalyses==FALSE)
 
 # Key Parameters ----------------------------------------------------------------
 
-SubSample<- 0.98
+SubSample<- 0
 
 NumCPUs<- 4 #Number of CPUs to use for parallel computing of CatchMSY
 
 DefaultPhi<- .188
 
-NumCatchMSYIterations <- 1000  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 25000  ## number of iterations, e.g. 100000
 
 ProjectionTime<- 38
 

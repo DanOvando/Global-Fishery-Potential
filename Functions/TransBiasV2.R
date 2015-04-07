@@ -306,7 +306,7 @@ TransBias<- function(Data,SdevBins,BinBreak,J)
 
     Medianitemp<- apply(exp(jstore),1,median,na.rm=T) #store median results for individual fisheries 
 
-    Sditemp<- apply((jstore),1,sd,na.rm=T) #store median results for individual fisheries 
+    Sditemp<- apply(exp(jstore),1,sd,na.rm=T) #store median results for individual fisheries 
     
     isort<- t(apply(exp(jstore),1,sort))
     

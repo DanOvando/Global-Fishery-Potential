@@ -12,7 +12,7 @@ ProjectionValidation<-function(ProjectionData,BaselineYear)
 
 #   input<-ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$IdLevel=='Species',c('IdOrig','Country','CatchShare','Year','BvBmsy','FvFmsy','MSY','g','phi','Price','MarginalCost')]
   
-  input<-ProjectionData[ProjectionData$Year==BaselineYear,c('IdOrig','Country','CatchShare','Year','BvBmsy','FvFmsy','MSY','g','phi','Price','MarginalCost','Profits')]
+  input<-ProjectionData[ProjectionData$Year==BaselineYear,c('IdOrig','Country','CatchShare','Year','BvBmsy','FvFmsy','MSY','g','phi','Price','MarginalCost','Profits','BvBmsyOpenAccess')]
   
   
   output<-ProjectionData[ProjectionData$Year==max(ProjectionData$Year,na.rm=T) & ProjectionData$IdOrig %in% input$IdOrig,
