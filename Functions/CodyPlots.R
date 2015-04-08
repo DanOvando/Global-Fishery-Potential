@@ -17,7 +17,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   library(SDMTools)
   
   ############# Figure 1 #############
-  workLocal<-0
+  workLocal<-1
   if(workLocal==1)
   {
     ResultFolder<-"C:/Users/Cody/Desktop/UpsideData/Pt figures/"
@@ -32,7 +32,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   
   #data<-read.csv("C:/Users/Cody/Desktop/UpsideData/PT figures/Lumped Projection DataAll Stocks Country Upsides.csv")
   #data2<-read.csv("C:/Users/Cody/Desktop/UpsideData/PT figures/Lumped Projection DataOverfish Only Country Upsides.csv")
-  pdf(file=paste(FigureFolder,'Figure 1.pdf',sep=''))
+  pdf(file=paste(FigureFolder,'Figure 1.pdf',sep=''),height=6,width=6)
   
   #==hardcoded numbers
   discRt  		<- 0.05	# discount rate in annuity calculation
@@ -267,7 +267,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   
   ######## Figure 2 ############
   
-  pdf(paste(FigureFolder,'Figure 2.pdf',sep=''))
+  pdf(paste(FigureFolder,'Figure 2.pdf',sep=''),height=6,width=6)
   
   
   AllStocks<-data
@@ -380,11 +380,11 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   par(xpd=FALSE)
   dev.off()
   
-  ######## Figure 3 ###########
+  ######## Figure 4 ###########
   
   
   
-  pdf(paste(FigureFolder,'Figure 3.pdf',sep=''))
+  pdf(paste(FigureFolder,'Figure 4.pdf',sep=''),width=8,height=4)
   
   years<-unique(PlotTrend$Year)
   xlimIn<-c(min(years),max(years))
@@ -477,12 +477,12 @@ newDF$Year[nrow(newDF)-1]<-NA
 #   text(x=1983,y=17,round(as.numeric(newDF$value)[nrow(newDF)]/1000000),cex=.8)
   dev.off()
   
-  ####### Figure 4 ##########
+  ####### Figure 3 ##########
   AllStocks<-data
   OverfishStocks<-data2
   
   TodayNum<-PlotTrend[PlotTrend$Year==2012 & PlotTrend$Policy=="Historic",]
-  pdf(paste(FigureFolder,'Figure 4.pdf',sep=''))
+  pdf(paste(FigureFolder,'Figure 3.pdf',sep=''),width=4,height=4)
   library(mapplots)
   discRt  		<- 0.05	# discount rate in annuity calculation
   TimeHor			<- max(PlotTrend$Year)-2012		# time horizon in annuity calculation
