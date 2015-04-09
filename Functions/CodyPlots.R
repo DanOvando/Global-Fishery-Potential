@@ -199,19 +199,27 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   #=========================================
   # plot second panel
   #=========================================
+  #==make a legend
+  plotx<-c(OverfishStocks$PercChangeFromSQTotalBiomass,.9*cutoff,.9*cutoff)
+  ploty<-c(OverfishStocks$PercChangeFromSQTotalCatch,.9*cutoff,.94*cutoff)
+  plotz<-c(radius2,max(radius2)*.9,max(radius2)*.5)
+
   #==make colors for catch
   useCol<-rep(0,length(colQuant))
   for(i in 1:length(useCol))
     try(useCol[i] <- col[which(abs(colrange-colQuant2[i]) == min(abs(colrange-colQuant2[i])))] )
-  
+  useCol<-c(useCol,"white","white")
   plot(-100000,las=1,ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,yaxt='n',xaxt='n')
   abline(h=0,lty=2)
   abline(v=0,lty=2)
   par(new=T)
-  symbols(x=OverfishStocks$PercChangeFromSQTotalBiomass,y=OverfishStocks$PercChangeFromSQTotalCatch,circles=radius2,
+  symbols(x=plotx,y=ploty,circles=plotz,
           bg=useCol,fg='black',inches=sizeCirc2,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,yaxt='n',xaxt='n')
   legend(x=1.4*cutin,y=cutoff, "(B)",bty='n',cex=.8)
+  text(x=.9*cutoff,y=.94*cutoff,round((pi*(max(radius2)*.5)^2)/1000000,1),cex=.65)
+  text(x=.9*cutoff,y=.82*cutoff,round((pi*(max(radius2)*.9)^2)/1000000,1),cex=.65)
+  text(x=.89*cutoff,y=.73*cutoff,"MSY (MMT)",cex=.65)
 #   text(OverfishStocks$PercChangeFromSQTotalBiomass,OverfishStocks$PercChangeFromSQTotalCatch,plotCountries,cex=.5)
   #=========================================
   # plot third panel
@@ -398,6 +406,8 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   newDF$PerHealth[nrow(newDF)-1]<-10
   newDF$Year[nrow(newDF)]<-1980
   newDF$Year[nrow(newDF)-1]<-1980
+  newDF$value[nrow(newDF)]<-.5*max(newDF$value)
+  newDF$value[nrow(newDF)-1]<-.9*max(newDF$value)
 
 # newDF$PerHealth[nrow(newDF)]<-NA
 #  newDF$PerHealth[nrow(newDF)-1]<-NA
@@ -475,7 +485,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   discRt  		<- 0.05	# discount rate in annuity calculation
   TimeHor			<- max(PlotTrend$Year)-2012		# time horizon in annuity calculation
   sizeCirc			<-.7
-  catchAdj			<-.29
+  catchAdj			<-2.9
   # subset to countries that have overfished stocks
   tmp				<-unique(OverfishStocks$Country)
   tmp2				<-unique(AllStocks$Country)
@@ -551,7 +561,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   colnames(outs)<-c("Bio","Profit","Catch","Policy")
   
   #==CHANGE THIS TO OUTPUT WHEREEVER YOU WANAT
-  write.csv(outs,paste(ResultFolder,'Fig4data.csv',sep=''))
+  write.csv(outs,paste(ResultFolder,'Fig3data.csv',sep=''))
 
   plotx<-c(BioCur[indPol],baseBio)
   ploty<-c(NPV[indPol],basePft)
@@ -562,7 +572,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   symbols(x=plotx,y=ploty,plotz,
           inches=.6,ylim=ylimIn,xlim=xlimIn,bg=useCol,xaxt='n', yaxt='n',ylab='',xlab='',fg=1)
   text(y=c(NPV[indPol],basePft),x=c(BioCur[indPol],baseBio),labName,cex=.85)
-#   text(y=c(NPV[indPol]-catchAdj,basePft-catchAdj),x=c(BioCur[indPol],baseBio),round(c(CatCur[indPol],baseCat),1),cex=.65)
+  text(y=c(NPV[indPol]-catchAdj,basePft-catchAdj),x=c(BioCur[indPol],baseBio),round(c(CatCur[indPol],baseCat),1),cex=.65)
   mtext(side=1,"Biomass (MMT)",line=2)
   mtext(side=2,"Annualized Profit ($ Billions)",line=2)
   dev.off()
