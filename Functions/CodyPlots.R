@@ -15,9 +15,10 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   library(maps)
   library(rworldmap)
   library(SDMTools)
+  library(mapplots)
   
   ############# Figure 1 #############
-  workLocal<-0
+  workLocal<-1
   if(workLocal==1)
   {
     ResultFolder<-"C:/Users/Cody/Desktop/UpsideData/Pt figures/"
@@ -29,10 +30,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   data<-read.csv(paste(ResultFolder,'Unlumped Projection DataAll Stocks Country Upsides.csv',sep=''))
   data2<-read.csv(paste(ResultFolder,'Unlumped Projection DataOverfish Only Country Upsides.csv',sep=''))
   PlotTrend<-read.csv(paste(ResultFolder,'PlotTrend.csv',sep=''))
-  
-  #data<-read.csv("C:/Users/Cody/Desktop/UpsideData/PT figures/Lumped Projection DataAll Stocks Country Upsides.csv")
-  #data2<-read.csv("C:/Users/Cody/Desktop/UpsideData/PT figures/Lumped Projection DataOverfish Only Country Upsides.csv")
-  pdf(file=paste(FigureFolder,'Figure 1.pdf',sep=''))
+  pdf(file=paste(FigureFolder,'Figure 1.pdf',sep=''),height=6,width=6)
   
   #==hardcoded numbers
   discRt  		<- 0.05	# discount rate in annuity calculation
@@ -61,11 +59,11 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   
   #==calculate quantities to graph
   #==trevor denominator
-  trevPercChangeBioCur	<-100*OverfishStocks$AbsChangeTotalBiomass/AllStocks$TotalBaselineBiomass
+  trevPercChangeBioCur	  <-100*OverfishStocks$AbsChangeTotalBiomass/AllStocks$TotalBaselineBiomass
   trevPercChangeCatchCur	<-100*OverfishStocks$AbsChangeTotalCatch/AllStocks$TotalBaselineCatch
-  trevPercChangeBioSQ	<-100*OverfishStocks$AbsChangeFromSQTotalBiomass/AllStocks$TotalBiomassSQ
-  trevPercChangeCatchSQ	<-100*OverfishStocks$AbsChangeFromSQTotalCatch/AllStocks$TotalCatchSQ
-  trevPercChangeNPV		<-(100*(OverfishStocks$TotalNPV-OverfishStocks$TotalNPVSQ)/AllStocks$TotalNPVSQ)*sign(AllStocks$TotalNPVSQ)
+  trevPercChangeBioSQ	    <-100*OverfishStocks$AbsChangeFromSQTotalBiomass/AllStocks$TotalBiomassSQ
+  trevPercChangeCatchSQ	  <-100*OverfishStocks$AbsChangeFromSQTotalCatch/AllStocks$TotalCatchSQ
+  trevPercChangeNPV		    <-(100*(OverfishStocks$TotalNPV-OverfishStocks$TotalNPVSQ)/AllStocks$TotalNPVSQ)*sign(AllStocks$TotalNPVSQ)
   
   trevPercChangeNPV[AllStocks$TotalNPVSQ<=0 & (OverfishStocks$TotalNPV-OverfishStocks$TotalNPVSQ)>0]<- 999
   
@@ -89,7 +87,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   
   #==quantities that determine the color
   colQuant<-100*(overfishAnn-OverfishStocks$TotalBaselineProfits)/OverfishStocks$TotalBaselineProfits*sign(OverfishStocks$TotalBaselineProfits)
-  
+
   colQuant[OverfishStocks$TotalBaselineProfits<=0 & (overfishAnn-OverfishStocks$TotalBaselineProfits)>0]<- 999
   
   colQuant[OverfishStocks$TotalBaselineProfits<=0 & (overfishAnn-OverfishStocks$TotalBaselineProfits)<=0]<- -999
@@ -192,8 +190,6 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   
   par(xpd=NA)
   text(x=.5*cutoff,y=1.12*cutoff,"% change in profit",cex=.8)
-  
-  show(round(bound))
   color.legend2(0,cutoff*1.07,cutoff*.94,1.09*cutoff,rect.col=legendCol,legend="")
   par(xpd=NA)
   text(x=-20,y=1.09*cutoff,paste("<=",round(bound2)),cex=.65)
@@ -203,19 +199,27 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   #=========================================
   # plot second panel
   #=========================================
+  #==make a legend
+  plotx<-c(OverfishStocks$PercChangeFromSQTotalBiomass,.9*cutoff,.9*cutoff)
+  ploty<-c(OverfishStocks$PercChangeFromSQTotalCatch,.9*cutoff,.94*cutoff)
+  plotz<-c(radius2,max(radius2)*.9,max(radius2)*.5)
+
   #==make colors for catch
   useCol<-rep(0,length(colQuant))
   for(i in 1:length(useCol))
     try(useCol[i] <- col[which(abs(colrange-colQuant2[i]) == min(abs(colrange-colQuant2[i])))] )
-  
+  useCol<-c(useCol,"white","white")
   plot(-100000,las=1,ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,yaxt='n',xaxt='n')
   abline(h=0,lty=2)
   abline(v=0,lty=2)
   par(new=T)
-  symbols(x=OverfishStocks$PercChangeFromSQTotalBiomass,y=OverfishStocks$PercChangeFromSQTotalCatch,circles=radius2,
+  symbols(x=plotx,y=ploty,circles=plotz,
           bg=useCol,fg='black',inches=sizeCirc2,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,yaxt='n',xaxt='n')
   legend(x=1.4*cutin,y=cutoff, "(B)",bty='n',cex=.8)
+  text(x=.9*cutoff,y=.94*cutoff,round((pi*(max(radius2)*.5)^2)/1000000,1),cex=.65)
+  text(x=.9*cutoff,y=.82*cutoff,round((pi*(max(radius2)*.9)^2)/1000000,1),cex=.65)
+  text(x=.89*cutoff,y=.73*cutoff,"MSY (MMT)",cex=.65)
 #   text(OverfishStocks$PercChangeFromSQTotalBiomass,OverfishStocks$PercChangeFromSQTotalCatch,plotCountries,cex=.5)
   #=========================================
   # plot third panel
@@ -234,10 +238,6 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
           bg=useCol,fg='black',inches=sizeCirc,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,xaxt='n')
 #   text(trevPercChangeBioCur,trevPercChangeCatchCur,plotCountriesAll,cex=.5) 
-  
-  #legend.bubble(x=450,y=450, z=c(2,8,17), maxradius = 175, n = 3, round = 0, bty = "n", mab = 1.2, 
-  #    bg = NULL, inset = 0, pch = 21, pt.bg = NULL, txt.cex = 1, 
-  #    txt.col = NULL, font = NULL)
   legend(x=250,y=700,bty='n',legend="Total MSY (mt)",cex=.8)
   legend(x=1.25*cutin,y=cutoff, "(C)",bty='n',cex=.8)
   
@@ -267,9 +267,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   
   ######## Figure 2 ############
   
-  pdf(paste(FigureFolder,'Figure 2.pdf',sep=''))
-  
-  
+  pdf(paste(FigureFolder,'Figure 2.pdf',sep=''),height=6,width=6)
   AllStocks<-data
   OverfishStocks<-data2
   
@@ -277,7 +275,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   discRt  	<-0.05
   TimeHor		<-max(PlotTrend$Year)-2012
   topCut		<-11		# number of countries at the top to take
-  sizeCirc		<-.65		# size of circle
+  sizeCirc	<-.65		# size of circle
   ycut			<-8
   xcut			<-85
   legendX		<-16
@@ -286,15 +284,15 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   xlimIn		<-c(-3,xcut)
   
   # Subset to desired policy
-  AllStocks			<-AllStocks[AllStocks$Policy==Policy,]
+  AllStocks			    <-AllStocks[AllStocks$Policy==Policy,]
   OverfishStocks		<-OverfishStocks[OverfishStocks$Policy==Policy,]
   
   # subset to countries that have overfished stocks
-  tmp				<-unique(OverfishStocks$Country)
+  tmp				  <-unique(OverfishStocks$Country)
   tmp2				<-unique(AllStocks$Country)
   useInd			<-match(tmp,tmp2)
   useInd			<-useInd[!is.na(useInd)]
-  AllStocks			<-AllStocks[useInd,]
+  AllStocks		<-AllStocks[useInd,]
   
   #==find which countries have the maximum of a quantity (NPV here)
   OverfishStocks  <-OverfishStocks[order(AllStocks$AbsChangeFromSQNPV,decreasing=T),]
@@ -302,8 +300,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   OverfishStocks  <-OverfishStocks[1:topCut,]
   AllStocks       <-AllStocks[1:topCut,]
   OverfishStocks  <-OverfishStocks[OverfishStocks$Country!="Multinational",]
-  
-  
+   
   #==calculate quantities to graph
   xQuant			<-OverfishStocks$AbsChangeFromSQTotalBiomass/1000000
   yQuant			<-OverfishStocks$AbsChangeFromSQNPV/1000000000
@@ -312,7 +309,8 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   yQuant			<-yQuant*discRt/(1-(1+discRt)^-TimeHor)
   
   labs<-c(as.character(OverfishStocks$Country),round(max(zQuant)/1000000,1),round(min(zQuant)/1000000,1))
-  #==add circles for legend
+
+#==add circles for legend
   xQuant<-c(xQuant,legendX,legendX)
   yQuant<-c(yQuant,6.5,7.5)
   zQuant<-c(zQuant,max(zQuant),min(zQuant))
@@ -380,11 +378,8 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   par(xpd=FALSE)
   dev.off()
   
-  ######## Figure 3 ###########
-  
-  
-  
-  pdf(paste(FigureFolder,'Figure 3.pdf',sep=''))
+  ######## Figure 4 ###########
+  pdf(paste(FigureFolder,'Figure 4.pdf',sep=''),width=8,height=4)
   
   years<-unique(PlotTrend$Year)
   xlimIn<-c(min(years),max(years))
@@ -405,16 +400,19 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   newDF$PerHealth<-InPlotTrend$value[InPlotTrend$variable=="PercentHealthy"]
   newDF<-rbind(newDF,newDF[newDF$Year==2050&newDF$Policy=="CatchShare",],
                newDF[newDF$Year==2050&newDF$Policy=="Business As Usual",])
-  
-#   newDF$PerHealth[nrow(newDF)]<-17
-#   newDF$PerHealth[nrow(newDF)-1]<-10
-#   newDF$Year[nrow(newDF)]<-1980
-#   newDF$Year[nrow(newDF)-1]<-1980
+ 
+#==this makes the legend
+  newDF$PerHealth[nrow(newDF)]<-17
+  newDF$PerHealth[nrow(newDF)-1]<-10
+  newDF$Year[nrow(newDF)]<-1980
+  newDF$Year[nrow(newDF)-1]<-1980
+  newDF$value[nrow(newDF)]<-.5*max(newDF$value)
+  newDF$value[nrow(newDF)-1]<-.9*max(newDF$value)
 
-newDF$PerHealth[nrow(newDF)]<-NA
-newDF$PerHealth[nrow(newDF)-1]<-NA
-newDF$Year[nrow(newDF)]<-NA
-newDF$Year[nrow(newDF)-1]<-NA
+# newDF$PerHealth[nrow(newDF)]<-NA
+#  newDF$PerHealth[nrow(newDF)-1]<-NA
+# newDF$Year[nrow(newDF)]<-NA
+# newDF$Year[nrow(newDF)-1]<-NA
   
   #==make colors for catch
   newDF$TotProfit<- newDF$TotProfit*10
@@ -472,22 +470,22 @@ newDF$Year[nrow(newDF)-1]<-NA
 #   mtext(side=2,expression('B'[MSY]),line=2.1,adj=.75)
   mtext(side=1,"Year",line=2)
   par(new=T)
-#   text(x=1987,y=3,"Total harvest (MMT)",cex=.7)
-#   text(x=1983,y=10,round(as.numeric(newDF$value)[nrow(newDF)-1]/1000000),cex=.8)
-#   text(x=1983,y=17,round(as.numeric(newDF$value)[nrow(newDF)]/1000000),cex=.8)
+  text(x=1987,y=3,"Total harvest (MMT)",cex=.7)
+  text(x=1983,y=10,round(as.numeric(newDF$value)[nrow(newDF)-1]/1000000),cex=.8)
+  text(x=1983,y=17,round(as.numeric(newDF$value)[nrow(newDF)]/1000000),cex=.8)
   dev.off()
   
-  ####### Figure 4 ##########
+  ####### Figure 3 ##########
   AllStocks<-data
   OverfishStocks<-data2
   
   TodayNum<-PlotTrend[PlotTrend$Year==2012 & PlotTrend$Policy=="Historic",]
-  pdf(paste(FigureFolder,'Figure 4.pdf',sep=''))
-  library(mapplots)
+  pdf(paste(FigureFolder,'Figure 3.pdf',sep=''),width=6,height=6)
+
   discRt  		<- 0.05	# discount rate in annuity calculation
   TimeHor			<- max(PlotTrend$Year)-2012		# time horizon in annuity calculation
   sizeCirc			<-.7
-  catchAdj			<-.29
+  catchAdj			<-2.9
   # subset to countries that have overfished stocks
   tmp				<-unique(OverfishStocks$Country)
   tmp2				<-unique(AllStocks$Country)
@@ -511,9 +509,9 @@ newDF$Year[nrow(newDF)-1]<-NA
   
   labName 	<-c("BAU","BAU (Pessimistic)","Catch share",expression('F'[MSY]),"Today")
   labNameSimp	<-c("BAU","BAU (Pessimistic)","Catch share","Fmsy","Today")
-  # indPol<-c(1,2,3,5)
   WantPols<- c('Catch Share Three','Fmsy Three','Business As Usual','Business As Usual Pessimistic')
   indPol<- which(unqPols %in% WantPols)
+
   #==select a policy, sum the benefits, record
   for(x in 1:length(unqPols))
   {
@@ -526,20 +524,20 @@ newDF$Year[nrow(newDF)-1]<-NA
     CatCur[x]	<-sum(AllSub$TotalCatch/1000000)
     BioSQ[x]	<-sum(AllSub$TotalBiomassSQ/1000000)
     CatSQ[x]	<-sum(AllSub$TotalCatchSQ/1000000)
-    NPV[x]	<-sum(AllSub$TotalNPV)/10000000000
-    NPVSQ[x]	<-sum(AllSub$TotalNPVSQ)/10000000000
+    NPV[x]	<-sum(AllSub$TotalNPV)/1000000000
+    NPVSQ[x]	<-sum(AllSub$TotalNPVSQ)/1000000000
     
   }
   
   #==point for 'today'
   baseBio<-sum(AllSub$TotalBaselineBiomass[AllSub$Policy=="StatusQuoOpenAccess"])/1000000
   baseCat<-sum(AllSub$TotalBaselineCatch[AllSub$Policy=="StatusQuoOpenAccess"])/1000000
-  basePft<-sum(AllSub$TotalBaselineProfits[AllSub$Policy=="StatusQuoOpenAccess"])/10000000000
+  basePft<-sum(AllSub$TotalBaselineProfits[AllSub$Policy=="StatusQuoOpenAccess"])/1000000000
   
   #==annuity NPV
   NPV				<-NPV*discRt/(1-(1+discRt)^-TimeHor)
-  xlimIn		<-c(400,1.05*max(c(BioCur)))
-  ylimIn		<-c(0,8*max(c(NPV)))
+  xlimIn		<-c(400,1.08*max(c(BioCur)))
+  ylimIn		<-c(0,max(c(NPV)))
   GlobalMSY 		<-sum(AllSub$TotalMSY)
   
   #=make colors==
@@ -563,18 +561,18 @@ newDF$Year[nrow(newDF)-1]<-NA
   colnames(outs)<-c("Bio","Profit","Catch","Policy")
   
   #==CHANGE THIS TO OUTPUT WHEREEVER YOU WANAT
-  write.csv(outs,paste(ResultFolder,'Fig4data.csv',sep=''))
-  
-  #==plot the plot==
-  #dev.new(width=4,height=4)
-  #pdf("C:/Users/Cody/Desktop/Figure4.pdf",width=4,height=4)
-  
+  write.csv(outs,paste(ResultFolder,'Fig3data.csv',sep=''))
+
+  plotx<-c(BioCur[indPol],baseBio)
+  ploty<-c(NPV[indPol],basePft)
+  plotz<-c(CatCur[indPol],baseCat)
+
   plot(-10000000,ylim=ylimIn,xlim=xlimIn,las=1,ylab='',xlab='')
   par(new=T)
-  symbols(x=c(BioCur[indPol],baseBio),y=10*c(NPV[indPol],basePft),c(CatCur[indPol],baseCat),
-          inches=.8,ylim=ylimIn,xlim=xlimIn,bg=useCol,xaxt='n', yaxt='n',ylab='',xlab='',fg=1)
-  text(y=10*c(NPV[indPol],basePft),x=c(BioCur[indPol],baseBio),labName,cex=.85)
-#   text(y=c(NPV[indPol]-catchAdj,basePft-catchAdj),x=c(BioCur[indPol],baseBio),round(c(CatCur[indPol],baseCat),1),cex=.65)
+  symbols(x=plotx,y=ploty,plotz,
+          inches=.6,ylim=ylimIn,xlim=xlimIn,bg=useCol,xaxt='n', yaxt='n',ylab='',xlab='',fg=1)
+  text(y=c(NPV[indPol],basePft),x=c(BioCur[indPol],baseBio),labName,cex=.85)
+  text(y=c(NPV[indPol]-catchAdj,basePft-catchAdj),x=c(BioCur[indPol],baseBio),round(c(CatCur[indPol],baseCat),1),cex=.65)
   mtext(side=1,"Biomass (MMT)",line=2)
   mtext(side=2,"Annualized Profit ($ Billions)",line=2)
   dev.off()
