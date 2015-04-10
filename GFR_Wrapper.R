@@ -363,7 +363,15 @@ if (RunAnalyses==TRUE)
   
   MsyData<- CatchMSYresults$MsyData
   
-  MsyData$MSY[MsyData$SpeciesCatName==ForageFish]<-MsyData$MSY[MsyData$SpeciesCatName==ForageFish]*0.75 # reduce forage fish MSY by 25%
+  # Calculate k and g for RAM stocks
+  MsyData$k[MsyData$Dbase=='RAM']<- (MsyData$Bmsy/MsyData$BtoKRatio)[MsyData$Dbase=='RAM']
+  
+  MsyData$g[MsyData$Dbase=='RAM']<- ((MsyData$MSY*(1/MsyData$BtoKRatio))/MsyData$k)[MsyData$Dbase=='RAM']
+  
+  MsyData$g[is.na(MsyData$g)]<- mean(MsyData$g,na.rm=T) #FIX THIS XXX Apply mean r to fisheries with no r THIS WAS ASSIGNING ALL RAM STOCKS THE MEAN r VALUE
+
+  # Adjust MSY of forage fish and RAM stocks with unreliable k estimates (list received from Ray)
+  MsyData<-AdjustMSY(Data=MsyData,RawData,ForageFish)
   
   BiomassData$MSY<- MsyData$MSY #Assign MSY back to BiomassData estimates
   
@@ -399,14 +407,6 @@ if (RunAnalyses==TRUE)
   MsyData$BvBmsyOpenAccess<-BiomassData$BvBmsyOpenAccess
   
   MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T) #Apply mean price to fisheries with no price
-  
-  MsyData$k[MsyData$Dbase=='RAM']<- (MsyData$Bmsy/MsyData$BtoKRatio)[MsyData$Dbase=='RAM']
-  
-  #   MsyData$g[MsyData$Dbase=='RAM']<-4*MsyData$MSY[MsyData$Dbase=='RAM']/MsyData$k[MsyData$Dbase=='RAM']
-  
-  MsyData$g[MsyData$Dbase=='RAM']<- ((MsyData$MSY*(1/MsyData$BtoKRatio))/MsyData$k)[MsyData$Dbase=='RAM']
-  
-  MsyData$g[is.na(MsyData$g)]<- mean(MsyData$g,na.rm=T) #FIX THIS XXX Apply mean r to fisheries with no r THIS WAS ASSIGNING ALL RAM STOCKS THE MEAN r VALUE
   
   #   if(IncludeNEIs==TRUE)
   #   {
@@ -581,9 +581,17 @@ MakeKobePlot(ProjectionData,BaselineYear,'Global Kobe Plot.pdf')
 
 ProjectionValidationData<-ProjectionValidation(UnlumpedProjectionData,BaselineYear)
 
+# Produce table with values for paper from Rens scripts
+
+ValuesForPaper<-RenSummaryTable(UnlumpedData=UnlumpedProjectionData,LumpedData=ProjectionData,BaselineYear,ResultFolder,FigureFolder)
+
 # Produce Country Summary table and Stock List (returns list with Country summaries and Stock list, writes csvs of both)
 
 PercentCoverage<-StockAndCountrySummary(UnlumpedProjectionData,ProjectionData,StitchIds,BaselineYear)
+
+# Top stocks in major countries
+
+TopStocks<-CountryTopStocks(UnlumpedProjectionData,BaselineYear,NumberOfStocks=5,NumberOfCountries=20,Discount,ResultFolder)
 
 # Summarize current status by ISSCAAP and FAO Region
 

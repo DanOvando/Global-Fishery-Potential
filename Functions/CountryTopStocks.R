@@ -61,14 +61,16 @@ CountryTopStocks<-function(UnlumpedProjectionData,BaselineYear,NumberOfStocks,Nu
     
     tempBase<-tempBase[with(tempBase,order(-Catch)),]
     
-    tempBase<-tempBase[1:NumberOfStocks,c('IdOrig','CommName','BvBmsy','FvFmsy','MSY','Price','Profits','Catch','Biomass')]
+    tempBase<-tempBase[1:NumberOfStocks,c('IdOrig','Dbase','CatchShare','CommName','BvBmsy','FvFmsy','MSY','Price','Profits','Catch','Biomass')]
     
-    colnames(tempBase)<-c('IdOrig','CommName','BvBmsy','FvFmsy','MSY','Price','Profits_2012','Catch_2012','Biomass_2012')
+    colnames(tempBase)<-c('IdOrig','Dbase','CatchShare','CommName','BvBmsy','FvFmsy','MSY','Price','Profits_2012','Catch_2012','Biomass_2012')
     
     # find catch weighted average price
-    tempBase$PxC=tempBase$Price*tempBase$Catch
+    tempBase$PxC<-tempBase$Price*tempBase$Catch_2012
     
-    tempPrice<-sum(tempBase$PxC,na.rm=T)/sum(tempBase$Catch)
+    tempPrice<-sum(tempBase$PxC,na.rm=T)/sum(tempBase$Catch_2012)
+    
+    tempBase$PxC<-NULL
     
     ## find BAU and Catch Share Three results for same stocks
     ids<-unique(tempBase$IdOrig)
@@ -100,9 +102,9 @@ CountryTopStocks<-function(UnlumpedProjectionData,BaselineYear,NumberOfStocks,Nu
     
     tempFinal$Country<-rep(cntrys[a])
     
-    tempFinal<-tempFinal[,c('Country','IdOrig','CommName','BvBmsy','FvFmsy','MSY','Price','Profits_2012','Catch_2012','Biomass_2012','NPV_BAU','Catch_BAU','Biomass_BAU','NPV_CatchShareThree','Catch_CatchShareThree','Biomass_CatchShareThree')]
+    tempFinal<-tempFinal[,c('Country','IdOrig','Dbase','CatchShare','CommName','BvBmsy','FvFmsy','MSY','Price','Profits_2012','Catch_2012','Biomass_2012','NPV_BAU','Catch_BAU','Biomass_BAU','NPV_CatchShareThree','Catch_CatchShareThree','Biomass_CatchShareThree')]
     
-    colnames(tempFinal)<-c('Country','IdOrig','CommName','BvBmsy','FvFmsy','MSY','Price','Profits_2012','Catch_2012','Biomass_2012','Annuity_BAU','Catch_BAU','Biomass_BAU','Annuity_CatchShareThree','Catch_CatchShareThree','Biomass_CatchShareThree')
+    colnames(tempFinal)<-c('Country','IdOrig','Dbase','CatchShare','CommName','BvBmsy','FvFmsy','MSY','Price','Profits_2012','Catch_2012','Biomass_2012','Annuity_BAU','Catch_BAU','Biomass_BAU','Annuity_CatchShareThree','Catch_CatchShareThree','Biomass_CatchShareThree')
     # add to main list
     TopStocks[[a]]<-tempFinal
     
