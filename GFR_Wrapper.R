@@ -578,28 +578,32 @@ MakeKobePlot(ProjectionData,BaselineYear,'Global Kobe Plot.pdf')
 
 
 # Projection validation data for Chris
-
 ProjectionValidationData<-ProjectionValidation(UnlumpedProjectionData,BaselineYear)
 
 # Produce table with values for paper from Rens scripts
-
 ValuesForPaper<-RenSummaryTable(UnlumpedData=UnlumpedProjectionData,LumpedData=ProjectionData,BaselineYear,ResultFolder,FigureFolder)
 
 # Produce Country Summary table and Stock List (returns list with Country summaries and Stock list, writes csvs of both)
-
 PercentCoverage<-StockAndCountrySummary(UnlumpedProjectionData,ProjectionData,StitchIds,BaselineYear)
 
 # Top stocks in major countries
-
 TopStocks<-CountryTopStocks(UnlumpedProjectionData,BaselineYear,NumberOfStocks=5,NumberOfCountries=20,Discount,ResultFolder)
 
 # Summarize current status by ISSCAAP and FAO Region
-
 StatusByRegionAndISSCAAP<-RegionFaoAndISSCAAPSummary(ProjectionData,BaselineYear)
 
+# Upside results by ISSCAAP category
+PlotsForSOM(RawData,FullData,UnlumpedProjectionData,UnlumpedUpsidesAllStocks)
+
+# Cost revenue 
 CostRevenues<-CostRevCheck(ProjectionData,RawData,BaselineYear)
 
+# Produce figures
 CodyPlots(FigureFolder,ResultFolder,Policy='Catch Share Three')
+
+# Calculate global results for Figure One
+FigOneGlobalResults<-GlobalResultsFigOne(UpsideAllStocks,UpsideOverfishOnly,Policies=c('Catch Share Three','Fmsy Three'),discRt=Discount,TimeHor=38)
+
 
 write.csv(file=paste(ResultFolder,'Projection Data.csv',sep=''),ProjectionData)
 

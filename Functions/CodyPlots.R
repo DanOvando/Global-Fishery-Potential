@@ -18,7 +18,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   library(mapplots)
   
   ############# Figure 1 #############
-  workLocal<-1
+  workLocal<-0
   if(workLocal==1)
   {
     ResultFolder<-"C:/Users/Cody/Desktop/UpsideData/Pt figures/"
@@ -36,7 +36,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   discRt  		<- 0.05	# discount rate in annuity calculation
   TimeHor			<- max(PlotTrend$Year)-2012		# time horizon in annuity calculation
   cutin				<- -75	# minimum value for figures
-  cutoff			<- 300	# maximum value in figures
+  cutoff			<- 200	# maximum value in figures
   sizeCirc			<-.4		# size of circles in figures
   NPVcut			<-1000 	# cuttoff for NPV
   colCut			<- 400		# cutoff for the largest % change in profit for coloring
@@ -276,8 +276,8 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   TimeHor		<-max(PlotTrend$Year)-2012
   topCut		<-11		# number of countries at the top to take
   sizeCirc	<-.65		# size of circle
-  ycut			<-8
-  xcut			<-85
+  ycut			<-7.5
+  xcut			<-80
   legendX		<-16
   legendY		<-4.5
   ylimIn		<-c(-.25,ycut)
@@ -536,7 +536,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   
   #==annuity NPV
   NPV				<-NPV*discRt/(1-(1+discRt)^-TimeHor)
-  xlimIn		<-c(400,1.08*max(c(BioCur)))
+  xlimIn		<-c(350,1.08*max(c(BioCur)))
   ylimIn		<-c(0,max(c(NPV)))
   GlobalMSY 		<-sum(AllSub$TotalMSY)
   
