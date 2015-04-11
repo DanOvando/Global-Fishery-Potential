@@ -23,7 +23,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   {
     ResultFolder<-"C:/Users/Cody/Desktop/UpsideData/Pt figures/"
     FigureFolder<-ResultFolder
-    Policy<-"CatchShare"
+    Policy<-"Catch Share Three"
     source("C:/Users/Cody/Desktop/UpsideData/colorlegend2.R")
   }
   
@@ -516,7 +516,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   col2<-"#4d4d9466"
   col3<-"#66c26666"
   col4<-'#e0e0d166'
-  inCols<-c(col2,col3,col2,col3,col2, col3,col4)
+  inCols<-c(col2,col3,col2,col3,col3, col2,col4)
   #==select a policy, sum the benefits, record
   for(x in 1:length(unqPols))
   {
@@ -580,6 +580,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   text(y=c(NPV[indPol]-catchAdj,basePft-catchAdj),x=c(BioCur[indPol],baseBio),round(c(CatCur[indPol],baseCat),1),cex=.65)
   mtext(side=1,"Biomass (MMT)",line=2)
   mtext(side=2,"Annualized Profit ($ Billions)",line=2)
-  legend("topleft",bty='n',col=c(col2,col3),pch=16,c("Optimistic","Pessimistic"))
+  legend("bottomleft",bty='n',col=c(col2,col3),pch=16,c("Policy applied to stocks of conservation concern",
+                                                     "Policy applied to all stocks"))
   dev.off()
 }
