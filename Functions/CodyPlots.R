@@ -18,7 +18,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   library(mapplots)
   
   ############# Figure 1 #############
-  workLocal<-0
+  workLocal<-1
   if(workLocal==1)
   {
     ResultFolder<-"C:/Users/Cody/Desktop/UpsideData/Pt figures/"
@@ -189,8 +189,8 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   legend(x=1.25*cutin,y=cutoff, "(A)",bty='n',cex=.8)
   
   par(xpd=NA)
-  text(x=.5*cutoff,y=1.12*cutoff,"% change in profit",cex=.8)
-  color.legend2(0,cutoff*1.07,cutoff*.94,1.09*cutoff,rect.col=legendCol,legend="")
+  text(x=.5*cutoff,y=1.125*cutoff,"% change in profit",cex=.7)
+  color.legend2(0,cutoff*1.07,cutoff*.94,1.10*cutoff,rect.col=legendCol,legend="")
   par(xpd=NA)
   text(x=-20,y=1.09*cutoff,paste("<=",round(bound2)),cex=.65)
   text(x=cutoff*1.025,y=1.09*cutoff,paste(">",bound),cex=.65)
@@ -219,7 +219,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   legend(x=1.4*cutin,y=cutoff, "(B)",bty='n',cex=.8)
   text(x=.9*cutoff,y=.94*cutoff,round((pi*(max(radius2)*.5)^2)/1000000,1),cex=.65)
   text(x=.9*cutoff,y=.82*cutoff,round((pi*(max(radius2)*.9)^2)/1000000,1),cex=.65)
-  text(x=.89*cutoff,y=.73*cutoff,"MSY (MMT)",cex=.65)
+  text(x=.89*cutoff,y=.7*cutoff,"MSY (MMT)",cex=.65)
 #   text(OverfishStocks$PercChangeFromSQTotalBiomass,OverfishStocks$PercChangeFromSQTotalCatch,plotCountries,cex=.5)
   #=========================================
   # plot third panel
@@ -238,7 +238,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
           bg=useCol,fg='black',inches=sizeCirc,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,xaxt='n')
 #   text(trevPercChangeBioCur,trevPercChangeCatchCur,plotCountriesAll,cex=.5) 
-  legend(x=250,y=700,bty='n',legend="Total MSY (mt)",cex=.8)
+  legend(x=230,y=700,bty='n',legend="Total MSY (mt)",cex=.8)
   legend(x=1.25*cutin,y=cutoff, "(C)",bty='n',cex=.8)
   
   
@@ -279,7 +279,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   ycut			<-7.5
   xcut			<-80
   legendX		<-16
-  legendY		<-4.5
+  legendY		<-4.95
   ylimIn		<-c(-.25,ycut)
   xlimIn		<-c(-3,xcut)
   
@@ -312,7 +312,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
 
 #==add circles for legend
   xQuant<-c(xQuant,legendX,legendX)
-  yQuant<-c(yQuant,6.5,7.5)
+  yQuant<-c(yQuant,6.5,7.25)
   zQuant<-c(zQuant,max(zQuant),min(zQuant))
   colQuant<-c(colQuant,max(colQuant),min(colQuant))
   
@@ -470,7 +470,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
 #   mtext(side=2,expression('B'[MSY]),line=2.1,adj=.75)
   mtext(side=1,"Year",line=2)
   par(new=T)
-  text(x=1987,y=3,"Total harvest (MMT)",cex=.7)
+  text(x=1985,y=3,"Total harvest (MMT)",cex=.7)
   text(x=1983,y=10,round(as.numeric(newDF$value)[nrow(newDF)-1]/1000000),cex=.8)
   text(x=1983,y=17,round(as.numeric(newDF$value)[nrow(newDF)]/1000000),cex=.8)
   dev.off()
@@ -484,7 +484,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
 
   discRt  		<- 0.05	# discount rate in annuity calculation
   TimeHor			<- max(PlotTrend$Year)-2012		# time horizon in annuity calculation
-  sizeCirc			<-.7
+  sizeCirc			<-.5
   catchAdj			<-2.9
   # subset to countries that have overfished stocks
   tmp				<-unique(OverfishStocks$Country)
@@ -507,11 +507,16 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   NPV		<-rep(0,length(unqPols))
   NPVSQ		<-rep(0,length(unqPols))
   
-  labName 	<-c("BAU","BAU (Pessimistic)","Catch share",expression('F'[MSY]),"Today")
+  labName 	<-c("BAU","BAU (Pessimistic)","Catch share","Catch share",expression('F'[MSY]),
+               expression('F'[MSY]),"Today")
   labNameSimp	<-c("BAU","BAU (Pessimistic)","Catch share","Fmsy","Today")
-  WantPols<- c('Catch Share Three','Fmsy Three','Business As Usual','Business As Usual Pessimistic')
+  WantPols<- c('Catch Share Three','Fmsy Three','Business As Usual','Business As Usual Pessimistic',
+               'CatchShare','Fmsy')
   indPol<- which(unqPols %in% WantPols)
-
+  col2<-"#4d4d9466"
+  col3<-"#66c26666"
+  col4<-'#e0e0d166'
+  inCols<-c(col2,col3,col2,col3,col2, col3,col4)
   #==select a policy, sum the benefits, record
   for(x in 1:length(unqPols))
   {
@@ -536,8 +541,8 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   
   #==annuity NPV
   NPV				<-NPV*discRt/(1-(1+discRt)^-TimeHor)
-  xlimIn		<-c(350,1.08*max(c(BioCur)))
-  ylimIn		<-c(0,max(c(NPV)))
+  xlimIn		<-c(350,1.04*max(c(BioCur)))
+  ylimIn		<-c(0,1.11*max(c(NPV)))
   GlobalMSY 		<-sum(AllSub$TotalMSY)
   
   #=make colors==
@@ -570,10 +575,11 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   plot(-10000000,ylim=ylimIn,xlim=xlimIn,las=1,ylab='',xlab='')
   par(new=T)
   symbols(x=plotx,y=ploty,plotz,
-          inches=.6,ylim=ylimIn,xlim=xlimIn,bg=useCol,xaxt='n', yaxt='n',ylab='',xlab='',fg=1)
+          inches=sizeCirc,ylim=ylimIn,xlim=xlimIn,bg=inCols,xaxt='n', yaxt='n',ylab='',xlab='',fg=1)
   text(y=c(NPV[indPol],basePft),x=c(BioCur[indPol],baseBio),labName,cex=.85)
   text(y=c(NPV[indPol]-catchAdj,basePft-catchAdj),x=c(BioCur[indPol],baseBio),round(c(CatCur[indPol],baseCat),1),cex=.65)
   mtext(side=1,"Biomass (MMT)",line=2)
   mtext(side=2,"Annualized Profit ($ Billions)",line=2)
+  legend("topleft",bty='n',col=c(col2,col3),pch=16,c("Optimistic","Pessimistic"))
   dev.off()
 }
