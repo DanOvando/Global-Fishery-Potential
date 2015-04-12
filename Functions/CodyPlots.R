@@ -10,7 +10,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   library(grid)
   library(gridExtra)
   library(mapplots)
-  library("ggmap")
+  library(ggmap)
   library(maptools)
   library(maps)
   library(rworldmap)
@@ -18,7 +18,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   library(mapplots)
   
   ############# Figure 1 #############
-  workLocal<-1
+  workLocal<-0
   if(workLocal==1)
   {
     ResultFolder<-"C:/Users/Cody/Desktop/UpsideData/Pt figures/"
