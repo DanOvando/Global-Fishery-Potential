@@ -41,7 +41,7 @@ CountryTopStocks<-function(UnlumpedProjectionData,BaselineYear,NumberOfStocks,Nu
   
   for(a in 1:length(cntrys))
   { 
-    show(a)
+#     show(a)
     # subset to country stocks
     tempC<-UnlumpedProjectionData[UnlumpedProjectionData$Country==cntrys[a],]
     
@@ -112,7 +112,41 @@ CountryTopStocks<-function(UnlumpedProjectionData,BaselineYear,NumberOfStocks,Nu
   
   TopStocks<-ldply(TopStocks)
   
-  write.csv(TopStocks,file=paste(ResultFolder,'Country Results for Top Stocks.csv'))
+  # Calculate global totals by policy and add to table
+  global<-ddply(UnlumpedProjectionData[UnlumpedProjectionData$Year %in% c(2012,2050),],c('Year','Policy'),summarize,TotalStocks=length(unique(IdOrig)),TotalCatch=sum(Catch,na.rm=T),TotalProfit=sum(Profits,na.rm=T),
+                TotalBiomass=sum(Biomass,na.rm=T),TotalNPV=sum(NPV,na.rm=T),TotalMSY=sum(MSY,na.rm=T),MedB=median(BvBmsy,na.rm=T),MedF=median(FvFmsy,na.rm=T))
+  
+  global$Annuity<-global$TotalNPV*(Discount/(1-(1+Discount)^(-1*max(UnlumpedProjectionData$Year-BaselineYear))))
+  
+  ## Create new row for global values
+  g<-TopStocks[1,]
+  
+  g[1,]<-NA
+  
+  g[1,c('Country','IdOrig','Dbase','CatchShare','CommName')]<-c('Global','All Stocks',NA,NA,NA)
+  
+  g[1,c('BvBmsy','FvFmsy','MSY','Profits_2012','Catch_2012','Biomass_2012')]<-global[global$Policy=='Historic',c('MedB','MedF','TotalMSY','TotalProfit','TotalCatch','TotalBiomass')]
+  
+  g[1,c('Annuity_BAU','Catch_BAU','Biomass_BAU')]<-global[global$Policy=='Business As Usual',c('Annuity','TotalCatch','TotalBiomass')]
+  
+  g[1,c('Annuity_CatchShareThree','Catch_CatchShareThree','Biomass_CatchShareThree')]<-global[global$Policy=='Catch Share Three',c('Annuity','TotalCatch','TotalBiomass')]
+  
+  # find catch weighted average price
+  gp<-UnlumpedProjectionData[UnlumpedProjectionData$Year==2012,c('Catch','Price')]
+  
+  gp$PxC<-gp$Price*gp$Catch
+  
+  gp$GlobalPrice<-sum(gp$PxC,na.rm=T)/sum(gp$Catch,na.rm=T)
+  
+  tempGlobalPrice<-sum(gp$PxC,na.rm=T)/sum(gp$Catch,na.rm=T)
+  
+  g[1,c('Price')]<-unique(gp$GlobalPrice)
+  
+  # Bind global row to top of TopStocks dataframe
+  TopStocks<-rbind(g,TopStocks)
+
+  # Write csv
+  write.csv(TopStocks,file=paste(ResultFolder,'Country Results for Top Stocks.csv',sep=''))
 
   return(TopStocks)
 }
