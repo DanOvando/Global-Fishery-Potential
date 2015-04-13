@@ -321,10 +321,10 @@ Fig1Panel(trevPercChangeBioSQ,trevPercChangeCatchSQ,radius,colQuant4,"Figure1d",
 
   ######## Figure 2 ############
   
-  pdf(paste(FigureFolder,'Figure 2.pdf',sep=''),height=6,width=6)
+  pdf(paste(FigureFolder,'Figure 2.pdf',sep=''),height=5,width=8)
   AllStocks<-data
   OverfishStocks<-data2
-  
+  par(mfrow=c(1,2),mar=c(3,.1,4,.1),oma=c(1.5,3,0,4))
   #==fixed quantities
   discRt  	<-0.05
   TimeHor		<-max(PlotTrend$Year)-2012
@@ -362,12 +362,12 @@ Fig1Panel(trevPercChangeBioSQ,trevPercChangeCatchSQ,radius,colQuant4,"Figure1d",
   colQuant		<-OverfishStocks$AbsChangeFromSQTotalCatch/1000000
   yQuant			<-yQuant*discRt/(1-(1+discRt)^-TimeHor)
   
-  labs<-c(as.character(OverfishStocks$Country),round(max(zQuant)/1000000,1),round(min(zQuant)/1000000,1))
-
+  labs<-c(as.character(OverfishStocks$Country),round(max(zQuant)/1000000,1)*.8,round(min(zQuant)/1000000,1))
+  labs[2:(topCut-1)]<-""
 #==add circles for legend
   xQuant<-c(xQuant,legendX,legendX)
-  yQuant<-c(yQuant,6.5,7.25)
-  zQuant<-c(zQuant,max(zQuant),min(zQuant))
+  yQuant<-c(yQuant,6.2,7)
+  zQuant<-c(zQuant,max(zQuant)*.8,min(zQuant))
   colQuant<-c(colQuant,max(colQuant),min(colQuant))
   
   #==represent MSY by area rather than radius
@@ -409,20 +409,21 @@ Fig1Panel(trevPercChangeBioSQ,trevPercChangeCatchSQ,radius,colQuant4,"Figure1d",
   #dev.new(width=6,height=6)
   #pdf("C:/Users/Cody/Desktop/Figure2a.pdf",height=6,width=6)
   #   windows()
-  par(mar=c(.1,.1,.1,.1),oma=c(4,4,4,4)) 
+  #par(mar=c(.1,.1,.1,.1),oma=c(4,4,4,4)) 
   
   plot(-exp(50),las=1,ylab="",xlab="",ylim=ylimIn,xlim=xlimIn)
-  abline(h=0,lty=2)
-  abline(v=0,lty=2)
+  #abline(h=0,lty=2)
+  #abline(v=0,lty=2)
   par(new=T)
   symbols(x=xQuant,y=yQuant,circles=radius,
           bg=useCol,fg='black',inches=sizeCirc,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,xaxt='n')
   text(xQuant,jitter(yQuant,factor=10),labs,cex=.75)
   mtext(side=2,"Change in Annualized Profit ($ Billion)",line=2.25)
-  mtext(side=1,"Change in Biomass (MMT)",line=2.25)
-  text(y=legendY,x=legendX,"MSY (MMT, at risk stocks)",cex=.7)
-  par(xpd=NA)
+  mtext(side=1,"Change in Biomass (MMT)",outer=T)
+  text(y=legendY*.9,x=legendX,"MSY ",cex=.7)
+  text(y=legendY*.84,x=legendX,"(MMT, of conservation concern)",cex=.7)
+ par(xpd=NA)
   #text(x=.5*cutoff,y=1.11*cutoff,"% change in catch",cex=.8)
   mtext(side=3,"Change in Catch (MMT)",line=.8,cex=.8)
   color.legend2(0,ycut*1.06,xcut*.94,1.08*ycut,rect.col=legendCol,legend="")
@@ -430,9 +431,95 @@ Fig1Panel(trevPercChangeBioSQ,trevPercChangeCatchSQ,radius,colQuant4,"Figure1d",
   text(x=-3,y=1.075*ycut,round(min(colQuant),0),cex=.85)
   text(x=xcut,y=1.075*ycut,round(max(colQuant),0),cex=.85)
   par(xpd=FALSE)
-  dev.off()
-  
-  ######## Figure 4 ###########
+  text(x=80,y=0,"A")
+#====put in a box around the un-marked circles
+  rect(-5,-.2,40,3.1,lty=2,border=2)
+  arrows(41,1.5,82,1.5,lty=2,col=2)
+
+
+#============================================
+# plot the second panel
+#===========================================
+
+discRt    <-0.05
+TimeHor		<-max(PlotTrend$Year)-2012
+topCut		<-11		# number of countries at the top to take
+sizeCirc	<-.65		# size of circle
+ycut			<-2.3
+xcut			<-30
+legendX		<-16
+legendY		<-4.95
+ylimIn		<-c(-.01,ycut)
+xlimIn		<-c(-1.5,xcut)
+
+AllStocks<-data
+OverfishStocks<-data2
+# Subset to desired policy
+AllStocks			    <-AllStocks[AllStocks$Policy==Policy,]
+OverfishStocks		<-OverfishStocks[OverfishStocks$Policy==Policy,]
+
+# subset to countries that have overfished stocks
+tmp				  <-unique(OverfishStocks$Country)
+tmp2				<-unique(AllStocks$Country)
+useInd			<-match(tmp,tmp2)
+useInd			<-useInd[!is.na(useInd)]
+AllStocks		<-AllStocks[useInd,]
+
+#==find which countries have the maximum of a quantity (NPV here)
+OverfishStocks  <-OverfishStocks[order(AllStocks$AbsChangeFromSQNPV,decreasing=T),]
+AllStocks       <-AllStocks[order(AllStocks$AbsChangeFromSQNPV,decreasing=T),]
+OverfishStocks  <-OverfishStocks[1:topCut,]
+AllStocks       <-AllStocks[1:topCut,]
+OverfishStocks  <-OverfishStocks[OverfishStocks$Country!="Multinational",]
+
+
+#==calculate quantities to graph
+xQuant			<-OverfishStocks$AbsChangeFromSQTotalBiomass/1000000
+yQuant			<-OverfishStocks$AbsChangeFromSQNPV/1000000000
+zQuant			<-OverfishStocks$TotalMSY
+colQuant		<-OverfishStocks$AbsChangeFromSQTotalCatch/1000000
+yQuant			<-yQuant*discRt/(1-(1+discRt)^-TimeHor)
+
+labs<-c(as.character(OverfishStocks$Country))
+
+#==represent MSY by area rather than radius
+radius 	<- sqrt( zQuant/ pi )
+
+#==make colors for profit
+bound    <-max(colQuant,na.rm=T)
+bound2	<-min(colQuant,na.rm=T)
+bigBnd	<-max(bound,abs(bound2))
+colrange	<-seq(-bigBnd,bigBnd,(bound-bound2)/150)			
+col 		<-colorRampPalette(c("green","white","blue"))(length(colrange))
+
+for(i in 1:length(col ))
+{
+  if(col [i]!=0)
+    col [i]<-paste(col [i],88,sep="")
+}
+useCol	<-rep(0,length(colQuant))
+for(i in 1:length(useCol))
+  try(useCol[i] <- col[which(abs(colrange-colQuant[i]) == min(abs(colrange-colQuant[i])))] )
+
+legendCol<-col[(which(abs(colrange-bound2) == min(abs(colrange-bound2)))):(which(abs(colrange-bound) == min(abs(colrange-bound))))]
+plot(-exp(50),las=1,ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,yaxt='n')
+#abline(h=0,lty=2)
+#abline(v=0,lty=2)
+par(new=T)
+symbols(x=xQuant,y=yQuant,circles=radius,
+        bg=useCol,fg='black',inches=sizeCirc,las=1,
+        ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,xaxt='n',yaxt='n')
+axis(side=4,las=1)
+text(xQuant,jitter(yQuant,factor=10),labs,cex=.65)
+#text(xQuant,yQuant,labs,cex=.65)
+text(x=30,y=0,"B")
+mtext(side=4,"Change in Annualized Profit ($ Billion)",line=2.25)
+
+
+dev.off()
+
+
+######## Figure 4 ###########
   pdf(paste(FigureFolder,'Figure 4.pdf',sep=''),width=8,height=4)
   
   years<-unique(PlotTrend$Year)
@@ -444,7 +531,7 @@ Fig1Panel(trevPercChangeBioSQ,trevPercChangeCatchSQ,radius,colQuant4,"Figure1d",
   #==Select a policy
   #==only show catch share--no optimal
   chosen<-c("Catch Share Three",'Fmsy Three',"Business As Usual Pessimistic","Business As Usual","Historic")
-  plotLabs<-c("Catch share",expression('F'[MSY]),"Business as usual
+  plotLabs<-c("RBFM",expression('F'[MSY]),"Business as usual
               (pessimistic)","Business as usual") 
   
   #==reformat
@@ -498,7 +585,7 @@ Fig1Panel(trevPercChangeBioSQ,trevPercChangeCatchSQ,radius,colQuant4,"Figure1d",
   #============== 
   #   dev.new(width=8,height=4)
   #pdf("C:/Users/Cody/Desktop/Figure3.pdf",width=8,height=4)
-  par(mar=c(4,4,4,8))
+  par(mar=c(4,4,4,4))
   plot(-100000,las=1,ylab="",xlab="",ylim=ylimIn,xlim=xlimIn)
   abline(h=0,lty=2)
   par(new=T)
@@ -507,13 +594,14 @@ Fig1Panel(trevPercChangeBioSQ,trevPercChangeCatchSQ,radius,colQuant4,"Figure1d",
           bg=useCol,fg='black',inches=sizeCirc,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,yaxt='n',xaxt='n')
   
-  plotLabs<-c("BAU","BAU (pessimistic)","Catch share",expression('F'[MSY])) 
-  plotNames<-newDF[newDF$Year==2050,]
-  plotNames$PerHealth[3]<-88
-  plotNames$PerHealth[4]<-80
-  par(xpd=NA)
-  text(y=plotNames$PerHealth,x=2052,plotLabs,pos=4)
-  par(xpd=FALSE)
+  plotLabs<-c("BAU (all stocks)","BAU (conservation concern)","RBMF",expression('F'[MSY])) 
+  #plotNames<-newDF[newDF$Year==2050,]
+  #plotNames$PerHealth[3]<-88
+  #plotNames$PerHealth[4]<-80
+  #par(xpd=NA)
+  #text(y=plotNames$PerHealth,x=2052,plotLabs,pos=4)
+  #par(xpd=FALSE)
+  text(y=c(20,40,90,62),x=2040,plotLabs,cex=.8)
   
   mtext(side=3,"Profit/year ($ Billion)",line=.58)
   mtext(side=3,round(min(NoPastProfits),-1),adj=.06,line=-.05,)
@@ -561,7 +649,7 @@ Fig1Panel(trevPercChangeBioSQ,trevPercChangeCatchSQ,radius,colQuant4,"Figure1d",
   NPV		<-rep(0,length(unqPols))
   NPVSQ		<-rep(0,length(unqPols))
   
-  labName 	<-c("BAU","BAU (Pessimistic)","Catch share","Catch share",expression('F'[MSY]),
+  labName 	<-c("BAU","BAU","RBFM","RBFM",expression('F'[MSY]),
                expression('F'[MSY]),"Today")
   labNameSimp	<-c("BAU","BAU (Pessimistic)","Catch share","Fmsy","Today")
   WantPols<- c('Catch Share Three','Fmsy Three','Business As Usual','Business As Usual Pessimistic',
