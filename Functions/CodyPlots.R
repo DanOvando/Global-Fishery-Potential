@@ -272,7 +272,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
 #windows()
 Fig1Panel<-function(xin,yin,zin,colQuantIn,title,cutin,cutoff)
 {
-pdf(paste("C:/Users/Cody/Desktop/",title,".pdf",sep=""),height=5,width=5)
+pdf(paste(FigureFolder,title,".pdf",sep=""),height=5,width=5)
 xlimIn<-c(cutin,cutoff)
 ylimIn<-c(cutin,cutoff)
 #==make a legend
