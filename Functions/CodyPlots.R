@@ -264,7 +264,61 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
 #   text(trevPercChangeBioSQ,trevPercChangeCatchSQ,plotCountriesAll,cex=.5) 
   
   dev.off()
-  
+#===============================================
+# break out panels by themselves
+#===============================================
+
+#pdf("C:/Users/Cody/Desktop/Figure1.pdf",height=6,width=6)
+#windows()
+Fig1Panel<-function(xin,yin,zin,colQuantIn,title,cutin,cutoff)
+{
+pdf(paste("C:/Users/Cody/Desktop/",title,".pdf",sep=""),height=5,width=5)
+xlimIn<-c(cutin,cutoff)
+ylimIn<-c(cutin,cutoff)
+#==make a legend
+plotx<-c(xin,.7*cutin,.7*cutin)
+ploty<-c(yin,.86*cutoff,.9*cutoff)
+plotz<-c(zin,max(zin)*.7,max(zin)*.3)
+
+#==make colors for catch
+useCol<-rep(0,length(colQuantIn))
+for(i in 1:length(useCol))
+  try(useCol[i] <- col[which(abs(colrange-colQuantIn[i]) == min(abs(colrange-colQuantIn[i])))] )
+useCol<-c(useCol,"white","white")
+
+par(mar=c(.1,.1,.1,.1),oma=c(4,4,2,1)) 
+plot(-100000,las=1,ylab="",xlab="",ylim=ylimIn,xlim=xlimIn)
+abline(h=0,lty=2)
+abline(v=0,lty=2)
+
+par(new=T)
+symbols(x=plotx,y=ploty,circles=plotz,
+        bg=useCol,fg='black',inches=sizeCirc2,las=1,
+        ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,xaxt='n',yaxt='n')
+
+par(xpd=NA)
+text(x=.5*cutoff,y=1.125*cutoff,"% change in profit",cex=.7)
+color.legend2(0,cutoff*1.07,cutoff*.94,1.10*cutoff,rect.col=legendCol,legend="")
+par(xpd=NA)
+text(x=-20,y=1.09*cutoff,paste("<=",round(bound2)),cex=.65)
+text(x=cutoff*1.025,y=1.09*cutoff,paste(">",bound),cex=.65)
+par(xpd=FALSE)
+mtext(side=1,outer=T,"% Change in Biomass",line=2)
+mtext(side=2,outer=T,"% Change in Catch",line=2.3)
+text(x=.7*cutin,y=.9*cutoff,round((pi*(max(zin)*.5)^2)/1000000,1),cex=.65)
+text(x=.7*cutin,y=.75*cutoff,round((pi*(max(zin)*.9)^2)/1000000,1),cex=.65)
+text(x=.7*cutin,y=.63*cutoff,"MSY (MMT)",cex=.65)
+dev.off()
+}
+
+
+sizeCirc2<-.6
+Fig1Panel(OverfishStocks$PercChangeTotalBiomass,OverfishStocks$PercChangeTotalCatch,radius2,colQuant,"Figure1a",-75,200)
+Fig1Panel(OverfishStocks$PercChangeFromSQTotalBiomass,OverfishStocks$PercChangeFromSQTotalCatch,radius2,colQuant2,"Figure1b",-75,200)
+Fig1Panel(trevPercChangeBioCur,trevPercChangeCatchCur,radius,colQuant3,"Figure1c",-75,200)
+Fig1Panel(trevPercChangeBioSQ,trevPercChangeCatchSQ,radius,colQuant4,"Figure1d",-75,200)
+
+
   ######## Figure 2 ############
   
   pdf(paste(FigureFolder,'Figure 2.pdf',sep=''),height=6,width=6)
