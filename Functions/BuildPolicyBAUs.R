@@ -46,13 +46,13 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear)
   # Myctophids - StatusQuoBForever
   
   overFFids<-ProjectionData$IdOrig[ProjectionData$Year==BaselineYear & (!(ProjectionData$IdOrig %in% c(ramids,csids)) & 
-                                                              ((ProjectionData$FvFmsy>1 & ProjectionData$BvBmsy<1) | (ProjectionData$FvFmsy>1 & ProjectionData$BvBmsy>1) |
-                                                                 (ProjectionData$FvFmsy<1 & ProjectionData$BvBmsy<1)))]
+                                                                          ((ProjectionData$FvFmsy>1 & ProjectionData$BvBmsy<1) | (ProjectionData$FvFmsy>1 & ProjectionData$BvBmsy>1) |
+                                                                             (ProjectionData$FvFmsy<1 & ProjectionData$BvBmsy<1)))]
   
   overff<-ProjectionData[(ProjectionData$IdOrig %in% overFFids) & ProjectionData$Policy=='StatusQuoOpenAccess',]
   
   mctofids<-ProjectionData$IdOrig[ProjectionData$Year==BaselineYear & (!(ProjectionData$IdOrig %in% c(ramids,csids)) & 
-                                                             (ProjectionData$FvFmsy<1 & ProjectionData$BvBmsy>1))]
+                                                                         (ProjectionData$FvFmsy<1 & ProjectionData$BvBmsy>1))]
   
   mctofid<-ProjectionData[(ProjectionData$IdOrig %in% mctofids) & ProjectionData$Policy=='StatusQuoBForever',]
   
@@ -71,8 +71,14 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear)
   # 3) Catch Share 
   
   CsThree<-ProjectionData[(ProjectionData$IdOrig %in% PolicyOverFFids) & ProjectionData$Policy=='CatchShare',]
+  
+  McRam<- subset(ProjectionData, (IdOrig %in% PolicyUnderFFids) & Policy=='StatusQuoFForever' & Dbase=='RAM' & CatchShare!=1)
+  
+  McCatchShares<-subset(ProjectionData, (IdOrig %in% PolicyUnderFFids) & Policy=='Opt' & CatchShare==1)
     
-  CatchShareThree<-rbind(PolicyMcTofids,CsThree) # combine Catch Share results for overfished/overfishing results with B current forever results for mctofids
+  Myctophids<- subset(ProjectionData, (IdOrig %in% PolicyUnderFFids) & Policy=='StatusQuoBForever' & CatchShare!=1 & Dbase!='RAM')
+  
+  CatchShareThree<-rbind(CsThree,McRam,McCatchShares,Myctophids) # combine Catch Share results for overfished/overfishing results with B current forever results for mctofids
   
   CatchShareThree$Policy<-'Catch Share Three'
   
@@ -80,7 +86,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear)
   
   fThree<-ProjectionData[(ProjectionData$IdOrig %in% PolicyOverFFids) & ProjectionData$Policy=='Fmsy',]
   
-  FmsyThree<-rbind(PolicyMcTofids,fThree) # combine Catch Share results for overfished/overfishing results with B current forever results for mctofids
+  FmsyThree<-rbind(fThree,McRam,McCatchShares,Myctophids) # combine Catch Share results for overfished/overfishing results with B current forever results for mctofids
   
   FmsyThree$Policy<-'Fmsy Three'
   
