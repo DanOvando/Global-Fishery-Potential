@@ -594,7 +594,7 @@ dev.off()
           bg=useCol,fg='black',inches=sizeCirc,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,yaxt='n',xaxt='n')
   
-  plotLabs<-c("BAU (all stocks)","BAU (conservation concern)","RBMF",expression('F'[MSY])) 
+  plotLabs<-c("BAU (all stocks)","BAU (conservation concern)","RBFM",expression('F'[MSY])) 
   #plotNames<-newDF[newDF$Year==2050,]
   #plotNames$PerHealth[3]<-88
   #plotNames$PerHealth[4]<-80
