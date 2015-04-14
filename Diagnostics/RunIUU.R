@@ -1,7 +1,7 @@
 
 rm(list=ls())
-load('Results/2.5/Data/Global Fishery Recovery Results.rdata')
-NumCPUs<- 4
+load('Results/3.0/Data/Global Fishery Recovery Results.rdata')
+NumCPUs<- 1
 library(plyr)
 library(lattice)
 library(rfishbase)
