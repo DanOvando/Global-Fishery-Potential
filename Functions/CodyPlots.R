@@ -29,6 +29,12 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   
   data<-read.csv(paste(ResultFolder,'Unlumped Projection DataAll Stocks Country Upsides.csv',sep=''))
   data2<-read.csv(paste(ResultFolder,'Unlumped Projection DataOverfish Only Country Upsides.csv',sep=''))
+  
+  data<- subset(data,Country!='High Seas Tuna and Billfish')
+
+  data2<- subset(data2,Country!='High Seas Tuna and Billfish')
+  
+  
   PlotTrend<-read.csv(paste(ResultFolder,'PlotTrend.csv',sep=''))
   pdf(file=paste(FigureFolder,'Figure 1.pdf',sep=''),height=6,width=6)
   
