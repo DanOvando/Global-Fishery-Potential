@@ -57,7 +57,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   AllStocks  		<-AllStocks[AllStocks$Policy==Policy,]
   OverfishStocks		<-OverfishStocks[OverfishStocks$Policy==Policy,]
   
- 
+  
   
   # subset to stocks that have overfished stocks
   tmp				<-unique(OverfishStocks$Country)
@@ -642,7 +642,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   dev.off()
   
   ####### Figure 3 ##########
- 
+  
   data<-read.csv(paste(ResultFolder,'Unlumped Projection DataAll Stocks Country Upsides.csv',sep=''))
   data2<-read.csv(paste(ResultFolder,'Unlumped Projection DataOverfish Only Country Upsides.csv',sep=''))
   
@@ -677,7 +677,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   CatSQ		<-rep(0,length(unqPols))
   NPV		<-rep(0,length(unqPols))
   NPVSQ		<-rep(0,length(unqPols))
-  
+  PolName<- NULL  
   labName 	<-c("BAU","BAU","RBFM","RBFM",expression('F'[MSY]),
                expression('F'[MSY]),"Today")
   labNameSimp	<-c("BAU","BAU (Pessimistic)","Catch share","Fmsy","Today")
@@ -702,7 +702,7 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
     CatSQ[x]	<-sum(AllSub$TotalCatchSQ/1000000)
     NPV[x]	<-sum(AllSub$TotalNPV)/1000000000
     NPVSQ[x]	<-sum(AllSub$TotalNPVSQ)/1000000000
-    
+    PolName[x]<- as.character(unqPols[x])
   }
   
   #==point for 'today'
@@ -733,9 +733,8 @@ CodyPlots<- function(FigureFolder,ResultFolder,Policy)
   # output figure data for comparisons
   #=====================================
   #=figure data
-  outs	<-cbind(c(BioCur[indPol],baseBio),c(NPV[indPol],basePft),c(CatCur[indPol],baseCat),labNameSimp)
+  outs	<-cbind(c(BioCur[indPol],baseBio),c(NPV[indPol],basePft),c(CatCur[indPol],baseCat),c(PolName[indPol],'Today'))
   colnames(outs)<-c("Bio","Profit","Catch","Policy")
-  
   #==CHANGE THIS TO OUTPUT WHEREEVER YOU WANAT
   write.csv(outs,paste(ResultFolder,'Fig3data.csv',sep=''))
   
