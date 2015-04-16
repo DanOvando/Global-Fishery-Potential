@@ -31,7 +31,7 @@ CountryTopStocks<-function(UnlumpedProjectionData,BaselineYear,NumberOfStocks,Nu
   # If making table for all countries, use unique countries
   if(NumberOfCountries=='All')
   {
-    cntrys<-unique(UnlumpedProjectionData$Country)
+    cntrys<-unique(UnlumpedProjectionData$Country[UnlumpedProjectionData$Year==2012])
   }
   
   # Create empty list to fill
