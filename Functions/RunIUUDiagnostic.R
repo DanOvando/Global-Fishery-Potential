@@ -161,10 +161,11 @@ RunIUUDiagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,Batc
   
   Diagnostics<- melt(PostData[,c('bPE','fPE','MSYPE')])
   pdf(paste(FigureFolder,'IUU Effect.pdf',sep=''))
-  print(ggplot(data=Diagnostics,aes(x=value))
-        +geom_density(fill='steelblue2',alpha=0.6)+geom_vline(aes(xintercept = 0))+geom_vline(aes(xintercept=100*(IUULevel-1)),color='red')
-        +facet_wrap(~variable,scale='free')+xlab('Proportional Error %')+xlim(c(-50,100)))
+  pp<- (ggplot(data=Diagnostics,aes(x=value))
+  +geom_density(fill='steelblue2',alpha=0.6)+geom_vline(aes(xintercept = 0))+geom_vline(aes(xintercept=100*(IUULevel-1)),color='red')
+  +facet_wrap(~variable,scale='free')+xlab('Proportional Error %')+xlim(c(-50,100)))
+  print(pp)
   dev.off()
   
-  return(PostData)
+  return(list(PostData=PostData,IUUPlot=pp))
 }

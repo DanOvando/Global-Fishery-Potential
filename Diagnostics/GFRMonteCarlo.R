@@ -2,7 +2,7 @@
 # {
 #   
 rm(list=ls())
-load('Results/2.5/Data/Global Fishery Recovery Results.rdata')
+load('Results/3.0/Data/Global Fishery Recovery Results.rdata')
 library(parallel)
 library(plyr)
 library(ggplot2)
@@ -19,7 +19,7 @@ Stocks<- unique(ProjectionData$IdOrig[is.na(ProjectionData$IdOrig)==F & Projecti
 Stocks<- Stocks[Stocks %in% CatchMSYPossibleParams$IdOrig ]
 
 # Rprof(tmp <- tempfile(),line.profiling=T)
-NumCPUs<- 3
+NumCPUs<- 1
 
 
 MonteMat<- SnowMonteCarlo(500,Stocks=Stocks,ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
@@ -32,20 +32,29 @@ MonteMat<- SnowMonteCarlo(500,Stocks=Stocks,ProjectionData=ProjectionData,CatchM
 # +geom_line()
 # MonteMat<- ldply(MonteMat)
 save(MonteMat,file=paste(ResultFolder,'MonteCarlo_Results.Rdata',sep=''))
-# load('Results/2.5/Data/MonteCarlo_Results.Rdata')
+load('Results/3.0/Data/MonteCarlo_Results.Rdata')
 
 
-MonteCarlo<- ddply(subset(MonteMat),c('Iteration','Year','Policy'),summarize,MSY=sum(MSY,na.rm=T),Profits=sum(Profits,na.rm=T),
+MonteCarlo<- ddply(subset(MonteMat,Policy=='Catch Share Three' | Policy=='Fmsy Three' |  Policy=='Business As Usual' | Policy=='Business As Usual Pessimistic'),c('Iteration','Year','Policy'),summarize,MSY=sum(MSY,na.rm=T),Profits=sum(Profits,na.rm=T),
                    Catch=sum(Catch,na.rm=T),BvBmsy=median(BvBmsy,na.rm=T),FvFmsy=median(FvFmsy,na.rm=T),MedianBOA=median(BOA,na.rm=T))
 
-MonteCarlo<- subset(MonteCarlo,is.infinite(Catch)==F & is.na(BvBmsy)==F & Policy!='Food' & Policy != 'StatusQuoFForever')
+MonteCarlo$Policy[MonteCarlo$Policy=='Fmsy Three']<- 'Fmsy'
+
+MonteCarlo$Policy[MonteCarlo$Policy=='Catch Share Three']<- 'Opt. RBFM'
+
+MonteCarlo$Policy[MonteCarlo$Policy=='Business As Usual']<- 'BAU (S1)'
+
+MonteCarlo$Policy[MonteCarlo$Policy=='Business As Usual Pessimistic']<- 'BAU (S2)'
+
+
+MonteCarlo<- subset(MonteCarlo,is.infinite(Catch)==F & is.na(BvBmsy)==F)
 
 FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo/',sep='')
 
 dir.create(FigureFolder,recursive=T)
 
 pdf(file=paste(FigureFolder,'MonteCarlo_MSY.pdf',sep=''))
-MCMSY<- (ggplot(data=subset(MonteCarlo,Policy=='CatchShare' & Year==BaselineYear),aes(MSY),alpha=0.8)+geom_density(fill='steelblue2'))
+MCMSY<- (ggplot(data=subset(MonteCarlo,Policy=='Opt. RBFM' & Year==BaselineYear),aes(MSY),alpha=0.8)+geom_density(fill='steelblue2'))
 print(MCMSY)
 dev.off()
 
@@ -95,7 +104,7 @@ print(MCBvB)
 dev.off()
 
 pdf(file=paste(FigureFolder,'MC_BvBmsy_OA.pdf',sep=''))
-MCBvB_OA<-(ggplot(data=subset(MonteCarlo,Year==max(Year) & Policy=='CatchShare'),aes(MedianBOA,fill=(Policy)))+
+MCBvB_OA<-(ggplot(data=subset(MonteCarlo,Year==max(Year) & Policy=='Opt. RBFM'),aes(MedianBOA,fill=(Policy)))+
              geom_density(alpha=0.7)+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9)))
 print(MCBvB_OA)
 dev.off()

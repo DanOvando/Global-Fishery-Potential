@@ -123,11 +123,11 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     Projection<- data.frame(fFlat,bFlat[,'BvBmsy'],yFlat[,'Catch'],piFlat[,'Profits'])
     
     colnames(Projection)<- c('Year','IdOrig','FvFmsy','BvBmsy','Catch','Profits')
-    if (any(b==0))
-    {
-      browser()
-    }
- 
+    #     if (any(b==0))
+    #     {
+    #       browser()
+    #     }
+    #  
     Projection$Year<- Projection$Year+(BaselineYear-1)
     
     Projection<- subset(Projection,Year==BaselineYear | Year==max(Year))
@@ -230,13 +230,13 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
       #       eval(parse(text=paste('Policy<-',Policies[p],'Policy',sep=''))) 
       
       Projection<- Sim_Forward(FStatusQuo,BStatusQuo,Policies[p],PolicyFuncs,IsCatchShare,bvec,BStatusQuo,ProjectionTime,Price,MSY,cost,g,phi,beta)
-      if (any(Projection$BvBmsy==0))
-      {
-        browser()
-      }
+      #       if (any(Projection$BvBmsy==0))
+      #       {
+      #         browser()
+      #       }
       Projection<- join(Projection,PossParams[,c('IdOrig','MSY','g','phi','K','Price','Cost','MsyProfits','BOA')],by='IdOrig',match='first')
       
-      Projection<- join(Projection,RecentStockData[,c('IdOrig','Country','Dbase','SciName','CommName','IdLevel','SpeciesCatName')],by='IdOrig',match='first')        
+      Projection<- join(Projection,RecentStockData[,c('IdOrig','Country','Dbase','SciName','CommName','IdLevel','SpeciesCatName','CatchShare')],by='IdOrig',match='first')        
       
       Projection$Policy<- Policies[p]
       
@@ -249,13 +249,17 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
       #       
       #       cc<- (cc-1)+dim(Projection)[1]
       #       
-    }
+    } #Close policies loop
+    
+    
+    
     PercDone<- round(100*(k/Iterations),2)
     
     write.table(paste(PercDone, '% done with Monte Carlo',sep=''), file = 'MonteCarloProgess.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
     
+    ProjectionMat<-BuildPolicyBAUs(ProjectionMat,BaselineYear)
     return(ProjectionMat)
-  }
+  } #Close McIterations
   
   
   ErrorVars<- c('Price','BOA')

@@ -29,7 +29,7 @@ library(reshape2)
 
 RunAnalyses<- FALSE
 
-BatchFolder<- '2.5'
+BatchFolder<- '3.0'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -49,7 +49,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- '2.5'
+  BatchFolder<- '3.0'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
