@@ -587,7 +587,8 @@ ValuesForPaper<-RenSummaryTable(UnlumpedData=UnlumpedProjectionData,LumpedData=P
 PercentCoverage<-StockAndCountrySummary(UnlumpedProjectionData,ProjectionData,StitchIds,BaselineYear)
 
 # Top stocks in major countries
-TopStocks<-CountryTopStocks(UnlumpedProjectionData,BaselineYear,NumberOfStocks=5,NumberOfCountries=20,Discount,ResultFolder)
+TopStocks<-CountryTopStocks(UnlumpedProjectionData,BaselineYear,Policies=c('Business As Usual','Business As Usual Pessimistic','Catch Share Three','CatchShare','Fmsy Three','Fmsy'),
+                            NumberOfStocks=5,NumberOfCountries=20,Discount,ResultFolder)
 
 # Summarize current status by ISSCAAP and FAO Region
 StatusByRegionAndISSCAAP<-RegionFaoAndISSCAAPSummary(ProjectionData,BaselineYear)

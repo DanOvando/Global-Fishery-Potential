@@ -8,14 +8,15 @@
 # Values are for top stocks in a country according to total catch in 2012
 # 'All Stocks' values are medians for B/Bmsy, F/Fmsy, total for MSY, and harvest weighted price
 
-# NumberOfCountries<-20
-# NumberOfStocks<-5
+# NumberOfCountries<-'All'
+# NumberOfStocks<-'All'
+# Policies<-c('Business As Usual','Business As Usual Pessimistic','Catch Share Three','CatchShare','Fmsy Three','Fmsy')
 
-CountryTopStocks<-function(UnlumpedProjectionData,BaselineYear,NumberOfStocks,NumberOfCountries,Discount,ResultFolder)
+CountryTopStocks<-function(UnlumpedProjectionData,BaselineYear,Policies,NumberOfStocks,NumberOfCountries,Discount,ResultFolder)
 {
   
   # Find top countries in Unlumped data
-  top<-ddply(UnlumpedProjectionData[UnlumpedProjectionData$Year==2012,],c('Country'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
+  top<-ddply(UnlumpedProjectionData[UnlumpedProjectionData$Year==BaselineYear,],c('Country'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
 
   top<-top[with(top,order(-TotalMSY)),]
   
@@ -31,7 +32,7 @@ CountryTopStocks<-function(UnlumpedProjectionData,BaselineYear,NumberOfStocks,Nu
   # If making table for all countries, use unique countries
   if(NumberOfCountries=='All')
   {
-    cntrys<-unique(UnlumpedProjectionData$Country[UnlumpedProjectionData$Year==2012])
+    cntrys<-unique(UnlumpedProjectionData$Country[UnlumpedProjectionData$Year==BaselineYear])
   }
   
   # Create empty list to fill
@@ -41,7 +42,7 @@ CountryTopStocks<-function(UnlumpedProjectionData,BaselineYear,NumberOfStocks,Nu
   
   for(a in 1:length(cntrys))
   { 
-#     show(a)
+    show(a)
     # subset to country stocks
     tempC<-UnlumpedProjectionData[UnlumpedProjectionData$Country==cntrys[a],]
     
@@ -49,63 +50,96 @@ CountryTopStocks<-function(UnlumpedProjectionData,BaselineYear,NumberOfStocks,Nu
     tempAll<-ddply(tempC,c('Year','Policy'),summarize,TotalStocks=length(unique(IdOrig)),TotalCatch=sum(Catch,na.rm=T),TotalProfit=sum(Profits,na.rm=T),
                    TotalBiomass=sum(Biomass,na.rm=T),TotalNPV=sum(NPV,na.rm=T),TotalMSY=sum(MSY,na.rm=T),MedB=median(BvBmsy,na.rm=T),MedF=median(FvFmsy,na.rm=T))
     
-    tempAll<-tempAll[tempAll$Year==2012 | (tempAll$Year==max(UnlumpedProjectionData$Year) & tempAll$Policy %in% c('Business As Usual','Catch Share Three')),
+    tempAll<-tempAll[tempAll$Year==BaselineYear | (tempAll$Year==max(UnlumpedProjectionData$Year)),
                      c('Policy','MedB','MedF','TotalCatch','TotalProfit','TotalBiomass','TotalNPV','TotalMSY')]
     
     tempAll$Annuity<-tempAll$TotalNPV*(Discount/(1-(1+Discount)^(-1*max(UnlumpedProjectionData$Year-BaselineYear))))
     
-    tempAll$IdOrig<-rep('All Stocks')
+    tempAll$IdOrig<-rep('All Stocks')  
     
     # find baseline year results
-    tempBase<-tempC[tempC$Year==2012,]
+    tempBase<-tempC[tempC$Year==BaselineYear,]
     
     tempBase<-tempBase[with(tempBase,order(-Catch)),]
     
-    tempBase<-tempBase[1:NumberOfStocks,c('IdOrig','Dbase','CatchShare','CommName','BvBmsy','FvFmsy','MSY','Price','Profits','Catch','Biomass')]
+    # find catch weighted average price across stocks
+    tempBase$PxC<-tempBase$Price*tempBase$Catch
     
-    colnames(tempBase)<-c('IdOrig','Dbase','CatchShare','CommName','BvBmsy','FvFmsy','MSY','Price','Profits_2012','Catch_2012','Biomass_2012')
-    
-    # find catch weighted average price
-    tempBase$PxC<-tempBase$Price*tempBase$Catch_2012
-    
-    tempPrice<-sum(tempBase$PxC,na.rm=T)/sum(tempBase$Catch_2012)
+    tempPrice<-sum(tempBase$PxC,na.rm=T)/sum(tempBase$Catch)
     
     tempBase$PxC<-NULL
     
+    # If NumberOfStocks=='All', find number of stocks for that country, other wise set Stocks to NumberOfStocks
+    if(NumberOfStocks=='All')
+    {
+      Stocks<-nrow(tempBase)
+    }
+    
+    if(is.numeric(NumberOfStocks))
+    {
+      Stocks<-NumberOfStocks
+    }
+    
+    tempBase<-tempBase[1:Stocks,c('IdOrig','Dbase','CatchShare','CommName','BvBmsy','FvFmsy','MSY','Price','Profits','Catch','Biomass')]
+    
+    colnames(tempBase)<-c('IdOrig','Dbase','CatchShare','CommName','BvBmsy','FvFmsy','MSY','Price','Profits_Today','Catch_Today','Biomass_Today')
+    
     ## find BAU and Catch Share Three results for same stocks
     ids<-unique(tempBase$IdOrig)
-
-    # BAU
-    tempBAU<-tempC[(tempC$IdOrig %in% ids) & tempC$Policy=='Business As Usual' & tempC$Year==max(UnlumpedProjectionData$Year),
-                    c('IdOrig','NPV','Catch','Biomass')]
     
-    colnames(tempBAU)<-c('IdOrig','NPV_BAU','Catch_BAU','Biomass_BAU')
-
-    # CS3
-    tempCS3<-tempC[(tempC$IdOrig %in% ids) & tempC$Policy=='Catch Share Three' & tempC$Year==max(UnlumpedProjectionData$Year),
-                   c('IdOrig','NPV','Catch','Biomass')]
+    for(b in 1:length(Policies))
+    {
+      # subset data to policy
+      tempPol<-tempC[(tempC$IdOrig %in% ids) & tempC$Policy==Policies[b] & tempC$Year==max(UnlumpedProjectionData$Year),
+                     c('IdOrig','NPV','Catch','Biomass')]
+      
+      tempPol$Annuity<-tempPol$NPV*(Discount/(1-(1+Discount)^(-1*max(UnlumpedProjectionData$Year-BaselineYear))))
+      
+      tempPol<-tempPol[,c('IdOrig','NPV','Annuity','Catch','Biomass')]
+      
+      # set colnames for each policy
+      if(Policies[b]=='Business As Usual') { colnames(tempPol)<-c('IdOrig','NPV_BAU','Annuity_BAU','Catch_BAU','Biomass_BAU') }
+      if(Policies[b]=='Business As Usual Pessimistic') { colnames(tempPol)<-c('IdOrig','NPV_BAUPessimistic','Annuity_BAUPessimistic','Catch_BAUPessimistic','Biomass_BAUPessimistic') }
+      if(Policies[b]=='Catch Share Three') { colnames(tempPol)<-c('IdOrig','NPV_CS3','Annuity_CS3','Catch_CS3','Biomass_CS3') }
+      if(Policies[b]=='CatchShare') { colnames(tempPol)<-c('IdOrig','NPV_CS','Annuity_CS','Catch_CS','Biomass_CS') }
+      if(Policies[b]=='Fmsy Three') { colnames(tempPol)<-c('IdOrig','NPV_Fmsy3','Annuity_Fmsy3','Catch_Fmsy3','Biomass_Fmsy3') }
+      if(Policies[b]=='Fmsy') { colnames(tempPol)<-c('IdOrig','NPV_Fmsy','Annuity_Fmsy','Catch_Fmsy','Biomass_Fmsy') }
+      
+      # join results for each policy as new columns
+      if(b==1)
+      {
+        tempFinal<-join(tempBase,tempPol,by='IdOrig',type='full',match='all')
+      }
+      
+      if(b>1)
+      {
+        tempFinal<-join(tempFinal,tempPol,by='IdOrig',type='full',match='all')
+      }
+    } # close loop
     
-    colnames(tempCS3)<-c('IdOrig','NPV_CatchShareThree','Catch_CatchShareThree','Biomass_CatchShareThree')
-     
-    # bind tables together
-    tempFinal<-join(tempBase,tempBAU,by='IdOrig',type='full',match='all')
+    # Add country totals
+    tempFinal[nrow(tempFinal)+1,c('IdOrig','BvBmsy','FvFmsy','MSY','Profits_Today','Catch_Today','Biomass_Today')]<-tempAll[tempAll$Policy=='Historic',c('IdOrig','MedB','MedF','TotalMSY','TotalProfit','TotalCatch','TotalBiomass')]
     
-    tempFinal<-join(tempFinal,tempCS3,by='IdOrig',type='full',match='all')
-
-    tempFinal[nrow(tempFinal)+1,c('IdOrig','BvBmsy','FvFmsy','MSY','Profits_2012','Catch_2012','Biomass_2012')]<-tempAll[tempAll$Policy=='Historic',c('IdOrig','MedB','MedF','TotalMSY','TotalProfit','TotalCatch','TotalBiomass')]
+    for(c in 1:length(Policies))
+    {
+      # find colnames of results to fill for each policy
+      if(Policies[c]=='Business As Usual') { cols<-c('NPV_BAU','Annuity_BAU','Catch_BAU','Biomass_BAU') }
+      if(Policies[c]=='Business As Usual Pessimistic') { cols<-c('NPV_BAUPessimistic','Annuity_BAUPessimistic','Catch_BAUPessimistic','Biomass_BAUPessimistic') }
+      if(Policies[c]=='Catch Share Three') { cols<-c('NPV_CS3','Annuity_CS3','Catch_CS3','Biomass_CS3') }
+      if(Policies[c]=='CatchShare') { cols<-c('NPV_CS','Annuity_CS','Catch_CS','Biomass_CS') }
+      if(Policies[c]=='Fmsy Three') { cols<-c('NPV_Fmsy3','Annuity_Fmsy3','Catch_Fmsy3','Biomass_Fmsy3') }
+      if(Policies[c]=='Fmsy') { cols<-c('NPV_Fmsy','Annuity_Fmsy','Catch_Fmsy','Biomass_Fmsy') }
+      
+      tempFinal[nrow(tempFinal),cols]<-tempAll[tempAll$Policy==Policies[c],c('TotalNPV','Annuity','TotalCatch','TotalBiomass')]
+    }
     
-    tempFinal[nrow(tempFinal),c('NPV_BAU','Catch_BAU','Biomass_BAU')]<-tempAll[tempAll$Policy=='Business As Usual',c('Annuity','TotalCatch','TotalBiomass')]
-
-    tempFinal[nrow(tempFinal),c('NPV_CatchShareThree','Catch_CatchShareThree','Biomass_CatchShareThree')]<-tempAll[tempAll$Policy=='Catch Share Three',c('Annuity','TotalCatch','TotalBiomass')]
-
+    # add country catch-weighted price
     tempFinal$Price[nrow(tempFinal)]<-tempPrice
     
+    # add country name
     tempFinal$Country<-rep(cntrys[a])
     
-    tempFinal<-tempFinal[,c('Country','IdOrig','Dbase','CatchShare','CommName','BvBmsy','FvFmsy','MSY','Price','Profits_2012','Catch_2012','Biomass_2012','NPV_BAU','Catch_BAU','Biomass_BAU','NPV_CatchShareThree','Catch_CatchShareThree','Biomass_CatchShareThree')]
-    
-    colnames(tempFinal)<-c('Country','IdOrig','Dbase','CatchShare','CommName','BvBmsy','FvFmsy','MSY','Price','Profits_2012','Catch_2012','Biomass_2012','Annuity_BAU','Catch_BAU','Biomass_BAU','Annuity_CatchShareThree','Catch_CatchShareThree','Biomass_CatchShareThree')
-    # add to main list
+    # store in main list
     TopStocks[[a]]<-tempFinal
     
   } # close cntrys loop
@@ -113,24 +147,34 @@ CountryTopStocks<-function(UnlumpedProjectionData,BaselineYear,NumberOfStocks,Nu
   TopStocks<-ldply(TopStocks)
   
   # Calculate global totals by policy and add to table
-  global<-ddply(UnlumpedProjectionData[UnlumpedProjectionData$Year %in% c(2012,2050),],c('Year','Policy'),summarize,TotalStocks=length(unique(IdOrig)),TotalCatch=sum(Catch,na.rm=T),TotalProfit=sum(Profits,na.rm=T),
+  global<-ddply(UnlumpedProjectionData[UnlumpedProjectionData$Year %in% c(BaselineYear,max(UnlumpedProjectionData$Year)),],c('Year','Policy'),summarize,TotalStocks=length(unique(IdOrig)),TotalCatch=sum(Catch,na.rm=T),TotalProfit=sum(Profits,na.rm=T),
                 TotalBiomass=sum(Biomass,na.rm=T),TotalNPV=sum(NPV,na.rm=T),TotalMSY=sum(MSY,na.rm=T),MedB=median(BvBmsy,na.rm=T),MedF=median(FvFmsy,na.rm=T))
   
   global$Annuity<-global$TotalNPV*(Discount/(1-(1+Discount)^(-1*max(UnlumpedProjectionData$Year-BaselineYear))))
   
-  ## Create new row for global values
+  # Add global totals
   g<-TopStocks[1,]
   
   g[1,]<-NA
   
   g[1,c('Country','IdOrig','Dbase','CatchShare','CommName')]<-c('Global','All Stocks',NA,NA,NA)
   
-  g[1,c('BvBmsy','FvFmsy','MSY','Profits_2012','Catch_2012','Biomass_2012')]<-global[global$Policy=='Historic',c('MedB','MedF','TotalMSY','TotalProfit','TotalCatch','TotalBiomass')]
+  g[1,c('BvBmsy','FvFmsy','MSY','Profits_Today','Catch_Today','Biomass_Today')]<-global[global$Policy=='Historic',c('MedB','MedF','TotalMSY','TotalProfit','TotalCatch','TotalBiomass')]
   
-  g[1,c('Annuity_BAU','Catch_BAU','Biomass_BAU')]<-global[global$Policy=='Business As Usual',c('Annuity','TotalCatch','TotalBiomass')]
   
-  g[1,c('Annuity_CatchShareThree','Catch_CatchShareThree','Biomass_CatchShareThree')]<-global[global$Policy=='Catch Share Three',c('Annuity','TotalCatch','TotalBiomass')]
-  
+  for(d in 1:length(Policies))
+  {
+    # find colnames of results to fill for each policy
+    if(Policies[d]=='Business As Usual') { cols<-c('NPV_BAU','Annuity_BAU','Catch_BAU','Biomass_BAU') }
+    if(Policies[d]=='Business As Usual Pessimistic') { cols<-c('NPV_BAUPessimistic','Annuity_BAUPessimistic','Catch_BAUPessimistic','Biomass_BAUPessimistic') }
+    if(Policies[d]=='Catch Share Three') { cols<-c('NPV_CS3','Annuity_CS3','Catch_CS3','Biomass_CS3') }
+    if(Policies[d]=='CatchShare') { cols<-c('NPV_CS','Annuity_CS','Catch_CS','Biomass_CS') }
+    if(Policies[d]=='Fmsy Three') { cols<-c('NPV_Fmsy3','Annuity_Fmsy3','Catch_Fmsy3','Biomass_Fmsy3') }
+    if(Policies[d]=='Fmsy') { cols<-c('NPV_Fmsy','Annuity_Fmsy','Catch_Fmsy','Biomass_Fmsy') }
+    
+    g[1,cols]<-global[global$Policy==Policies[d],c('TotalNPV','Annuity','TotalCatch','TotalBiomass')]
+  }
+
   # find catch weighted average price
   gp<-UnlumpedProjectionData[UnlumpedProjectionData$Year==2012,c('Catch','Price')]
   
@@ -144,9 +188,9 @@ CountryTopStocks<-function(UnlumpedProjectionData,BaselineYear,NumberOfStocks,Nu
   
   # Bind global row to top of TopStocks dataframe
   TopStocks<-rbind(g,TopStocks)
-
+  
   # Write csv
-  write.csv(TopStocks,file=paste(ResultFolder,'Country Results for Top Stocks.csv',sep=''))
+  write.csv(TopStocks,file=paste(ResultFolder,'Country Results for All Stocks.csv',sep=''))
 
   return(TopStocks)
 }
