@@ -9,14 +9,14 @@
 # 'All Stocks' values are medians for B/Bmsy, F/Fmsy, total for MSY, and harvest weighted price
 
 # NumberOfCountries<-'All'
-# NumberOfStocks<-5
+# NumberOfStocks<-'All'
 # Policies<-c('Business As Usual','Business As Usual Pessimistic','Catch Share Three','CatchShare','Fmsy Three','Fmsy')
 
 CountryTopStocks<-function(UnlumpedProjectionData,BaselineYear,Policies,NumberOfStocks,NumberOfCountries,Discount,ResultFolder)
 {
   
   # Find top countries in Unlumped data
-  top<-ddply(UnlumpedProjectionData[UnlumpedProjectionData$Year==2012,],c('Country'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
+  top<-ddply(UnlumpedProjectionData[UnlumpedProjectionData$Year==BaselineYear,],c('Country'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
 
   top<-top[with(top,order(-TotalMSY)),]
   
@@ -32,7 +32,7 @@ CountryTopStocks<-function(UnlumpedProjectionData,BaselineYear,Policies,NumberOf
   # If making table for all countries, use unique countries
   if(NumberOfCountries=='All')
   {
-    cntrys<-unique(UnlumpedProjectionData$Country[UnlumpedProjectionData$Year==2012])
+    cntrys<-unique(UnlumpedProjectionData$Country[UnlumpedProjectionData$Year==BaselineYear])
   }
   
   # Create empty list to fill
@@ -55,23 +55,34 @@ CountryTopStocks<-function(UnlumpedProjectionData,BaselineYear,Policies,NumberOf
     
     tempAll$Annuity<-tempAll$TotalNPV*(Discount/(1-(1+Discount)^(-1*max(UnlumpedProjectionData$Year-BaselineYear))))
     
-    tempAll$IdOrig<-rep('All Stocks')
+    tempAll$IdOrig<-rep('All Stocks')  
     
     # find baseline year results
     tempBase<-tempC[tempC$Year==BaselineYear,]
     
     tempBase<-tempBase[with(tempBase,order(-Catch)),]
     
-    tempBase<-tempBase[1:NumberOfStocks,c('IdOrig','Dbase','CatchShare','CommName','BvBmsy','FvFmsy','MSY','Price','Profits','Catch','Biomass')]
+    # find catch weighted average price across stocks
+    tempBase$PxC<-tempBase$Price*tempBase$Catch
     
-    colnames(tempBase)<-c('IdOrig','Dbase','CatchShare','CommName','BvBmsy','FvFmsy','MSY','Price','Profits_Today','Catch_Today','Biomass_Today')
-    
-    # find catch weighted average price
-    tempBase$PxC<-tempBase$Price*tempBase$Catch_Today
-    
-    tempPrice<-sum(tempBase$PxC,na.rm=T)/sum(tempBase$Catch_Today)
+    tempPrice<-sum(tempBase$PxC,na.rm=T)/sum(tempBase$Catch)
     
     tempBase$PxC<-NULL
+    
+    # If NumberOfStocks=='All', find number of stocks for that country, other wise set Stocks to NumberOfStocks
+    if(NumberOfStocks=='All')
+    {
+      Stocks<-nrow(tempBase)
+    }
+    
+    if(is.numeric(NumberOfStocks))
+    {
+      Stocks<-NumberOfStocks
+    }
+    
+    tempBase<-tempBase[1:Stocks,c('IdOrig','Dbase','CatchShare','CommName','BvBmsy','FvFmsy','MSY','Price','Profits','Catch','Biomass')]
+    
+    colnames(tempBase)<-c('IdOrig','Dbase','CatchShare','CommName','BvBmsy','FvFmsy','MSY','Price','Profits_Today','Catch_Today','Biomass_Today')
     
     ## find BAU and Catch Share Three results for same stocks
     ids<-unique(tempBase$IdOrig)
@@ -179,7 +190,7 @@ CountryTopStocks<-function(UnlumpedProjectionData,BaselineYear,Policies,NumberOf
   TopStocks<-rbind(g,TopStocks)
   
   # Write csv
-  write.csv(TopStocks,file=paste(ResultFolder,'Country Results for Top Stocks.csv',sep=''))
+  write.csv(TopStocks,file=paste(ResultFolder,'Country Results for All Stocks.csv',sep=''))
 
   return(TopStocks)
 }
