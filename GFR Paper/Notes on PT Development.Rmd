@@ -1,0 +1,14 @@
+---
+title: "Notes on Pella Tomlinson Transition"
+author: "Dan Ovando"
+date: "March 17, 2015"
+output: pdf_document
+---
+
+A few general notes on the transition to PT
+
+* With the derivation Chris is using, we need $\phi$ to be 0.188, not 1.188, in order to get BMSY=0.4K
+* $Bmsy/K= \frac{1}{(\phi+1)^{1/\phi}}$
+* So, to go from B/Bmsy to B/K, take $\frac{B}{B_{msy}}(\frac{1}{(\phi+1)^{1/\phi}})$
+* If steady state *f* is $\overline{f}=(\frac{\phi+1}{\phi})(1-\frac{\overline{b}^{\phi}}{\phi+1})$ then 
+
