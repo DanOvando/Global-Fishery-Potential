@@ -40,7 +40,7 @@ MonteCarlo<- ddply(subset(MonteMat,Policy=='Catch Share Three' | Policy=='Fmsy T
 
 MonteCarlo$Policy[MonteCarlo$Policy=='Fmsy Three']<- 'Fmsy'
 
-MonteCarlo$Policy[MonteCarlo$Policy=='Catch Share Three']<- 'Opt. RBFM'
+MonteCarlo$Policy[MonteCarlo$Policy=='Catch Share Three']<- 'RBFM'
 
 MonteCarlo$Policy[MonteCarlo$Policy=='Business As Usual']<- 'BAU (S1)'
 
@@ -54,7 +54,7 @@ FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo/',sep='')
 dir.create(FigureFolder,recursive=T)
 
 pdf(file=paste(FigureFolder,'MonteCarlo_MSY.pdf',sep=''))
-MCMSY<- (ggplot(data=subset(MonteCarlo,Policy=='Opt. RBFM' & Year==BaselineYear),aes(MSY),alpha=0.8)+geom_density(fill='steelblue2'))
+MCMSY<- (ggplot(data=subset(MonteCarlo,Policy=='RBFM' & Year==BaselineYear),aes(MSY),alpha=0.8)+geom_density(fill='steelblue2'))
 print(MCMSY)
 dev.off()
 
@@ -69,7 +69,7 @@ pdf(file=paste(FigureFolder,'MC_Profits.pdf',sep=''))
 MCProfits<- (ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(Profits,fill=Policy))+
                geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))+
                geom_vline(aes(xintercept=0,alpha=0.8),color='red',linetype='longdash',size=1)+facet_wrap(~Policy)+ylab("Scaled Density")
-             +scale_fill_discrete(name = "Management Alternative")
+             +scale_fill_discrete(name = "Policy Alternative")
              #                coord_cartesian(xlim=c(-3e11,2e11))
              
 )
@@ -79,7 +79,7 @@ dev.off()
 pdf(file=paste(FigureFolder,'MC_Catch.pdf',sep=''))
 MCCatch<- (ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(Catch,fill=Policy))+
              geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))+
-             facet_wrap(~Policy)+ylab("Scaled Density")+scale_fill_discrete(name = "Management Alternative")
+             facet_wrap(~Policy)+ylab("Scaled Density")+scale_fill_discrete(name = "Policy Alternative")
            #                coord_cartesian(xlim=c(-3e11,2e11))
            
 )
@@ -99,12 +99,12 @@ pdf(file=paste(FigureFolder,'MC_BvBmsy.pdf',sep=''))
 MCBvB<-(ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(BvBmsy,fill=(Policy)))+
           geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))
         +geom_vline(aes(xintercept=1),color='red',linetype='longdash')+xlim(c(0,2.5))+
-          facet_wrap(~Policy)+scale_fill_discrete(name = "Management Alternative"))
+          facet_wrap(~Policy)+scale_fill_discrete(name = "Policy Alternative"))
 print(MCBvB)
 dev.off()
 
 pdf(file=paste(FigureFolder,'MC_BvBmsy_OA.pdf',sep=''))
-MCBvB_OA<-(ggplot(data=subset(MonteCarlo,Year==max(Year) & Policy=='Opt. RBFM'),aes(MedianBOA,fill=(Policy)))+
+MCBvB_OA<-(ggplot(data=subset(MonteCarlo,Year==max(Year) & Policy=='RBFM'),aes(MedianBOA,fill=(Policy)))+
              geom_density(alpha=0.7)+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9)))
 print(MCBvB_OA)
 dev.off()
@@ -112,7 +112,7 @@ dev.off()
 pdf(file=paste(FigureFolder,'MC_FvFmsy.pdf',sep=''))
 MCFvF<-(ggplot(data=subset(MonteCarlo,Year==max(Year) ),aes(jitter(FvFmsy,factor=.1),fill=(Policy)))+
           geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))
-        +xlab('F/Fmsy')+facet_wrap(~Policy)+scale_fill_discrete(name = "Management Alternative")+xlim(c(0,2))
+        +xlab('F/Fmsy')+facet_wrap(~Policy)+scale_fill_discrete(name = "Policy Alternative")+xlim(c(0,2))
         +geom_vline(aes(xintercept=1),color='red',linetype='longdash')
         #         + coord_cartesian(ylim=c(0,25))+xlab('FvFmsy'))
 )
