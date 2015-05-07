@@ -3,14 +3,14 @@ title: "GFR SOM Sensitivities"
 author: "Dan Ovando"
 date: "February 26, 2015"
 output:
+  word_document:
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 8
   pdf_document:
     fig_caption: yes
     fig_height: 3
     fig_width: 6
-  word_document:
-    fig_caption: yes
-    fig_height: 8
-    fig_width: 8
 ---
 
 # Model Validation
@@ -18,13 +18,13 @@ output:
 We performed a series of jackknifing and Monte Carlo routines to evaluate the performance of our models across a variety of metrics including
 
 * The effects of Illegal, unreported, unregulated fishing (IUU)
-* Out of sample prediction of B/Bmsy, F/Fmsy, and MSY
+* Out of sample prediction of B/B~MSY~, F/F~MSY~, and MSY
 * Sensitivity of our predicted future values to uncertainty in
   * MSY
   * Profits
   * Catch
-  * B/Bmsy
-  * F/Fmsy
+  * B/B~MSY~
+  * F/F~MSY~
 
 ## Key Results
 
@@ -41,31 +41,31 @@ We performed a series of jackknifing and Monte Carlo routines to evaluate the pe
 
 ## IUU
 
-Stock assessed fisheries make up a substantial portion of the catch and global MSY in our analysis. However, XX% of fisheries, XX% of catch, and XX% of MSY in our analysis are derived from unassessed fisheries, through our paired PRM-Catch MSY process. Both the PRM and Catch MSY depend on the reported catch history in order to reach results; while life history variables are included the catch is the basis of the method. The quality of catch records for these unassessed fisheries is highly variable, and in many instances misreporting occurs. This may take the form of IUU fishing, which would mean that more catch is occurring than is being reported, over-reporting of catches (as occurred with Chinese catches), or random misreporting. Given the recent focus on the problem of IUU, we tested the robustness of our estimates of B/B~MSY~ F/F~MSY~, and MSY to the presence of IUU. 
+Stock assessed fisheries make up a substantial portion of the catch and global MSY in our analysis. However, XX% of fisheries, XX% of catch, and XX% of MSY in our analysis are derived from unassessed fisheries, through our paired PRM-Catch-MSY process. Both the PRM and Catch-MSY depend on the reported catch history in order to reach results; while life history variables are included the catch is the basis of the method. The quality of catch records for these unassessed fisheries is highly variable, and in many instances misreporting occurs. This may take the form of IUU fishing, which would mean that more catch is occurring than is being reported, over-reporting of catches (as occurred with Chinese catches), or random misreporting. Given the recent focus on the problem of IUU, we tested the robustness of our estimates of B/B~MSY~ F/F~MSY~, and MSY to the presence of IUU. 
 
-We increased the catches of each unassessed stock by 25%. We then re-estimated B/B~MSY~ using the PRM with the new IUU adjusted catch. Note that raw catch only enters the PRM through the max catch variables; if we assume a constant rate of IUU then all other catch statistics in the PRM remain the same, as they are all scaled relative to max catch. The IUU based estimates of B/B~MSY~ were then fed to Catch MSY as the priors on final depletion, and MSY, F/F~MSY~,B/B~MSY~, and *g* were estimated. These metrics resulting from the IUU adjusted catch were then compared to the original values estimated with the raw reported catch data. 
+We increased the catches of each unassessed stock by 25%. We then re-estimated B/B~MSY~ using the PRM with the new IUU adjusted catch. Note that raw catch only enters the PRM through the max catch variables; if we assume a constant rate of IUU then all other catch statistics in the PRM remain the same, as they are all scaled relative to max catch. The IUU based estimates of B/B~MSY~ were then fed to Catch-MSY as the priors on final depletion, and MSY, F/F~MSY~,B/B~MSY~, and *g* were estimated. These metrics resulting from the IUU adjusted catch were then compared to the original values estimated with the raw reported catch data. 
 
 Our results indicate that on average an IUU level of 25% has on average no effect on our estimates B/B~MSY~ and F/F~FMSY~ (Fig.XX). Our estimate of total MSY is on average highly linearly related with IUU; when catches were increased by 25%, most fishery's MSY also increased by 25%, though some fisheries saw a greater increase in MSY. Our results indicate that if IUU, in the form of systemic under-reporting of catch, is present, our methods are likely to underestimate MSY. This suggests that if under-reporting of global catch is occurring, our estimates of MSY are conservative. 
 
-![Effects of IUU. Proportional error represents the % change from the current estimate of B/B~MSY (bPE)~, F/F~MSY(fPE), and MSY (MSYPE). The black vertical line marks a proportional error of zero. The red line is the percentage of IUU used](IUU_Effect.pdf)
+![Effects of IUU. Proportional error represents the % change from the current estimate of B/B~MSY~ (bPE), F/F~MSY~(fPE), and MSY (MSYPE). The black vertical line marks a proportional error of zero. The red line is the percentage of IUU used](IUU_Effect.pdf)
 
 
 ## Individual Jackknife
 
-We performed two jackknife routines to evaluate the ability of our model to predict out of sample. For both routines, we consider only RAM stocks, as these are the only instances we have "true" values for the parameters of interest (MSY, BvBmsy, FvFmsy). 
+We performed two jackknife routines to evaluate the ability of our model to predict out of sample. For both routines, we consider only RAM stocks, as these are the only instances we have "true" values for the parameters of interest (MSY, B/B~MSY~, F/F~MSY~). 
 
-We first performed an individual jackknife. We sequentially removed each RAM stock (n=398XX) from the regression block and re-estimated the PRM. We then predicted the status of the omitted stock using the re-estimated regression.  This predicted status was passed to CatchMSY as the prior on final depletion, and the resulting predictions for BvBmsy, FvFmsy, and MSY for the omitted RAM stock were stored. 
+We first performed an individual jackknife. We sequentially removed each RAM stock (n=398) from the regression block and re-estimated the PRM. We then predicted the status of the omitted stock using the re-estimated regression.  This predicted status was passed to Catch-MSY as the prior on final depletion, and the resulting predictions for B/B~MSY~, F/F~MSY~, and MSY for the omitted RAM stock were stored. 
 
-Our median proportional error in BvBmsy in 2012 (the primary year of interest) was  ~20%, suggesting that for the median fishery we are underestimating B/Bmsy somewhat.  However, there is substantial variation in our estimates (Fig.XX). The individual jackknifing suggest that our estimates are on average negatively biased, but that there is substantial variation in the direction and magnitude of this bias for any individual fishery. 
+Our median proportional error in B/B~MSY~ in 2012 (the primary year of interest) was  ~20%, suggesting that for the median fishery we are underestimating B/B~MSY~.  However, there is substantial variation in our estimates (Fig.XX). The individual jackknifing suggest that our estimates are on average negatively biased, but that there is substantial variation in the direction and magnitude of this bias for any individual fishery. 
 
 
-```{r,echo=F,message=F,warning=FALSE,fig.cap='Proportional error in B/Bmsy over time'}
+```{r,echo=F,message=F,warning=FALSE,fig.cap='Proportional error in B/B~MSY~ over time'}
 
 setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
 
 library(ggplot2)
 
-BatchFolder<- "Results/2.5/"
+BatchFolder<- "Results/3.0/"
 
 FigureFolder<- paste(BatchFolder,'Diagnostics/Individual Jackknife/',sep='')
 
@@ -77,23 +77,24 @@ B_Error_By_Time
 #        B_Error_By_RamB,B_Error_By_Time,F_Error_By_Time,MSY_Error_By_Country,file=paste(FigureFolder,'Jacknife Plots.rdata',sep=''))
 ```
 
-The proportional error in our estimates of B/Bmsy appear uncorrelated with catch in any given year (Fig.XX), but highly influenced by the true B/Bmsy (Fig.XX). Specifically, we severely over-predict the B/B~MSY~ for highly overfished RAM stocks (i.e. when "true" B/Bmsy is less than 0.5, Fig.XX), and under-predict B/B~MSY~ when true B/B~MSY~ is high. 
+The proportional error in our estimates of B/B~MSY~ appear uncorrelated with catch in any given year (Fig.XX), but highly influenced by the true B/B~MSY~ (Fig.XX). Specifically, we severely over-predict the B/B~MSY~ for highly overfished RAM stocks (i.e. when "true" B/B~MSY~ is less than 0.5, Fig.XX), and under-predict B/B~MSY~ when true B/B~MSY~ is high. 
 
-```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Proportional error in B/Bmsy by catch' }
+```{r,echo=F,message=FALSE,warning=FALSE,dpi=200,fig.cap='Proportional error in B/B~MSY~ by catch' }
 
 B_Error_By_LogCatch
 
 ```
 
-```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Proportional error in B/Bmsy by RAM B/Bmsy' }
+
+```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Proportional error in B/B~MSY~ by RAM B/B~MSY~' }
 
 B_Error_By_RamB
 
 ```
 
-The F/Fmsy values from our individual jackknifing are highly positively biased, and have substantial amounts of error (Fig.XX)
+The F/F~MSY~ values from our individual jackknifing are highly positively biased, and have substantial amounts of error (Fig.XX)
 
-```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Proportional error in F/Fmsy over time' }
+```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Proportional error in F/F~MSY~ over time' }
 
 F_Error_By_Time
 
@@ -120,7 +121,7 @@ MSY_Error_By_LogCatch
 
 setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
 
-BatchFolder<- "Results/2.5/"
+BatchFolder<- "Results/3.0/"
 
 FigureFolder<- paste(BatchFolder,'Diagnostics/Regional Jackknife/',sep='')
 
@@ -128,11 +129,11 @@ Plots<- load(paste(FigureFolder,'Jacknife Plots.rdata',sep=''))
 
 ```
 
-We might expect the out-of-sample predictive ability of our model to be fairly good when simply omitting and predicting one single fishery. This paper's results depend though on the ability of our model to predict fisheries that are very much out of sample; we are trying to predict Indonesia using Alaska. As such, we also performed a regional jackknifing routine. In this procedure, we sequentially removed all the RAM stocks in each unique region (roughly country) in RAM. We then re-estimated the PRM omitting all the RAM stocks from that region, and then predicted the omitted region. The predictions were then passed to CatchMSY, and the individual predictions for MSY, BvBmsy, and FvFmsy for each omitted fishery are stored. Our broad results on the out-of-sample error in B/B~MSY~ F/F~MSY~ and MSY did not substantially change from the individual jackknifing, as such we will focus on the out of sample regional predictive power demonstrated by this analysis. 
+We might expect the out-of-sample predictive ability of our model to be fairly good when simply omitting and predicting one single fishery. This paper's results depend though on the ability of our model to predict fisheries that are very much out of sample; we are trying to predict Indonesia using Alaska. As such, we also performed a regional jackknifing routine. In this procedure, we sequentially removed all the RAM stocks in each unique region (roughly country) in RAM. We then re-estimated the PRM omitting all of the RAM stocks from that region, and then predicted the omitted region. The predictions were then passed to Catch-MSY, and the individual predictions for MSY, B/B~MSY~, and F/F~MSY~ for each omitted fishery are stored. Our broad results on the out-of-sample error in B/B~MSY~ F/F~MSY~ and MSY did not substantially change from the individual jackknifing, as such we will focus on the out of sample regional predictive power demonstrated by this analysis. 
 
-Looking at B/Bmsy, our out-of-sample prediction of B/Bmsy varies substantially by region. This was especially true for South African stocks, which we might consider to be the most representative of the RAM countries of many of the developing world countries for which we are attempting to estimate status (though the sample size for South Africa is also very small). Australian B/B~MSY~s are severely over-predicted when omitted from the regression, and we systemically underestimate the status of New Zealand stocks under the regional jackknifing. 
+Looking at B/B~MSY~, our out-of-sample prediction of B/B~MSY~ varies substantially by region. Australian B/B~MSY~s are severely over-predicted when omitted from the regression, and we systemically underestimate the status of New Zealand and South African stocks under the regional jackknifing. 
 
-```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Proportional error in B/Bmsy by time and region' }
+```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Proportional error in B/B~MSY~ by time and region' }
 
 B_Error_Time_Country
 ```
@@ -145,19 +146,19 @@ MSY_Error_By_Country
 
 ## Monte Carlo Analysis 
 
-We performed a Monte Carlo routine to evaluate the sensitivity of components of our final results (e.g. total MSY, change in profits, change in BvBmsy, etc.). We do not consider potential errors in the underlying catch data, or a complete range of potential starting biomass levels. We do consider the sensitivity of our results in response to limited ranges of starting BvBmsy,as well as estimated intrinsic growth rates *r*, MSY, prices, costs, and catch-share economic benefits. 
+We performed a Monte Carlo routine to evaluate the sensitivity of components of our final results (e.g. total MSY, change in profits, change in B/B~MSY~, etc.). We do not consider potential errors in the underlying catch data, or a complete range of potential starting biomass levels. We do consider the sensitivity of our results in response to limited ranges of starting B/B~MSY~,as well as estimated intrinsic growth rate *g*, MSY, prices, costs, and RBFM economic benefits. 
 
-The Monte Carlo currently only evaluates stocks that were run through Catch MSY. It does not include RAM stocks for which we have "true" estimates of MSY, since at this time we do not have any method for estimating uncertainty around RAM values. The Monte Carlo also omits NEI stocks at this time.  As a result this process provides an assessment of the degree of variability in our metrics of interest resulting from reasonably uncertainty in our parameter values. It is not a true assessment of the actual variability in our final results. 
+The Monte Carlo currently only evaluates stocks that were run through Catch-MSY. It does not include RAM stocks for which we have "true" estimates of MSY, since at this time we do not have any method for estimating uncertainty around RAM values. The Monte Carlo also omits NEI stocks at this time.  As a result this process provides an assessment of the broad degree of variability in our metrics of interest resulting from reasonably uncertainty in our parameter values. It is not a true assessment of the actual variability in our final results. 
 
-Catch MSY provides a range of plausible values for *g* and MSY (often thousands of individual estimates for each fishery). For each iteration of the Monte Carlo, we drew random *g* and MSY pairs from Catch MSY for each fishery.  For each fishery in each iteration we also apply a multiplicative  log-normal error term (~ln(0,0.5)) to price, BvBmsy at open access (which implicitly affects costs), and the "catch share effect" (the price and cost changes resulting from moving to a catch share policy). We ran 500 iterations of each fishery and stored results. 
+Catch-MSY provides a range of plausible values for *g* and MSY (often thousands of individual estimates for each fishery). For each iteration of the Monte Carlo, we drew random *g* and MSY pairs from Catch-MSY for each fishery.  For each fishery in each iteration we also apply a multiplicative  log-normal error term (~ln(0,0.5)) to price, B/B~MSY~ at open access (which implicitly affects costs), and the "RBFM effect" (the price and cost changes resulting from moving to an RBFM policy). We ran 500 Monte Carlo iterations for each fishery and stored results. 
 
-Our results show that the total MSY estimated by CatchMSY has relatively little variability, with most estimates of total MSY falling between 27 and 39 million MT ( Fig.XX ). 
+Our results show that the total MSY estimated by Catch-MSY has relatively little variability, with most estimates of total MSY falling between 27 and 29 million MT ( Fig.XX ). 
 
 ```{r,echo=F,message=FALSE,warning=FALSE}
 
 setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
 
-BatchFolder<- "Results/2.5/"
+BatchFolder<- "Results/3.0/"
 
 FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo/',sep='')
 
@@ -169,25 +170,25 @@ load(paste(FigureFolder,'MonteCarlo Plots.rdata',sep=''))
 MCMSY
 ```
 
-Our estimates of total catch in 2050 vary greatly among policies (as they are intended to do), but show relatively little variation within policy (Fig.XX), with the exception of our Status Quo Open Access policy, which while having consistently lower catch than the other policies in all simulations showed much grater variation around this lower value. This is due to the fact that many stocks have different open access biomass levels, and not all stocks have converged to this open access level by 2050. 
+Our estimates of total catch in 2050 vary greatly among policies (as they are intended to do), but show relatively little variation within policy (Fig.XX). The BAU policies in particular resulted in  consistently lower catchs than the other policies in all simulations. 
 
 ```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Distribution of Catch' }
 MCCatch
 ```
 
-Our 2050 distributions of profits by policy do exhibit substantial variability. Our "status quo" policies especially vary drastically as a function of the uncertainty introduced by the Monte Carlo. Our non-Status Quo policies also show substantial variation, though all remain positive and greater than the open access status quo scenario. However, while the Catch Share policy remained the most profitable, it is very difficult to differentiate the profitability of fisheries in 2050 among the other non-open access policies.  This suggests that our estimates of future profits, and the relative rankings of our policies with respect to future profits, are substantially uncertain, especially as compared to our estimates of future catch. This comes as no surprise, since our estimates of profits are dependent on more uncertain variables than catches alone. It should also be noted that our estimates of total profits vary much more in magnitude than our estimates of total catch. 
+Our 2050 distributions of profits by policy do exhibit substantial variability, though the ranking of profitabliity among the scenarios remained realtively constant. Profits under our BAU S1 policy varied drastically as a function of the uncertainty introduced by the Monte Carlo, due to the presence of open-access fleet dynamics. Both F~MSY~ and RBFM policies had higher profits under nearly all iterations, and RBFM was always the most profitable. However, the magnitude of these profits varied substantially among iterations, by over 10 billion dollars in some instances.  This suggests that the relative rankings of our policies, with respesct to future profits, are stable, but our estimates of total future profits (and NPV) themselves are much more uncertain than our estimates of future catch. This comes as no surprise, since our estimates of profits are dependent on more uncertain variables than catches alone. 
 
 ```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Distribution of Profits' }
 MCProfits
 ```
 
-Our estimates of future B/Bmsy (Fig.xx) and F/Fmsy (Fig.XX) show very little variation within policies, and the relative differences among policies remain constant. However, this is of little surprise since most of our policies dictate F/Fmsy in order to achieve a particular B/Bmsy. We do not re-optimize our policy functions for each Monte-Carlo run, so we do observe some variation in final B/Bmsy stemming from variation in *g*. The net result though is that our estimates of future B/Bmsy are largely unaffected by the values of the variables tested in the Monte Carlo. However, it is important to note that we do not consider any stochasticity in the growth function, or any errors in the application of management. 
+Our estimates of future B/B~MSY~ (Fig.xx) and F/F~MSY~ (Fig.XX) show very little variation within policies, and the relative differences among policies remain constant. However, this is of little surprise since most of our policies dictate F/F~MSY~ in order to achieve a particular B/B~MSY~. We do not re-optimize our policy functions for each Monte-Carlo run, so we do observe some variation in final B/B~MSY~ stemming from variation in *g*. The net result though is that our estimates of future B/B~MSY~ are largely unaffected by the values of the variables tested in the Monte Carlo. However, it is important to note that we do not consider any stochasticity the population dynamics (such as recruitment shocks), or any explicit errors in the application of management. 
 
-```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Distribution of BvBmsy' }
+```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Distribution of B/B~MSY~' }
 MCBvB
 ```
 
-```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Distribution of FvFmsy' }
+```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Distribution of F/F~MSY~' }
 MCFvF
 ```
 

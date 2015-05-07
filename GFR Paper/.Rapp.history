@@ -1,0 +1,4 @@
+load("/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/Paper/Regressions.rdata")
+load("/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/Paper/PrmRegressions.Rdata")
+rm(list=ls())
+load("/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/Paper/PrmRegressions.Rdata")

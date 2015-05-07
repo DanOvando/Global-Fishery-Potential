@@ -1,0 +1,29 @@
+---
+title: "Regressions"
+author: "Dan Ovando"
+date: "February 27, 2015"
+output: word_document
+---
+
+```{r,echo=F}
+load('PrmRegressions.rdata')
+library(knitr)
+library(ggplot2)
+library(reshape2)
+library(grid)
+library(plyr)
+
+kable(summary(RealModels[[1]],digits=2)$coef,caption=('Model 1'))
+
+kable(summary(RealModels[[2]],digits=2)$coef,caption=('Model 2'))
+
+kable(summary(RealModels[[3]],digits=2)$coef,caption=('Model 3'))
+
+kable(summary(RealModels[[4]],digits=2)$coef,caption=('Model 4'))
+
+kable(summary(RealModels[[5]],digits=2)$coef,caption=('Model 5'))
+
+kable(summary(RealModels[[6]],digits=2)$coef,caption=('Model 6'))
+
+```
+      
