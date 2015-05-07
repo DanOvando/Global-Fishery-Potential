@@ -602,6 +602,8 @@ CostRevenues<-CostRevCheck(ProjectionData,RawData,BaselineYear)
 # Produce figures
 CodyPlots(FigureFolder,ResultFolder,Policy='Catch Share Three')
 
+CodyPlotsProfit2050(FigureFolder,ResultFolder,Policy='Catch Share Three')
+
 # Calculate global results for Figure One
 FigOneGlobalResults<-GlobalResultsFigOne(UpsideAllStocks,UpsideOverfishOnly,Policies=c('Catch Share Three','Fmsy Three'),discRt=Discount,TimeHor=38)
 
