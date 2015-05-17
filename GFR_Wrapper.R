@@ -28,6 +28,10 @@ if (RunAnalyses==TRUE)
     
     fulldata$phi<- DefaultPhi
     
+    CSids<-FindCatchShares(DataR=fulldata,CatchSharePercent=50)
+    
+    fulldata$CatchShare[fulldata$IdOrig %in% CSids]<-1
+    
     write.csv(file=paste(ResultFolder,"fulldata.csv",sep=""),fulldata)
     
     show('Done building raw database')
@@ -587,14 +591,14 @@ ValuesForPaper<-RenSummaryTable(UnlumpedData=UnlumpedProjectionData,LumpedData=P
 PercentCoverage<-StockAndCountrySummary(UnlumpedProjectionData,ProjectionData,StitchIds,BaselineYear)
 
 # Top stocks in major countries
-TopStocks<-CountryTopStocks(UnlumpedProjectionData,BaselineYear,Policies=c('Business As Usual','Business As Usual Pessimistic','Catch Share Three','CatchShare','Fmsy Three','Fmsy'),
-                            NumberOfStocks=5,NumberOfCountries=20,Discount,ResultFolder)
+TopStocks<-CountryTopStocks(DataU=UnlumpedProjectionData,DataL=ProjectionData,BaselineYear,Policies=c('Business As Usual','Business As Usual Pessimistic','Catch Share Three','CatchShare','Fmsy Three','Fmsy'),
+                            NumberOfStocks='All',NumberOfCountries='All',Discount,ResultFolder,FileName='Country Results All Stocks')
 
 # Summarize current status by ISSCAAP and FAO Region
 StatusByRegionAndISSCAAP<-RegionFaoAndISSCAAPSummary(ProjectionData,BaselineYear)
 
 # Upside results by ISSCAAP category
-PlotsForSOM(RawData,FullData,UnlumpedProjectionData,UnlumpedUpsidesAllStocks)
+# PlotsForSOM(RawData,FullData,UnlumpedProjectionData,UnlumpedUpsidesAllStocks)
 
 # Cost revenue 
 CostRevenues<-CostRevCheck(ProjectionData,RawData,BaselineYear)

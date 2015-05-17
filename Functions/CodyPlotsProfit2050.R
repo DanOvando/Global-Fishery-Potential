@@ -362,8 +362,8 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   sizeCirc	<-.65		# size of circle
   ycut			<-14
   xcut			<-120
-  legendX		<-16
-  legendY		<-4.95
+  legendX		<-20
+  legendY		<-8.5
   ylimIn		<-c(-.25,ycut)
   xlimIn		<-c(-3,xcut)
   
@@ -395,7 +395,7 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   labs[2:(topCut-1)]<-""
   #==add circles for legend
   xQuant<-c(xQuant,legendX,legendX)
-  yQuant<-c(yQuant,6.2,7)
+  yQuant<-c(yQuant,10.2,11.3)
   zQuant<-c(zQuant,max(zQuant)*.8,min(zQuant))
   colQuant<-c(colQuant,max(colQuant),min(colQuant))
   
@@ -450,8 +450,8 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   text(xQuant,jitter(yQuant,factor=10),labs,cex=.75)
   mtext(side=2,"Change Annual Profit ($ Billion)",line=2.25)
   mtext(side=1,"Change in Biomass (MMT)",outer=T)
-  text(y=legendY*.9,x=legendX,"MSY ",cex=.7)
-  text(y=legendY*.84,x=legendX,"(MMT, of conservation concern)",cex=.7)
+  text(y=legendY*.84,x=legendX,"MSY ",cex=.7)
+  text(y=legendY*.75,x=legendX+5,"(MMT, of conservation concern)",cex=.7)
   par(xpd=NA)
   #text(x=.5*cutoff,y=1.11*cutoff,"% change in catch",cex=.8)
   mtext(side=3,"Change in Catch (MMT)",line=.8,cex=.8)
@@ -460,10 +460,10 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   text(x=-3,y=1.075*ycut,round(min(colQuant),0),cex=.85)
   text(x=xcut,y=1.075*ycut,round(max(colQuant),0),cex=.85)
   par(xpd=FALSE)
-  text(x=80,y=0,"A")
+  text(x=110,y=0,"A")
   #====put in a box around the un-marked circles
-  rect(-5,-.2,40,3.1,lty=2,border=2)
-  arrows(41,1.5,82,1.5,lty=2,col=2)
+  rect(-5,-.5,70,5.8,lty=2,border=2)
+  arrows(71,2.9,110,2.9,lty=2,col=2)
   
   
   #============================================
@@ -474,8 +474,8 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   TimeHor		<-max(PlotTrend$Year)-2012
   topCut		<-11		# number of countries at the top to take
   sizeCirc	<-.65		# size of circle
-  ycut			<-2.3
-  xcut			<-30
+  ycut			<-5.8
+  xcut			<-50
   legendX		<-16
   legendY		<-4.95
   ylimIn		<-c(-.01,ycut)
@@ -541,7 +541,7 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   axis(side=4,las=1)
   text(xQuant,jitter(yQuant,factor=10),labs,cex=.65)
   #text(xQuant,yQuant,labs,cex=.65)
-  text(x=30,y=0,"B")
+  text(x=45,y=0,"B")
   mtext(side=4,"Change in Annual Profit ($ Billion)",line=2.25)
   
   

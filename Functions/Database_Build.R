@@ -716,12 +716,12 @@ fulldata$SpeciesCatName[fulldata$SpeciesCatName=="Micellaneous pelagic fishes"]<
 fulldata$SpeciesCatName[fulldata$SpeciesCatName=="Flounders halibuts and soles"]<-"Flounders, halibuts, soles"
 
 # Read in list of matched catch share stocks and indicate in database
-CatchShares<-read.csv('Data/GFR_CS_matches.csv',stringsAsFactors=F)
-colnames(CatchShares)<-'IdOrig'
+# CatchShares<-read.csv('Data/GFR_CS_matches.csv',stringsAsFactors=F)
+# colnames(CatchShares)<-'IdOrig'
 
 fulldata$CatchShare<-rep(0,nrow(fulldata))
 
-fulldata$CatchShare[fulldata$IdOrig %in% CatchShares$IdOrig]<-1
+# fulldata$CatchShare[fulldata$IdOrig %in% CatchShares$IdOrig]<-1
 
 
 return(fulldata)
