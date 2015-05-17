@@ -64,9 +64,11 @@ LumpFisheries<- function(Data,GroupsToGroup)
           TempStitch[,2:dim(TempStitch)[2]]<- BioData[2:dim(BioData)[2]]
          
           # Determine if at least 50% of stock is managed with Catch Shares
-          if(any(GroupRegSpeciesData$CatchShare==1 & is.na(GroupRegSpeciesData$Catch)==F & GroupRegSpeciesData$Year==2012))
+          CS<-subset(GroupRegSpeciesData,Year==2012 & is.na(Catch)==F)
+          
+          if(nrow(CS)>0)
           {
-            CatchSharePerc<-ddply(GroupRegSpeciesData[GroupRegSpeciesData$Year==2012,],c('CatchShare'),summarize,TotalCatch=sum(Catch,na.rm=T))
+            CatchSharePerc<-ddply(CS,c('CatchShare'),summarize,TotalCatch=sum(Catch,na.rm=T))
             
             CatchSharePerc<-ddply(CatchSharePerc,c('CatchShare'),mutate,AllCatch=sum(CatchSharePerc$TotalCatch,na.rm=T),Perc=100*(TotalCatch/AllCatch))
             
