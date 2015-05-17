@@ -67,7 +67,7 @@ if (RunAnalyses==FALSE)
 
 SubSample<- 0
 
-NumCPUs<- 20 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 2 #Number of CPUs to use for parallel computing of CatchMSY
 
 DefaultPhi<- .188
 
