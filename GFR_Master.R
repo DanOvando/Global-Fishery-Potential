@@ -29,7 +29,7 @@ library(reshape2)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- 'Catch Share Test'
+BatchFolder<- 'Catch Share Fix Full Run No Discount'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -65,15 +65,15 @@ if (RunAnalyses==FALSE)
 
 # Key Parameters ----------------------------------------------------------------
 
-SubSample<- 0.9
+SubSample<- 0
 
-NumCPUs<- 2 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 20 #Number of CPUs to use for parallel computing of CatchMSY
 
 DefaultPhi<- .188
 
-NumCatchMSYIterations <- 2000  ## number of iterations, e.g. 100000
+NumCatchMSYIterations <- 25000  ## number of iterations, e.g. 100000
 
-ProjectionTime<- 10
+ProjectionTime<- 38
 
 bvec<- seq(0.00000001,2.5,length.out=30)
 
