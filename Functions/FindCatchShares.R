@@ -181,9 +181,9 @@ FindCatchShares<-function(DataR,CatchSharePercent)
   ## Check and plot amount of catch labeled as catch share based on FAO matches------------------------------------------------------------------
   
   # Global level
-  check<-ddply(fao2,c('CatchShare'),summarize,TotalCatch=sum(Catch,na.rm=T))
-  
-  check<-ddply(check,c('CatchShare'),mutate,AllCatch=sum(check$TotalCatch,na.rm=T),Perc=100*TotalCatch/AllCatch)
+#   check<-ddply(fao2,c('CatchShare'),summarize,TotalCatch=sum(Catch,na.rm=T))
+#   
+#   check<-ddply(check,c('CatchShare'),mutate,AllCatch=sum(check$TotalCatch,na.rm=T),Perc=100*TotalCatch/AllCatch)
   
   # pdf(file='Global Catch Share Fractions.pdf',width=8,height=11)
   # 
@@ -197,16 +197,16 @@ FindCatchShares<-function(DataR,CatchSharePercent)
   # dev.off()
   
   # Country level
-  check2<-ddply(fao2,c('Country','CatchShare'),summarize,TotalCatch=sum(Catch,na.rm=T))
-  
-  check2<-ddply(check2,c('Country'),mutate,AllCatch=sum(TotalCatch,na.rm=T))
-  
-  check2<-ddply(check2,c('Country','CatchShare'),mutate,Perc=100*TotalCatch/AllCatch)
-  
-  Countries<-c('Argentina','Canada','Chile','China','Denmark','Iceland','India','Indonesia','Japan','Malaysia','Mexico','Morocco','Namibia','Norway','Peru','Philippines',
-               'Republic of Korea','Russian Federation','Senegal','South Africa','Spain','Thailand','United Kingdom','USA','Viet Nam','New Zealand')
-  
-  check2<-subset(check2,Country %in% Countries)
+#   check2<-ddply(fao2,c('Country','CatchShare'),summarize,TotalCatch=sum(Catch,na.rm=T))
+#   
+#   check2<-ddply(check2,c('Country'),mutate,AllCatch=sum(TotalCatch,na.rm=T))
+#   
+#   check2<-ddply(check2,c('Country','CatchShare'),mutate,Perc=100*TotalCatch/AllCatch)
+#   
+#   Countries<-c('Argentina','Canada','Chile','China','Denmark','Iceland','India','Indonesia','Japan','Malaysia','Mexico','Morocco','Namibia','Norway','Peru','Philippines',
+#                'Republic of Korea','Russian Federation','Senegal','South Africa','Spain','Thailand','United Kingdom','USA','Viet Nam','New Zealand')
+#   
+#   check2<-subset(check2,Country %in% Countries)
   
   # pdf(file='Catch Share Fractions.pdf',width=8,height=11)
   # 
