@@ -27,7 +27,7 @@ library(reshape2)
 # library(tidyr)
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- TRUE
+RunAnalyses<- FALSE
 
 BatchFolder<- 'Catch Share Fix Full Run No Discount'
 
@@ -49,7 +49,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
  
-  BatchFolder<- '3.2-No Disc Copy'
+  BatchFolder<- 'Catch Share Fix Full Run No Discount'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   

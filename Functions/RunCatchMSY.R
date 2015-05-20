@@ -5,32 +5,25 @@
 
 RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,NumCPUs,CatchMSYTrumps)
 {
-  
-  #         Data<- GlobalStatus$Data
-  
+    
   Data$RanCatchMSY<- FALSE
   
-  Data$HasRamMSY<-  is.na(Data$MSY)==F
+  Data$HasRamMSY<-  is.na(Data$MSY)==F & Data$Dbase=='RAM'
   
-  Data$HasRamFvFmsy<- is.na(Data$FvFmsy)==F
+  Data$HasRamFvFmsy<- is.na(Data$FvFmsy)==F & Data$Dbase=='RAM'
   
   Data$HasRamBvBmsy<- is.na(Data$BvBmsy)==F & Data$Dbase=='RAM'
   
   Data$BtoKRatio<- 1/((Data$phi+1)^(1/Data$phi))
   
   MsyData<- Data
-  
-  #   MsyData$r<- NA
-  
-  
+    
   MsyData$g<- NA
   
   MsyData$k<- NA
   
   MsyData$MSYLogSd<- NA
-  
-  #   MsyData$rLogSd<- NA
-  
+    
   MsyData$gLogSd<- NA
   
   MsyData$KLogSd<- NA
@@ -48,16 +41,11 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   
   # find mean range between final bio priors to pass to SnowCatchMSY_Matrix for stocks with finalbio>1
   MeanRange<-MsyData[is.na(MsyData$BvBmsySD)==F & MsyData$Year==2012,c('IdOrig','BvBmsy','BvBmsySD','BtoKRatio')]
-  
-  #   MeanRange$BoverK<-pmin(1,MeanRange$BvBmsy/2)
-  
+    
   MeanRange$BoverK<-pmin(1,MeanRange$BvBmsy*MeanRange$BtoKRatio)
   
-  
   MeanRange<-MeanRange[MeanRange$BoverK<0.95,]
-  
-  #   MeanRange$Bioerror<-MeanRange$BvBmsySD/2
-  
+    
   MeanRange$Bioerror<-MeanRange$BvBmsySD*MeanRange$BtoKRatio
   
   MeanRange$Bioerror[is.na(MeanRange$Bioerror)]<-CommonError
@@ -128,38 +116,7 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   }
   
   CmsyStore<- ldply(CmsyStore)
-  
-  
-  #   pdf(file='Diagnostics/Initial Biomass Prior Diagnostic.pdf')
-  
-  #   for (l in 1:length(CMSYResults))
-  #   {
-  #     CmsyResults<- CMSYResults[[l]]
-  #     if (CmsyResults$RanCatchMSY==T)
-  #       
-  #     {
-  #       show(i)
-  #             ParamSpace<- CmsyResults$PossibleParams
-  #             
-  #             BioData<- ParamSpace[,grepl('X',colnames(ParamSpace))]
-  #             
-  #             ParamSpace$FinalBvBmsy<- 2*(BioData[,dim(BioData)[2]]/ParamSpace$K)
-  #                 
-  #             print(ggplot(data=ParamSpace,aes(StartBio,FinalBvBmsy))+geom_point()+geom_smooth(method='lm')+ylab('FinalBvBmsy')+xlab('StartBvBmsy'))
-  #             
-  #             print(ggplot(data=ParamSpace,aes(StartBio,MSY))+geom_point()+geom_smooth(method='lm')+xlab('StartBvBmsy')+ylab('MSY'))
-  # 
-  #             print(ggplot(data=ParamSpace,aes(StartBio,FinalFvFmsy))+geom_point()+geom_smooth(method='lm')+xlab('StartBvBmsy')+ylab('FinalFvFmsy'))
-  #             
-  #             
-  #             
-  #             
-  # #             print(ggplot(data=ParamSpace,aes(StartBio))+geom_histogram(binwidth=.025))      
-  #       CmsyStore<- rbind(CmsyStore,CmsyResults$CatchMSY)
-  #     }
-  #   }
-  #     dev.off()
-  
+    
   ConCatDat<- paste(MsyData$IdOrig,MsyData$Year,sep='-')
   
   ConCatCmsy<- paste(CmsyStore$IdOrig,CmsyStore$Year,sep='-')
