@@ -3,8 +3,9 @@
 # This code takes RAM data processed by XXX.r and uses panel regressions similar to those docomented in Costello et al. 2012 
 # to estimate B/Bmsy 
 ######################################
+
 rm(list=ls())
-set.seed(423)
+set.seed(421)
 library(car)
 library(plyr)
 library(lattice)
