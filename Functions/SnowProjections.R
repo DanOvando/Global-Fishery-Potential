@@ -10,16 +10,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   RunDynamicOpt2= function(MSY,g,phi,p,cost,beta,disc,bvec,tol)
   {
-    ### Function to run the dynamic optimiztion of f as a function of b
-    # MSY<- RecentStockData$MSY
-    # g<- RecentStockData$g
-    # p<- RecentStockData$Price
-    # c<- cost
-    # beta<- Beta
-    # disc<- Discount
-    # bvec<- bvec
-    # tol<- tol
-    #   
+
     delta= 1/(1+disc) #Discount parameter
     t=0
     

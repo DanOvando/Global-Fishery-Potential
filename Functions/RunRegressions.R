@@ -35,8 +35,12 @@ RunRegressions<- function(Data,RegList,FigureName)
     
     TempReg<- lm(fmla,data=RegData)
     
-    #   TempReg<- plm(fmla , data=Data[,WhereVars],model="pooling",index=c('IdOrig','Year'),na.action='na.omit')
-       
+    RobustTempReg<- RobustRegression(lm(fmla,data=RegData))
+    
+    TempReg<- RobustTempReg$Model
+    
+    TempReg$ClusteredVCOV<- ClusteredVCOV(model=TempReg,data=RegData,cluster='IdOrig')
+           
     Model<- RegNames[m]  
         
     Omitted<- names(na.action(TempReg))
