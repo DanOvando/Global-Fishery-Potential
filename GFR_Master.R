@@ -27,9 +27,9 @@ library(reshape2)
 # library(tidyr)
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- FALSE
+RunAnalyses<- TRUE
 
-BatchFolder<- 'Catch Share Fix Full Run No Discount'
+BatchFolder<- 'test robust regression'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -65,7 +65,7 @@ if (RunAnalyses==FALSE)
 
 # Key Parameters ----------------------------------------------------------------
 
-SubSample<- 0
+SubSample<- 0.95
 
 NumCPUs<- 2 #Number of CPUs to use for parallel computing of CatchMSY
 
