@@ -6,7 +6,6 @@
 
 SnowNEIs2<-function(s,nei_stock,NEIs,SpeciesLevel,NeiStats,Spec_ISSCAAP,VarsToFill,NumCPUs)
 {
-  
   write.table((paste(round(100*(s/length(nei_stock)),2),'% done with SnowNEIs2',sep='')), 
               file = 'SnowNEIs Progress.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)  
   

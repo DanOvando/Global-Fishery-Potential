@@ -10,7 +10,8 @@ library(reshape2)
 
 # library(proftools)
 # library(shiny)
-source('Diagnostics/SnowMonteCarlo.R')
+source('Diagnostics/BioMonteCarlo.R')
+source('Functions/BioErrorNearestNeighborNeis.R')
 
 load(paste(ResultFolder,'ProjectionData Data.rdata',sep=''))
 
@@ -18,15 +19,29 @@ Stocks<- unique(ProjectionData$IdOrig[is.na(ProjectionData$IdOrig)==F & Projecti
 
 Stocks<- Stocks[Stocks %in% CatchMSYPossibleParams$IdOrig ]
 
-# Rprof(tmp <- tempfile(),line.profiling=T)
 NumCPUs<- 1
 
 
-MonteMat<- SnowMonteCarlo(500,Stocks=Stocks,ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
+MonteMat<- BioMonteCarlo(5,Stocks=Stocks,ProjectionData=ProjectionData,BiomassData=BiomassData,
+                         MsyData=MsyData,CatchMSYPossibleParams=CatchMSYPossibleParams,
                           PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.5)
 
+BioMonte<- ddply(subset(MonteMat,Policy %in% c('Business As Usual','Business As Usual Pessimistic'
+                                               ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three'))
+                        ,c('Iteration','Policy'),summarize,FinalProfits=sum(Profits[Year==2050],na.rm=T)
+                 ,FinalBiomass=sum(Biomass[Year==2050],na.rm=T))
+
+FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo/',sep='')
+
+dir.create(FigureFolder,recursive=T)
+
+pdf(file=paste(FigureFolder,'BvBmsy Monte Carlo.pdf',sep=''))
+
+print(ggplot(data=BioMonte,aes(x=FinalBiomass,y=FinalProfits,color=Policy))+geom_point(size=4,alpha=0.7))
+dev.off()
+
 save(MonteMat,file=paste(ResultFolder,'MonteCarlo_Results.Rdata',sep=''))
-load('Results/3.0/Data/MonteCarlo_Results.Rdata')
+# load('Results/3.0/Data/MonteCarlo_Results.Rdata')
 
 
 MonteCarlo<- ddply(subset(MonteMat,Policy=='Catch Share Three' | Policy=='Fmsy Three' |  Policy=='Business As Usual' | Policy=='Business As Usual Pessimistic'),c('Iteration','Year','Policy'),summarize,MSY=sum(MSY,na.rm=T),Profits=sum(Profits,na.rm=T),

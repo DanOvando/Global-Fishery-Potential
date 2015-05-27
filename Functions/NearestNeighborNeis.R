@@ -8,7 +8,7 @@
 NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
 {
   
-  
+  require(rfishbase,quiet=T)
   data(fishbase)  
   
   Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
