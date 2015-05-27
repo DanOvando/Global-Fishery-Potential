@@ -172,7 +172,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   {
     maxb<-max(StockData$BvBmsy)
     
-    bvec<-seq(from=0.00000001,to=maxb+0.1,by=0.1)
+    bvec<-seq(from=0.00000001,to=maxb+0.1,length.out=30)
   }
   
   RecentStockData<-  StockData[dim(StockData)[1],]

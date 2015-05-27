@@ -28,7 +28,7 @@ library(reshape2)
 # library(tidyr)
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- TRUE
+RunAnalyses<- FALSE
 
 BatchFolder<- 'test robust regression'
 
@@ -49,8 +49,8 @@ dir.create(ResultFolder,recursive=T)
 if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
- 
-  BatchFolder<- 'Catch Share Fix Full Run No Discount'
+  
+  BatchFolder<- 'test robust regression'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
@@ -109,33 +109,33 @@ CountriesToRun<- c('Global','USA','China','Indonesia','Philippines','Peru','Chil
 # CountriesToRun<-'All'
 
 EUCountries<- c('Austria',
-  'Belgium',
-  'Bulgaria',
-  'Croatia',
-  'Cyprus',
-  'Czech Republic',
-  'Denmark',
-  'Estonia',
-  'Finland',
-  'France',
-  'Germany',
-  'Greece',
-  'Hungary',
-  'Ireland',
-  'Italy',
-  'Latvia',
-  'Lithuania',
-  'Luxembourg',
-  'Malta',
-  'Netherlands',
-  'Poland',
-  'Portugal',
-  'Romania',
-  'Slovakia',
-  'Slovenia',
-  'Spain',
-  'Sweden',
-  'United Kingdom')
+                'Belgium',
+                'Bulgaria',
+                'Croatia',
+                'Cyprus',
+                'Czech Republic',
+                'Denmark',
+                'Estonia',
+                'Finland',
+                'France',
+                'Germany',
+                'Greece',
+                'Hungary',
+                'Ireland',
+                'Italy',
+                'Latvia',
+                'Lithuania',
+                'Luxembourg',
+                'Malta',
+                'Netherlands',
+                'Poland',
+                'Portugal',
+                'Romania',
+                'Slovakia',
+                'Slovenia',
+                'Spain',
+                'Sweden',
+                'United Kingdom')
 
 AsianCountries<-c('Afghanistan','Bahrain','Bangladesh', 'Bhutan','Brunei Darussalam','Cambodia','China', 
                   'Timor-Leste','Viet Nam', 'Japan','Tajikistan','Turkmenistan','Iran','Iraq','Israel','Jordan','Kazakhstan',
