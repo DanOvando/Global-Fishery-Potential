@@ -554,12 +554,12 @@ UnlumpedProjectionData$NPV[UnlumpedProjectionData$Policy=='Historic']<- NA
 UnlumpedUpsideAllStocks<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='Business As Usual',
                                            RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='All Stocks')
 
-write.csv(file=paste(ResultFolder,'Unlumped Country Upsides All Stocks.csv',sep=''),UnlumpedUpsideAllStocks$CountryUpsides)
+# write.csv(file=paste(ResultFolder,'Unlumped Country Upsides All Stocks.csv',sep=''),UnlumpedUpsideAllStocks$CountryUpsides)
 
 UnlumpedUpsideOverfishOnly<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='Business As Usual',
                                               RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='Overfish Only')
 
-write.csv(file=paste(ResultFolder,'Unlumped Country Upsides Overfish Only.csv',sep=''),UnlumpedUpsideOverfishOnly$CountryUpsides)
+# write.csv(file=paste(ResultFolder,'Unlumped Country Upsides Overfish Only.csv',sep=''),UnlumpedUpsideOverfishOnly$CountryUpsides)
 
 # Calculate global upsides relative to Trevor denominator
 

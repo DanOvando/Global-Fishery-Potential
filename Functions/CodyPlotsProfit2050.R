@@ -393,6 +393,8 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   
   labs<-c(as.character(OverfishStocks$Country),round(max(zQuant)/1000000,1)*.8,round(min(zQuant)/1000000,1))
   labs[2:(topCut-1)]<-""
+  colLabs<-rep(1,length(labs))
+  colLabs[which(OverfishStocks$NeiUpsideSQOver50)]<-2
   #==add circles for legend
   xQuant<-c(xQuant,legendX,legendX)
   yQuant<-c(yQuant,10.2,11.3)
@@ -432,7 +434,7 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   colnames(outs)<-c("Bio","Profit","MSY","Catch","Country")
   
   #==CHANGE THIS TO OUTPUT WHEREEVER YOU WANAT
-  write.csv(outs,paste(ResultFolder,'Fig2data_Profits2050.csv',sep=''))
+#   write.csv(outs,paste(ResultFolder,'Fig2data_Profits2050.csv',sep=''))
   
   #==Plot the plot
   #dev.new(width=6,height=6)
@@ -447,7 +449,7 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   symbols(x=xQuant,y=yQuant,circles=radius,
           bg=useCol,fg='black',inches=sizeCirc,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,xaxt='n')
-  text(xQuant,jitter(yQuant,factor=10),labs,cex=.75)
+  text(xQuant,jitter(yQuant,factor=10),labs,cex=.75,col=colLabs)
   mtext(side=2,"Change Annual Profit ($ Billion)",line=2.25)
   mtext(side=1,"Change in Biomass (MMT)",outer=T)
   text(y=legendY*.84,x=legendX,"MSY ",cex=.7)
@@ -510,7 +512,8 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
 #   yQuant			<-yQuant*discRt/(1-(1+discRt)^-TimeHor)
   
   labs<-c(as.character(OverfishStocks$Country))
-  
+  colLabs<-rep(1,length(labs))
+  colLabs[which(OverfishStocks$NeiUpsideSQOver50)]<-2
   #==represent MSY by area rather than radius
   radius 	<- sqrt( zQuant/ pi )
   
@@ -539,7 +542,7 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
           bg=useCol,fg='black',inches=sizeCirc,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,xaxt='n',yaxt='n')
   axis(side=4,las=1)
-  text(xQuant,jitter(yQuant,factor=10),labs,cex=.65)
+  text(xQuant,jitter(yQuant,factor=10),labs,cex=.65,col=colLabs)
   #text(xQuant,yQuant,labs,cex=.65)
   text(x=45,y=0,"B")
   mtext(side=4,"Change in Annual Profit ($ Billion)",line=2.25)
