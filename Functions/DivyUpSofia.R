@@ -160,8 +160,7 @@ FinalData<-rbind(Data,UnlumpSofia)
 if (dim(sofiaRef)[1]==0)
 {
   
-  Data<-Data[!(Data$Dbase=='SOFIA'),]
-  
+#   Data<-Data[!(Data$Dbase=='SOFIA'),]
   FinalData<- Data
   
 }
