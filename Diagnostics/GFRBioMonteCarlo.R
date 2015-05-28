@@ -2,7 +2,7 @@
 # {
 #   
 rm(list=ls())
-load('Results/Catch Share Fix Full Run No Discount/Data/Global Fishery Recovery Results.rdata')
+load('Results/4.0/Data/Global Fishery Recovery Results.rdata')
 library(parallel)
 library(plyr)
 library(ggplot2)
@@ -17,18 +17,17 @@ load(paste(ResultFolder,'ProjectionData Data.rdata',sep=''))
 
 Stocks<- unique(ProjectionData$IdOrig[is.na(ProjectionData$IdOrig)==F & ProjectionData$Year==BaselineYear])
 
-Stocks<- Stocks[Stocks %in% CatchMSYPossibleParams$IdOrig ]
+Stocks<- Stocks[Stocks %in% PolicyStorage$IdOrig ]
 
 NumCPUs<- 1
 
-
-MonteMat<- BioMonteCarlo(5,Stocks=Stocks,ProjectionData=ProjectionData,BiomassData=BiomassData,
+MonteMat<- BioMonteCarlo(100,Stocks=Stocks,ProjectionData=ProjectionData,BiomassData=BiomassData,
                          MsyData=MsyData,CatchMSYPossibleParams=CatchMSYPossibleParams,
-                          PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.5)
+                         PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.5)
 
 BioMonte<- ddply(subset(MonteMat,Policy %in% c('Business As Usual','Business As Usual Pessimistic'
                                                ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three'))
-                        ,c('Iteration','Policy'),summarize,FinalProfits=sum(Profits[Year==2050],na.rm=T)
+                 ,c('Iteration','Policy'),summarize,FinalProfits=sum(Profits[Year==2050],na.rm=T)
                  ,FinalBiomass=sum(Biomass[Year==2050],na.rm=T))
 
 FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo/',sep='')
