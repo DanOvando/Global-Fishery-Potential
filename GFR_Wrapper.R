@@ -440,10 +440,15 @@ if (RunAnalyses==TRUE)
   
   if (IncludeNEIs==TRUE)
   {
-   
+#    Rprof()
     NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear) #Run Nearest Neighbor NEI analysis    
     #Put NEI stocks back in the appropriate dataframes, remove stocks still missing data
     
+#    Rprof(NULL)
+#     RProfData<- readProfileData('Rprof.out')
+#     flatProfile(RProfData,byTotal=TRUE)
+   
+   
     ProjectionData<- rbind(ProjectionData,NeiData$ProjNeis)
 
     BiomassData<- rbind(BiomassData,NeiData$BiomassNeis)

@@ -221,9 +221,9 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
     ProjectionMat$Bmsy<- ProjectionMat$MSY/ProjectionMat$g
     
     ProjectionMat$Biomass<- ProjectionMat$BvBmsy * ProjectionMat$Bmsy
-    
-    SpeciesSummary<- ddply(ProjectionMat,c('Policy','SpeciesCatName','Year'),summarize,b25=quantile(BvBmsy,0.25),
-                           f75=mean(FvFmsy,0.75)) %>% 
+
+    SpeciesSummary<- ddply(ProjectionMat,c('Policy','SpeciesCatName','Year'),summarize,b25=quantile(BvBmsy,0.25,na.rm=T),
+                           f75=quantile(FvFmsy,0.75,na.rm=T)) %>% 
                              mutate(GroupName=paste(Policy,SpeciesCatName,Year,sep='-'))
     
     

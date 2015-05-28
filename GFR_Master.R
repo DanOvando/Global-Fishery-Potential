@@ -30,7 +30,7 @@ library(reshape2)
 
 RunAnalyses<- FALSE
 
-BatchFolder<- 'test robust regression'
+BatchFolder<- '4.0'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -50,7 +50,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
   
-  BatchFolder<- 'test robust regression'
+  BatchFolder<- '4.0'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
@@ -66,7 +66,7 @@ if (RunAnalyses==FALSE)
 
 # Key Parameters ----------------------------------------------------------------
 
-SubSample<- 0.95
+SubSample<- 0
 
 NumCPUs<- 2 #Number of CPUs to use for parallel computing of CatchMSY
 
