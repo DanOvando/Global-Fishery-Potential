@@ -5,13 +5,9 @@
 ##
 ######################################################
 
-NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
+NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultFolder,Spec_ISSCAAP)
 {
   
-  require(rfishbase,quiet=T)
-  data(fishbase)  
-  
-  Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
   
   #Pull out NEI fisheries
   NEIs<-MsyData[MsyData$Dbase!='RAM' & MsyData$RanCatchMSY==F & ((grepl("nei",MsyData$CommName,ignore.case=T)) | (grepl("nei",MsyData$CommName,ignore.case=T) & (is.infinite(MsyData$BvBmsy)==T | MsyData$BvBmsy==999)) | (grepl("spp",MsyData$SciName) & grepl("not identified",MsyData$SpeciesCatName) & MsyData$Dbase=="FAO")),]
@@ -25,7 +21,6 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   DropIt<- FinalYear$IdOrig[FinalYear$MaxYear<(BaselineYear)]
   
   # Prepare NEI data for nearest neighbot analysis --------------------------
-  
   NEIs<- NEIs[(NEIs$IdOrig %in% DropIt)==F,]
   
   NEIs$MarginalCost<- NA
@@ -34,9 +29,9 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   
   NEIs$Profits= NA
   
-  ShortNEIs<- NEIs
+  HistoricNEIs<- NEIs
   
-  ShortNEIs$Policy<- 'Historic'
+  HistoricNEIs$Policy<- 'Historic'
   
   OrigBaselineYear<- BaselineYear
   
@@ -45,35 +40,62 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   Stocks<- (unique(NEIs$IdOrig))
   
   ExtendFAO<- T
+  #   Rprof()
   
-  ExtendResults <- (mclapply(1:(length(Stocks)), ExtendTimeSeries,mc.cores=NumCPUs,NEIs,BaselineYear,ExtendFAO=ExtendFAO))      
+  FutureNEIs<- RepMat(subset(NEIs,Year==2012),2050-2012)
+  
+  YearVec<- sapply(2013:2050,function(x,reps) rep(x,reps),reps=length(Stocks)) %>% as.data.frame() %>% tidyr::gather()
+  
+  FutureNEIs$Year<- (YearVec$value)
+  
+  #   NEIs<- rbind(NEIs,FutureNEIs)
+  
+  
+  #   ExtendResults <- (lapply(1:length(Stocks), ExtendTimeSeries,NEIs,BaselineYear,ExtendFAO=ExtendFAO))      
+  #      Rprof(NULL)
+  #       RProfData<- readProfileData('Rprof.out')
+  #       flatProfile(RProfData,byTotal=TRUE)
+  #   
   
   BaselineYear<- OrigBaselineYear
   
-  NEIs <- ldply (ExtendResults, data.frame)
-    
+  #   NEIs <- ldply (ExtendResults, data.frame)
+  
   Pols<- unique(ProjData$Policy)
   
   LongPols<- Pols
   
   Pols<- Pols[Pols!='Historic']
+  #   
+  #   LongNeis<- NEIs
+  #   
+  #   LongNeis$Policy<- Pols[1]
   
-  LongNeis<- NEIs
-  
-  LongNeis$Policy<- Pols[1]
-  
-  for (p in 2:length(Pols))
+  foo<- function(policy,x)
   {
-    
-    TempNeis<- NEIs
-    
-    TempNeis$Policy<- Pols[p]
-    
-    LongNeis<- rbind(LongNeis,TempNeis)
-    
+    x$Policy<- policy
+    return(x)
   }
   
-  NEIs<- rbind(ShortNEIs,LongNeis)
+  
+  LongNeis<- lapply(Pols,foo,x=FutureNEIs) %>% ldply()
+  
+  
+  
+  #   for (p in 2:length(Pols))
+  #   {
+  #     
+  #     TempNeis<- NEIs
+  #     
+  #     TempNeis$Policy<- Pols[p]
+  #     
+  #     LongNeis<- rbind(LongNeis,TempNeis)
+  #     
+  #   }
+  #   
+  NEIs<- rbind(HistoricNEIs,LongNeis)
+  
+  NEIs<- NEIs[order(NEIs$IdOrig,NEIs$Policy,NEIs$Year),]
   
   SpeciesLevel<-ProjData[!(ProjData$IdOrig %in% unique(NEIs$IdOrig)) & !(ProjData$IdOrig %in% DropItProj),] 
   
@@ -95,75 +117,64 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear)
   
   nei_stock<-unique(NeiStats$SciName)
   
+  TryNEIs<- try(load(paste(ResultFolder,'NEIData.Rdata',sep='')),silent=T)
   
-  if(NumCPUs>=1)
-  {
-    tempNEIs<-(mclapply(1:length(nei_stock),SnowNEIs2,nei_stock=nei_stock,NEIs=NEIs,SpeciesLevel=SpeciesLevel,NeiStats=NeiStats,Spec_ISSCAAP=Spec_ISSCAAP,
-                        VarsToFill=VarsToFill,NumCPUs=NumCPUs))
+  if (class(TryNEIs) == "try-error")  
+  { 
+    
+    if(NumCPUs>=1)
+    {
+      tempNEIs<-(mclapply(1:length(nei_stock),SnowNEIs2,nei_stock=nei_stock,NEIs=NEIs,SpeciesLevel=SpeciesLevel,NeiStats=NeiStats,Spec_ISSCAAP=Spec_ISSCAAP,
+                          VarsToFill=VarsToFill,mc.cores=NumCPUs))
+    }
+    show('Completed NEI Stats mclapply')
+    
+    NEIs<-ldply(tempNEIs,data.frame)
+    
+    save(file=paste(ResultFolder,'NEIData.Rdata',sep=''),NEIs)
+    
+    
+    show("Completed NEI ldply")
   }
   
-  show('Completed NEI Stats mclapply')
   
-  NEIs<-ldply(tempNEIs,data.frame)
+  NEIs<- NEIs %>%
+    dplyr::group_by(IdOrig) %>%
+    dplyr::mutate(NewMSY= (Catch/(BvBmsy*FvFmsy))[Policy=='Historic' & Year==BaselineYear] )
   
-  show("Completed NEI ldply")
+  NEIs$MSY<- NEIs$NewMSY 
   
-  NEIs<- NEIs[NEIs$CanProject==T,]
+  NEIs$NewMSY<- NULL
   
-  Stocks<- unique(NEIs$IdOrig)
+  Where<- NEIs$Year>2012
   
-  for (p in 1:length(LongPols))
-  {
-    for(s in 1:length(Stocks))
-    {
-      
-      Where<- NEIs$IdOrig==Stocks[s] & NEIs$Policy==LongPols[p]
-      #       Where<- NEIs$IdOrig==Stocks[s] & NEIs$Policy=='CatchShare'
-      
-      WhereBase<- NEIs$IdOrig==Stocks[s]  & NEIs$Policy=='Historic' & NEIs$Year==BaselineYear
-      
-      #       WhereHistoric<- NEIs$IdOrig==Stocks[s]  & NEIs$Policy=='Historic' 
-      
-      msy<-NEIs$Catch[WhereBase]/(NEIs$BvBmsy[WhereBase]*NEIs$FvFmsy[WhereBase])
-      
-      NEIs$MSY[Where]<- msy
-      
-      #       NEIs$MSY[WhereHistoric]<- msy[1]
-      
-      NEIs$Catch[Where]<- NEIs$MSY[Where]*(NEIs$BvBmsy[Where]*NEIs$FvFmsy[Where])
-      
-      #       c_num <-  NEIs$Price[Where]*(2-NEIs$BvBmsyOpenAccess[Where])*NEIs$BvBmsyOpenAccess[Where]*NEIs$MSY[Where]*2^beta
-      #       
-      #       c_den = ((2-NEIs$BvBmsyOpenAccess[Where])*NEIs$g[Where])^beta
-      
-      BOA<- NEIs$BvBmsyOpenAccess
-      
-      phi<- NEIs$phi
-      
-      FOA<- (((phi+1)/phi)*(1-BOA^phi/(phi+1)))
-      
-      c_num <-  NEIs$Price*FOA*BOA*NEIs$MSY
-      
-      c_den = (NEIs$g*FOA)^beta
-      
-      cost = c_num/c_den
-      
-      cost<- cost[Where]
-      
-      NEIs$MarginalCost[Where]<- cost
-      
-      #       NEIs$MarginalCost[WhereHistoric]<- cost[1]
-      
-      NEIs$Profits[Where]<- NEIs$Price[Where]*NEIs$MSY[Where]*(NEIs$BvBmsy[Where]*NEIs$FvFmsy[Where])-NEIs$MarginalCost[Where]*(NEIs$FvFmsy[Where]*NEIs$g[Where])^beta
-      
-      #       show(s)
-    } # close stock loop
-    #  show(p)
-  } # close policy loop
+  NEIs$Catch[Where]<- (NEIs$MSY*(NEIs$BvBmsy*NEIs$FvFmsy))[Where]
+  
+  BOA<- NEIs$BvBmsyOpenAccess
+  
+  phi<- NEIs$phi
+  
+  FOA<- (((phi+1)/phi)*(1-BOA^phi/(phi+1)))
+  
+  c_num <-  NEIs$Price*FOA*BOA*NEIs$MSY
+  
+  c_den = (NEIs$g*FOA)^beta
+  
+  cost = c_num/c_den
+  
+  cost<- cost
+  
+  NEIs$MarginalCost<- cost
+
+  NEIs$Bmsy<- NEIs$MSY/NEIs$g
+  
+  NEIs$Biomass<- NEIs$BvBmsy * NEIs$Bmsy
+  
+  NEIs$Profits<- NEIs$Price*NEIs$MSY*(NEIs$BvBmsy*NEIs$FvFmsy)-NEIs$MarginalCost*(NEIs$FvFmsy*NEIs$g)^beta
   
   Biomass<- NEIs[NEIs$Policy=='Historic',colnames(NEIs) %in% colnames(BiomassData)]
   
   Biomass$BvBmsy<- log(Biomass$BvBmsy)
-  
+    
   return(list(ProjNeis=NEIs,BiomassNeis=Biomass))
 } # close function
