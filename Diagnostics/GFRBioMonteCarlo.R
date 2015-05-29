@@ -21,16 +21,20 @@ Stocks<- Stocks[Stocks %in% PolicyStorage$IdOrig ]
 
 NumCPUs<- 1
 
+load(paste(ResultFolder,'MsyData.Rdata',sep=''))
+
 MonteMat<- BioMonteCarlo(100,Stocks=Stocks,ProjectionData=ProjectionData,BiomassData=BiomassData,
                          MsyData=MsyData,CatchMSYPossibleParams=CatchMSYPossibleParams,
-                         PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.5)
+                         PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.25)
+
+save(file=paste(ResultFolder,'Bio Monte Carlo.Rdata',sep=''),MonteMat)
 
 BioMonte<- ddply(subset(MonteMat,Policy %in% c('Business As Usual','Business As Usual Pessimistic'
                                                ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three'))
                  ,c('Iteration','Policy'),summarize,FinalProfits=sum(Profits[Year==2050],na.rm=T)
                  ,FinalBiomass=sum(Biomass[Year==2050],na.rm=T))
 
-FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo/',sep='')
+FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo 2/',sep='')
 
 dir.create(FigureFolder,recursive=T)
 

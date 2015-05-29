@@ -136,7 +136,7 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
   }
   
   
-  McIterations<- function(k,Iterations,BioError,ProjectionData,MsyData,BiomassData,BaselineYear,PolicyStorage,Stocks,ErrorSize)
+  McIterations<- function(k,Iterations,BioError,ProjectionData,MsyData,BiomassData,BaselineYear,PolicyStorage,Stocks,ErrorSize,Spec_ISSCAAP)
   {
     
     
@@ -226,13 +226,18 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
                            f75=quantile(FvFmsy,0.75,na.rm=T)) %>% 
                              mutate(GroupName=paste(Policy,SpeciesCatName,Year,sep='-'))
     
+    ProjectionMat$k<- NA
     
-    NEIs<- subset(ProjectionData,IdLevel=='Neis' & Policy !='Historic') %>%
+    ProjectionMat$MarginalCost<- ProjectionMat$cost
+    
+    NEIs<- NearestNeighborNeis(BiomassData,MsyData,ProjectionMat,BaselineYear,ResultFolder)
+      
+    NEIs<- NEIs$ProjNeis[,colnames(NEIs$ProjNeis) %in% colnames(ProjectionMat)]
+    
+    NEIs<- NEIs %>%
+      subset(is.finite(BvBmsy)) %>%
       mutate(GroupName=paste(Policy,SpeciesCatName,Year,sep='-'),RunName=paste(Policy,IdOrig,sep='-')) %>% 
-        join(select(SpeciesSummary,GroupName,b25,f75),by='GroupName') %>%
-        mutate(NewProfits=MSY*Price*b25*f75-MarginalCost*(f75*g)^1.3) %>%
-      select(RunName,IdOrig,Country,Year,Policy,b25,f75,Biomass,Catch,MSY,NewProfits) %>%
-      rename(BvBmsy=b25,FvFmsy=f75,Profits=NewProfits)
+      select(RunName,IdOrig,Country,Year,Policy,BvBmsy,FvFmsy,Biomass,Catch,MSY,Profits)
     
       
       
@@ -247,6 +252,7 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
     BioMonte<- rbind(NEIs,Species)
     
     BioMonte$Iteration<- k
+    subset(BioMonte,Year==2012 | Year==2013 | Year==2050)
     return(BioMonte)
   } #Close McIterations
   
@@ -259,9 +265,11 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
   
   BioError<- replicate(Iterations,runif(Stocks,.5,1.5))
   
+Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
+
 Projections<- mclapply(1:Iterations,McIterations,mc.cores=NumCPUs,BioError=BioError,Iterations=Iterations,
                          ProjectionData=ProjectionData,MsyData=MsyData,BiomassData=BiomassData,BaselineYear=BaselineYear,
-                         PolicyStorage=PolicyStorage,Stocks=Stocks,ErrorSize=ErrorSize)
+                         PolicyStorage=PolicyStorage,Stocks=Stocks,ErrorSize=ErrorSize,Spec_ISSCAAP=Spec_ISSCAAP)
 Projections<- ldply(Projections)
   
   return(Projections)
