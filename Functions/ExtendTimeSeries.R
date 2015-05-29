@@ -6,9 +6,9 @@ ExtendTimeSeries<- function(s,Data,BaselineYear,ExtendFAO)
   
   VarNames<- colnames(Data)
   
-  NewData<- as.data.frame(matrix(NA,nrow=0,ncol=dim(Data)[2]))
-  
-  colnames(NewData)<- VarNames
+#   NewData<- as.data.frame(matrix(NA,nrow=0,ncol=dim(Data)[2]))
+#   
+#   colnames(NewData)<- VarNames
   
   Stocks<- (unique(Data$IdOrig))
   
@@ -41,14 +41,14 @@ ExtendTimeSeries<- function(s,Data,BaselineYear,ExtendFAO)
   for (i in 1)
     if (MissingYears>0)
     {
-      
       ReppedData<- RepMat(TempStock[TempStock$Year==MaxYear,],MissingYears,'Rows')
       
       ReppedData$Year<- MaxYear+(1:(MissingYears))
       
       ReppedData$ExtendedTime<- TRUE
       
-      NewData<- rbind(NewData,rbind(TempStock,ReppedData))
+#       NewData<- rbind(NewData,rbind(TempStock,ReppedData))
+      NewData<- rbind(TempStock,ReppedData)
       
     }   
   else
