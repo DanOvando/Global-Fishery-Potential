@@ -23,14 +23,16 @@ library(parallel)
 library(ggplot2)
 library(gridExtra)
 library(reshape2)
+library(rfishbase,quiet=T)
+data(fishbase)  
 # library(dplyr)
 # library(broom)
 # library(tidyr)
 # Basic Controls -------------------------------------------------------------
 
-RunAnalyses<- FALSE
+RunAnalyses<- TRUE
 
-BatchFolder<- '4.0'
+BatchFolder<- '4.0 Check New Nei'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -66,7 +68,7 @@ if (RunAnalyses==FALSE)
 
 # Key Parameters ----------------------------------------------------------------
 
-SubSample<- 0
+SubSample<- 0.95
 
 NumCPUs<- 2 #Number of CPUs to use for parallel computing of CatchMSY
 
