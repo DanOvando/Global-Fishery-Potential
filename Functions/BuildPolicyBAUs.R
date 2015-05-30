@@ -20,7 +20,6 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear)
   # RAM - F current forever
   # Catch shares - Opt
   # All others - Open Access
-  
   ram<-ProjectionData[ProjectionData$Policy=='StatusQuoFForever' & ProjectionData$Dbase=='RAM' & ProjectionData$CatchShare!=1,]
   
   ramids<-unique(ram$IdOrig)

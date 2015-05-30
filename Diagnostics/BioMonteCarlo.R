@@ -10,19 +10,22 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
       
       CurrentBMat<- matrix(rep(CurrentB,BCount),nrow=BCount,ncol=length(CurrentB),byrow=T)
       
-      FVecMat<- matrix(Policies[,Policy],nrow=BCount,ncol=length(CurrentB))
+      FVecMat<- matrix(Policies[,Policy],nrow=BCount,ncol=length(CurrentB),byrow=F)
       
       BDiff=(BvecMat-CurrentBMat)^2
       
       ClosestB<- apply(BDiff, 2, function(x) max(which(x == min(x, na.rm = TRUE))))
+      
+      ClosestB<- data.frame(unique(Policies$IdOrig),ClosestB)
+      
       #Find the closest value in bvec for each fishery
       
-      FFun= function(x,FVecMat,ClosestB)
+      FFun= function(x,FVecMat,ClosestB,Stocks)
       {
-        y=FVecMat[ClosestB[x],x]
+#         Which<- (ClosestB[,1]==Stocks[x])
+        y=FVecMat[ClosestB[x,2],x]
       }
-      
-      NextF<- sapply(1:length(Stocks),FFun,FVecMat=FVecMat,ClosestB=ClosestB)    #Calculate next f based on current b 
+      NextF<- sapply(1:length(Stocks),FFun,FVecMat=FVecMat,ClosestB=ClosestB,Stocks=Stocks)    #Calculate next f based on current b 
       #       NextF<- FVecMat[ClosestB,]
       #       NextF<- approx(StockPol$b,StockPol[,Policy],CurrentB[i])$y
       return(NextF)
@@ -47,7 +50,12 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
     pi = b
     y = b
     b[1,] = b0;
-    BCount=ddply(Policies,c('IdOrig'),summarize,NumB=length(b))
+    #     BCount=ddply(Policies,c('IdOrig'),summarize,NumB=length(b))
+    
+    BCount<- Policies %>%
+      group_by(IdOrig) %>%
+      summarize(NumB=length(b))
+    
     BCount=unique(BCount$NumB)
     if (Policy=='StatusQuoOpenAccess'){f[1,]<- FStatusQuo}
     if (Policy=='CatchShare') # apply price cost effects of catch share policy to non-catch share stocks
@@ -74,7 +82,7 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
       if (Policy!='StatusQuoOpenAccess')
       { 
         #         browser()
-        #         f[t,]<- system.time(lapply(1:length(Stocks),FindF,Stocks=Stocks,CurrentB=b[t,],Policy,Policies))
+        #         f[t,]<- system.time(lapply(1:length(Stocks),FindF,Stocks=S
         f[t,]<- (FindF(Stocks=Stocks,CurrentB=b[t,],Policy,Policies,BCount))
       }
       
@@ -129,9 +137,13 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
     #  
     Projection$Year<- Projection$Year+(BaselineYear-1)
     
-    Projection<- ddply(Projection,c('IdOrig'),mutate,NPV=cumsum(Profits*(1+0.05)^-(Year-BaselineYear)))
+    #     Projection<- ddply(Projection,c('IdOrig'),mutate,NPV=cumsum(Profits*(1+0.05)^-(Year-BaselineYear)))
     
-#     Projection<- subset(Projection,Year==BaselineYear | Year==max(Year))
+    Projection<- Projection %>%
+      group_by(IdOrig) %>%
+      mutate(NPV=cumsum(Profits*(1+0.05)^-(Year-BaselineYear)))
+    
+    #     Projection<- subset(Projection,Year==BaselineYear | Year==max(Year))
     return(Projection)
   }
   
@@ -144,7 +156,7 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
     CurrentBio<- BioError[,k]
     
     PolicyFuncs<- PolicyStorage[PolicyStorage$IdOrig %in% Stocks,]
-        
+    
     RecentStockData<- ProjectionData[ProjectionData$IdOrig %in% Stocks & ProjectionData$Year==BaselineYear,]
     
     RecentStockData$Price<- RecentStockData$Price * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
@@ -161,9 +173,9 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
     
     #     phi<- RecentStockData$phi
     
-    RecentStockData$BvBmsy<- pmin(2.5,RecentStockData$BvBmsy * CurrentBio)
+    RecentStockData$BvBmsy<- pmin(2.5,RecentStockData$BvBmsy* CurrentBio)
     
-    RecentStockData$FvFmsy<- (RecentStockData$Catch/RecentStockData$MSY)/RecentStockData$BvBmsy
+    #     RecentStockData$FvFmsy<- pmin(6,(RecentStockData$Catch/RecentStockData$MSY)/RecentStockData$BvBmsy)
     
     IsCatchShare<- RecentStockData$CatchShare
     
@@ -192,23 +204,24 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
     ProjectionMat<- NULL
     
     cc<- 0
-    
+    #     RecentStockData<- subset(RecentStockData,IdOrig=='10-FAO-37-57')
     for (p in 1:length(Policies))
     {
       
       cc<- cc+1
+      
       Projection<- Sim_Forward(FStatusQuo=RecentStockData$FvFmsy,BStatusQuo=RecentStockData$BvBmsy,
                                Policy=Policies[p],Policies=PolicyFuncs,IsCatchShare=IsCatchShare,bvec=bvec,
                                Time=ProjectionTime,b0=RecentStockData$BvBmsy,p=RecentStockData$Price
                                ,MSY=RecentStockData$MSY,c=RecentStockData$cost,g=RecentStockData$g,phi=RecentStockData$phi,
                                beta=beta,Stocks=Stocks)
-              
       Projection<- join(Projection,RecentStockData[,c('IdOrig','Country','Dbase','SciName','CommName','IdLevel','SpeciesCatName','CatchShare','MSY','g','phi','Price','cost','MsyProfits','BOA')],by='IdOrig',match='first')
-            
-      Projection$Policy<- Policies[p]
       
+      Projection$Policy<- Policies[p]
+      #       a=subset(Projection,IdOrig=='SPRFMO-CHTRACCH-1950-2010-RICARD')
+      #       
       Projection$Iteration<- k
-
+      
       ProjectionMat<- rbind(ProjectionMat,Projection)
       
     } #Close policies loop
@@ -216,43 +229,42 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
     
     write.table(paste(PercDone, '% done with Monte Carlo',sep=''), file = 'MonteCarloProgess.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
     
-    ProjectionMat<-BuildPolicyBAUs(ProjectionMat,BaselineYear)
-    
     ProjectionMat$Bmsy<- ProjectionMat$MSY/ProjectionMat$g
     
     ProjectionMat$Biomass<- ProjectionMat$BvBmsy * ProjectionMat$Bmsy
-
-    SpeciesSummary<- ddply(ProjectionMat,c('Policy','SpeciesCatName','Year'),summarize,b25=quantile(BvBmsy,0.25,na.rm=T),
-                           f75=quantile(FvFmsy,0.75,na.rm=T)) %>% 
-                             mutate(GroupName=paste(Policy,SpeciesCatName,Year,sep='-'))
+    
+    #     SpeciesSummary<- ddply(ProjectionMat,c('Policy','SpeciesCatName','Year'),summarize,b25=quantile(BvBmsy,0.25,na.rm=T),
+    #                            f75=quantile(FvFmsy,0.75,na.rm=T)) %>% 
+    #       mutate(GroupName=paste(Policy,SpeciesCatName,Year,sep='-'))
     
     ProjectionMat$k<- NA
     
     ProjectionMat$MarginalCost<- ProjectionMat$cost
     
     NEIs<- NearestNeighborNeis(BiomassData,MsyData,ProjectionMat,BaselineYear,ResultFolder)
-      
+    
     NEIs<- NEIs$ProjNeis[,colnames(NEIs$ProjNeis) %in% colnames(ProjectionMat)]
     
     NEIs<- NEIs %>%
       subset(is.finite(BvBmsy)) %>%
       mutate(GroupName=paste(Policy,SpeciesCatName,Year,sep='-'),RunName=paste(Policy,IdOrig,sep='-')) %>% 
-      select(RunName,IdOrig,Country,Year,Policy,BvBmsy,FvFmsy,Biomass,Catch,MSY,Profits)
+      select(RunName,IdOrig,Country,Year,Policy,BvBmsy,FvFmsy,Biomass,Catch,MSY,Profits,Dbase,CatchShare)
     
-      
-      
+    
+    
     NEIs<- ddply(NEIs,c('RunName'),mutate,NPV=cumsum(Profits*(1+.05)^-(Year-2012))) %>% 
-            select(-RunName) %>%
-            mutate(IdLevel='Nei')
-
-    Species<- select(ProjectionMat,IdOrig,Country,Year,Policy,BvBmsy,FvFmsy,Biomass,Catch,MSY,Profits,NPV) %>%
+      select(-RunName) %>%
+      mutate(IdLevel='Nei')
+    
+    Species<- select(ProjectionMat,IdOrig,Country,Year,Policy,BvBmsy,FvFmsy,Biomass,Catch,MSY,Profits,Dbase,CatchShare,NPV) %>%
       mutate(IdLevel='Species')
     
-  
+    
     BioMonte<- rbind(NEIs,Species)
     
+    BioMonte<-BuildPolicyBAUs(BioMonte,BaselineYear)
     BioMonte$Iteration<- k
-    subset(BioMonte,Year==2012 | Year==2013 | Year==2050)
+    BioMonte<- subset(BioMonte,Year==2012 | Year==2013 | Year==2050)
     return(BioMonte)
   } #Close McIterations
   
@@ -263,14 +275,14 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
   
   NumStocks<- length(unique(PossibleParams$IdOrig))  
   
-  BioError<- replicate(Iterations,runif(Stocks,.5,1.5))
+  BioError<- replicate(Iterations,runif(Stocks,0.5,1.5))
   
-Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
-
-Projections<- mclapply(1:Iterations,McIterations,mc.cores=NumCPUs,BioError=BioError,Iterations=Iterations,
+  Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
+  
+  Projections<- mclapply(1:Iterations,McIterations,BioError=BioError,Iterations=Iterations,
                          ProjectionData=ProjectionData,MsyData=MsyData,BiomassData=BiomassData,BaselineYear=BaselineYear,
-                         PolicyStorage=PolicyStorage,Stocks=Stocks,ErrorSize=ErrorSize,Spec_ISSCAAP=Spec_ISSCAAP)
-Projections<- ldply(Projections)
+                         PolicyStorage=PolicyStorage,Stocks=Stocks,ErrorSize=ErrorSize,Spec_ISSCAAP=Spec_ISSCAAP,mc.cores=NumCPUs)
+  Projections<- ldply(Projections)
   
   return(Projections)
 } #Close Function

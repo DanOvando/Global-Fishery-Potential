@@ -41,7 +41,7 @@ ExtendTimeSeries<- function(s,Data,BaselineYear,ExtendFAO)
   for (i in 1)
     if (MissingYears>0)
     {
-      ReppedData<- RepMat(TempStock[TempStock$Year==MaxYear,],MissingYears,'Rows')
+      ReppedData<- RepMat(TempStock[TempStock$Year==MaxYear,],MissingYears)
       
       ReppedData$Year<- MaxYear+(1:(MissingYears))
       
