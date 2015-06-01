@@ -15,7 +15,7 @@
 # RecoveryThreshold<-0.8
 # SubsetName<-'All Stocks'
 
-FisheriesUpsideV3<-function(Data,BaselineYear,DenominatorPolicy,RecoveryThreshold,LumpedName,SubsetName)
+FisheriesUpsideV3<-function(Data,BaselineYear,DenominatorPolicy,RecoveryThreshold,LumpedName,SubsetName,IncludeNEIs)
 {
   
   # Choose to run upside on all stocks or just overfished
@@ -195,51 +195,55 @@ FisheriesUpsideV3<-function(Data,BaselineYear,DenominatorPolicy,RecoveryThreshol
   CountryUpsides$AbsChangeFromSQFood<-CountryUpsides$TotalFood-CountryUpsides$TotalFoodSQ
   
   # Aggregate by country and ID level to examine importance of NEIs
-  NeiUpsides<-ddply(FisheryUpside,c('Country','Policy','IdLevel'),summarize,TotalProfits=sum(Profits,na.rm=T),TotalBaselineProfits=sum(BaselineProfits,na.rm=T),
-                        TotalProfitsSQ=sum(ProfitsSQ,na.rm=T), AbsChangeFromSQProfits=TotalProfits-TotalProfitsSQ, AbsChangeTotalProfits=TotalProfits-TotalBaselineProfits)
+  if(IncludeNEIs==TRUE)
+  {
+    NeiUpsides<-ddply(FisheryUpside,c('Country','Policy','IdLevel'),summarize,TotalProfits=sum(Profits,na.rm=T),TotalBaselineProfits=sum(BaselineProfits,na.rm=T),
+                          TotalProfitsSQ=sum(ProfitsSQ,na.rm=T), AbsChangeFromSQProfits=TotalProfits-TotalProfitsSQ, AbsChangeTotalProfits=TotalProfits-TotalBaselineProfits)
+    
+    # Abs upside in profits from NEIs
+    NeiUpsides<-ddply(NeiUpsides,c('Country','Policy'),mutate,TotalProfitsUpside=sum(AbsChangeTotalProfits,na.rm=T),
+                      TotalProfitsUpsideFromSQ=sum(AbsChangeFromSQProfits,na.rm=T),PercOfUpside=100*(AbsChangeTotalProfits/TotalProfitsUpside),
+                      PercOfUpsideFromSQ=100*(AbsChangeFromSQProfits/TotalProfitsUpsideFromSQ))
+    
+    # Find countries where over 50% of profit increase relative to SQ for Catch Share Three comes from NEIs 
+    NeiUpsides$NeiUpsideSQOver50<-FALSE
+    
+    NeiUpsides$NeiUpsideSQOver50[NeiUpsides$IdLevel=='Neis' & NeiUpsides$PercOfUpsideFromSQ>50]<-TRUE
+    
+    # Sort by profit upside relative to BAU by and save csv of top 20 resutls for Catch Share Three. 10 of these countries should correspond to Fig 2
+    NeiProfitResults<-NeiUpsides[NeiUpsides$IdLevel=='Neis' & NeiUpsides$Policy=='Catch Share Three',c('Country','Policy','IdLevel','AbsChangeFromSQProfits',
+                                                                                                       'PercOfUpsideFromSQ','TotalProfitsUpsideFromSQ')]
+    
+    NeiProfitResults<-NeiProfitResults[with(NeiProfitResults,order(-TotalProfitsUpsideFromSQ)),]
+    
+    # Relabele policy and scenario to match text
+    NeiProfitResults$Scenario<-'Conservation Concern'
+    
+    NeiProfitResults$Policy<-'RBFM'
+    
+    colnames(NeiProfitResults)<-c('Country','Policy','Identification Level','Profit Upside Relative to BAU from NEIs','Percent of Total Profit Upside from NEIs','Total Profit Upside','Scenario')
+    
+    NeiProfitResults<-NeiProfitResults[,c('Country','Policy','Scenario','Identification Level','Profit Upside Relative to BAU from NEIs','Total Profit Upside','Percent of Total Profit Upside from NEIs')]
+    
+    NeiProfitResults<-NeiProfitResults[1:20,]
+    
+    write.csv(file=paste(ResultFolder,'Profit Upsides From NEIs.csv',sep=''),NeiProfitResults)
+    
+    # Save table of countries with over 50% profit upside from NEIs to use for indicating in Figure 2
+    NeiCntrys<-NeiUpsides[NeiUpsides$IdLevel=='Neis',c('Country','Policy','NeiUpsideSQOver50')]
+    
+  #   ggplot(NeiUpsides[NeiUpsides$Policy %in% c('Catch Share Three','CatchShare'),],aes(x=PercOfUpsideFromSQ,fill=IdLevel)) +
+  #     geom_density(alpha=0.6) +
+  #     facet_wrap(~Policy)
+    
+    # Label countries with high NEI percentage in CountryUpsides dataset
+    # NOTE: this is only accurate for Catch Share Three because there are no negatives. Will be wrong for other policies where there could be negative profits
+    # relative to SQ
+    CountryUpsides<-join(CountryUpsides,NeiCntrys,by=c('Country','Policy'))
   
-  # Abs upside in profits from NEIs
-  NeiUpsides<-ddply(NeiUpsides,c('Country','Policy'),mutate,TotalProfitsUpside=sum(AbsChangeTotalProfits,na.rm=T),
-                    TotalProfitsUpsideFromSQ=sum(AbsChangeFromSQProfits,na.rm=T),PercOfUpside=100*(AbsChangeTotalProfits/TotalProfitsUpside),
-                    PercOfUpsideFromSQ=100*(AbsChangeFromSQProfits/TotalProfitsUpsideFromSQ))
-  
-  # Find countries where over 50% of profit increase relative to SQ for Catch Share Three comes from NEIs 
-  NeiUpsides$NeiUpsideSQOver50<-FALSE
-  
-  NeiUpsides$NeiUpsideSQOver50[NeiUpsides$IdLevel=='Neis' & NeiUpsides$PercOfUpsideFromSQ>50]<-TRUE
-  
-  # Sort by profit upside relative to BAU by and save csv of top 20 resutls for Catch Share Three. 10 of these countries should correspond to Fig 2
-  NeiProfitResults<-NeiUpsides[NeiUpsides$IdLevel=='Neis' & NeiUpsides$Policy=='Catch Share Three',c('Country','Policy','IdLevel','AbsChangeFromSQProfits',
-                                                                                                     'PercOfUpsideFromSQ','TotalProfitsUpsideFromSQ')]
-  
-  NeiProfitResults<-NeiProfitResults[with(NeiProfitResults,order(-TotalProfitsUpsideFromSQ)),]
-  
-  # Relabele policy and scenario to match text
-  NeiProfitResults$Scenario<-'Conservation Concern'
-  
-  NeiProfitResults$Policy<-'RBFM'
-  
-  colnames(NeiProfitResults)<-c('Country','Policy','Identification Level','Profit Upside Relative to BAU from NEIs','Percent of Total Profit Upside from NEIs','Total Profit Upside','Scenario')
-  
-  NeiProfitResults<-NeiProfitResults[,c('Country','Policy','Scenario','Identification Level','Profit Upside Relative to BAU from NEIs','Total Profit Upside','Percent of Total Profit Upside from NEIs')]
-  
-  NeiProfitResults<-NeiProfitResults[1:20,]
-  
-  write.csv(file=paste(ResultFolder,'Profit Upsides From NEIs.csv',sep=''),NeiProfitResults)
-  
-  # Save table of countries with over 50% profit upside from NEIs to use for indicating in Figure 2
-  NeiCntrys<-NeiUpsides[NeiUpsides$IdLevel=='Neis',c('Country','Policy','NeiUpsideSQOver50')]
-  
-#   ggplot(NeiUpsides[NeiUpsides$Policy %in% c('Catch Share Three','CatchShare'),],aes(x=PercOfUpsideFromSQ,fill=IdLevel)) +
-#     geom_density(alpha=0.6) +
-#     facet_wrap(~Policy)
-  
-  # Label countries with high NEI percentage in CountryUpsides dataset
-  # NOTE: this is only accurate for Catch Share Three because there are no negatives. Will be wrong for other policies where there could be negative profits
-  # relative to SQ
-  CountryUpsides<-join(CountryUpsides,NeiCntrys,by=c('Country','Policy'))
+    CountryUpsides$NeiUpsideSQOver50[is.na(CountryUpsides$NeiUpsideSQOver50)]<-FALSE
 
-  CountryUpsides$NeiUpsideSQOver50[is.na(CountryUpsides$NeiUpsideSQOver50)]<-FALSE
+} # close NEIs loop
 
   # write csv
   write.csv(CountryUpsides,file=paste(ResultFolder,LumpedName,SubsetName,' Country Upsides.csv',sep=''))

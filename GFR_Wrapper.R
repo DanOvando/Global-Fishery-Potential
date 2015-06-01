@@ -529,10 +529,10 @@ ProjectionData$NPV[ProjectionData$Policy=='Historic']<- NA
 # Calculate fishery upsides on full ProjectionData prior to unlumping stocks
 
 UpsideAllStocks<-FisheriesUpsideV3(ProjectionData,BaselineYear,DenominatorPolicy='Business As Usual',
-                                   RecoveryThreshold=0.8,LumpedName='Lumped Projection Data',SubsetName='All Stocks')
+                                   RecoveryThreshold=0.8,LumpedName='Lumped Projection Data',SubsetName='All Stocks',IncludeNEIs)
 
 UpsideOverfishOnly<-FisheriesUpsideV3(ProjectionData,BaselineYear,DenominatorPolicy='Business As Usual',
-                                      RecoveryThreshold=0.8,LumpedName='Lumped Projection Data',SubsetName='Overfish Only')
+                                      RecoveryThreshold=0.8,LumpedName='Lumped Projection Data',SubsetName='Overfish Only','IncludeNEIs')
 
 # Unlump lumped fisheries and create separate ProjectionData dataframe with unlumped stocks
 
@@ -557,12 +557,12 @@ UnlumpedProjectionData$NPV[UnlumpedProjectionData$Policy=='Historic']<- NA
 # Calculate fishery upsides from UnlumpedProjectionData
 
 UnlumpedUpsideAllStocks<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='Business As Usual',
-                                           RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='All Stocks')
+                                           RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='All Stocks',IncludeNEIs)
 
 # write.csv(file=paste(ResultFolder,'Unlumped Country Upsides All Stocks.csv',sep=''),UnlumpedUpsideAllStocks$CountryUpsides)
 
 UnlumpedUpsideOverfishOnly<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='Business As Usual',
-                                              RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='Overfish Only')
+                                              RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='Overfish Only',IncludeNEIs)
 
 # write.csv(file=paste(ResultFolder,'Unlumped Country Upsides Overfish Only.csv',sep=''),UnlumpedUpsideOverfishOnly$CountryUpsides)
 

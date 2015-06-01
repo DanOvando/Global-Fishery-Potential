@@ -394,7 +394,12 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   labs<-c(as.character(OverfishStocks$Country),round(max(zQuant)/1000000,1)*.8,round(min(zQuant)/1000000,1))
   labs[2:(topCut-1)]<-""
   colLabs<-rep(1,length(labs))
-  colLabs[which(OverfishStocks$NeiUpsideSQOver50)]<-2
+  
+  if(IncludeNEIs==TRUE)
+  {
+    colLabs[which(OverfishStocks$NeiUpsideSQOver50)]<-2
+  }
+  
   #==add circles for legend
   xQuant<-c(xQuant,legendX,legendX)
   yQuant<-c(yQuant,10.2,11.3)
@@ -464,8 +469,8 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   par(xpd=FALSE)
   text(x=110,y=0,"A")
   #====put in a box around the un-marked circles
-  rect(-5,-.5,70,5.8,lty=2,border=2)
-  arrows(71,2.9,110,2.9,lty=2,col=2)
+  rect(-5,-.5,45,5.8,lty=2,border=2)
+  arrows(46,2.9,110,2.9,lty=2,col=2)
   
   
   #============================================
@@ -476,8 +481,8 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   TimeHor		<-max(PlotTrend$Year)-2012
   topCut		<-11		# number of countries at the top to take
   sizeCirc	<-.65		# size of circle
-  ycut			<-5.8
-  xcut			<-50
+  ycut			<-5
+  xcut			<-35
   legendX		<-16
   legendY		<-4.95
   ylimIn		<-c(-.01,ycut)
@@ -513,7 +518,12 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   
   labs<-c(as.character(OverfishStocks$Country))
   colLabs<-rep(1,length(labs))
-  colLabs[which(OverfishStocks$NeiUpsideSQOver50)]<-2
+  
+  if(IncludeNEIs==TRUE)
+  {
+    colLabs[which(OverfishStocks$NeiUpsideSQOver50)]<-2
+  }
+  
   #==represent MSY by area rather than radius
   radius 	<- sqrt( zQuant/ pi )
   
