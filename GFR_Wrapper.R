@@ -401,9 +401,7 @@ if (RunAnalyses==TRUE)
   
   
   MsyData$PercentGain<- 100*(MsyData$MSY/MsyData$Catch-1)
-  
-  #   MsyData$Country[MsyData$Country=='United States of America']<- 'USA'
-  
+    
   # Run projection analysis -------------------------------------------------
   
   MsyData$Price<-BiomassData$Price
@@ -412,42 +410,40 @@ if (RunAnalyses==TRUE)
   
   MsyData$Price[is.na(MsyData$Price)]<- mean(MsyData$Price,na.rm=T) #Apply mean price to fisheries with no price
   
-  #   if(IncludeNEIs==TRUE)
-  #   {
-  #     MsyData<-NeiVersion2(MsyData,Level='All',MinStocks=2)
-  #   }
-  
   MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$g)==F #Identify disheries that have both MSY and r
   
   save(file=paste(ResultFolder,"MsyData.rdata",sep=""),MsyData)
   
+# load(file=paste(ResultFolder,"MsyData.rdata",sep=""))
+
   MsyData$BestModel<- as.character(MsyData$BestModel)
   
   #   if(SubSample>0)
   #   {
-  save.image(file=paste(ResultFolder,'Test Results Prior to Projections.rdata',sep=''))
+#   save.image(file=paste(ResultFolder,'Test Results Prior to Projections.rdata',sep=''))
   #   }
   
-  ProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs,StatusQuoPolicy) #Run projections on MSY data that can be projected
+  FullProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs,StatusQuoPolicy) #Run projections on MSY data that can be projected
   
-  PolicyStorage<- ProjectionData$PolicyStorage
+  PolicyStorage<- FullProjectionData$PolicyStorage
   
   write.csv(file=paste(ResultFolder,'PolicyStorage.csv',sep=''),PolicyStorage)
   
-  ProjectionData<- ProjectionData$DataPlus
+  ProjectionData<- FullProjectionData$DataPlus
   
   show("Completed Projections")
   
   if (IncludeNEIs==TRUE)
   {
 #    Rprof()
-    NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear) #Run Nearest Neighbor NEI analysis    
+    Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
+    
+    NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear,ResultFolder,Spec_ISSCAAP) #Run Nearest Neighbor NEI analysis    
     #Put NEI stocks back in the appropriate dataframes, remove stocks still missing data
     
 #    Rprof(NULL)
 #     RProfData<- readProfileData('Rprof.out')
 #     flatProfile(RProfData,byTotal=TRUE)
-   
    
     ProjectionData<- rbind(ProjectionData,NeiData$ProjNeis)
 
