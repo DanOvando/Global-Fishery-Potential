@@ -18,7 +18,6 @@ RobustRegression<- function(Model)
   require(broom,quietly=T)
   require(tidyr,quietly=T)
   require(dplyr,quietly=T)
-  
   Model$VCOV<- vcovHC(Model,type='HC1')
 
   SEs<- data.frame(t(sqrt(diag(vcovHC(Model,type='HC1')))),stringsAsFactors=F) %>% gather('variable','RobustSE')
