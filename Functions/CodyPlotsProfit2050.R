@@ -27,8 +27,8 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
     source("C:/Users/Cody/Desktop/UpsideData/colorlegend2.R")
   }
   
-  data<-read.csv(paste(ResultFolder,'Unlumped Projection DataAll Stocks Country Upsides.csv',sep=''))
-  data2<-read.csv(paste(ResultFolder,'Unlumped Projection DataOverfish Only Country Upsides.csv',sep=''))
+  data<-read.csv(paste(ResultFolder,'UnLumped Projection DataAll Stocks Country Upsides.csv',sep=''))
+  data2<-read.csv(paste(ResultFolder,'UnLumped Projection DataOverfish Only Country Upsides.csv',sep=''))
   
   
   data<- subset(data,Country!='High Seas Tuna and Billfish')
