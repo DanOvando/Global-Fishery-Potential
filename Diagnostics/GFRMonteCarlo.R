@@ -2,7 +2,7 @@
 # {
 #   
 rm(list=ls())
-load('Results/Catch Share Fix Full Run No Discount/Data/Global Fishery Recovery Results.rdata')
+load('Results/4.2/Data/Global Fishery Recovery Results.rdata')
 library(parallel)
 library(plyr)
 library(ggplot2)
@@ -23,10 +23,10 @@ NumCPUs<- 1
 
 
 MonteMat<- SnowMonteCarlo(500,Stocks=Stocks,ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
-                          PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.5)
+                          PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.25)
 
 save(MonteMat,file=paste(ResultFolder,'MonteCarlo_Results.Rdata',sep=''))
-load('Results/3.0/Data/MonteCarlo_Results.Rdata')
+# load('Results/3.0/Data/MonteCarlo_Results.Rdata')
 
 
 MonteCarlo<- ddply(subset(MonteMat,Policy=='Catch Share Three' | Policy=='Fmsy Three' |  Policy=='Business As Usual' | Policy=='Business As Usual Pessimistic'),c('Iteration','Year','Policy'),summarize,MSY=sum(MSY,na.rm=T),Profits=sum(Profits,na.rm=T),

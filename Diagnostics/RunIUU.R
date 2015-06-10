@@ -1,7 +1,7 @@
 
 rm(list=ls())
-load('Results/3.0/Data/Global Fishery Recovery Results.rdata')
-NumCPUs<- 1
+load('Results/4.2/Data/Global Fishery Recovery Results.rdata')
+NumCPUs<- 2
 library(plyr)
 library(lattice)
 library(rfishbase)
@@ -19,7 +19,6 @@ library(ggplot2)
 library(gridExtra)
 library(reshape2)
 sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
-
 
 IUULevel<- 1.25
 

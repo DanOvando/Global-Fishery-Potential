@@ -1,6 +1,5 @@
 RunIUUDiagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,BatchFolder,SubSample)
 {
-  
   FigureFolder<- paste(BatchFolder,'Diagnostics/IUU/',sep='')
   
   dir.create(FigureFolder,recursive=T)
@@ -60,7 +59,6 @@ RunIUUDiagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,Batc
   # Apply regressions -------------------------------------------------------
   
   Models<- Models[Models!='M7']
-  
   for (m in 1:length(Models)) #Apply models to species level fisheries
   {
     
@@ -76,7 +74,6 @@ RunIUUDiagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,Batc
     
     eval(parse(text=paste('Data$',TempModelName,'Prediction<- Predictions',sep='')))    
   }
-  
   
   #   BiomassColumns<- (grepl('BvBmsy$',colnames(Data)) | grepl('Prediction',colnames(Data))) & grepl('LogBvBmsy',colnames(Data))==F
   
@@ -133,7 +130,7 @@ RunIUUDiagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,Batc
   # Run First Analisis of Current Status --------------------------------------------------
   
   BiomassData$CatchMSYBvBmsy_LogSd<- NA
-  
+
   GlobalStatus<- AnalyzeFisheries(BiomassData,'Baseline Global Status','Year',min(BiomassData$Year):max(BiomassData$Year),RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
   
   #   RAMStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='RAM',],'RAM Status','Year',1950:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
