@@ -2,7 +2,7 @@
 # {
 #   
 rm(list=ls())
-load('Results/4.1/Data/Global Fishery Recovery Results.rdata')
+load('Results/4.2/Data/Global Fishery Recovery Results.rdata')
 library(parallel)
 library(plyr)
 library(dplyr)
@@ -28,16 +28,19 @@ PolicyStorage$IdOrig<- as.character(PolicyStorage$IdOrig)
 
 PolicyStorage<- PolicyStorage[order(PolicyStorage$IdOrig),]
 
-Rprof()
+# Rprof()
 MonteMat<- (BioMonteCarlo(25,Stocks=Stocks,ProjectionData=ProjectionData,BiomassData=BiomassData,
                          MsyData=MsyData,CatchMSYPossibleParams=CatchMSYPossibleParams,
-                         PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.5))
+                         PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.25))
 
-   Rprof(NULL)
-    RProfData<- readProfileData('Rprof.out')
-    flatProfile(RProfData,byTotal=TRUE)
+#    Rprof(NULL)
+#     RProfData<- readProfileData('Rprof.out')
+#     flatProfile(RProfData,byTotal=TRUE)
 
 save(file=paste(ResultFolder,'Bio Monte Carlo.Rdata',sep=''),MonteMat)
+
+load(file=paste(ResultFolder,'Bio Monte Carlo.Rdata',sep=''))
+
 
 
 LastProj<- subset(ProjectionData,Policy=='CatchShare') %>%
@@ -52,8 +55,8 @@ LastMonte<- subset(MonteMat,Policy=='CatchShare') %>%
 Check<- ddply(LastMonte,c('Name'),summarize,MeanFvFmsy=mean(FvFmsy),MeanBvBmsy=mean(BvBmsy),MeanMSY=mean(MSY),MeanBiomass=mean(Biomass),MeanCatch=mean(Catch))
 
 Comp<- join(LastProj,Check,by='Name')
-quartz()
-ggplot(data=subset(Comp),aes(Catch,MeanCatch,color=IdLevel))+geom_point()
+
+CmpCatch<- ggplot(data=subset(Comp),aes(Catch,MeanCatch,color=IdLevel))+geom_point()
 
 Wrong<- which((Comp$Biomass/Comp$MeanBiomass-1)>1)
 
@@ -61,6 +64,8 @@ BioMonte<- ddply(subset(MonteMat,Policy %in% c('Business As Usual','Business As 
                                                ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three'))
                  ,c('Iteration','Policy'),summarize,FinalProfits=sum(Profits[Year==2050],na.rm=T)
                  ,FinalBiomass=sum(Biomass[Year==2050],na.rm=T),FinalFisheries=length(unique(IdOrig)))
+
+
 
 ProjMonte<- ddply(subset(ProjectionData,Policy %in% c('Business As Usual','Business As Usual Pessimistic'
                                                ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three'))
@@ -84,103 +89,49 @@ BioMonte$Policy[BioMonte$Policy=='CatchShare']<- 'RBFM'
 
 BioMonte$Policy[BioMonte$Policy=='Fmsy Three']<- 'Fmsy (CC)'
 
+BioMontePlot<- (ggplot(data=BioMonte,aes(x=FinalBiomass,y=FinalProfits,color=Policy))+geom_point(size=4,alpha=0.7)+
+  ylab('2050 Profits ($)')+xlab('2050 Biomass (MT)'))
 
-print(ggplot(data=BioMonte,aes(x=FinalBiomass,y=FinalProfits,color=Policy))+geom_point(size=4,alpha=0.7)+
-        ylab('2050 Profits ($)')+xlab('2050 Biomass (MT)'))
+print(BioMontePlot)
 dev.off()
 
+
+BioMonte<- BioMonte %>% 
+  group_by(Iteration) %>%
+  mutate(BioOrder=rank(-FinalBiomass),ProfitOrder=rank(-FinalProfits))
+
+BioMonte<- BioMonte %>%
+  group_by(Policy) %>%
+  mutate(MeanBioRank=mean(BioOrder),MeanProfitRank=mean(ProfitOrder))
+
+BioMonte$Policy<- reorder(BioMonte$Policy,BioMonte$MeanProfitRank)
+
+BioMonte$ProfitOrder<- as.factor(BioMonte$ProfitOrder)
+
+BioMonte$ProfitOrder<- reorder(BioMonte$ProfitOrder,-as.numeric(BioMonte$ProfitOrder))
+
+
+BioMonte$BioOrder<- as.factor(BioMonte$BioOrder)
+
+BioMonte$BioOrder<- reorder(BioMonte$BioOrder,-as.numeric(BioMonte$BioOrder))
+Font<- 'Helvetica'
+
+FontColor<- 'Black'
+
+BarTheme<- theme(text=element_text(size=16,family=Font,color=FontColor),
+                     axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9,color=FontColor),
+                     axis.text.y=element_text(color=FontColor))
+
+
+ProfitRanking<- (ggplot(BioMonte,aes(Policy,fill=factor(ProfitOrder)))+geom_bar()+BarTheme
+ +scale_fill_brewer(palette='RdYlGn')+guides(fill=guide_legend(reverse=T,title='Profit Ranking'))+ylab('Iterations'))
+
+BioRanking<- (ggplot(BioMonte,aes(Policy,fill=factor(BioOrder)))+geom_bar()+BarTheme
+                 +ylab('Iterations')+scale_fill_brewer(palette='RdYlGn')+guides(fill=guide_legend(reverse=T,title='Biomass Ranking')))
+
+
+save(BioMontePlot,ProfitRanking,BioRanking,file=paste(FigureFolder,'BioMontePlots.Rdata',sep=''))
+
 save(MonteMat,file=paste(ResultFolder,'MonteCarlo_Results.Rdata',sep=''))
-# load('Results/3.0/Data/MonteCarlo_Results.Rdata')
-
-
-# MonteCarlo<- ddply(subset(MonteMat,Policy=='Catch Share Three' | Policy=='Fmsy Three' |  Policy=='Business As Usual' | Policy=='Business As Usual Pessimistic'),c('Iteration','Year','Policy'),summarize,MSY=sum(MSY,na.rm=T),Profits=sum(Profits,na.rm=T),
-#                    Catch=sum(Catch,na.rm=T),BvBmsy=median(BvBmsy,na.rm=T),FvFmsy=median(FvFmsy,na.rm=T),MedianBOA=median(BOA,na.rm=T))
-# 
-# MonteCarlo$Policy[MonteCarlo$Policy=='Fmsy Three']<- 'Fmsy'
-# 
-# MonteCarlo$Policy[MonteCarlo$Policy=='Catch Share Three']<- 'RBFM'
-# 
-# MonteCarlo$Policy[MonteCarlo$Policy=='Business As Usual']<- 'BAU (S1)'
-# 
-# MonteCarlo$Policy[MonteCarlo$Policy=='Business As Usual Pessimistic']<- 'BAU (S2)'
-# 
-# 
-# MonteCarlo<- subset(MonteCarlo,is.infinite(Catch)==F & is.na(BvBmsy)==F)
-# 
-# FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo/',sep='')
-# 
-# dir.create(FigureFolder,recursive=T)
-# 
-# pdf(file=paste(FigureFolder,'MonteCarlo_MSY.pdf',sep=''))
-# MCMSY<- (ggplot(data=subset(MonteCarlo,Policy=='RBFM' & Year==BaselineYear),aes(MSY),alpha=0.8)+geom_density(fill='steelblue2'))
-# print(MCMSY)
-# dev.off()
-# 
-# 
-# # pdf(file=paste(FigureFolder,'MC_Profits.pdf',sep=''))
-# # MCProfits<- (ggplot(data=MonteCarlo,aes(Profits,fill=factor(Year)))+geom_density(alpha=0.7)+facet_wrap(~Policy)
-# # )
-# # print(MCProfits)
-# # dev.off()
-# 
-# pdf(file=paste(FigureFolder,'MC_Profits.pdf',sep=''))
-# MCProfits<- (ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(Profits,fill=Policy))+
-#                geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))+
-#                geom_vline(aes(xintercept=0,alpha=0.8),color='red',linetype='longdash',size=1)+facet_wrap(~Policy)+ylab("Scaled Density")
-#              +scale_fill_discrete(name = "Policy Alternative")
-#              #                coord_cartesian(xlim=c(-3e11,2e11))
-#              
-# )
-# print(MCProfits)
-# dev.off()
-# 
-# pdf(file=paste(FigureFolder,'MC_Catch.pdf',sep=''))
-# MCCatch<- (ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(Catch,fill=Policy))+
-#              geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))+
-#              facet_wrap(~Policy)+ylab("Scaled Density")+scale_fill_discrete(name = "Policy Alternative")
-#            #                coord_cartesian(xlim=c(-3e11,2e11))
-#            
-# )
-# print(MCCatch)
-# dev.off()
-# 
-# # 
-# # pdf(file=paste(FigureFolder,'MC_Catch.pdf',sep=''))
-# # MCCatch<- (ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(Catch,fill=Policy))+
-# #              geom_density(alpha=0.5)+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))
-# # )
-# # print(MCCatch)
-# # dev.off()
-# 
-# 
-# pdf(file=paste(FigureFolder,'MC_BvBmsy.pdf',sep=''))
-# MCBvB<-(ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(BvBmsy,fill=(Policy)))+
-#           geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))
-#         +geom_vline(aes(xintercept=1),color='red',linetype='longdash')+xlim(c(0,2.5))+
-#           facet_wrap(~Policy)+scale_fill_discrete(name = "Policy Alternative"))
-# print(MCBvB)
-# dev.off()
-# 
-# pdf(file=paste(FigureFolder,'MC_BvBmsy_OA.pdf',sep=''))
-# MCBvB_OA<-(ggplot(data=subset(MonteCarlo,Year==max(Year) & Policy=='RBFM'),aes(MedianBOA,fill=(Policy)))+
-#              geom_density(alpha=0.7)+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9)))
-# print(MCBvB_OA)
-# dev.off()
-# 
-# pdf(file=paste(FigureFolder,'MC_FvFmsy.pdf',sep=''))
-# MCFvF<-(ggplot(data=subset(MonteCarlo,Year==max(Year) ),aes(jitter(FvFmsy,factor=.1),fill=(Policy)))+
-#           geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))
-#         +xlab('F/Fmsy')+facet_wrap(~Policy)+scale_fill_discrete(name = "Policy Alternative")+xlim(c(0,2))
-#         +geom_vline(aes(xintercept=1),color='red',linetype='longdash')
-#         #         + coord_cartesian(ylim=c(0,25))+xlab('FvFmsy'))
-# )
-# 
-# print(MCFvF)
-# dev.off()
-# 
-# 
-# 
-# 
-# save(MCProfits,MCCatch,MCBvB,MCFvF,MCMSY,file=paste(FigureFolder,'MonteCarlo Plots.rdata',sep=''))
 
 

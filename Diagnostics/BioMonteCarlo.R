@@ -175,7 +175,7 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
     
     RecentStockData$BvBmsy<- pmin(2.5,RecentStockData$BvBmsy* CurrentBio)
     
-    #     RecentStockData$FvFmsy<- pmin(6,(RecentStockData$Catch/RecentStockData$MSY)/RecentStockData$BvBmsy)
+    RecentStockData$FvFmsy<- pmin(6,(RecentStockData$Catch/RecentStockData$MSY)/RecentStockData$BvBmsy)
     
     IsCatchShare<- RecentStockData$CatchShare
     
