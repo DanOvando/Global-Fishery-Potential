@@ -33,10 +33,9 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear)
   other<-ProjectionData[(ProjectionData$IdOrig %in% c(otherids)) & ProjectionData$Policy=='StatusQuoOpenAccess',]
   
   BAUpess<-rbind(ram,cs,other)
-  
+
   BAUpess$Policy<-'Business As Usual Pessimistic'
-  
-  
+    
   ### 2) "Business As Usual Current Management"
   
   # RAM - Fmsy
