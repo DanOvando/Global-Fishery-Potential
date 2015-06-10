@@ -29,9 +29,9 @@ PolicyStorage$IdOrig<- as.character(PolicyStorage$IdOrig)
 PolicyStorage<- PolicyStorage[order(PolicyStorage$IdOrig),]
 
 # Rprof()
-MonteMat<- (BioMonteCarlo(25,Stocks=Stocks,ProjectionData=ProjectionData,BiomassData=BiomassData,
+MonteMat<- (BioMonteCarlo(50,Stocks=Stocks,ProjectionData=ProjectionData,BiomassData=BiomassData,
                          MsyData=MsyData,CatchMSYPossibleParams=CatchMSYPossibleParams,
-                         PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.25))
+                         PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0))
 
 #    Rprof(NULL)
 #     RProfData<- readProfileData('Rprof.out')
@@ -39,7 +39,7 @@ MonteMat<- (BioMonteCarlo(25,Stocks=Stocks,ProjectionData=ProjectionData,Biomass
 
 save(file=paste(ResultFolder,'Bio Monte Carlo.Rdata',sep=''),MonteMat)
 
-load(file=paste(ResultFolder,'Bio Monte Carlo.Rdata',sep=''))
+# load(file=paste(ResultFolder,'Bio Monte Carlo.Rdata',sep=''))
 
 
 
@@ -132,6 +132,6 @@ BioRanking<- (ggplot(BioMonte,aes(Policy,fill=factor(BioOrder)))+geom_bar()+BarT
 
 save(BioMontePlot,ProfitRanking,BioRanking,file=paste(FigureFolder,'BioMontePlots.Rdata',sep=''))
 
-save(MonteMat,file=paste(ResultFolder,'MonteCarlo_Results.Rdata',sep=''))
+save(MonteMat,file=paste(ResultFolder,'BioMonteCarlo_Results.Rdata',sep=''))
 
 
