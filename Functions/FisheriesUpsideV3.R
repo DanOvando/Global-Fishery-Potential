@@ -225,9 +225,9 @@ FisheriesUpsideV3<-function(Data,BaselineYear,DenominatorPolicy,RecoveryThreshol
     
     NeiProfitResults<-NeiProfitResults[,c('Country','Policy','Scenario','Identification Level','Profit Upside Relative to BAU from NEIs','Total Profit Upside','Percent of Total Profit Upside from NEIs')]
     
-    NeiProfitResults<-NeiProfitResults[1:20,]
+#     NeiProfitResults<-NeiProfitResults[1:20,]
     
-    write.csv(file=paste(ResultFolder,'Profit Upsides From NEIs.csv',sep=''),NeiProfitResults)
+    write.csv(file=paste(ResultFolder,LumpedName,SubsetName,' Profit Upsides From NEIs.csv',sep=''),NeiProfitResults)
     
     # Save table of countries with over 50% profit upside from NEIs to use for indicating in Figure 2
     NeiCntrys<-NeiUpsides[NeiUpsides$IdLevel=='Neis',c('Country','Policy','NeiUpsideSQOver50')]
