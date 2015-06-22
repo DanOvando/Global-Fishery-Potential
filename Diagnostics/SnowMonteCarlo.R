@@ -119,10 +119,10 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     piFlat<- melt(pi)
     colnames(piFlat)<- c('Year','IdOrig','Profits')
     #     piFlat$Metric<- 'Profits'
-    
     Projection<- data.frame(fFlat,bFlat[,'BvBmsy'],yFlat[,'Catch'],piFlat[,'Profits'])
     
     colnames(Projection)<- c('Year','IdOrig','FvFmsy','BvBmsy','Catch','Profits')
+    Projection$IdOrig<- as.character(Projection$IdOrig)    
     #     if (any(b==0))
     #     {
     #       browser()
@@ -227,7 +227,7 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     PercDone<- round(100*(k/Iterations),2)
     
     write.table(paste(PercDone, '% done with Monte Carlo',sep=''), file = 'MonteCarloProgess.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
-    
+
     ProjectionMat<-BuildPolicyBAUs(ProjectionMat,BaselineYear)
     return(ProjectionMat)
   } #Close McIterations

@@ -10,7 +10,7 @@
 #
 # 6. Store Real B/Bmsy, F/Fmsy, MSY, PRM B/Bmsy, MSY BvBmsy, FvFmsy, MSY with and without priors, and year
 rm(list=ls())
-load('Results/4.1/Data/Global Fishery Recovery Results.rdata')
+load('Results/4.2/Data/Global Fishery Recovery Results.rdata')
 NumCPUs<- 1
 FigureFolder<- paste(BatchFolder,'Diagnostics/Individual Jackknife/',sep='')
 dir.create(FigureFolder,recursive=T)
@@ -32,9 +32,6 @@ library(ggplot2)
 library(gridExtra)
 library(reshape2)
 sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
-
-
-
 
 RamData<- RamData[RamData$Year<=BaselineYear,]
 

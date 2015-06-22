@@ -3,18 +3,15 @@ title: "GFR SOM Sensitivities"
 author: "Dan Ovando"
 date: "February 26, 2015"
 output:
-  word_document:
-    fig_caption: yes
-    fig_height: 6
-    fig_width: 8
   pdf_document:
     fig_caption: yes
     fig_height: 3
     fig_width: 6
+  word_document:
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 8
 ---
-
-# 2012 Biomass Monte Carlo
-
 
 
 # Model Validation
@@ -69,7 +66,7 @@ setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
 
 library(ggplot2)
 
-BatchFolder<- "Results/3.0/"
+BatchFolder<- "Results/4.2/"
 
 FigureFolder<- paste(BatchFolder,'Diagnostics/Individual Jackknife/',sep='')
 
@@ -125,7 +122,7 @@ MSY_Error_By_LogCatch
 
 setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
 
-BatchFolder<- "Results/3.0/"
+BatchFolder<- "Results/4.2/"
 
 FigureFolder<- paste(BatchFolder,'Diagnostics/Regional Jackknife/',sep='')
 
@@ -154,7 +151,7 @@ We performed a Monte Carlo routine to evaluate the sensitivity of components of 
 
 The Monte Carlo currently only evaluates stocks that were run through Catch-MSY. It does not include RAM stocks for which we have "true" estimates of MSY, since at this time we do not have any method for estimating uncertainty around RAM values. The Monte Carlo also omits NEI stocks at this time.  As a result this process provides an assessment of the broad degree of variability in our metrics of interest resulting from reasonably uncertainty in our parameter values. It is not a true assessment of the actual variability in our final results. 
 
-Catch-MSY provides a range of plausible values for *g* and MSY (often thousands of individual estimates for each fishery). For each iteration of the Monte Carlo, we drew random *g* and MSY pairs from Catch-MSY for each fishery.  For each fishery in each iteration we also apply a multiplicative  log-normal error term (~ln(0,0.5)) to price, B/B~MSY~ at open access (which implicitly affects costs), and the "RBFM effect" (the price and cost changes resulting from moving to an RBFM policy). We ran 500 Monte Carlo iterations for each fishery and stored results. 
+Catch-MSY provides a range of plausible values for *g* and MSY (often thousands of individual estimates for each fishery). For each iteration of the Monte Carlo, we drew random *g* and MSY pairs from Catch-MSY for each fishery.  For each fishery in each iteration we also apply a multiplicative  log-normal error term (~ln(0,0.25)) to price, B/B~MSY~ at open access (which implicitly affects costs), and the "RBFM effect" (the price and cost changes resulting from moving to an RBFM policy). We ran 500 Monte Carlo iterations for each fishery and stored results. 
 
 Our results show that the total MSY estimated by Catch-MSY has relatively little variability, with most estimates of total MSY falling between 27 and 29 million MT ( Fig.XX ). 
 
@@ -162,11 +159,15 @@ Our results show that the total MSY estimated by Catch-MSY has relatively little
 
 setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
 
-BatchFolder<- "Results/3.0/"
+BatchFolder<- "Results/4.2/"
 
 FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo/',sep='')
 
 load(paste(FigureFolder,'MonteCarlo Plots.rdata',sep=''))
+
+FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo 2/',sep='')
+
+load(paste(FigureFolder,'BioMontePlots.Rdata',sep=''))
 
 ```
 
@@ -196,4 +197,22 @@ MCBvB
 MCFvF
 ```
 
+## Expanded Monte Carlo
 
+Our Monte Carlo analysis of our unassessed stocks provides an indicator of the variability of our results derived from the uncertianty resulting from Catch-MSY and reasonable uncertainty bounds in other critical parameters. However it does not directly reflect the potential uncertainty in the results reported in the body of the paper, since it does not include RAM, SOFIA, or NEI stocks. In order to address this, we performed an additional Monte Carlo routine, in which arbitraty amounts of error were applied to key parameters of all stocks included in our analysis in order to evaluate the effect of this uncertainty on the some of th key values reported in the body of the paper. 
+
+B/B~MSY~ and F/F~MSY~ in 2012 are uncertain parameters in all of our fisheries. However, we do not have representative bounds on the uncertainty in these estiamtes for all stocks. As such, over our Monte Carlo we introduced an individual random multiplicative error term to B/B~MSY~ of each stock in 2012 (distributed uniform (0.5,1.5), and adjust F/F~MSY~ accordingly by $\frac{F}{F_{MSY}}= \frac{Catch}{MSY*B_{MSY}}$. We then also applied a random multiplicative log-normal error term (mean 0, sd 0.25) to our estimates of MSY, g, price, and B/B~MSY~ at open access (effectively costs) to each stock. Together these terms represent primary drivers of our estimates of current and future profits, yields, and biomass. We projected each stock forward for each policy in the same manner as described in the paper, producing a distribution around our projections of current and future profits, yields, and biomass. 
+
+Our results show that while the point estimates of the total outcomes of any individual policy are variable, the general magnitude of each of the policies, and their performance relative to each other, does not change substantially as a result of introducing significant uncertainty into our model (Fig.XX). So, even if our estimates of status in 2012 are substantially wrong, this has relatively little impact in the findings of our paper. However, our results are more sensitive to our estiamtes of MSY, *g*, price, and BOA. It is important to note that for any given policy each of the points in Fig.XX shares a draw from the same iteration of the Monte Carlo routine with a point in the other policies. As such, while it may appear for example that in some instances the RBFM (CC) policy produced higher profits than the RBFM scenario, each point was not truly independely estimated for each policy, and so this is not a reliable comparison. Rather, the cloud for any given policy provides an estiamte of the uncertainty around that particular policy, but is not as informative as to the ranking of that policy relative to other policies. 
+
+```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Monte Carlo of Figure 3' }
+BioMontePlot
+```
+
+```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Ranking of policies by profits in 2050 across iterations' }
+BioRanking
+```
+
+```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Ranking of policies by biomass in 2050 across iterations' }
+ProfitRanking
+```

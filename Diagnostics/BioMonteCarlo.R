@@ -22,7 +22,7 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
       
       FFun= function(x,FVecMat,ClosestB,Stocks)
       {
-#         Which<- (ClosestB[,1]==Stocks[x])
+        #         Which<- (ClosestB[,1]==Stocks[x])
         y=FVecMat[ClosestB[x,2],x]
       }
       NextF<- sapply(1:length(Stocks),FFun,FVecMat=FVecMat,ClosestB=ClosestB,Stocks=Stocks)    #Calculate next f based on current b 
@@ -137,6 +137,7 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
     #  
     Projection$Year<- Projection$Year+(BaselineYear-1)
     
+    Projection$IdOrig <- as.character(Projection$IdOrig)
     #     Projection<- ddply(Projection,c('IdOrig'),mutate,NPV=cumsum(Profits*(1+0.05)^-(Year-BaselineYear)))
     
     Projection<- Projection %>%
@@ -175,7 +176,7 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
     
     RecentStockData$BvBmsy<- pmin(2.5,RecentStockData$BvBmsy* CurrentBio)
     
-    #     RecentStockData$FvFmsy<- pmin(6,(RecentStockData$Catch/RecentStockData$MSY)/RecentStockData$BvBmsy)
+    RecentStockData$FvFmsy<- pmin(6,(RecentStockData$Catch/RecentStockData$MSY)/RecentStockData$BvBmsy)
     
     IsCatchShare<- RecentStockData$CatchShare
     
@@ -261,7 +262,6 @@ BioMonteCarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,Ca
     
     
     BioMonte<- rbind(NEIs,Species)
-    
     BioMonte<-BuildPolicyBAUs(BioMonte,BaselineYear)
     BioMonte$Iteration<- k
     BioMonte<- subset(BioMonte,Year==2012 | Year==2013 | Year==2050)

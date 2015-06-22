@@ -10,7 +10,7 @@
 #
 # 6. Store Real B/Bmsy, F/Fmsy, MSY, PRM B/Bmsy, MSY BvBmsy, FvFmsy, MSY with and without priors, and year
 rm(list=ls())
-load('Results/3.0/Data/Global Fishery Recovery Results.rdata')
+load('Results/4.2/Data/Global Fishery Recovery Results.rdata')
 # NumCPUs<- 2
 FigureFolder<- paste(BatchFolder,'Diagnostics/Regional Jackknife/',sep='')
 dir.create(FigureFolder,recursive=T)
@@ -52,7 +52,7 @@ ErrorSize<- 0.95
 
 TransbiasIterations<- 1000
 
-NumCPUs<- 3
+NumCPUs<- 2
 
 sigR<- 0
 

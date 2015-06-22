@@ -337,8 +337,8 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   
   pdf(paste(FigureFolder,'Figure 2 Profit 2050.pdf',sep=''),height=5,width=8)
   
-  data<-read.csv(paste(ResultFolder,'Unlumped Projection DataAll Stocks Country Upsides.csv',sep=''))
-  data2<-read.csv(paste(ResultFolder,'Unlumped Projection DataOverfish Only Country Upsides.csv',sep=''))
+  data<-read.csv(paste(ResultFolder,'UnLumped Projection DataAll Stocks Country Upsides.csv',sep=''))
+  data2<-read.csv(paste(ResultFolder,'UnLumped Projection DataOverfish Only Country Upsides.csv',sep=''))
   
   
   data<- subset(data,Country!='High Seas Tuna and Billfish')
@@ -661,8 +661,8 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   
   ####### Figure 3 ##########
   
-  data<-read.csv(paste(ResultFolder,'Unlumped Projection DataAll Stocks Country Upsides.csv',sep=''))
-  data2<-read.csv(paste(ResultFolder,'Unlumped Projection DataOverfish Only Country Upsides.csv',sep=''))
+  data<-read.csv(paste(ResultFolder,'UnLumped Projection DataAll Stocks Country Upsides.csv',sep=''))
+  data2<-read.csv(paste(ResultFolder,'UnLumped Projection DataOverfish Only Country Upsides.csv',sep=''))
   
   
   AllStocks<-data
