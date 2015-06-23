@@ -1,0 +1,31 @@
+---
+geometry: margin=1in
+output: 
+  pdf_document: 
+    keep_tex: true
+    
+---
+
+\pagenumbering{gobble}  
+
+```{r,echo=FALSE,results='asis',message=F}
+library(knitr)
+library(texreg)
+library(stargazer)
+
+# Load regression data
+load('/Users/Tyler/Documents/Sustainable Fisheries Group/SFG 2014/Global Fishery Potential/Results/4.2/Data/PrmRegressions.Rdata')
+
+# regmodels<-list(RealModels$M1,RealModels$M2,RealModels$M3,RealModels$M4,RealModels$M6)
+# 
+texreg(RealModels$M1,float.pos="h",custom.model.names='Model 1',caption.above=T, caption='Summary statistics for model 1', single.row=T)
+
+texreg(RealModels$M2,float.pos="h",custom.model.names='Model 2', caption.above=T, caption='Summary statistics for model 2', single.row=T)
+
+texreg(RealModels$M3,float.pos="h",custom.model.names='Model 3', caption.above=T, caption='Summary statistics for model 3', single.row=T)
+
+texreg(RealModels$M4,float.pos="h",custom.model.names='Model 4', caption.above=T, caption='Summary statistics for model 4', single.row=T)
+
+texreg(RealModels$M6,float.pos="h",custom.model.names='Model 5', caption.above=T, caption='Summary statistics for model 5', single.row=T)
+
+```
