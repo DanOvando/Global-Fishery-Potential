@@ -32,7 +32,7 @@ data(fishbase)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- '4.1'
+BatchFolder<- 'EKO Brazil Chile'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -52,7 +52,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
   
-  BatchFolder<- '4.0'
+  BatchFolder<- 'Scratch'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
@@ -68,9 +68,9 @@ if (RunAnalyses==FALSE)
 
 # Key Parameters ----------------------------------------------------------------
 
-SubSample<- 0
+SubSample<- c('Brazil','Chile')
 
-NumCPUs<- 3 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 2 #Number of CPUs to use for parallel computing of CatchMSY
 
 DefaultPhi<- .188
 
@@ -149,7 +149,7 @@ AsianCountries<-c('Afghanistan','Bahrain','Bangladesh', 'Bhutan','Brunei Darussa
 # Data Processing ---------------------------------------------------------
 
 
-MinimumCatchYears<- 10 #Minimum length of catch history
+MinimumCatchYears<- 7 #Minimum length of catch history
 
 OutlierBvBmsy<- 40 #Maximum BvBmsy that is allowed in the analysis 
 
