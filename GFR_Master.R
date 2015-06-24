@@ -25,14 +25,14 @@ library(gridExtra)
 library(reshape2)
 library(rfishbase,quiet=T)
 data(fishbase)  
-# library(dplyr)
-# library(broom)
-# library(tidyr)
+library(dplyr)
+library(broom)
+library(tidyr)
 # Basic Controls -------------------------------------------------------------
 
 RunAnalyses<- TRUE
 
-BatchFolder<- '4.1'
+BatchFolder<- '4.2 CHECK R UPDATES'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -52,7 +52,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
   
-  BatchFolder<- '4.0'
+  BatchFolder<- '4.2'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
@@ -68,9 +68,9 @@ if (RunAnalyses==FALSE)
 
 # Key Parameters ----------------------------------------------------------------
 
-SubSample<- 0
+SubSample<- 0.98
 
-NumCPUs<- 3 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 2 #Number of CPUs to use for parallel computing of CatchMSY
 
 DefaultPhi<- .188
 
@@ -232,7 +232,6 @@ CatchShareCost<- 0.77
 beta<- 1.3
 
 Discount<- 0
-
 
 tol<- .1
 
