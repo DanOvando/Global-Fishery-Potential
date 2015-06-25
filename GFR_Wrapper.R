@@ -46,7 +46,7 @@ if (RunAnalyses==TRUE)
     
     FullData<-FullData[!(FullData$IdOrig %in% c('SEFSC-RSNAPGM-1872-2011-HIVELY')),] # GoMex Red Snapper
     
-    if (SubSample>0)
+    if ((is.numeric(SubSample) && SubSample>0))
     {
       
       FaoIds<- unique(FullData$IdOrig[FullData$Dbase=='FAO'])
@@ -55,6 +55,14 @@ if (RunAnalyses==TRUE)
       # # # 
       FullData<-  FullData[!( FullData[,IdVar] %in% SampleIds),]
     }
+    
+    if(is.character(SubSample))
+    {
+      FaoIds<-FullData$IdOrig[(FullData$Country %in% SubSample) & FullData$Dbase=='FAO']
+      
+      FullData<-FullData[FullData$Dbase=='RAM' | ((FullData$Country %in% SubSample) & FullData$Dbase=='FAO'),]
+    }
+    
     FullData$FvFmsy<- FullData$UvUmsytouse
     
     rm(fulldata)

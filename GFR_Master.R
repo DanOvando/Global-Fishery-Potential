@@ -32,7 +32,11 @@ library(tidyr)
 
 RunAnalyses<- TRUE
 
+<<<<<<< HEAD
 BatchFolder<- '4.3'
+=======
+BatchFolder<- 'EKO Brazil Chile'
+>>>>>>> 6fbdef2faae44425144cab84055a698468e5b617
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -52,7 +56,11 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
   
+<<<<<<< HEAD
   BatchFolder<- '4.2 CHECK R UPDATES'
+=======
+  BatchFolder<- 'Scratch'
+>>>>>>> 6fbdef2faae44425144cab84055a698468e5b617
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
@@ -68,9 +76,13 @@ if (RunAnalyses==FALSE)
 
 # Key Parameters ----------------------------------------------------------------
 
-SubSample<- 0
+SubSample<- c('Brazil','Chile')
 
+<<<<<<< HEAD
 NumCPUs<- 4 #Number of CPUs to use for parallel computing of CatchMSY
+=======
+NumCPUs<- 2 #Number of CPUs to use for parallel computing of CatchMSY
+>>>>>>> 6fbdef2faae44425144cab84055a698468e5b617
 
 DefaultPhi<- .188
 
@@ -149,7 +161,7 @@ AsianCountries<-c('Afghanistan','Bahrain','Bangladesh', 'Bhutan','Brunei Darussa
 # Data Processing ---------------------------------------------------------
 
 
-MinimumCatchYears<- 10 #Minimum length of catch history
+MinimumCatchYears<- 7 #Minimum length of catch history
 
 OutlierBvBmsy<- 40 #Maximum BvBmsy that is allowed in the analysis 
 
