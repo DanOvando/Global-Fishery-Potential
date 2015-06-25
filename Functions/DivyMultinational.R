@@ -67,9 +67,16 @@ DivyMultinational<-function(Data,RawData,BaselineYear,YearsBack)
     if(nrow(tempF)>0)
     {
       
-    cntrys<-ddply(tempF,c('Country'),summarize,TotalCatch=sum(Catch,na.rm=T))
+    cntrys<- tempF %>%
+      group_by(Country) %>%
+      summarize(TotalCatch=sum(Catch,na.rm=T))
+      
+#       ddply(tempF,c('Country'),summarize,TotalCatch=sum(Catch,na.rm=T))
     
-    cntrys$PercOfTotal<-cntrys$TotalCatch/sum(cntrys$TotalCatch,na.rm=T)
+#     cntrys<-ddply(tempF,c('Country'),summarize,TotalCatch=sum(Catch,na.rm=T))
+    
+    
+        cntrys$PercOfTotal<-cntrys$TotalCatch/sum(cntrys$TotalCatch,na.rm=T)
     
     cntryIds<-unique(cntrys$Country)
     

@@ -165,7 +165,7 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultF
   cost<- cost
   
   NEIs$MarginalCost<- cost
-
+  
   NEIs$Bmsy<- NEIs$MSY/NEIs$g
   
   NEIs$Biomass<- NEIs$BvBmsy * NEIs$Bmsy
@@ -175,6 +175,6 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultF
   Biomass<- NEIs[NEIs$Policy=='Historic',colnames(NEIs) %in% colnames(BiomassData)]
   
   Biomass$BvBmsy<- log(Biomass$BvBmsy)
-    
+  
   return(list(ProjNeis=NEIs,BiomassNeis=Biomass))
 } # close function

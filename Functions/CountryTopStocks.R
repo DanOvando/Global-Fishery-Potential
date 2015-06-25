@@ -19,8 +19,13 @@ CountryTopStocks<-function(DataU,DataL,BaselineYear,Policies,NumberOfStocks,Numb
 {
   
   # Find top countries in Unlumped data
-  top<-ddply(DataU[DataU$Year==BaselineYear,],c('Country'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
-
+  top<- DataU[DataU$Year==BaselineYear,] %>%
+    group_by(Country) %>%
+    summarize(TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
+  
+  #   top<-ddply(DataU[DataU$Year==BaselineYear,],c('Country'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
+  
+  
   top<-top[with(top,order(-TotalMSY)),]
   
   top<-top[!(top$Country %in% c('Multinational','High Seas Tuna and Billfish')),]
@@ -31,7 +36,7 @@ CountryTopStocks<-function(DataU,DataL,BaselineYear,Policies,NumberOfStocks,Numb
     
     cntrys<-top$Country
   }
-
+  
   # If making table for all countries, use unique countries
   if(NumberOfCountries=='All')
   {
@@ -50,8 +55,15 @@ CountryTopStocks<-function(DataU,DataL,BaselineYear,Policies,NumberOfStocks,Numb
     tempC<-DataU[DataU$Country==cntrys[a],]
     
     # find total results and save 2012, BAU, and CS Three results
-    tempAll<-ddply(tempC,c('Year','Policy'),summarize,TotalStocks=length(unique(IdOrig)),TotalCatch=sum(Catch,na.rm=T),TotalProfit=sum(Profits,na.rm=T),
-                   TotalBiomass=sum(Biomass,na.rm=T),TotalNPV=sum(NPV,na.rm=T),TotalMSY=sum(MSY,na.rm=T),MedB=median(BvBmsy,na.rm=T),MedF=median(FvFmsy,na.rm=T))
+    tempAll<- tempC %>%
+      group_by(Year,Policy) %>%
+      summarize(TotalStocks=length(unique(IdOrig)),TotalCatch=sum(Catch,na.rm=T),TotalProfit=sum(Profits,na.rm=T),
+                TotalBiomass=sum(Biomass,na.rm=T),TotalNPV=sum(NPV,na.rm=T),TotalMSY=sum(MSY,na.rm=T),MedB=median(BvBmsy,na.rm=T),MedF=median(FvFmsy,na.rm=T))
+    
+    
+    #     tempAll<-ddply(tempC,c('Year','Policy'),summarize,TotalStocks=length(unique(IdOrig)),TotalCatch=sum(Catch,na.rm=T),TotalProfit=sum(Profits,na.rm=T),
+    #                    TotalBiomass=sum(Biomass,na.rm=T),TotalNPV=sum(NPV,na.rm=T),TotalMSY=sum(MSY,na.rm=T),MedB=median(BvBmsy,na.rm=T),MedF=median(FvFmsy,na.rm=T))
+    #     
     
     tempAll<-tempAll[tempAll$Year==BaselineYear | (tempAll$Year==max(DataU$Year)),
                      c('Policy','MedB','MedF','TotalCatch','TotalProfit','TotalBiomass','TotalNPV','TotalMSY')]
@@ -99,7 +111,7 @@ CountryTopStocks<-function(DataU,DataL,BaselineYear,Policies,NumberOfStocks,Numb
       tempPol$Annuity<-tempPol$NPV*(Discount/(1-(1+Discount)^(-1*max(DataU$Year-BaselineYear))))
       
       tempPol<-tempPol[,c('IdOrig','NPV','Annuity','Profits','Catch','Biomass')]
-            
+      
       # set colnames for each policy
       if(Policies[b]=='Business As Usual') { colnames(tempPol)[!colnames(tempPol)=='IdOrig']<-paste(colnames(tempPol)[!colnames(tempPol)=='IdOrig'],'BAU',sep='_') }
       if(Policies[b]=='Business As Usual Pessimistic') { colnames(tempPol)[!colnames(tempPol)=='IdOrig']<-paste(colnames(tempPol)[!colnames(tempPol)=='IdOrig'],'BAUPessimistic',sep='_') }
@@ -150,9 +162,15 @@ CountryTopStocks<-function(DataU,DataL,BaselineYear,Policies,NumberOfStocks,Numb
   TopStocks<-ldply(TopStocks)
   
   # Calculate global totals by policy and add to table
-  global<-ddply(DataL[DataL$Year %in% c(BaselineYear,max(DataL$Year)),],c('Year','Policy'),summarize,TotalStocks=length(unique(IdOrig)),TotalCatch=sum(Catch,na.rm=T),TotalProfit=sum(Profits,na.rm=T),
-                TotalBiomass=sum(Biomass,na.rm=T),TotalNPV=sum(NPV,na.rm=T),TotalMSY=sum(MSY,na.rm=T),MedB=median(BvBmsy,na.rm=T),MedF=median(FvFmsy,na.rm=T))
+  global<- DataL[DataL$Year %in% c(BaselineYear,max(DataL$Year)),] %>%
+    group_by(Year,Policy) %>%
+    summarize(TotalStocks=length(unique(IdOrig)),TotalCatch=sum(Catch,na.rm=T),TotalProfit=sum(Profits,na.rm=T),
+              TotalBiomass=sum(Biomass,na.rm=T),TotalNPV=sum(NPV,na.rm=T),TotalMSY=sum(MSY,na.rm=T),MedB=median(BvBmsy,na.rm=T),MedF=median(FvFmsy,na.rm=T))
   
+  
+  #   global<-ddply(DataL[DataL$Year %in% c(BaselineYear,max(DataL$Year)),],c('Year','Policy'),summarize,TotalStocks=length(unique(IdOrig)),TotalCatch=sum(Catch,na.rm=T),TotalProfit=sum(Profits,na.rm=T),
+  #                 TotalBiomass=sum(Biomass,na.rm=T),TotalNPV=sum(NPV,na.rm=T),TotalMSY=sum(MSY,na.rm=T),MedB=median(BvBmsy,na.rm=T),MedF=median(FvFmsy,na.rm=T))
+  #   
   global$Annuity<-global$TotalNPV*(Discount/(1-(1+Discount)^(-1*max(DataL$Year-BaselineYear))))
   
   # Add global totals
@@ -177,7 +195,7 @@ CountryTopStocks<-function(DataU,DataL,BaselineYear,Policies,NumberOfStocks,Numb
     
     g[1,cols]<-global[global$Policy==Policies[d],c('TotalNPV','Annuity','TotalProfit','TotalCatch','TotalBiomass')]
   }
-
+  
   # find catch weighted average price
   gp<-DataL[DataL$Year==2012,c('Catch','Price')]
   
@@ -194,6 +212,6 @@ CountryTopStocks<-function(DataU,DataL,BaselineYear,Policies,NumberOfStocks,Numb
   
   # Write csv
   write.csv(TopStocks,file=paste(ResultFolder,FileName,'.csv',sep=''))
-
+  
   return(TopStocks)
 }

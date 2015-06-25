@@ -29,8 +29,8 @@ StockAndCountrySummary<-function(UnlumpedProjectionData,ProjectionData,StitchIds
     colnames(tempIds)<-c('StockId')
     
     stitchIds[[a]]<-tempIds
-
-#     show(a)
+    
+    #     show(a)
   }
   
   stitchIds<-ldply(stitchIds)
@@ -52,25 +52,36 @@ StockAndCountrySummary<-function(UnlumpedProjectionData,ProjectionData,StitchIds
   StockList<-StockList[with(StockList,order(Country)),]
   
   write.csv(StockList,file=paste(ResultFolder,'GFR Projection Stock List.csv',sep=''))
-
+  
   # Pull out just RAM stocks
-
+  
   ram<-StockList[StockList$Dbase=='RAM',]
   
   write.csv(ram,file=paste(ResultFolder,'GFR Projection RAM Stock List.csv',sep=''))
-
+  
   ### Aggregate by Country-----------------------------------------------------------------
   
   # Calculate stats in our data
   
-  CountrySummary<-ddply(StockList,c('Country'),summarize,Stocks=length(unique(IdOrig)),TotalMSY=sum(MSY,na.rm=T),TotalCatch=sum(Catch,na.rm=T),
-                        MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T),PercBvBmsyBelowOne=100*(sum(OverFished,na.rm=T)/length(unique(IdOrig))),
-                        PercFvFmsyAboveOne=100*(sum(OverFishing,na.rm=T))/length(unique(IdOrig)))
+  #   CountrySummary<-ddply(StockList,c('Country'),summarize,Stocks=length(unique(IdOrig)),TotalMSY=sum(MSY,na.rm=T),TotalCatch=sum(Catch,na.rm=T),
+  #                         MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T),PercBvBmsyBelowOne=100*(sum(OverFished,na.rm=T)/length(unique(IdOrig))),
+  #                         PercFvFmsyAboveOne=100*(sum(OverFishing,na.rm=T))/length(unique(IdOrig)))
+  #   
+  CountrySummary<- StockList %>%
+    group_by(Country) %>%
+    summarize(Stocks=length(unique(IdOrig)),TotalMSY=sum(MSY,na.rm=T),TotalCatch=sum(Catch,na.rm=T),
+              MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T),PercBvBmsyBelowOne=100*(sum(OverFished,na.rm=T)/length(unique(IdOrig))),
+              PercFvFmsyAboveOne=100*(sum(OverFishing,na.rm=T))/length(unique(IdOrig)))
   
   # calculate number of NEI fisheries
   
-  CountryNeiSummary<-ddply(StockList[StockList$IdLevel=='Neis',], c('Country'), summarize, NeiStocks=length(unique(IdOrig)),NeiCatch=sum(Catch,na.rm=T),NeiMSY=sum(MSY,na.rm=T),
-        NeiMedianStatus=median(BvBmsy,na.rm=T))
+  CountryNeiSummary<- StockList[StockList$IdLevel=='Neis',] %>%
+    group_by(Country) %>% 
+    summarize(NeiStocks=length(unique(IdOrig)),NeiCatch=sum(Catch,na.rm=T),NeiMSY=sum(MSY,na.rm=T),
+              NeiMedianStatus=median(BvBmsy,na.rm=T))
+  #   
+  #   CountryNeiSummary<-ddply(StockList[StockList$IdLevel=='Neis',], c('Country'), summarize, NeiStocks=length(unique(IdOrig)),NeiCatch=sum(Catch,na.rm=T),NeiMSY=sum(MSY,na.rm=T),
+  #                            NeiMedianStatus=median(BvBmsy,na.rm=T))
   
   CountryNeiSummary<-CountryNeiSummary[with(CountryNeiSummary,order(-NeiMSY)),]
   
@@ -93,10 +104,14 @@ StockAndCountrySummary<-function(UnlumpedProjectionData,ProjectionData,StitchIds
   }
   
   # Calculate stats in FAO data
-  FAO<-ddply(RawData[RawData$Dbase=='FAO' & RawData$Year==2012 & !(RawData$SpeciesCatName %in% SpeciesCategoriesToOmit),],c('Country'),summarize,
-             TotalCatch=sum(Catch,na.rm=T),Fisheries=length(unique(IdOrig)))
+  #   FAO<-ddply(RawData[RawData$Dbase=='FAO' & RawData$Year==2012 & !(RawData$SpeciesCatName %in% SpeciesCategoriesToOmit),],c('Country'),summarize,
+  #              TotalCatch=sum(Catch,na.rm=T),Fisheries=length(unique(IdOrig)))
+  #   
+  FAO<- RawData[RawData$Dbase=='FAO' & RawData$Year==2012 & !(RawData$SpeciesCatName %in% SpeciesCategoriesToOmit),] %>%
+    group_by(Country) %>%
+    summarize( TotalCatch=sum(Catch,na.rm=T),Fisheries=length(unique(IdOrig)))
   
-
+  
   CountrySummary<-CountrySummary[order(-CountrySummary$TotalMSY),]
   
   # Add fao data to country summary
@@ -126,33 +141,44 @@ StockAndCountrySummary<-function(UnlumpedProjectionData,ProjectionData,StitchIds
   write.csv(CountrySummary,file=paste(ResultFolder,'Country Data Summary.csv',sep=''))
   
   # Calculate global coverage and produce pie chart
-
-  GlobalCoverage<-ddply(ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$CanProject==T,],c('Year'),summarize,Stocks=length(unique(IdOrig)),
-        TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
-
+  
+  GlobalCoverage<- ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$CanProject==T,] %>%
+    group_by(Year) %>%
+    summarize(Stocks=length(unique(IdOrig)),
+              TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
+  
+  #   GlobalCoverage<-ddply(ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$CanProject==T,],c('Year'),summarize,Stocks=length(unique(IdOrig)),
+  #                         TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
+  
+  
   GlobalCoverage$PercTotalCatch<-100*(GlobalCoverage$TotalCatch/79502164)
-
+  
   GlobalCoverage$PercTotalCatchMissing<-100*((79502164-GlobalCoverage$TotalCatch)/79502164)
-
+  
   # pie chart of global coverage 
-
+  
   slices<-c(GlobalCoverage$PercTotalCatch,GlobalCoverage$PercTotalCatchMissing)
   lbls<-c('Included Catch\n(75%, ~60 mill. MT)','Unaccounted Catch\n(25%, ~80 mill. MT)')
   
   png(filename=paste(FigureFolder,'Pie Chart of Global Catch Accounted.png'),width=1440,height=1080)
-    pie(slices,labels=lbls,col=rainbow(2),main='Fraction of Total Global Catch Reported by FAO Included in Analysis',cex=3,cex.main=3,oma=c(0,0,2,0))
-    dev.off()
-
-  IdLevelCoverage<-ddply(ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$CanProject==T,],c('Year','IdLevel'),summarize,Stocks=length(unique(IdOrig)),
-        TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
-
+  pie(slices,labels=lbls,col=rainbow(2),main='Fraction of Total Global Catch Reported by FAO Included in Analysis',cex=3,cex.main=3,oma=c(0,0,2,0))
+  dev.off()
+  
+  IdLevelCoverage<- ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$CanProject==T,] %>%
+    group_by(Year,IdLevel) %>%
+    summarize(Stocks=length(unique(IdOrig)),
+              TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
+  
+  #   IdLevelCoverage<-ddply(ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$CanProject==T,],c('Year','IdLevel'),summarize,Stocks=length(unique(IdOrig)),
+  #                          TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
+  
   IdLevelCoverage$PercOfDataset<-100*(IdLevelCoverage$TotalCatch/sum(IdLevelCoverage$TotalCatch))
   
   slices<-c(IdLevelCoverage$TotalCatch[2],IdLevelCoverage$TotalCatch[1])
   lbls<-c('Species Level\n(79%, ~47.5 mill. MT)','Nei Level\n(21%, ~12.5 mill. MT)')
   
   png(filename=paste(FigureFolder,'Pie Chart of Catch by Id Level.png'),width=1440,height=1080)
-    pie(slices,labels=lbls,col=rainbow(2),main='Identification Level of Stocks Included in Analysis',cex=3,cex.main=3,oma=c(0,0,2,0))
+  pie(slices,labels=lbls,col=rainbow(2),main='Identification Level of Stocks Included in Analysis',cex=3,cex.main=3,oma=c(0,0,2,0))
   dev.off()
   ### Plot coverage statistics
   
@@ -165,9 +191,9 @@ StockAndCountrySummary<-function(UnlumpedProjectionData,ProjectionData,StitchIds
   pdf(file=paste(FigureFolder,'Country Coverage Density Plot.pdf',sep=''))
   
   print(ggplot(percs[percs$variable!='TotalMSY',],aes(x=value,fill=variable)) +
-    geom_density(alpha=0.6) +
-    theme(text=element_text(size=18)) +
-    labs(x='% in Database Relative to FAO',title='Country Coverage (All Countries)'))
+          geom_density(alpha=0.6) +
+          theme(text=element_text(size=18)) +
+          labs(x='% in Database Relative to FAO',title='Country Coverage (All Countries)'))
   
   dev.off()
   
@@ -183,8 +209,8 @@ StockAndCountrySummary<-function(UnlumpedProjectionData,ProjectionData,StitchIds
           labs(x='% in Database Relative to FAO',title='Country Coverage (Country MSY > 100,000)'))
   
   dev.off()
-
+  
   return(list(CountrySummary=CountrySummary,StockList=StockList))
 }
 
-  
+

@@ -39,10 +39,15 @@ FisheriesUpsideV3<-function(Data,BaselineYear,DenominatorPolicy,RecoveryThreshol
   }
   
   # Calculate fishery NPV's by policy
-  ids<-unique(Data$IdOrig[Data$Year==BaselineYear])
-  
-  NPV<-ddply(Data[Data$IdOrig %in% ids & Data$Policy!='Historic',],c('Country','IdOrig','Policy'),summarize,FinalNPV=sum(DiscProfits,na.rm=T),TotalFood=sum(Catch,na.rm=T))
-  
+  ids<- unique(Data$IdOrig[Data$Year==BaselineYear])
+
+#     NPV<-ddply(Data[Data$IdOrig %in% ids & Data$Policy!='Historic',],c('Country','IdOrig','Policy'),summarize,FinalNPV=sum(DiscProfits,na.rm=T),TotalFood=sum(Catch,na.rm=T))
+
+  NPV<- subset(Data, (IdOrig %in% ids) & Policy!='Historic') %>%
+    group_by(Country,IdOrig,Policy) %>%
+    summarize(FinalNPV=sum(DiscProfits,na.rm=T),TotalFood=sum(Catch,na.rm=T))
+    
+
   denominator<-NPV[NPV$Policy==DenominatorPolicy,c('Country','IdOrig','FinalNPV','TotalFood')]
   
   colnames(denominator)<-c('Country','IdOrig','NPVSQ','FoodSQ')
@@ -141,11 +146,32 @@ FisheriesUpsideV3<-function(Data,BaselineYear,DenominatorPolicy,RecoveryThreshol
 
   # write csv
   write.csv(FisheryUpside,file=paste(ResultFolder,LumpedName,SubsetName,' Fishery Upsides.csv',sep=''))
-  
-  PercentTripleBottom<-ddply(FisheryUpside,c('Policy'),summarize,PercentRecovered=100*(sum(Recovered,na.rm=T)/length(unique(IdOrig))),
-                             Stocks=length(unique(IdOrig)),TotalRecovered=sum(Recovered,na.rm=T),
-                             PercentTripleBottom=100*(sum(TripBottomLine,na.rm=T)/length(unique(IdOrig))))
-  
+
+  PercentTripleBottom<- FisheryUpside %>%
+    group_by(Policy) %>%
+    summarize(PercentRecovered=100*(sum(Recovered,na.rm=T)/length(unique(IdOrig))),
+              Stocks=length(unique(IdOrig)),TotalRecovered=sum(Recovered,na.rm=T),
+              PercentTripleBottom=100*(sum(TripBottomLine,na.rm=T)/length(unique(IdOrig))))
+    
+#     ddply(FisheryUpside,c('Policy'),summarize,PercentRecovered=100*(sum(Recovered,na.rm=T)/length(unique(IdOrig))),
+#                              Stocks=length(unique(IdOrig)),TotalRecovered=sum(Recovered,na.rm=T),
+#                              PercentTripleBottom=100*(sum(TripBottomLine,na.rm=T)/length(unique(IdOrig))))
+#   
+    
+  PercentTripleBottom<- FisheryUpside %>%
+    group_by(Policy) %>%
+    summarize(PercentRecovered=100*(sum(Recovered,na.rm=T)/length(unique(IdOrig))),
+              Stocks=length(unique(IdOrig)),TotalRecovered=sum(Recovered,na.rm=T),
+              PercentTripleBottom=100*(sum(TripBottomLine,na.rm=T)/length(unique(IdOrig))))
+    
+#     ddply(FisheryUpside,c('Policy'),summarize,PercentRecovered=100*(sum(Recovered,na.rm=T)/length(unique(IdOrig))),
+#                              Stocks=length(unique(IdOrig)),TotalRecovered=sum(Recovered,na.rm=T),
+#                              PercentTripleBottom=100*(sum(TripBottomLine,na.rm=T)/length(unique(IdOrig))))
+#   
+#   PercentTripleBottom<-ddply(FisheryUpside,c('Policy'),summarize,PercentRecovered=100*(sum(Recovered,na.rm=T)/length(unique(IdOrig))),
+#                              Stocks=length(unique(IdOrig)),TotalRecovered=sum(Recovered,na.rm=T),
+#                              PercentTripleBottom=100*(sum(TripBottomLine,na.rm=T)/length(unique(IdOrig))))
+#   
   #######################################################################################################
   #
   # Aggregate totals by country and recalculate percent upsides------------------------------------------
@@ -153,11 +179,25 @@ FisheriesUpsideV3<-function(Data,BaselineYear,DenominatorPolicy,RecoveryThreshol
   #######################################################################################################
   
   # Aggregate by country
-  CountryUpsides<-ddply(FisheryUpside,c('Country','Policy'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),TotalProfits=sum(Profits,na.rm=T),
-                        TotalBaselineCatch=sum(BaselineCatch,na.rm=T),TotalBaselineBiomass=sum(BaselineBiomass,na.rm=T),TotalBaselineProfits=sum(BaselineProfits,na.rm=T),
-                        TotalNPV=sum(FinalNPV,na.rm=T),TotalCatchSQ=sum(CatchSQ,na.rm=T),TotalBiomassSQ=sum(BiomassSQ,na.rm=T),TotalProfitsSQ=sum(ProfitsSQ,na.rm=T),
-                        TotalNPVSQ=sum(NPVSQ,na.rm=T),TotalFood=sum(TotalFood,na.rm=T),TotalFoodSQ=sum(FoodSQ,na.rm=T),TotalMSY=sum(MSY,na.rm=T),Stocks=length(unique(IdOrig)))
   
+  CountryUpsides<- FisheryUpside %>%
+    group_by(Country,Policy) %>%
+    summarize(TotalCatch=sum(Catch,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),TotalProfits=sum(Profits,na.rm=T),
+              TotalBaselineCatch=sum(BaselineCatch,na.rm=T),TotalBaselineBiomass=sum(BaselineBiomass,na.rm=T),TotalBaselineProfits=sum(BaselineProfits,na.rm=T),
+              TotalNPV=sum(FinalNPV,na.rm=T),TotalCatchSQ=sum(CatchSQ,na.rm=T),TotalBiomassSQ=sum(BiomassSQ,na.rm=T),TotalProfitsSQ=sum(ProfitsSQ,na.rm=T),
+              TotalNPVSQ=sum(NPVSQ,na.rm=T),TotalFood=sum(TotalFood,na.rm=T),TotalFoodSQ=sum(FoodSQ,na.rm=T),TotalMSY=sum(MSY,na.rm=T),Stocks=length(unique(IdOrig)))
+    
+#     ddply(FisheryUpside,c('Country','Policy'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),TotalProfits=sum(Profits,na.rm=T),
+#                         TotalBaselineCatch=sum(BaselineCatch,na.rm=T),TotalBaselineBiomass=sum(BaselineBiomass,na.rm=T),TotalBaselineProfits=sum(BaselineProfits,na.rm=T),
+#                         TotalNPV=sum(FinalNPV,na.rm=T),TotalCatchSQ=sum(CatchSQ,na.rm=T),TotalBiomassSQ=sum(BiomassSQ,na.rm=T),TotalProfitsSQ=sum(ProfitsSQ,na.rm=T),
+#                         TotalNPVSQ=sum(NPVSQ,na.rm=T),TotalFood=sum(TotalFood,na.rm=T),TotalFoodSQ=sum(FoodSQ,na.rm=T),TotalMSY=sum(MSY,na.rm=T),Stocks=length(unique(IdOrig)))
+#   
+  
+#   CountryUpsides<-ddply(FisheryUpside,c('Country','Policy'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),TotalProfits=sum(Profits,na.rm=T),
+#                         TotalBaselineCatch=sum(BaselineCatch,na.rm=T),TotalBaselineBiomass=sum(BaselineBiomass,na.rm=T),TotalBaselineProfits=sum(BaselineProfits,na.rm=T),
+#                         TotalNPV=sum(FinalNPV,na.rm=T),TotalCatchSQ=sum(CatchSQ,na.rm=T),TotalBiomassSQ=sum(BiomassSQ,na.rm=T),TotalProfitsSQ=sum(ProfitsSQ,na.rm=T),
+#                         TotalNPVSQ=sum(NPVSQ,na.rm=T),TotalFood=sum(TotalFood,na.rm=T),TotalFoodSQ=sum(FoodSQ,na.rm=T),TotalMSY=sum(MSY,na.rm=T),Stocks=length(unique(IdOrig)))
+#   
   # % change from today
   CountryUpsides$PercChangeTotalProfits<-PercChange(CountryUpsides$TotalProfits,CountryUpsides$TotalBaselineProfits)#Percent change in  profits from current
   
@@ -197,14 +237,35 @@ FisheriesUpsideV3<-function(Data,BaselineYear,DenominatorPolicy,RecoveryThreshol
   # Aggregate by country and ID level to examine importance of NEIs
   if(IncludeNEIs==TRUE)
   {
-    NeiUpsides<-ddply(FisheryUpside,c('Country','Policy','IdLevel'),summarize,TotalProfits=sum(Profits,na.rm=T),TotalBaselineProfits=sum(BaselineProfits,na.rm=T),
-                          TotalProfitsSQ=sum(ProfitsSQ,na.rm=T), AbsChangeFromSQProfits=TotalProfits-TotalProfitsSQ, AbsChangeTotalProfits=TotalProfits-TotalBaselineProfits)
+#     NeiUpsides<-ddply(FisheryUpside,c('Country','Policy','IdLevel'),summarize,TotalProfits=sum(Profits,na.rm=T),TotalBaselineProfits=sum(BaselineProfits,na.rm=T),
+#                           TotalProfitsSQ=sum(ProfitsSQ,na.rm=T), AbsChangeFromSQProfits=TotalProfits-TotalProfitsSQ, AbsChangeTotalProfits=TotalProfits-TotalBaselineProfits)
+#     
+    NeiUpsides<- FisheryUpside %>%
+      group_by(Country,Policy,IdLevel) %>%
+      summarize(TotalProfits=sum(Profits,na.rm=T),TotalBaselineProfits=sum(BaselineProfits,na.rm=T),
+                TotalProfitsSQ=sum(ProfitsSQ,na.rm=T), AbsChangeFromSQProfits=TotalProfits-TotalProfitsSQ, 
+                AbsChangeTotalProfits=TotalProfits-TotalBaselineProfits)
+      
+#       ddply(FisheryUpside,c('Country','Policy','IdLevel'),summarize,TotalProfits=sum(Profits,na.rm=T),TotalBaselineProfits=sum(BaselineProfits,na.rm=T),
+#                       TotalProfitsSQ=sum(ProfitsSQ,na.rm=T), AbsChangeFromSQProfits=TotalProfits-TotalProfitsSQ, AbsChangeTotalProfits=TotalProfits-TotalBaselineProfits)
+#     
     
     # Abs upside in profits from NEIs
-    NeiUpsides<-ddply(NeiUpsides,c('Country','Policy'),mutate,TotalProfitsUpside=sum(AbsChangeTotalProfits,na.rm=T),
-                      TotalProfitsUpsideFromSQ=sum(AbsChangeFromSQProfits,na.rm=T),PercOfUpside=100*(AbsChangeTotalProfits/TotalProfitsUpside),
-                      PercOfUpsideFromSQ=100*(AbsChangeFromSQProfits/TotalProfitsUpsideFromSQ))
-    
+#     NeiUpsides<-ddply(NeiUpsides,c('Country','Policy'),mutate,TotalProfitsUpside=sum(AbsChangeTotalProfits,na.rm=T),
+#                       TotalProfitsUpsideFromSQ=sum(AbsChangeFromSQProfits,na.rm=T),PercOfUpside=100*(AbsChangeTotalProfits/TotalProfitsUpside),
+#                       PercOfUpsideFromSQ=100*(AbsChangeFromSQProfits/TotalProfitsUpsideFromSQ))
+#     
+    NeiUpsides<- NeiUpsides %>%
+      group_by(Country,Policy) %>%
+      mutate(TotalProfitsUpside=sum(AbsChangeTotalProfits,na.rm=T),
+             TotalProfitsUpsideFromSQ=sum(AbsChangeFromSQProfits,na.rm=T),PercOfUpside=100*(AbsChangeTotalProfits/TotalProfitsUpside),
+             PercOfUpsideFromSQ=100*(AbsChangeFromSQProfits/TotalProfitsUpsideFromSQ))
+      
+#       ddply(NeiUpsides,c('Country','Policy'),mutate,TotalProfitsUpside=sum(AbsChangeTotalProfits,na.rm=T),
+#                       TotalProfitsUpsideFromSQ=sum(AbsChangeFromSQProfits,na.rm=T),PercOfUpside=100*(AbsChangeTotalProfits/TotalProfitsUpside),
+#                       PercOfUpsideFromSQ=100*(AbsChangeFromSQProfits/TotalProfitsUpsideFromSQ))
+#     
+#     
     # Find countries where over 50% of profit increase relative to SQ for Catch Share Three comes from NEIs 
     NeiUpsides$NeiUpsideSQOver50<-FALSE
     
@@ -254,11 +315,19 @@ FisheriesUpsideV3<-function(Data,BaselineYear,DenominatorPolicy,RecoveryThreshol
 #
 #######################################################################################################
 
-  GlobalUpsides<-ddply(FisheryUpside,c('Policy'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),TotalProfits=sum(Profits,na.rm=T),
-                       TotalBaselineCatch=sum(BaselineCatch,na.rm=T),TotalBaselineBiomass=sum(BaselineBiomass,na.rm=T),TotalBaselineProfits=sum(BaselineProfits,na.rm=T),
-                       TotalNPV=sum(FinalNPV,na.rm=T),TotalCatchSQ=sum(CatchSQ,na.rm=T),TotalBiomassSQ=sum(BiomassSQ,na.rm=T),TotalProfitsSQ=sum(ProfitsSQ,na.rm=T),
-                       TotalNPVSQ=sum(NPVSQ,na.rm=T),TotalFood=sum(TotalFood,na.rm=T),TotalFoodSQ=sum(FoodSQ,na.rm=T),TotalMSY=sum(MSY,na.rm=T),Stocks=length(unique(IdOrig)))
-  
+  GlobalUpsides<- FisheryUpside %>%
+    group_by(Policy) %>%
+    summarize(TotalCatch=sum(Catch,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),TotalProfits=sum(Profits,na.rm=T),
+              TotalBaselineCatch=sum(BaselineCatch,na.rm=T),TotalBaselineBiomass=sum(BaselineBiomass,na.rm=T),TotalBaselineProfits=sum(BaselineProfits,na.rm=T),
+              TotalNPV=sum(FinalNPV,na.rm=T),TotalCatchSQ=sum(CatchSQ,na.rm=T),TotalBiomassSQ=sum(BiomassSQ,na.rm=T),TotalProfitsSQ=sum(ProfitsSQ,na.rm=T),
+              TotalNPVSQ=sum(NPVSQ,na.rm=T),TotalFood=sum(TotalFood,na.rm=T),TotalFoodSQ=sum(FoodSQ,na.rm=T),TotalMSY=sum(MSY,na.rm=T),Stocks=length(unique(IdOrig)))
+    
+    
+#    GlobalUpsides<-ddply(FisheryUpside,c('Policy'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),TotalProfits=sum(Profits,na.rm=T),
+#                        TotalBaselineCatch=sum(BaselineCatch,na.rm=T),TotalBaselineBiomass=sum(BaselineBiomass,na.rm=T),TotalBaselineProfits=sum(BaselineProfits,na.rm=T),
+#                        TotalNPV=sum(FinalNPV,na.rm=T),TotalCatchSQ=sum(CatchSQ,na.rm=T),TotalBiomassSQ=sum(BiomassSQ,na.rm=T),TotalProfitsSQ=sum(ProfitsSQ,na.rm=T),
+#                        TotalNPVSQ=sum(NPVSQ,na.rm=T),TotalFood=sum(TotalFood,na.rm=T),TotalFoodSQ=sum(FoodSQ,na.rm=T),TotalMSY=sum(MSY,na.rm=T),Stocks=length(unique(IdOrig)))
+#   
   # % upside relative to today   
   GlobalUpsides$PercChangeTotalProfits<-PercChange(GlobalUpsides$TotalProfits,GlobalUpsides$TotalBaselineProfits) #Percent change in  profits from current
   

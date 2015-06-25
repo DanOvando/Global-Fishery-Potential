@@ -1,14 +1,13 @@
 ExtendTimeSeries<- function(s,Data,BaselineYear,ExtendFAO)
 {
-  
-  
+ 
   source('Functions/RepMat.R')
   
   VarNames<- colnames(Data)
   
-#   NewData<- as.data.frame(matrix(NA,nrow=0,ncol=dim(Data)[2]))
-#   
-#   colnames(NewData)<- VarNames
+  #   NewData<- as.data.frame(matrix(NA,nrow=0,ncol=dim(Data)[2]))
+  #   
+  #   colnames(NewData)<- VarNames
   
   Stocks<- (unique(Data$IdOrig))
   
@@ -47,7 +46,7 @@ ExtendTimeSeries<- function(s,Data,BaselineYear,ExtendFAO)
       
       ReppedData$ExtendedTime<- TRUE
       
-#       NewData<- rbind(NewData,rbind(TempStock,ReppedData))
+      #       NewData<- rbind(NewData,rbind(TempStock,ReppedData))
       NewData<- rbind(TempStock,ReppedData)
       
     }   

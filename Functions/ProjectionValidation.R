@@ -19,8 +19,13 @@ ProjectionValidation<-function(ProjectionData,BaselineYear)
   output<-ProjectionData[ProjectionData$Year==max(ProjectionData$Year,na.rm=T) & ProjectionData$IdOrig %in% input$IdOrig,
                          c('IdOrig','Country','CatchShare','Year','Policy','BvBmsy','FvFmsy','MSY','g','phi','MarginalCost','Profits','Biomass','Catch','Price')]
 
-  npv<-ddply(ProjectionData[ProjectionData$IdOrig %in% output$IdOrig & ProjectionData$Policy!='Historic',],c('IdOrig','Policy'),summarize,FinalNPV=sum(DiscProfits,na.rm=T))
+  npv<- ProjectionData[ProjectionData$IdOrig %in% output$IdOrig & ProjectionData$Policy!='Historic',] %>%
+    group_by(IdOrig,Policy) %>%
+    summarize(FinalNPV=sum(DiscProfits,na.rm=T))
+    
+#   npv<-ddply(ProjectionData[ProjectionData$IdOrig %in% output$IdOrig & ProjectionData$Policy!='Historic',],c('IdOrig','Policy'),summarize,FinalNPV=sum(DiscProfits,na.rm=T))
   
+    
   npv$name<- paste(npv$IdOrig,npv$Policy,sep='-')
   
   output$name<- paste(output$IdOrig,output$Policy,sep='-')

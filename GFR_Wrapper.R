@@ -4,6 +4,7 @@
 # This code executes the steps in the Global Fishery Recovery program
 ######################################
 
+
 # Source Functions --------------------------------------------------------
 
 sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
@@ -53,7 +54,7 @@ if (RunAnalyses==TRUE)
       
       SampleIds<- sample(FaoIds,SubSample*length(FaoIds),replace=FALSE)
       # # # 
-      FullData<-  FullData[! FullData[,IdVar] %in% SampleIds,]
+      FullData<-  FullData[!( FullData[,IdVar] %in% SampleIds),]
     }
     
     if(is.character(SubSample))
@@ -87,23 +88,11 @@ if (RunAnalyses==TRUE)
     
     FullData<-FindResilience(FullData)
     
-    #     Overlap<- ddply(FullData,c('Year'),summarize,FullDataCatch=sum(Catch,na.rm=T))
-    # 
-    #     Raw<- ddply(RawData[RawData$Dbase=='FAO',],c('Year'),summarize,FullDataCatch=sum(Catch,na.rm=T))
-    #     
-    #     m<- join(Overlap,Raw,by='Year')
-    #     
-    #     quartz()
-    #     matplot(m[,2:3])
-    
-    #     rm(CleanedData)
-    
     write.csv(file=paste(ResultFolder,'Cleaned Compiled Database.csv',sep=''),FullData)
-    
+
     write.csv(file=paste(ResultFolder,'Omitted Stocks.csv',sep=''),DroppedStocks)
     
     write.csv(file=paste(ResultFolder,'Raw Database.csv',sep=''),RawData)
-    
   }
   else 
   {
@@ -362,7 +351,7 @@ if (RunAnalyses==TRUE)
   
   #   arg<- sample(GlobalStatus$Data$IdOrig,100,replace=F)
   
-#   CatchMSYresults<- (RunCatchMSY(subset(GlobalStatus$Data,IdOrig=='2013-FAO-61-34'),ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
+  #   CatchMSYresults<- (RunCatchMSY(subset(GlobalStatus$Data,IdOrig=='2013-FAO-61-34'),ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   CatchMSYresults<- (RunCatchMSY((GlobalStatus$Data),ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   
   #   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data[GlobalStatus$Data$IdOrig %in% arg,],ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
@@ -381,7 +370,7 @@ if (RunAnalyses==TRUE)
   MsyData$g[MsyData$Dbase=='RAM']<- ((MsyData$MSY*(1/MsyData$BtoKRatio))/MsyData$k)[MsyData$Dbase=='RAM']
   
   MsyData$g[is.na(MsyData$g)]<- mean(MsyData$g,na.rm=T) #FIX THIS XXX Apply mean r to fisheries with no r THIS WAS ASSIGNING ALL RAM STOCKS THE MEAN r VALUE
-
+  
   # Adjust MSY of forage fish and RAM stocks with unreliable k estimates (list received from Ray)
   MsyData<-AdjustMSY(Data=MsyData,RawData,ForageFish)
   
@@ -409,7 +398,7 @@ if (RunAnalyses==TRUE)
   
   
   MsyData$PercentGain<- 100*(MsyData$MSY/MsyData$Catch-1)
-    
+  
   # Run projection analysis -------------------------------------------------
   
   MsyData$Price<-BiomassData$Price
@@ -422,13 +411,13 @@ if (RunAnalyses==TRUE)
   
   save(file=paste(ResultFolder,"MsyData.rdata",sep=""),MsyData)
   
-# load(file=paste(ResultFolder,"MsyData.rdata",sep=""))
-
+  # load(file=paste(ResultFolder,"MsyData.rdata",sep=""))
+  
   MsyData$BestModel<- as.character(MsyData$BestModel)
   
   #   if(SubSample>0)
   #   {
-#   save.image(file=paste(ResultFolder,'Test Results Prior to Projections.rdata',sep=''))
+  #   save.image(file=paste(ResultFolder,'Test Results Prior to Projections.rdata',sep=''))
   #   }
   
   FullProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs,StatusQuoPolicy) #Run projections on MSY data that can be projected
@@ -443,18 +432,18 @@ if (RunAnalyses==TRUE)
   
   if (IncludeNEIs==TRUE)
   {
-#    Rprof()
+    #    Rprof()
     Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
     
     NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear,ResultFolder,Spec_ISSCAAP) #Run Nearest Neighbor NEI analysis    
     #Put NEI stocks back in the appropriate dataframes, remove stocks still missing data
     
-#    Rprof(NULL)
-#     RProfData<- readProfileData('Rprof.out')
-#     flatProfile(RProfData,byTotal=TRUE)
-   
+    #    Rprof(NULL)
+    #     RProfData<- readProfileData('Rprof.out')
+    #     flatProfile(RProfData,byTotal=TRUE)
+    
     ProjectionData<- rbind(ProjectionData,NeiData$ProjNeis)
-
+    
     BiomassData<- rbind(BiomassData,NeiData$BiomassNeis)
   }
   
@@ -499,7 +488,7 @@ if (RunAnalyses==F) #Load baseline versions of key dataframes for analysis after
   ProjectionData<- OriginalProjectionData #Fisheries that have B/Bmsy, MSY, and we've run the projections
   
   NoBmsy<- is.na(ProjectionData$Bmsy)
-    
+  
   ProjectionData$k[NoBmsy]<- ((ProjectionData$MSY/ProjectionData$g)*(1/ProjectionData$BtoKRatio))[NoBmsy]
   
   ProjectionData$Bmsy[NoBmsy]<- (ProjectionData$MSY/ProjectionData$g)[NoBmsy]
@@ -526,7 +515,14 @@ if (IncludeForageFish==FALSE)
 
 ProjectionData<-BuildPolicyBAUs(ProjectionData,BaselineYear)
 
-ProjectionData<- ddply(ProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
+# ProjectionData<- ddply(ProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
+
+ProjectionData<- ProjectionData %>%
+  group_by(IdOrig,Policy) %>%
+  mutate(NPV=cumsum(DiscProfits))
+
+#   ddply(ProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
+
 
 ProjectionData$NPV[ProjectionData$Policy=='Historic']<- NA
 
@@ -552,7 +548,11 @@ UnlumpedProjectionData<-CheckDuplicates(UnlumpedProjectionData[UnlumpedProjectio
 
 rm(UnlumpedData)
 
-UnlumpedProjectionData<- ddply(UnlumpedProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
+UnlumpedProjectionData<- UnlumpedProjectionData %>%
+  group_by(IdOrig,Policy) %>% 
+  mutate(NPV=cumsum(DiscProfits))
+
+# UnlumpedProjectionData<- ddply(UnlumpedProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
 
 UnlumpedProjectionData$NPV[UnlumpedProjectionData$Policy=='Historic']<- NA
 
@@ -571,7 +571,6 @@ UnlumpedUpsideOverfishOnly<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYea
 # write.csv(file=paste(ResultFolder,'Unlumped Country Upsides Overfish Only.csv',sep=''),UnlumpedUpsideOverfishOnly$CountryUpsides)
 
 # Calculate global upsides relative to Trevor denominator
-
 GlobalUpsideTrevor<-TrevorDenominator(GlobalUpsideOverF=UnlumpedUpsideOverfishOnly$GlobalUpside,GlobalUpsideAll=UnlumpedUpsideAllStocks$GlobalUpside,Discount) 
 
 
@@ -594,7 +593,7 @@ MakeKobePlot(ProjectionData,BaselineYear,'Global Kobe Plot.pdf')
 ProjectionValidationData<-ProjectionValidation(UnlumpedProjectionData,BaselineYear)
 
 # Produce table with values for paper from Rens scripts
-ValuesForPaper<-RenSummaryTable(UnlumpedData=UnlumpedProjectionData,LumpedData=ProjectionData,BaselineYear,ResultFolder,FigureFolder)
+# ValuesForPaper<-RenSummaryTable(UnlumpedData=UnlumpedProjectionData,LumpedData=ProjectionData,BaselineYear,ResultFolder,FigureFolder)
 
 # Produce Country Summary table and Stock List (returns list with Country summaries and Stock list, writes csvs of both)
 PercentCoverage<-StockAndCountrySummary(UnlumpedProjectionData,ProjectionData,StitchIds,BaselineYear)

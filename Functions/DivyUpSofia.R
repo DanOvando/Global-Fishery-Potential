@@ -89,8 +89,13 @@ DivyUpSofia<-function(ProjectionData,RawData)
              c('IdOrig','Country','Year','SciName','SpeciesCatName','Catch')]
     
     # calculate percentages for each country
-    cntryPercs<-ddply(tempF,c('Country'),summarize,TotalCatch=sum(Catch,na.rm=T))
-    
+#     cntryPercs<-ddply(tempF,c('Country'),summarize,TotalCatch=sum(Catch,na.rm=T))
+
+    cntryPercs<- tempF %>%
+      group_by(Country) %>%
+      summarize(TotalCatch=sum(Catch,na.rm=T))
+      
+        
     cntryPercs$PercOfTotal<- cntryPercs$TotalCatch/sum(cntryPercs$TotalCatch,na.rm=T)
     
     if(length(unique(cntryPercs$Country))<length(cntrys))
