@@ -1,16 +1,5 @@
 MakeKobePlot<- function(Data,PlotYear,FigureName)
 {
-  
-#     Data<- BiomassStatus$D
-  
-# FaoData<- MsyData[MsyData$Dbase=='FAO',]
-# 
-# (FaoData$Catch/FaoData$MSY)/FaoData$BvBmsy
-# 
-# 
-#  PlotYear<- 2006
-# # 
-#  FigureName<- 'Trial Kobe Plot'
 
 
 if (any(Data$BvBmsy<0,na.rm=T)){Data$BvBmsy<- exp(Data$BvBmsy)}
@@ -23,7 +12,11 @@ BaselineData$BvBmsy[BaselineData$BvBmsy>2.5]<- 2.5
 
 DensityData<- (kde2d(BaselineData$BvBmsy,BaselineData$FvFmsy,n=500))
 
-FTrend<- ddply(Data,c('Year','Dbase'),summarize,FTrend=mean(FvFmsy,na.rm=T))
+FTrend<- Data %>%
+  group_by(Year,Dbase) %>%
+  summarize(FTrend=mean(FvFmsy,na.rm=T))
+  
+# FTrend<- ddply(Data,c('Year','Dbase'),summarize,FTrend=mean(FvFmsy,na.rm=T))
 
 KobeColors<- colorRampPalette(c("lightskyblue", "white",'gold1'))
 

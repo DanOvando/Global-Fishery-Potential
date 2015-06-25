@@ -44,7 +44,11 @@ FindResilience<-function(Data)
   # Calculate frequency of resilience categories for each ISSCAAP group
   Data$Value[is.na(Data$Res)==F]<-1
   
-  ResCount<-ddply(Data,c('SpeciesCatName','Res'),summarize,Count=sum(Value,na.rm=T))
+  ResCount<- Data %>%
+    group_by(SpeciesCatName,Res) %>%
+    summarize(Count=sum(Value,na.rm=T))
+  
+  # ResCount<-ddply(Data,c('SpeciesCatName','Res'),summarize,Count=sum(Value,na.rm=T))
   
   cats<-unique(ResCount$SpeciesCatName)
   

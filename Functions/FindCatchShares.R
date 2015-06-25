@@ -159,9 +159,16 @@ FindCatchShares<-function(DataR,CatchSharePercent)
   
   colnames(matchM)<-c('IdOrig_RAM','Dbase','Country_RAM','CommName_RAM','SciName','RegionFAO','CatchShare_RAM','IdOrig_FAO','Country_FAO','CommName_FAO','Catch','CatchShare_FAO')
   
-  CSpercs<-ddply(matchM,c('IdOrig_RAM','CommName_RAM','CatchShare_FAO'),summarize,TotalCatch=sum(Catch,na.rm=T))
+  CSpercs<- matchM %>%
+    group_by(IdOrig_RAM,CommName_RAM,CatchShare_FAO) %>%
+    summarize(TotalCatch=sum(Catch,na.rm=T)) %>%
+    ungroup() %>%
+    group_by(IdOrig_RAM) %>%
+    mutate(AllCatch=sum(TotalCatch,na.rm=T),Perc=100*(TotalCatch/AllCatch))
+
+#   CSpercs<-ddply(matchM,c('IdOrig_RAM','CommName_RAM','CatchShare_FAO'),summarize,TotalCatch=sum(Catch,na.rm=T))
   
-  CSpercs<-ddply(CSpercs,c('IdOrig_RAM'),mutate,AllCatch=sum(TotalCatch,na.rm=T),Perc=100*(TotalCatch/AllCatch))
+#   CSpercs<-ddply(CSpercs,c('IdOrig_RAM'),mutate,AllCatch=sum(TotalCatch,na.rm=T),Perc=100*(TotalCatch/AllCatch))
   
   CSpercs$CatchShare_Final<-NA
   

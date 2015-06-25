@@ -11,10 +11,10 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
   eTest<-ProjectionData[is.na(ProjectionData$BvBmsy)==F & is.na(ProjectionData$FvFmsy)==F & ProjectionData$Year==BaselineYear,]
   
   # calculate revenue
-#   eTest$Revenue<-eTest$Price * eTest$MSY * eTest$FvFmsy * eTest$BvBmsy
+  #   eTest$Revenue<-eTest$Price * eTest$MSY * eTest$FvFmsy * eTest$BvBmsy
   
   eTest$Revenue<-eTest$Price * eTest$Catch
-
+  
   # calculate cost, cost per ton and cost:revenue ratio
   eTest$Cost<-eTest$MarginalCost * (eTest$FvFmsy * eTest$g)^beta
   
@@ -23,17 +23,26 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
   eTest$CostRevRatio<-eTest$Cost/eTest$Revenue
   
   eTest<-eTest[is.na(eTest$SpeciesCatName)==F,]
-    
+  
   # Summarize revenue by country
-  CountryRevenues<-ddply(eTest,c("Country"),summarize,TotalRevenue=sum(Revenue,na.rm=T), TotalCatch=sum(Catch,na.rm=T),TotalStocks=length(unique(IdOrig)))
+  CountryRevenues<- eTest %>%
+    group_by(Country) %>%
+    summarize(TotalRevenue=sum(Revenue,na.rm=T), TotalCatch=sum(Catch,na.rm=T),TotalStocks=length(unique(IdOrig)))
+  
+  #   CountryRevenues<-ddply(eTest,c("Country"),summarize,TotalRevenue=sum(Revenue,na.rm=T), TotalCatch=sum(Catch,na.rm=T),TotalStocks=length(unique(IdOrig)))
   
   fao<-RawData[RawData$Dbase=='FAO',]
   
-  faoCatch<-ddply(fao[fao$Year==BaselineYear,],c('Country','Year'),summarize,TotalCatch=sum(Catch,na.rm=T))
+  faoCatch<- fao[fao$Year==BaselineYear,] %>%
+    group_by(Country,Year) %>%
+    summarize(TotalCatch=sum(Catch,na.rm=T))
   
-#   show(sum(CountryRevenues$TotalCatch)) # total catch in ProjectionData
-#   show(sum(CountryRevenues$TotalCatch)/sum(faoCatch$TotalCatch)) # percent of total global catch in baseline year
-#   
+#   faoCatch<-ddply(fao[fao$Year==BaselineYear,],c('Country','Year'),summarize,TotalCatch=sum(Catch,na.rm=T))
+  
+  
+  #   show(sum(CountryRevenues$TotalCatch)) # total catch in ProjectionData
+  #   show(sum(CountryRevenues$TotalCatch)/sum(faoCatch$TotalCatch)) # percent of total global catch in baseline year
+  #   
   # calculate percent of total catch that is projected for each country
   CountryRevenues$PercTotal<-NA
   
@@ -50,17 +59,17 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
   # plot histograms of cost:revenue ratio by species category
   pdf(file=paste(FigureFolder,"Histograms Cost Revenue Ratio by Species Category.pdf",sep=''),width=16, height=10)
   print(ggplot(eTest[eTest$CostRevRatio<4,],aes(CostRevRatio)) +
-    geom_histogram(binwidth=.1) +
-    aes(y=..density..) +
-    facet_wrap(~SpeciesCatName) +
-    theme(text=element_text(size=15)) +  # for removing gray background: ,panel.background=element_blank()) +
-    labs(title="Cost to Revenue Ratio by ISSCAAP Group", x = "Cost:Revenue Ratio", y = "Density"))
+          geom_histogram(binwidth=.1) +
+          aes(y=..density..) +
+          facet_wrap(~SpeciesCatName) +
+          theme(text=element_text(size=15)) +  # for removing gray background: ,panel.background=element_blank()) +
+          labs(title="Cost to Revenue Ratio by ISSCAAP Group", x = "Cost:Revenue Ratio", y = "Density"))
   dev.off()
   
   # Boxplots by species category and region
   
   regs<-c('37','51','27','21','77','34','81','48','47','31','87','57','41','71','67','61','88','58','18')
-    
+  
   pdf(file=paste(FigureFolder,"Cost to Revenue Ratio by Species Category and Region.pdf",sep=''),width=12, height=10)
   
   for(b in 1:length(regs))
@@ -86,10 +95,10 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
   
   SummaryTable<-data.frame(matrix(nrow=length(SpCats),ncol=9))
   colnames(SummaryTable)<-c('ISSCAAP Group','Stocks', 'Min','1st Quart','Median','Mean','3rd Quart','Max')
-
+  
   SummaryTable2<-data.frame(matrix(nrow=length(SpCats),ncol=9))
   colnames(SummaryTable2)<-c('ISSCAAP Group','Stocks', 'Min','1st Quart','Median','Mean','3rd Quart','Max')
-
+  
   for(b in 1:length(SpCats))
   {
     temp<-eTest$CostRevRatio[eTest$SpeciesCatName==SpCats[b]]
@@ -112,7 +121,7 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
   
   write.csv(file=paste(ResultFolder,'Cost_Revenue_Ratios_ISSCAAP.csv',sep=''),SummaryTable)
   write.csv(file=paste(ResultFolder,'CostPerTon_Ratios_ISSCAAP.csv',sep=''),SummaryTable2)
-
+  
   write.csv(file=paste(ResultFolder,'Cost_Revenue_Ratio_AllData.csv',sep=''),OverallCostRevSummary)
   
   # subset fisheries with outlier cost:revenue ratios to look for causes
@@ -123,8 +132,8 @@ CostRevCheck<-function(Data,RawData,BaselineYear)
   # subset eTest to include only economically relevent columns
   eTest<-eTest[,c('IdOrig','SpeciesCatName', 'CommName','Year','Catch','Fmort','BvBmsy','FvFmsy','Price',
                   'Revenue','Cost','CostRevRatio','MSY','g','MarginalCost')]
-
-
+  
+  
   
   return(list(FisheryValues=eTest,CountryRevenues=CountryRevenues,CostRevenueAllData=OverallCostRevSummary,ISSCAAPCostRevenues=SummaryTable,CostRevenueOutliers=OutlierRatios))
   

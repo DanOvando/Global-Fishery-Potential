@@ -79,23 +79,11 @@ if (RunAnalyses==TRUE)
     
     FullData<-FindResilience(FullData)
     
-    #     Overlap<- ddply(FullData,c('Year'),summarize,FullDataCatch=sum(Catch,na.rm=T))
-    # 
-    #     Raw<- ddply(RawData[RawData$Dbase=='FAO',],c('Year'),summarize,FullDataCatch=sum(Catch,na.rm=T))
-    #     
-    #     m<- join(Overlap,Raw,by='Year')
-    #     
-    #     quartz()
-    #     matplot(m[,2:3])
-    
-    #     rm(CleanedData)
-    
     write.csv(file=paste(ResultFolder,'Cleaned Compiled Database.csv',sep=''),FullData)
-    
+
     write.csv(file=paste(ResultFolder,'Omitted Stocks.csv',sep=''),DroppedStocks)
     
     write.csv(file=paste(ResultFolder,'Raw Database.csv',sep=''),RawData)
-    
   }
   else 
   {
@@ -523,7 +511,7 @@ ProjectionData<-BuildPolicyBAUs(ProjectionData,BaselineYear)
 ProjectionData<- ProjectionData %>%
   group_by(IdOrig,Policy) %>%
   mutate(NPV=cumsum(DiscProfits))
-  
+
 #   ddply(ProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
 
 
@@ -551,7 +539,11 @@ UnlumpedProjectionData<-CheckDuplicates(UnlumpedProjectionData[UnlumpedProjectio
 
 rm(UnlumpedData)
 
-UnlumpedProjectionData<- ddply(UnlumpedProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
+UnlumpedProjectionData<- UnlumpedProjectionData %>%
+  group_by(IdOrig,Policy) %>% 
+  mutate(NPV=cumsum(DiscProfits))
+
+# UnlumpedProjectionData<- ddply(UnlumpedProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
 
 UnlumpedProjectionData$NPV[UnlumpedProjectionData$Policy=='Historic']<- NA
 
@@ -570,7 +562,6 @@ UnlumpedUpsideOverfishOnly<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYea
 # write.csv(file=paste(ResultFolder,'Unlumped Country Upsides Overfish Only.csv',sep=''),UnlumpedUpsideOverfishOnly$CountryUpsides)
 
 # Calculate global upsides relative to Trevor denominator
-
 GlobalUpsideTrevor<-TrevorDenominator(GlobalUpsideOverF=UnlumpedUpsideOverfishOnly$GlobalUpside,GlobalUpsideAll=UnlumpedUpsideAllStocks$GlobalUpside,Discount) 
 
 
@@ -593,7 +584,7 @@ MakeKobePlot(ProjectionData,BaselineYear,'Global Kobe Plot.pdf')
 ProjectionValidationData<-ProjectionValidation(UnlumpedProjectionData,BaselineYear)
 
 # Produce table with values for paper from Rens scripts
-ValuesForPaper<-RenSummaryTable(UnlumpedData=UnlumpedProjectionData,LumpedData=ProjectionData,BaselineYear,ResultFolder,FigureFolder)
+# ValuesForPaper<-RenSummaryTable(UnlumpedData=UnlumpedProjectionData,LumpedData=ProjectionData,BaselineYear,ResultFolder,FigureFolder)
 
 # Produce Country Summary table and Stock List (returns list with Country summaries and Stock list, writes csvs of both)
 PercentCoverage<-StockAndCountrySummary(UnlumpedProjectionData,ProjectionData,StitchIds,BaselineYear)

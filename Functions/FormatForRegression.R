@@ -7,7 +7,6 @@ FormatForRegression<- function(f, Data,Fisheries,DependentVariable,CatchVariable
   # the structure for a panel regression #
   
   # Create Regression Data Frame --------------------------------------------
-    
   Where<- Data[,IdVar]==Fisheries[f]
   
   TempFrame<- Data[Where,]

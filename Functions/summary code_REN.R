@@ -25,7 +25,7 @@ zu
 #write.csv(zu,"//babylon/gaineslab/rcabral/Desktop/Costello Upside Paper/plotcode/revcode/DuplicatesUnlumped.csv")
 ################
 
-library(plyr)
+# library(plyr)
 
 UnlumpedUpsideAllStocks<-FisheriesUpsideV3_REN(UnlumpedData,BaselineYear,DenominatorPolicy='Business As Usual',RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='All Stocks')
 LumpedUpsideAllStocks<-FisheriesUpsideV3_REN(LumpedData,BaselineYear,DenominatorPolicy='Business As Usual',RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='All Stocks')
@@ -265,8 +265,16 @@ m$Unlumped[28]<-(GlobeResU$AnnuityOutTo2050[GlobeResU$Policy=="CatchShare"]-Glob
 m$description1[29]<-"under BAU, 73% of global fisheries are likely to be in need of recovery by 2050"
 m$description2[30]<-"(this rises to 92% under the pessimistic BAU).?"
 
-BvBMSYNeedrecoveredU<-ddply(UnlumpedData,c('Policy'),summarize,needrecovered=length(IdOrig[Year==2050 & BvBmsy<0.8])*100/length(IdOrig[Year==2050]),meantimerecov= mean(c(min(Year[BvBmsy>=0.8])))       )
-BvBMSYNeedrecoveredU
+BvBMSYNeedrecoveredU<- UnlumpedData %>%
+  group_by(Policy) %>%
+  summarize(needrecovered=length(IdOrig[Year==2050 & BvBmsy<0.8])*100/length(IdOrig[Year==2050]),meantimerecov= mean(c(min(Year[BvBmsy>=0.8])))     )
+  
+#   ddply(UnlumpedData,c('Policy'),summarize,needrecovered=length(IdOrig[Year==2050 & BvBmsy<0.8])*100/length(IdOrig[Year==2050]),meantimerecov= mean(c(min(Year[BvBmsy>=0.8])))       )
+
+# BvBMSYNeedrecoveredU<-ddply(UnlumpedData,c('Policy'),summarize,needrecovered=length(IdOrig[Year==2050 & BvBmsy<0.8])*100/length(IdOrig[Year==2050]),meantimerecov= mean(c(min(Year[BvBmsy>=0.8])))       )
+
+
+# BvBMSYNeedrecoveredU
 
 ####
 m$Unlumped[29]<-BvBMSYNeedrecoveredU$needrecovered[BvBMSYNeedrecoveredU$Policy=="Business As Usual"]
@@ -276,7 +284,13 @@ m$Unlumped[30]<-BvBMSYNeedrecoveredU$needrecovered[BvBMSYNeedrecoveredU$Policy==
 m$description1[31]<-"In contrast, if reform efforts are put in place now, the mean time to recovery would be < 11 years,"
 m$description2[32]<-"and by mid-century, the vast majority (84%) of stocks would be biologically healthy."
 
-BvBMSYU<-ddply(UnlumpedData,c('IdOrig'),summarize,meantimerecov= mean(c(min(Year[BvBmsy>=0.8 & Policy == "Catch Share Three"])),na.rm=T),included=sum(Year[Year==2012 & BvBmsy<0.8 & Policy == "Historic"]))
+BvBMSYU<- UnlumpedData %>%
+  group_by(IdOrig) %>%
+  summarize(meantimerecov= mean(c(min(Year[BvBmsy>=0.8 & Policy == "Catch Share Three"])),na.rm=T),included=sum(Year[Year==2012 & BvBmsy<0.8 & Policy == "Historic"]))
+
+# BvBMSYU<-ddply(UnlumpedData,c('IdOrig'),summarize,meantimerecov= mean(c(min(Year[BvBmsy>=0.8 & Policy == "Catch Share Three"])),na.rm=T),included=sum(Year[Year==2012 & BvBmsy<0.8 & Policy == "Historic"]))
+
+
 BvBMSYU$meantimerecov[!is.finite(BvBMSYU$meantimerecov)] <- NA
 m$Unlumped[31]<-mean(c(BvBMSYU$meantimerecov[BvBMSYU$included==2012]),na.rm=TRUE)-2012
 m$Unlumped[32]<-100-BvBMSYNeedrecoveredU$needrecovered[BvBMSYNeedrecoveredU$Policy=="Catch Share Three"]
@@ -363,14 +377,27 @@ m$Lumped[26]<-GlobeResL$HarvestIn2050[GlobeResL$Policy=="Catch Share Three"]-Glo
 m$Lumped[27]<-(GlobeResL$AnnuityOutTo2050[GlobeResL$Policy=="Catch Share Three"]-GlobeResL$AnnuityOutTo2050[GlobeResL$Policy=="Fmsy Three"])*100/GlobeResL$AnnuityOutTo2050[GlobeResL$Policy=="Fmsy Three"]
 m$Lumped[28]<-(GlobeResL$AnnuityOutTo2050[GlobeResL$Policy=="CatchShare"]-GlobeResL$AnnuityOutTo2050[GlobeResL$Policy=="Fmsy"])*100/GlobeResL$AnnuityOutTo2050[GlobeResL$Policy=="Fmsy"]
 
-BvBMSYNeedrecoveredL<-ddply(LumpedData,c('Policy'),summarize,needrecovered=length(IdOrig[Year==2050 & BvBmsy<0.8])*100/length(IdOrig[Year==2050]))
-BvBMSYNeedrecoveredL
+# BvBMSYNeedrecoveredL<-ddply(LumpedData,c('Policy'),summarize,needrecovered=length(IdOrig[Year==2050 & BvBmsy<0.8])*100/length(IdOrig[Year==2050]))
+
+BvBMSYNeedrecoveredL<- LumpedData %>%
+  group_by(Policy) %>%
+  summarize(needrecovered=length(IdOrig[Year==2050 & BvBmsy<0.8])*100/length(IdOrig[Year==2050]))
+
+# BvBMSYNeedrecoveredL
 ####
 m$Lumped[29]<-BvBMSYNeedrecoveredL$needrecovered[BvBMSYNeedrecoveredL$Policy=="Business As Usual"]
 ###
 m$Lumped[30]<-BvBMSYNeedrecoveredL$needrecovered[BvBMSYNeedrecoveredL$Policy=="Business As Usual Pessimistic"]
 
-BvBMSYL<-ddply(LumpedData,c('IdOrig'),summarize,meantimerecov= mean(c(min(Year[BvBmsy>=0.8 & Policy == "Catch Share Three"])),na.rm=T),included=sum(Year[Year==2012 & BvBmsy<0.8 & Policy == "Historic"]))
+BvBMSYL<- LumpedData %>%
+  group_by(IdOrig) %>%
+  summarise(meantimerecov= mean(c(min(Year[BvBmsy>=0.8 & Policy == "Catch Share Three"])),na.rm=T),included=sum(Year[Year==2012 & BvBmsy<0.8 & Policy == "Historic"]))
+  
+
+# BvBMSYL<-ddply(LumpedData,c('IdOrig'),summarize,meantimerecov= mean(c(min(Year[BvBmsy>=0.8 & Policy == "Catch Share Three"])),na.rm=T),included=sum(Year[Year==2012 & BvBmsy<0.8 & Policy == "Historic"]))
+
+
+
 BvBMSYL$meantimerecov[!is.finite(BvBMSYL$meantimerecov)] <- NA
 m$Lumped[31]<-mean(c(BvBMSYL$meantimerecov[BvBMSYL$included==2012]),na.rm=TRUE)-2012
 m$Lumped[32]<-100-BvBMSYNeedrecoveredL$needrecovered[BvBMSYNeedrecoveredL$Policy=="Catch Share Three"]

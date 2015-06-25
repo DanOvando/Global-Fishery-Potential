@@ -17,9 +17,16 @@ RecoveryTrend<-function(ProjectionData,RecoveryThreshold,OnlyOverfish,StartYear)
   
   RecoveryData$Recovered[RecoveryData$BvBmsy>RecoveryThreshold]<-TRUE
   
-  RecoveryTrend<-ddply(RecoveryData,c('Policy','Year'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalProfit=sum(Profits,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),
-                       Stocks=length(unique(IdOrig)),TotalRecovered=sum(Recovered,na.rm=T),
-                       PercentHealthy=100*(sum(Recovered,na.rm=T)/length(unique(IdOrig))))
+  RecoveryTrend<- RecoveryData %>%
+    group_by(Policy,Year) %>%
+    summarize(TotalCatch=sum(Catch,na.rm=T),TotalProfit=sum(Profits,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),
+              Stocks=length(unique(IdOrig)),TotalRecovered=sum(Recovered,na.rm=T),
+              PercentHealthy=100*(sum(Recovered,na.rm=T)/length(unique(IdOrig))))
+    
+#   RecoveryTrend<-ddply(RecoveryData,c('Policy','Year'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalProfit=sum(Profits,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),
+#                        Stocks=length(unique(IdOrig)),TotalRecovered=sum(Recovered,na.rm=T),
+#                        PercentHealthy=100*(sum(Recovered,na.rm=T)/length(unique(IdOrig))))
+#   
   
   PlotTrend<-melt(RecoveryTrend[RecoveryTrend$Year>=StartYear,],measure.vars=c('PercentHealthy','TotalCatch','TotalProfit','TotalBiomass'))
   
@@ -68,5 +75,5 @@ dev.off()
 #   
 #   dev.off()
   
-  return()
+  # return()
 }
