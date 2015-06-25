@@ -5,7 +5,7 @@
 ######################################
 
 rm(list=ls())
-set.seed(421)
+set.seed(423)
 library(car)
 library(plyr)
 library(lattice)
@@ -32,7 +32,7 @@ library(tidyr)
 
 RunAnalyses<- TRUE
 
-BatchFolder<- '4.2 CHECK R UPDATES'
+BatchFolder<- '4.3'
 
 BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
 
@@ -52,7 +52,7 @@ if (RunAnalyses==FALSE)
 {
   load(paste(ResultFolder,'Global Fishery Recovery Results.rdata',sep=''))
   
-  BatchFolder<- '4.2'
+  BatchFolder<- '4.2 CHECK R UPDATES'
   
   BatchFolder<- paste('Results/',BatchFolder,'/',sep='')
   
@@ -68,9 +68,9 @@ if (RunAnalyses==FALSE)
 
 # Key Parameters ----------------------------------------------------------------
 
-SubSample<- 0.98
+SubSample<- 0
 
-NumCPUs<- 2 #Number of CPUs to use for parallel computing of CatchMSY
+NumCPUs<- 4 #Number of CPUs to use for parallel computing of CatchMSY
 
 DefaultPhi<- .188
 
