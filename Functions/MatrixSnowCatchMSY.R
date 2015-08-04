@@ -36,15 +36,15 @@ MatrixSnowCatchMSY<- function(s,Data,CommonError,CommonRange,sigR,Smooth,Display
   
   btMat<- matrix(NA,nrow=dim(CatchMat)[1],dim(CatchMat)[2])
   
-  btMat[,1]<- ParamSpace$K*ParamSpace$StartBio*exp(rnorm(1,0, ParamSpace$sigR))
-  
-  xt<- rnorm(1,0, sigR)
+  btMat[,1]<- ParamSpace$K * ParamSpace$StartBio * exp(rnorm(dim(btMat)[1],0, ParamSpace$sigR))
   
   for (y in 2:length(ct))
   {
-    #     btMat[,y]<- btMat[,y-1]+ParamSpace$r*btMat[,y-1]*(1-btMat[,y-1]/ParamSpace$K)-ct[y-1]*exp(xt)
-    btMat[,y]<- btMat[,y-1]+((phi+1)/phi)*ParamSpace$g*btMat[,y-1]*(1-(btMat[,y-1]/ParamSpace$K)^phi)-ct[y-1]*exp(xt)    
+    xt <- exp(rnorm(dim(btMat)[1],0, sigR))
+    
+    btMat[,y]<- (btMat[,y-1]+((phi+1)/phi)*ParamSpace$g*btMat[,y-1]*(1-(btMat[,y-1]/ParamSpace$K)^phi)-ct[y-1])*(xt)    
   }
+  
   
   ItId<- 1:dim(btMat)[1]
   
