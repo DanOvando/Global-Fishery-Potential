@@ -93,7 +93,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     }
     if (t>1)
     {
-      f<- min(4,max(f+omega*(pi/MsyProfits),.0001))
+      f<- pmin(4,pmax(f+omega*(pi/MsyProfits),.0001))
     }
     return(f)
   }
