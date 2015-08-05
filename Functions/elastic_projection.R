@@ -1,7 +1,20 @@
 # Function to project stocks forward, 
 # adjusting prices and open access to reflect supply, post BAU policy construction
-elastic_projection <- function(poldata,oa_ids,elasticity)
+elastic_projection <- function(poldata,oa_ids,elasticity = -10, discount = 0.05, base_year = 2012)
 {
+  OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
+  {
+    #Function to adjust f in response to prior profits
+    if (t==1)
+    {
+      f=f
+    }
+    if (t>1)
+    {
+      f<- pmin(4,pmax(f+omega*(pi/MsyProfits),.0001))
+    }
+    return(f)
+  }
   
   # Set up base conditions -------
   years <- unique(poldata$Year)
@@ -12,11 +25,11 @@ elastic_projection <- function(poldata,oa_ids,elasticity)
   poldata <- poldata %>%
     group_by(IdOrig) %>%
     mutate(alpha = base_supply$total_catch / Price^elasticity, 
-           pricek = (1 / alpha)^(1/elasticity))
+           pricek = (1 / alpha)^(1 / elasticity)) %>%
+    ungroup()
   
   oa <- subset(poldata, IdOrig %in% oa_ids)
-  
-  
+ 
   oa_msyprofits <- (oa$MSY * oa$Price - oa$MarginalCost * (oa$g)^beta)[oa$Year == years[1]]
   
   # loops!-------
@@ -48,7 +61,9 @@ elastic_projection <- function(poldata,oa_ids,elasticity)
     
     oa$Catch[where_year] <- (oa$MSY * oa$FvFmsy * oa$BvBmsy)[where_year]
     
-    supply <- filter(poldata,Year == years[y]) %>%
+    supply <- poldata %>%
+      ungroup() %>%
+      filter(Year == years[y]) %>%
       summarise(total_catch = sum(Catch, na.rm = T))
     
     poldata[poldata$IdOrig %in% oa_ids & poldata$Year == years[y],] <- oa[where_year,] #Put open access stocks in the given year back in the general population
@@ -57,12 +72,22 @@ elastic_projection <- function(poldata,oa_ids,elasticity)
     
     pi <- (poldata$pricek * supply$total_catch^(1/elasticity))[where_all_year] #adjust prices
     
+    if (any(is.finite(pi) == F ))
+    {
+      browser()
+    }
+    
     poldata$Price[where_all_year] <- pi
     
     poldata$Profits[where_all_year] <- ((poldata$Price * poldata$MSY * poldata$FvFmsy * poldata$BvBmsy) 
                                         - poldata$MarginalCost * (poldata$FvFmsy * poldata$g)^beta )[where_all_year] #adjust profits
     
   }
+  
+  poldata <- poldata %>%
+    group_by(Year) %>%
+    mutate(DiscProfits = Profits * (1 + discount)^-(Year-base_year))
+  
   poldata <- poldata %>%
     select(-alpha,-pricek)
   
