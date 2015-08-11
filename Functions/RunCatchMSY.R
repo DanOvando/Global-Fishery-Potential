@@ -80,6 +80,8 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
       
       CMSYResults <- (sfClusterApplyLB(1:length(stock_id), MatrixSnowCatchMSY,Data=Data,CommonError=CommonError,CommonRange=CommonRange,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
                                CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
+      
+      sfStop()
     }
   }
   if (NumCPUs==1)
