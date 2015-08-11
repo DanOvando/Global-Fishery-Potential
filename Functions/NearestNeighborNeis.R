@@ -136,6 +136,8 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultF
       
       sfExportAll()
       sfLibrary(dplyr)
+      sfLibrary(stringr)
+      
       
       tempNEIs<- sfClusterApplyLB(1:length(nei_stock),SnowNEIs2,nei_stock=nei_stock,NEIs=NEIs,SpeciesLevel=SpeciesLevel,NeiStats=NeiStats,Spec_ISSCAAP=Spec_ISSCAAP,
                                   VarsToFill=VarsToFill)
