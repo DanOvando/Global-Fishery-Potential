@@ -25,7 +25,10 @@ ExtendTimeSeries<- function(s,Data,BaselineYear,ExtendFAO)
     MaxYear<- max(TempStock$Year[is.na(TempStock$Catch)==F & is.na(TempStock$BvBmsy)==F],na.rm=T)
     
   }
-  
+  if (length(which(TempStock$Year==MaxYear)) > 1)
+  {
+  stop('Theres an issue with extend time series on line 32')
+  }
   TempStock<- TempStock[1:which(TempStock$Year==MaxYear),]
   
   TempStock$ExtendedTime<- FALSE

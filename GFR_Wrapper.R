@@ -27,7 +27,18 @@ if (RunAnalyses==TRUE)
     
     Spec_Region_RAM$RegionFAO<- gsub("/",",",Spec_Region_RAM$RegionFAO,fixed=T) # change / to , for use in string parsing during filtering function
     
-    fulldata$phi<- DefaultPhi
+    if (custom_phi == T)
+    {
+      taxdata <- read.csv('Data/asfis_2015_taxonomy.csv', stringsAsFactors = F)
+      
+      phidata <- read.csv('Data/thorson_2012_msy_ratios.csv', stringsAsFactors = F)
+      
+      fulldata <- assign_phi(fulldata, taxdata, phidata, default_phi = DefaultPhi)
+    }
+    if (custom_phi == F)
+    {
+      fulldata$phi<- DefaultPhi
+    }
     
     CSids<-FindCatchShares(DataR=fulldata,CatchSharePercent=50)
     
@@ -89,7 +100,7 @@ if (RunAnalyses==TRUE)
     FullData<-FindResilience(FullData)
     
     write.csv(file=paste(ResultFolder,'Cleaned Compiled Database.csv',sep=''),FullData)
-
+    
     write.csv(file=paste(ResultFolder,'Omitted Stocks.csv',sep=''),DroppedStocks)
     
     write.csv(file=paste(ResultFolder,'Raw Database.csv',sep=''),RawData)
@@ -245,7 +256,12 @@ if (RunAnalyses==TRUE)
   # Assign and identify best predicted biomass to stocks  ---------------------------------------
   
   
-  HasAllRefs<- ddply(RamData,c('IdOrig'),summarize,HasAllBFM=any(is.na(BvBmsy)==F & is.na(FvFmsy)==F & is.na(MSY)==F))
+  # HasAllRefs<- ddply(RamData,c('IdOrig'),summarize,HasAllBFM=any(is.na(BvBmsy)==F & is.na(FvFmsy)==F & is.na(MSY)==F))
+  
+  HasAllRefs<- RamData %>%
+    group_by(IdOrig) %>%
+    summarize(HasAllBFM=any(is.na(BvBmsy)==F & is.na(FvFmsy)==F & is.na(MSY)==F)) %>%
+    ungroup()
   
   RamData<- RamData[RamData$IdOrig %in% HasAllRefs$IdOrig[HasAllRefs$HasAllBFM==T],]
   
@@ -389,12 +405,12 @@ if (RunAnalyses==TRUE)
   BiomassData<- AssignEconomicData(BiomassData,BvBmsyOpenAccess) #Assign price and cost data back to each stock in biomass data
   
   #Run quick diagnostic of CatchMSY results
-  pdf(file=paste(FigureFolder,'Catch MSY vs PRM BvBmsy predictions.pdf',sep=''))
-  print(xyplot(  CatchMSYBvBmsy ~ BvBmsy | Dbase,data=MsyData,xlab='PRM BvBmsy',ylab='CMSY BvBmsy',panel=function(x,y,...){
-    panel.xyplot(x,y,...)
-    panel.abline(a=0,b=1,lty=2)
-  }))
-  dev.off()
+#   pdf(file=paste(FigureFolder,'Catch MSY vs PRM BvBmsy predictions.pdf',sep=''))
+#   print(xyplot(  CatchMSYBvBmsy ~ BvBmsy | Dbase,data=MsyData,xlab='PRM BvBmsy',ylab='CMSY BvBmsy',panel=function(x,y,...){
+#     panel.xyplot(x,y,...)
+#     panel.abline(a=0,b=1,lty=2)
+#   }))
+#   dev.off()
   
   
   MsyData$PercentGain<- 100*(MsyData$MSY/MsyData$Catch-1)
@@ -513,7 +529,7 @@ if (IncludeForageFish==FALSE)
 
 # Add new "Business as Usual Policies" by combining the results of the respective status quo policies for certain types of stocks, outlined in the function
 
-ProjectionData<-BuildPolicyBAUs(ProjectionData,BaselineYear)
+ProjectionData <- BuildPolicyBAUs(ProjectionData,BaselineYear,elastic_demand = T, elasticity = -0.7)
 
 # ProjectionData<- ddply(ProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
 

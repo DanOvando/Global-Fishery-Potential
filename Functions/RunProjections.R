@@ -3,14 +3,13 @@
 # This code projects fished populations forward under different policy scenarios 
 ######################################
 
-RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy)
+RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy, Policies = c('StatusQuoOpenAccess','Opt','CatchShare','StatusQuoFForever','StatusQuoBForever','Fmsy','CloseDown'))
 {
 
   Data$MarginalCost<- NA
   
   # Loop over Each Stock ----------------------------------------------------
   
-  Policies<- c('StatusQuoOpenAccess','Opt','CatchShare','StatusQuoFForever','StatusQuoBForever','Fmsy','CloseDown')
   
   
   Data$BvBmsy<- pmin(1/Data$BtoKRatio,Data$BvBmsy) #Note capping projection data now
