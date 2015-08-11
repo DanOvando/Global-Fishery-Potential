@@ -5,7 +5,7 @@
 
 RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,NumCPUs,CatchMSYTrumps)
 {
-    
+  
   Data$RanCatchMSY<- FALSE
   
   Data$HasRamMSY<-  is.na(Data$MSY)==F & Data$Dbase=='RAM'
@@ -17,13 +17,13 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   Data$BtoKRatio<- 1/((Data$phi+1)^(1/Data$phi))
   
   MsyData<- Data
-    
+  
   MsyData$g<- NA
   
   MsyData$k<- NA
   
   MsyData$MSYLogSd<- NA
-    
+  
   MsyData$gLogSd<- NA
   
   MsyData$KLogSd<- NA
@@ -41,11 +41,11 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   
   # find mean range between final bio priors to pass to SnowCatchMSY_Matrix for stocks with finalbio>1
   MeanRange<-MsyData[is.na(MsyData$BvBmsySD)==F & MsyData$Year==2012,c('IdOrig','BvBmsy','BvBmsySD','BtoKRatio')]
-    
+  
   MeanRange$BoverK<-pmin(1,MeanRange$BvBmsy*MeanRange$BtoKRatio)
   
   MeanRange<-MeanRange[MeanRange$BoverK<0.95,]
-    
+  
   MeanRange$Bioerror<-MeanRange$BvBmsySD*MeanRange$BtoKRatio
   
   MeanRange$Bioerror[is.na(MeanRange$Bioerror)]<-CommonError
@@ -62,19 +62,25 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   
   if (NumCPUs>1)
   {
-
-    CMSYResults <- (mclapply(1:length(stock_id), MatrixSnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,CommonRange=CommonRange,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
+    
+    if (Sys.info()[1]!='Windows')
+    {
+      
+      CMSYResults <- (mclapply(1:length(stock_id), MatrixSnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,CommonRange=CommonRange,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
                              CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
-    
-    #      CMSYResults <- (mclapply(1:length(stock_id), SnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
-    #                                          CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
-    
-    #     sfInit( parallel=TRUE, cpus=NumCPUs,slaveOutfile="SnowfallMSY_ProgressWorkPlease.txt" )
-    #     
-    #     sfExport('Data','ErrorSize','CommonError','sigR','Smooth','Display','BestValues','ManualFinalYear','n','NumCPUs','CatchMSYTrumps','stock_id','IdVar')
-    #     
-    #     CMSYResults <- (sfClusterApplyLB(1:(length(stock_id)), SnowCatchMSY))
-    #     sfStop()
+    }
+    if (Sys.info()[1]=='Windows')
+    {
+      
+      sfInit( parallel=TRUE, cpus = NumCPUs)
+      
+      sfExportAll()
+      
+      sfLibrary(dplyr)
+      
+      CMSYResults <- (sfClusterApplyLB(1:length(stock_id), MatrixSnowCatchMSY,Data=Data,CommonError=CommonError,CommonRange=CommonRange,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
+                               CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
+    }
   }
   if (NumCPUs==1)
   {    
@@ -88,7 +94,7 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
     
     
     dev.off()
-
+    
     #     pdf(file=paste(FigureFolder,'Catch-MSY Diagnostics Normal.pdf',sep=''))
     #     
     #     
@@ -117,7 +123,7 @@ RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinal
   }
   
   CmsyStore<- ldply(CmsyStore)
-    
+  
   ConCatDat<- paste(MsyData$IdOrig,MsyData$Year,sep='-')
   
   ConCatCmsy<- paste(CmsyStore$IdOrig,CmsyStore$Year,sep='-')
