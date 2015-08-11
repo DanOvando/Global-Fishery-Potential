@@ -12,7 +12,7 @@
 
 
 
-BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elasticity = -0.7)
+BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elasticity = -0.7, Discount = 0)
 {
   
   ### 1) "Business As Usual Pessimistic" Where all non RAM and Catch share stocks go to Open Access
@@ -37,7 +37,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
   BAUpess<-rbind(ram,cs,other)
   
   BAUpess$Policy<-'Business As Usual Pessimistic'
-  
+  browser()
   elastic_BAUpess <- elastic_projection(poldata = BAUpess,oa_ids = otherids, elasticity = elasticity,
                                         discount = Discount, base_year = BaselineYear )  
   
