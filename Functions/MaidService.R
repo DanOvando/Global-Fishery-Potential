@@ -63,7 +63,7 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
       
       sfExportAll()
       
-      ExtendResults <- (sfClusterApplyLB(1:(length(Stocks)), ExtendTimeSeries,Data = Data, BaselineYear = BaselinYear, ExtendFAO = F )) 
+      ExtendResults <- (sfClusterApplyLB(1:(length(Stocks)), ExtendTimeSeries,Data = Data, BaselineYear = BaselineYear, ExtendFAO = F )) 
       
       sfStop()
     }
