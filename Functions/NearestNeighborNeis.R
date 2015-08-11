@@ -122,10 +122,27 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultF
   if (class(TryNEIs) == "try-error")  
   { 
     
-    if(NumCPUs>=1)
+    if (Sys.info()[1]!='Windows') 
     {
+      
       tempNEIs<-(mclapply(1:length(nei_stock),SnowNEIs2,nei_stock=nei_stock,NEIs=NEIs,SpeciesLevel=SpeciesLevel,NeiStats=NeiStats,Spec_ISSCAAP=Spec_ISSCAAP,
                           VarsToFill=VarsToFill,mc.cores=NumCPUs))
+    }
+    if (Sys.info()[1]=='Windows')
+    {
+      sfInit( parallel=TRUE, cpus=NumCPUs)
+      
+      #     sfExport("RunMatrix","BasePatches","Populations","BatchFolder","TimeToRun",local=FALSE)
+      
+      sfExportAll()
+      sfLibrary(dplyr)
+      sfLibrary(stringr)
+      
+      
+      tempNEIs<- sfClusterApplyLB(1:length(nei_stock),SnowNEIs2,nei_stock=nei_stock,NEIs=NEIs,SpeciesLevel=SpeciesLevel,NeiStats=NeiStats,Spec_ISSCAAP=Spec_ISSCAAP,
+                                  VarsToFill=VarsToFill)
+      sfStop()
+      
     }
     show('Completed NEI Stats mclapply')
     

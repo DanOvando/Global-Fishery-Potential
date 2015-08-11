@@ -35,17 +35,31 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy, Policies = c
   if (NumCPUs>1)
   {
     
+    if (Sys.info()[1]!='Windows') {
+      
+      
     Projections <- (mclapply(1:(length(Stocks)), SnowProjections,mc.cores=NumCPUs,
                              Data=Data,BaselineYear=BaselineYear,Stocks=Stocks,IdVar=IdVar,bvec=bvec,
                              Discount=Discount,tol=tol,beta=beta,CatchSharePrice=CatchSharePrice,CatchShareCost=CatchShareCost,
                              Policies=Policies,ProjectionTime=ProjectionTime,TempStockMatrix=TempStockMatrix,StatusQuoPolicy=StatusQuoPolicy))
-    #     sfInit( parallel=TRUE, cpus=NumCPUs )
-    #     sfExport('Data','BaselineYear','Stocks','IdVar','bvec','Discount','tol','beta','CatchSharePrice','CatchShareCost','Policies','ProjectionTime','TempStockMatrix')
-    #     #   sfExportAll()
-    #     
-    #     
-    #     Projections <- (sfClusterApplyLB(1:(length(Stocks)), SnowProjections))
-    #     sfStop()
+    }
+    if (Sys.info()[1]=='Windows')
+    {
+      
+      sfInit( parallel=TRUE, cpus=NumCPUs)
+      
+      #     sfExport("RunMatrix","BasePatches","Populations","BatchFolder","TimeToRun",local=FALSE)
+      
+      sfExportAll()
+      sfLibrary(dplyr)
+      
+      Projections <- sfClusterApplyLB(1:(length(Stocks)), SnowProjections,
+                                      Data=Data,BaselineYear=BaselineYear,Stocks=Stocks,IdVar=IdVar,bvec=bvec,
+                                      Discount=Discount,tol=tol,beta=beta,CatchSharePrice=CatchSharePrice,CatchShareCost=CatchShareCost,
+                                      Policies=Policies,ProjectionTime=ProjectionTime,TempStockMatrix=TempStockMatrix,StatusQuoPolicy=StatusQuoPolicy)
+      sfStop()
+    }
+
   }
   if (NumCPUs==1)
   {    

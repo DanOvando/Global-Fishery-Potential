@@ -37,19 +37,19 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
   BAUpess<-rbind(ram,cs,other)
   
   BAUpess$Policy<-'Business As Usual Pessimistic'
-  browser()
+  
   elastic_BAUpess <- elastic_projection(poldata = BAUpess,oa_ids = otherids, elasticity = elasticity,
                                         discount = Discount, base_year = BaselineYear )  
   
-    nonelastic<- subset(BAUpess, (IdOrig %in% otherids))
+  nonelastic<- subset(BAUpess, (IdOrig %in% otherids))
   
-    elastic<- subset(elastic_BAUpess, (IdOrig %in% otherids))
-    
-#     browser()
+  elastic<- subset(elastic_BAUpess, (IdOrig %in% otherids))
+  
+  #     browser()
   #   
-#     quartz()
-#     ggplot(nonelastic,aes(factor(Year),log(Price))) + geom_boxplot() + facet_wrap(~SpeciesCatName)
-#     
+  #     quartz()
+  #     ggplot(nonelastic,aes(factor(Year),log(Price))) + geom_boxplot() + facet_wrap(~SpeciesCatName)
+  #     
   #   elastic_summary <- elastic %>%
   #     group_by(Year) %>%
   #     summarize(TotalCatch = sum(Catch,na.rm = T), MeanPrice = mean(Price, na.rm = T))
@@ -117,11 +117,11 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
   FmsyThree$Policy<-'Fmsy Three'
   
   elastic_FmsyThree <- elastic_projection(poldata = FmsyThree, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear)  
-
-    ### Bind all composite policies to ProjectionData
+  
+  ### Bind all composite policies to ProjectionData
   if (elastic_demand == F){
     
-  ProjectionData<-rbind(ProjectionData,BAUpess,BAUoptim,CatchShareThree,FmsyThree)
+    ProjectionData<-rbind(ProjectionData,BAUpess,BAUoptim,CatchShareThree,FmsyThree)
   }
   if (elastic_demand == T){
     ProjectionData<-rbind(ProjectionData,elastic_BAUpess,elastic_BAUoptim,elastic_CatchShareThree,elastic_FmsyThree)

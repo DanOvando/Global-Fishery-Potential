@@ -61,9 +61,10 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
       
       sfInit( parallel=Parel, cpus=NumCPUs,slaveOutfile="ExtendTimeSeriesProgress.txt" )
       
-      sfExport('Data','BaselineYear')
+      sfExportAll()
       
-      ExtendResults <- (sfClusterApplyLB(1:(length(Stocks)), ExtendTimeSeries))      
+      ExtendResults <- (sfClusterApplyLB(1:(length(Stocks)), ExtendTimeSeries,Data = Data, BaselineYear = BaselineYear, ExtendFAO = F )) 
+      
       sfStop()
     }
     
