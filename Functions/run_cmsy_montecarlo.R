@@ -1,7 +1,7 @@
 run_cmsy_montecarlo<- function(Iterations,Stocks,ProjectionData,
                                CatchMSYPossibleParams,PolicyStorage,ErrorVars,
                                ErrorSize,NumCPUs,BaselineYear = 2012, CatchSharePrice = 1.31,
-                               CatchShareCost = 0.77)
+                               CatchShareCost = 0.77,NumCPUs = 1)
 {
   
   Sim_Forward= function(FStatusQuo,BStatusQuo,Policy,Policies,IsCatchShare,bvec,b0,Time = 38,p,MSY,c,g,phi,beta,omega)
