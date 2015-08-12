@@ -3,6 +3,8 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
   
   load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
   
+  sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
+  
   NumCPUs <- CPUs
   
   load(paste('Results/',runfolder,'/Data/ProjectionData Data.rdata', sep = ''))

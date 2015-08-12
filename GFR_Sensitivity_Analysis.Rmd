@@ -3,16 +3,16 @@ title: "GFR SOM Sensitivities"
 author: "Dan Ovando"
 date: "February 26, 2015"
 output:
-  word_document:
+  html_document:
     fig_caption: yes
-    fig_height: 6
-    fig_width: 8
   pdf_document:
     fig_caption: yes
     fig_height: 6
     fig_width: 8
-  html_document:
+  word_document:
     fig_caption: yes
+    fig_height: 6
+    fig_width: 8
 ---
 
 
@@ -66,11 +66,20 @@ setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
 
 library(ggplot2)
 
-BatchFolder<- "Results/4.2/"
+BatchFolder<- "Results/SCRATCH/"
 
-FigureFolder<- paste(BatchFolder,'Diagnostics/Individual Jackknife/',sep='')
+load_obj <- function(f)
+{
+    env <- new.env()
+    nm <- load(f, env)
+    browser()
+    env[[nm]]
+}
 
-Plots<- load(paste(FigureFolder,'Jacknife Plots.rdata',sep=''))
+FigureFolder<- paste(BatchFolder,'Diagnostics/Regional Jackknife/',sep='')
+
+load(paste(FigureFolder,'Jacknife Plots.rdata',sep=''))
+
 
 ```
 
@@ -93,13 +102,18 @@ The MSYs estimated through our individual jackknifing routine indicate that we a
 
 ```{r,echo=F,message=FALSE,warning=FALSE}
 
-setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
+# setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
 
-BatchFolder<- "Results/4.2/"
+# BatchFolder<- "Results/SCRATCH/"
 
 FigureFolder<- paste(BatchFolder,'Diagnostics/Regional Jackknife/',sep='')
 
-Plots<- load(paste(FigureFolder,'Jacknife Plots.rdata',sep=''))
+ load(paste(FigureFolder,'Jacknife Plots.rdata',sep=''))
+ 
+ 
+FigureFolder<- paste(BatchFolder,'Diagnostics/Individual Jackknife/',sep='')
+
+ load(paste(FigureFolder,'Jacknife Plots.rdata',sep=''))
 
 ```
 
@@ -121,9 +135,9 @@ Our results show that the total MSY estimated by Catch-MSY has relatively little
 
 ```{r,echo=F,message=FALSE,warning=FALSE}
 
-setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
+# setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
 
-BatchFolder<- "Results/4.2/"
+# BatchFolder<- "Results/SCRATCH/"
 
 FigureFolder<- paste(BatchFolder,'Diagnostics/cmsy monte carlo/',sep='')
 
