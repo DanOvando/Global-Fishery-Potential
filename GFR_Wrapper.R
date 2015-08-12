@@ -451,7 +451,7 @@ if (RunAnalyses==TRUE)
     #    Rprof()
     Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
     
-    NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear,ResultFolder,Spec_ISSCAAP) #Run Nearest Neighbor NEI analysis    
+    NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear,ResultFolder,Spec_ISSCAAP,NumCPUs = NumCPUs) #Run Nearest Neighbor NEI analysis    
     #Put NEI stocks back in the appropriate dataframes, remove stocks still missing data
     
     #    Rprof(NULL)

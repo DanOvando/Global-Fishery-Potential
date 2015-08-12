@@ -1,7 +1,7 @@
-SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParams,PolicyStorage,ErrorVars,ErrorSize)
+run_cmsy_montecarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParams,PolicyStorage,ErrorVars,ErrorSize)
 {
   
-  Sim_Forward= function(FStatusQuo,BStatusQuo,Policy,Policies,IsCatchShare,bvec,b0,Time,p,MSY,c,g,phi,beta)
+  Sim_Forward= function(FStatusQuo,BStatusQuo,Policy,Policies,IsCatchShare,bvec,b0,Time,p,MSY,c,g,phi,beta,omega)
   {  
     #Function to move each fishery forward in time simultaneously
     FindF<- function(Stocks,CurrentB,Policy,Policies,BCount) #Function that finds f for each fishery by it's closeest match from bvec
@@ -48,8 +48,12 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     pi = b
     y = b
     b[1,] = b0;
-    BCount=ddply(Policies,c('IdOrig'),summarize,NumB=length(b))
-    BCount=unique(BCount$NumB)
+#     BCount=ddply(Policies,c('IdOrig'),summarize,NumB=length(b))
+    BCount = Policies %>%
+      group_by(IdOrig) %>%
+      summarize(NumB=length(b))
+    
+        BCount=unique(BCount$NumB)
     if (Policy=='StatusQuoOpenAccess'){f[1,]<- FStatusQuo}
     if (Policy=='CatchShare') # apply price cost effects of catch share policy to non-catch share stocks
     {
@@ -66,7 +70,7 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     
     MsyProfits<- MSY*p-c*(g)^beta
     
-    Omega<- 0.1
+#     Omega<- 0.1
     
     PastF<- FStatusQuo
     
@@ -81,8 +85,7 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
       
       if (Policy=='StatusQuoOpenAccess')
       {
-        
-        f[t,]=OpenAccessFleet(PastF,pi[t-1,],t,Omega,MsyProfits)
+        f[t,]=OpenAccessFleet(PastF,pi[t-1,],t,omega = omega,MsyProfits)
         PastF<- f[t,]
       }
       if (t==1)
@@ -135,17 +138,22 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
   }
   
   
-  McIterations<- function(k,Iterations,Index,PossibleParams,PolicyStorage,Stocks,ErrorSize)
+  McIterations<- function(k,Iterations,Index,PossibleParams,PolicyStorage,Stocks,ErrorSize,base_omega = 0.1)
   {
-
+    
     PossParams<- PossibleParams[Index[,k],]
-
+    
     PolicyFuncs<- PolicyStorage[PolicyStorage$IdOrig %in% Stocks,]
     
     RecentStockData<- ProjectionData[ProjectionData$IdOrig %in% Stocks & ProjectionData$Year==BaselineYear,]
-
+    
     Price<- RecentStockData$Price * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
     
+    beta <- beta * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
+    
+    omega <- base_omega * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
+    
+    #      Omega <- 0.1
     CatchSharePrice<- CatchSharePrice  *rlnorm(1,0,ErrorSize)
     
     CatchShareCost<- CatchShareCost  *rlnorm(1,0,ErrorSize)
@@ -159,7 +167,7 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     phi<- PossParams$phi
     
     FStatusQuo<- PossParams$FinalFvFmsy
-
+    
     BStatusQuo<- PossParams$FinalBvBmsy
     
     IsCatchShare<- RecentStockData$CatchShare
@@ -193,6 +201,8 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     
     PossParams$BOA<- BOA
     
+    PossParams$Bmsy <- with(PossParams,K/((phi+1)^(1/phi)))
+    
     Policies<- colnames(PolicyFuncs)
     
     Policies<- Policies[!(Policies %in% c('IdOrig','b'))]
@@ -208,9 +218,9 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
       
       cc<- cc+1
       
-      Projection<- Sim_Forward(FStatusQuo,BStatusQuo,Policies[p],PolicyFuncs,IsCatchShare,bvec,BStatusQuo,ProjectionTime,Price,MSY,cost,g,phi,beta)
-
-      Projection<- join(Projection,PossParams[,c('IdOrig','MSY','g','phi','K','Price','Cost','MsyProfits','BOA')],by='IdOrig',match='first')
+      Projection<- Sim_Forward(FStatusQuo,BStatusQuo,Policies[p],PolicyFuncs,IsCatchShare,bvec,BStatusQuo,ProjectionTime,Price,MSY,cost,g,phi,beta, omega = omega)
+      
+      Projection<- join(Projection,PossParams[,c('IdOrig','MSY','g','phi','K','Price','Cost','MsyProfits','BOA','Bmsy')],by='IdOrig',match='first')
       
       Projection<- join(Projection,RecentStockData[,c('IdOrig','Country','Dbase','SciName','CommName','IdLevel','SpeciesCatName','CatchShare')],by='IdOrig',match='first')        
       
@@ -218,8 +228,10 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
       
       Projection$Iteration<- k
       
+      Projection$Biomass <- Projection$BvBmsy * Projection$Bmsy
+      
       ProjectionMat<- rbind(ProjectionMat,Projection)
-
+      
     } #Close policies loop
     
     
@@ -227,7 +239,8 @@ SnowMonteCarlo<- function(Iterations,Stocks,ProjectionData,CatchMSYPossibleParam
     PercDone<- round(100*(k/Iterations),2)
     
     write.table(paste(PercDone, '% done with Monte Carlo',sep=''), file = 'MonteCarloProgess.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
-
+    
+    #     ProjectionMat$Biomass <- (ProjectionMat$BvBmsy * ProjectionMat$Bmsy)
     ProjectionMat<-BuildPolicyBAUs(ProjectionMat,BaselineYear)
     return(ProjectionMat)
   } #Close McIterations

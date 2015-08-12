@@ -37,14 +37,15 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
   BAUpess<-rbind(ram,cs,other)
   
   BAUpess$Policy<-'Business As Usual Pessimistic'
-  
+  if (elastic_demand == T){
+    
   elastic_BAUpess <- elastic_projection(poldata = BAUpess,oa_ids = otherids, elasticity = elasticity,
                                         discount = Discount, base_year = BaselineYear )  
-  
-  nonelastic<- subset(BAUpess, (IdOrig %in% otherids))
-  
-  elastic<- subset(elastic_BAUpess, (IdOrig %in% otherids))
-  
+  }
+#   nonelastic<- subset(BAUpess, (IdOrig %in% otherids))
+#   
+#   elastic<- subset(elastic_BAUpess, (IdOrig %in% otherids))
+#   
   #     browser()
   #   
   #     quartz()
@@ -79,9 +80,10 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
   BAUoptim<-rbind(ram,cs,overff,mctofid)
   
   BAUoptim$Policy<-'Business As Usual'
-  
+  if (elastic_demand == T){
+    
   elastic_BAUoptim <- elastic_projection(poldata = BAUoptim,oa_ids = overFFids, elasticity = elasticity, discount = Discount, base_year = BaselineYear)  
-  
+  }
   ### 3 & 4) "Catch Share Three" and "Fmsy Three" - Adjust results for CS and Fmsy policies so that the policy is not applied to underfished/underfishing stocks
   
   PolicyOverFFids<-ProjectionData$IdOrig[ProjectionData$Year==BaselineYear & (ProjectionData$BvBmsy<1 | ProjectionData$FvFmsy>1)] # overfished/overfishing stocks
@@ -103,9 +105,11 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
   CatchShareThree<-rbind(CsThree,McRam,McCatchShares,Myctophids) # combine Catch Share results for overfished/overfishing results with B current forever results for mctofids
   
   CatchShareThree$Policy<-'Catch Share Three'
-  
+  if (elastic_demand == T){
+    
   elastic_CatchShareThree <- elastic_projection(poldata = CatchShareThree, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear)  
   
+  }
   
   
   # 4) Fmsy 
@@ -116,8 +120,10 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
   
   FmsyThree$Policy<-'Fmsy Three'
   
+  if (elastic_demand == T){
+    
   elastic_FmsyThree <- elastic_projection(poldata = FmsyThree, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear)  
-  
+  }
   ### Bind all composite policies to ProjectionData
   if (elastic_demand == F){
     

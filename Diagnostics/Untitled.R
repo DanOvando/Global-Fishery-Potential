@@ -1,4 +1,0 @@
-GFRMonteCarlo<- function(MsyData,ProjectionData)
-{
-  
-}

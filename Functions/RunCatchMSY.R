@@ -3,7 +3,7 @@
 #This code runs CatchMSY on fisheries
 ###################################### 
 
-RunCatchMSY<- function(Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,n,NumCPUs,CatchMSYTrumps)
+RunCatchMSY<- function(Data,ErrorSize = 0.85,sigR = 0,Smooth = F,Display = F,BestValues = 1,ManualFinalYear = 0,n,NumCPUs,CatchMSYTrumps = T)
 {
   
   Data$RanCatchMSY<- FALSE

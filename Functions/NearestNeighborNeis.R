@@ -5,7 +5,7 @@
 ##
 ######################################################
 
-NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultFolder,Spec_ISSCAAP)
+NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultFolder,Spec_ISSCAAP,NumCPUs = 1,beta = 1.3)
 {
   
   
@@ -174,7 +174,6 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultF
   FOA<- (((phi+1)/phi)*(1-BOA^phi/(phi+1)))
   
   c_num <-  NEIs$Price*FOA*BOA*NEIs$MSY
-  
   c_den = (NEIs$g*FOA)^beta
   
   cost = c_num/c_den

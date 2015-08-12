@@ -125,11 +125,11 @@ setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
 
 BatchFolder<- "Results/4.2/"
 
-FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo/',sep='')
+FigureFolder<- paste(BatchFolder,'Diagnostics/cmsy monte carlo/',sep='')
 
 load(paste(FigureFolder,'MonteCarlo Plots.rdata',sep=''))
 
-FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo 2/',sep='')
+FigureFolder<- paste(BatchFolder,'Diagnostics/expanded monte carlo/',sep='')
 
 load(paste(FigureFolder,'BioMontePlots.Rdata',sep=''))
 

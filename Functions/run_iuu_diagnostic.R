@@ -1,4 +1,5 @@
-RunIUUDiagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,BatchFolder,SubSample)
+run_iuu_diagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,BatchFolder,SubSample,
+                              RealModelSdevs,NeiModelSdevs)
 {
   FigureFolder<- paste(BatchFolder,'Diagnostics/IUU/',sep='')
   
@@ -55,10 +56,21 @@ RunIUUDiagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,Batc
   
   FaoSpeciesPossibleCats<- unique(Data$SpeciesCatName)
   
+  AllPossible<- unique(data.frame(I(Data$SpeciesCatName),I(Data$SpeciesCat)))
   
+  colnames(AllPossible)<- c('SpeciesCatNames','SpeciesCat')
   # Apply regressions -------------------------------------------------------
   
   Models<- Models[Models!='M7']
+  
+  RealModelFactorLevels <- NULL
+  
+  for (m in 1:length(names(Regressions)))
+  {
+    Model<- names(Regressions)[m]
+    eval(parse(text=paste('RealModelFactorLevels$',Model,'<- Regressions$',Model,'$xlevels$SpeciesCatName',sep='')))
+  }
+  
   for (m in 1:length(Models)) #Apply models to species level fisheries
   {
     
@@ -66,8 +78,7 @@ RunIUUDiagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,Batc
     
     eval(parse(text=paste('TempLevel<- RealModelFactorLevels$',TempModelName,sep='')))
     
-    eval(parse(text=paste('TempModel<- RealModels$',TempModelName,sep='')))
-    
+    eval(parse(text=paste('TempModel<- Regressions$',TempModelName,sep='')))
     ProxyCats<- AssignNearestSpeciesCategory(Data,TempLevel,AllPossible)
     
     Predictions<- predict(TempModel,ProxyCats$Data)
@@ -105,6 +116,8 @@ RunIUUDiagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,Batc
   
   #   BestBio[BestModel==1]<- log(BestBio[BestModel==1])
   
+  ModelNames <- names(Regressions)
+  
   BestModelnames<- ModelNames
   
   BestModelNames<- BestModelnames[sort(unique(BestModel))]
@@ -131,7 +144,10 @@ RunIUUDiagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,Batc
   
   BiomassData$CatchMSYBvBmsy_LogSd<- NA
 
-  GlobalStatus<- AnalyzeFisheries(BiomassData,'Baseline Global Status','Year',min(BiomassData$Year):max(BiomassData$Year),RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
+  
+  GlobalStatus<- AnalyzeFisheries(Data = BiomassData,BatchName = 'Baseline Global Status',GroupingVars = 'Year',
+                                  Years = min(BiomassData$Year):max(BiomassData$Year),
+                                  RealModelSdevs = RealModelSdevs,NeiModelSdevs = NeiModelSdevs,TransbiasBin = 0.9,J = 1000)
   
   #   RAMStatus<- AnalyzeFisheries(BiomassData[BiomassData$Dbase=='RAM',],'RAM Status','Year',1950:2010,RealModelSdevs,NeiModelSdevs,TransbiasBin,TransbiasIterations)
   
@@ -143,7 +159,7 @@ RunIUUDiagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,Batc
   
   #   arg<- sample(GlobalStatus$Data$IdOrig,100,replace=F)
   
-  CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
+  CatchMSYresults<- (RunCatchMSY(Data = GlobalStatus$Data, n = NumCatchMSYIterations,NumCPUs = NumCPUs))
   
   PostData<- CatchMSYresults$MsyData  
   
@@ -160,7 +176,7 @@ RunIUUDiagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,Batc
   pdf(paste(FigureFolder,'IUU Effect.pdf',sep=''))
   pp<- (ggplot(data=Diagnostics,aes(x=value))
   +geom_density(fill='steelblue2',alpha=0.6)+geom_vline(aes(xintercept = 0))+geom_vline(aes(xintercept=100*(IUULevel-1)),color='red')
-  +facet_wrap(~variable,scale='free')+xlab('Proportional Error %')+xlim(c(-50,100)))
+  +facet_wrap(~variable,scales = 'free')+xlab('Proportional Error %')+xlim(c(-50,100)))
   print(pp)
   dev.off()
   
