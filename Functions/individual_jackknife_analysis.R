@@ -1,4 +1,4 @@
-individual_jackknife <- function(runfolder,CPUs, iterations)
+individual_jackknife <- function(runfolder,CPUs, iterations, BaselineYear = 2012)
   
 {
   # 1. Loop over RAM stocks you can use
