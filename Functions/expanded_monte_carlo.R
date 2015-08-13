@@ -1,7 +1,11 @@
 expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
 {
   
-  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
+  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Complete Results.rdata', sep = ''))
+  
+  funcs <- as.vector(lsf.str())
+  
+  rm(list = funcs)
   
   sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
   

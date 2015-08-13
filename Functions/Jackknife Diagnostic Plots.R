@@ -1,6 +1,6 @@
 JackknifePlots<- function(PlotJack,FigureFolder,BaselineYear = 2012)
 {
-
+  show('woo?')
   PlotJack$ProportionalBError[PlotJack$ProportionalBError>250]<- 250
   
   PlotJack$ProportionalFError[PlotJack$ProportionalFError>250]<- 250
@@ -182,10 +182,13 @@ JackknifePlots<- function(PlotJack,FigureFolder,BaselineYear = 2012)
   print(MSY_Error_By_LogCatch)
   #         scale_x_discrete(breaks=as.character(seq(from=2000,to=2012,by=4))))
   dev.off()
-
-  save(jackplots = list(B_Error_Time_Country = B_Error_Time_Country,F_Error_Time_Country = F_Error_Time_Country,
-                        MSY_Error = MSY_Error,MSY_Error_By_LogCatch = MSY_Error_By_LogCatch,F_Error_By_Time = F_Error_By_Time,
-                        B_Error_By_RamB = B_Error_By_RamB,B_Error_By_Time = B_Error_By_Time,B_Error_By_LogCatch = B_Error_By_LogCatch,
-                        F_Error_By_Time = F_Error_By_Time,MSY_Error_By_Country = MSY_Error_By_Country),file=paste(FigureFolder,'Jacknife Plots.rdata',sep=''))
+  browser()
+  
+  jackplots = list(B_Error_Time_Country = B_Error_Time_Country,F_Error_Time_Country = F_Error_Time_Country,
+                   MSY_Error = MSY_Error,MSY_Error_By_LogCatch = MSY_Error_By_LogCatch,F_Error_By_Time = F_Error_By_Time,
+                   B_Error_By_RamB = B_Error_By_RamB,B_Error_By_Time = B_Error_By_Time,B_Error_By_LogCatch = B_Error_By_LogCatch,
+                   F_Error_By_Time = F_Error_By_Time,MSY_Error_By_Country = MSY_Error_By_Country)
+  
+  save(jackplots,file=paste(FigureFolder,'Jacknife Plots.rdata',sep=''))
   
 }

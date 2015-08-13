@@ -18,8 +18,6 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
   library(gridExtra)
   library(reshape2)
   
-  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
-  
   sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
   
   BaselineYear <<- 2012
@@ -64,6 +62,7 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
   {
     eval(parse(text = paste('diagnostics$',files[f],'=',files[f], sep = '')))
   }
-  
+  JackknifePlots
+  browser()
   return(diagnostics)
 }
