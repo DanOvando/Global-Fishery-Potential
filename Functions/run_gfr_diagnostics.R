@@ -62,7 +62,5 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
   {
     eval(parse(text = paste('diagnostics$',files[f],'=',files[f], sep = '')))
   }
-  JackknifePlots
-  browser()
   return(diagnostics)
 }

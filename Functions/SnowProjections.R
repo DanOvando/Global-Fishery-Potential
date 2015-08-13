@@ -232,7 +232,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   #   
   CatchSharePolicy<- OptPolicy
   
-  #   FoodPolicy<-  RunDynamicOpt2(MSY,g,phi,Price,0,beta,0,bvec,tol)$Policy
+  FoodPolicy<-  RunDynamicOpt2(MSY,g,phi,Price,0,beta,0,bvec,tol)$Policy
   
   StatusQuoFForeverPolicy<- FStatusQuo*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])  
   
