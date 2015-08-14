@@ -438,7 +438,7 @@ if (RunAnalyses==TRUE)
   
   Policies = c('StatusQuoOpenAccess','Opt','CatchShare','StatusQuoFForever','StatusQuoBForever','Fmsy','CloseDown','Food')
   
-  FullProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs,StatusQuoPolicy) #Run projections on MSY data that can be projected
+  FullProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs,StatusQuoPolicy,Policies = Policies) #Run projections on MSY data that can be projected
   
   PolicyStorage<- FullProjectionData$PolicyStorage
   
