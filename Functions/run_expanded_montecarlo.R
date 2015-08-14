@@ -165,9 +165,14 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,
     
     RecentStockData$Price<- RecentStockData$Price * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
     
-    RecentStockData$beta <- base_beta * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
+#     RecentStockData$beta <- base_beta * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
+#     
+#     RecentStockData$omega <- base_omega * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
+#     
+    RecentStockData$beta <-  runif(dim(RecentStockData)[1],0.75*base_beta,1.25*base_beta)
     
-    RecentStockData$omega <- base_omega * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
+    RecentStockData$omega <-  runif(dim(RecentStockData)[1],0.75*base_omega,1.25*base_omega)
+    
     
     CatchSharePrice<- CatchSharePrice  *rlnorm(1,0,ErrorSize)
     

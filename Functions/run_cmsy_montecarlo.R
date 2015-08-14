@@ -152,9 +152,13 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,ProjectionData,
     
     Price<- RecentStockData$Price * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
     
-    beta <- base_beta * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
+#     beta <- base_beta * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
+#     
+#     omega <- base_omega * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
     
-    omega <- base_omega * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
+    beta <-  runif(dim(RecentStockData)[1],0.75*base_beta,1.25*base_beta)
+    
+    omega <-  runif(dim(RecentStockData)[1],0.75*base_omega,1.25*base_omega)
     
     #      Omega <- 0.1
     CatchSharePrice<- CatchSharePrice  *rlnorm(1,0,ErrorSize)
