@@ -52,8 +52,11 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
     mutate(Name=paste(IdOrig,Year,sep='-'))
   
   
-  Check<- ddply(LastMonte,c('Name'),summarize,MeanFvFmsy=mean(FvFmsy),MeanBvBmsy=mean(BvBmsy),MeanMSY=mean(MSY),MeanBiomass=mean(Biomass),MeanCatch=mean(Catch))
+  Check<- LastMonte %>%
+    group_by(Name) %>%
+    summarize(MeanFvFmsy=mean(FvFmsy),MeanBvBmsy=mean(BvBmsy),MeanMSY=mean(MSY),MeanBiomass=mean(Biomass),MeanCatch=mean(Catch))
   
+    
   Comp<- join(LastProj,Check,by='Name')
   
   CmpCatch<- ggplot(data=subset(Comp),aes(Catch,MeanCatch,color=IdLevel))+geom_point()

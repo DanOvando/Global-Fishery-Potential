@@ -26,11 +26,13 @@ individual_jackknife <- function(runfolder,CPUs, iterations, BaselineYear = 2012
   #   load('Results/4.2/Data/Global Fishery Recovery Results.rdata')
   
   #   NumCPUs<- 1
-  FigureFolder<<- paste(BatchFolder,'Diagnostics/Individual Jackknife/',sep='')
+  FigureFolder<- paste(BatchFolder,'Diagnostics/Individual Jackknife/',sep='')
+  
+  dir.create(FigureFolder,recursive=T)
   
   IdVar <<- 'IdOrig'
   
-  dir.create(FigureFolder,recursive=T)
+  FigureFolder <<- FigureFolder
   
   RamData<- RamData[RamData$Year<=BaselineYear,]
   

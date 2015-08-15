@@ -3,7 +3,7 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
                                 do_expanded_montecarlo = F, mciterations = 250)
   
 {
-  library(plyr)
+  library(dplyr)
   library(lattice)
   library(rfishbase)
   library(stringr)
@@ -43,13 +43,13 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
   }
   if (do_cmsy_montecarlo ==T)
   {
-    cmsy_montecarlo_analysis <- cmsy_monte_carlo(runfolder = runfolder, CPUs = 1, mciterations = mciterations)
+    cmsy_montecarlo_analysis <- cmsy_monte_carlo(runfolder = runfolder, CPUs = NumCPUs, mciterations = mciterations)
     show('Finished cmsy montecarlo analysis')
     
   }
   if (do_expanded_montecarlo ==T)
   {
-    expanded_montecarlo_analysis <- expanded_monte_carlo(runfolder = runfolder, CPUs = 1, mciterations = mciterations)
+    expanded_montecarlo_analysis <- expanded_monte_carlo(runfolder = runfolder, CPUs = NumCPUs, mciterations = mciterations)
     
     show('Finished expanded montecarlo analysis')
     

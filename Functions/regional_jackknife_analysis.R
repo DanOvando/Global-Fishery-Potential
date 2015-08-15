@@ -18,6 +18,7 @@ regional_jackknife <- function(runfolder,CPUs, iterations, BaselineYear = 2012)
 
   # load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
   
+  
   funcs <- as.vector(lsf.str())
   
   rm(list = funcs)
