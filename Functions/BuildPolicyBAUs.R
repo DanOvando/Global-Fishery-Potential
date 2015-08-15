@@ -39,13 +39,13 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
   BAUpess$Policy<-'Business As Usual Pessimistic'
   if (elastic_demand == T){
     
-  elastic_BAUpess <- elastic_projection(poldata = BAUpess,oa_ids = otherids, elasticity = elasticity,
-                                        discount = Discount, base_year = BaselineYear )  
+    elastic_BAUpess <- elastic_projection(poldata = BAUpess,oa_ids = otherids, elasticity = elasticity,
+                                          discount = Discount, base_year = BaselineYear )  
   }
-#   nonelastic<- subset(BAUpess, (IdOrig %in% otherids))
-#   
-#   elastic<- subset(elastic_BAUpess, (IdOrig %in% otherids))
-#   
+  #   nonelastic<- subset(BAUpess, (IdOrig %in% otherids))
+  #   
+  #   elastic<- subset(elastic_BAUpess, (IdOrig %in% otherids))
+  #   
   #     browser()
   #   
   #     quartz()
@@ -82,7 +82,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
   BAUoptim$Policy<-'Business As Usual'
   if (elastic_demand == T){
     
-  elastic_BAUoptim <- elastic_projection(poldata = BAUoptim,oa_ids = overFFids, elasticity = elasticity, discount = Discount, base_year = BaselineYear)  
+    elastic_BAUoptim <- elastic_projection(poldata = BAUoptim,oa_ids = overFFids, elasticity = elasticity, discount = Discount, base_year = BaselineYear)  
   }
   ### 3 & 4) "Catch Share Three" and "Fmsy Three" - Adjust results for CS and Fmsy policies so that the policy is not applied to underfished/underfishing stocks
   
@@ -107,8 +107,8 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
   CatchShareThree$Policy<-'Catch Share Three'
   if (elastic_demand == T){
     
-  elastic_CatchShareThree <- elastic_projection(poldata = CatchShareThree, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear)  
-  
+    elastic_CatchShareThree <- elastic_projection(poldata = CatchShareThree, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear)  
+    
   }
   
   
@@ -122,17 +122,40 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
   
   if (elastic_demand == T){
     
-  elastic_FmsyThree <- elastic_projection(poldata = FmsyThree, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear)  
+    elastic_FmsyThree <- elastic_projection(poldata = FmsyThree, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear)  
   }
+  
+  # Modify Catch Share Policy with Elastic Demand ---------------------------
+  
+  if (elastic_demand == T){
+    
+    f_for_elastic <-subset(ProjectionData,Policy=='Fmsy')
+    
+    f_for_elastic$Policy<-'Fmsy'
+    
+    elastic_Fmsy <- elastic_projection(poldata = f_for_elastic, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear)  
+    
+    catchshare_for_elastic <-subset(ProjectionData,Policy=='CatchShare')
+    
+    catchshare_for_elastic$Policy<-'CatchShare'
+    
+    elastic_catchshare <- elastic_projection(poldata = catchshare_for_elastic, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear)  
+    
+    ProjectionData <- filter(ProjectionData, Policy != 'CatchShare' & Policy != 'Fmsy')
+    
+  }
+  
   ### Bind all composite policies to ProjectionData
   if (elastic_demand == F){
     
     ProjectionData<-rbind(ProjectionData,BAUpess,BAUoptim,CatchShareThree,FmsyThree)
   }
   if (elastic_demand == T){
-    ProjectionData<-rbind(ProjectionData,elastic_BAUpess,elastic_BAUoptim,elastic_CatchShareThree,elastic_FmsyThree)
+    ProjectionData<-rbind(ProjectionData,elastic_BAUpess,elastic_BAUoptim,elastic_CatchShareThree,elastic_FmsyThree,elastic_Fmsy,elastic_catchshare)
     
   }
   
   return(ProjectionData)
 }
+
+
