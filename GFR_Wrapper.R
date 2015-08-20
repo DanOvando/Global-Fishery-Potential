@@ -436,7 +436,7 @@ if (RunAnalyses==TRUE)
   #   save.image(file=paste(ResultFolder,'Test Results Prior to Projections.rdata',sep=''))
   #   }
   
-  Policies = c('StatusQuoOpenAccess','Opt','CatchShare','StatusQuoFForever','StatusQuoBForever','Fmsy','CloseDown','Food')
+  Policies = c('StatusQuoOpenAccess','Opt','CatchShare','StatusQuoFForever','StatusQuoBForever','Fmsy','CloseDown')
   
   FullProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs,StatusQuoPolicy,Policies = Policies) #Run projections on MSY data that can be projected
   
