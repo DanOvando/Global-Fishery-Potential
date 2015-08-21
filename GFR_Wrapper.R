@@ -436,7 +436,9 @@ if (RunAnalyses==TRUE)
   #   save.image(file=paste(ResultFolder,'Test Results Prior to Projections.rdata',sep=''))
   #   }
   
-  FullProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs,StatusQuoPolicy) #Run projections on MSY data that can be projected
+  Policies = c('StatusQuoOpenAccess','Opt','CatchShare','StatusQuoFForever','StatusQuoBForever','Fmsy','CloseDown')
+  
+  FullProjectionData<- RunProjection(MsyData[MsyData$CanProject==T,],BaselineYear,NumCPUs,StatusQuoPolicy,Policies = Policies) #Run projections on MSY data that can be projected
   
   PolicyStorage<- FullProjectionData$PolicyStorage
   
@@ -529,7 +531,8 @@ if (IncludeForageFish==FALSE)
 
 # Add new "Business as Usual Policies" by combining the results of the respective status quo policies for certain types of stocks, outlined in the function
 
-ProjectionData <- BuildPolicyBAUs(ProjectionData,BaselineYear,elastic_demand = elastic_demand, elasticity = -0.7, Discount = Discount)
+ProjectionData <- BuildPolicyBAUs(ProjectionData,BaselineYear,elastic_demand = elastic_demand, elasticity = -0.7,
+                                  Discount = Discount,sp_group_demand = F)
 
 # ProjectionData<- ddply(ProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
 
@@ -540,7 +543,7 @@ ProjectionData<- ProjectionData %>%
 #   ddply(ProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
 
 
-ProjectionData$NPV[ProjectionData$Policy=='Historic']<- NA
+ProjectionData$NPV[ProjectionData$Policy == 'Historic']<- NA
 
 # Calculate fishery upsides on full ProjectionData prior to unlumping stocks
 
@@ -612,10 +615,10 @@ ProjectionValidationData<-ProjectionValidation(UnlumpedProjectionData,BaselineYe
 # ValuesForPaper<-RenSummaryTable(UnlumpedData=UnlumpedProjectionData,LumpedData=ProjectionData,BaselineYear,ResultFolder,FigureFolder)
 
 # Produce Country Summary table and Stock List (returns list with Country summaries and Stock list, writes csvs of both)
-PercentCoverage<-StockAndCountrySummary(UnlumpedProjectionData,ProjectionData,StitchIds,BaselineYear)
+PercentCoverage <- StockAndCountrySummary(UnlumpedProjectionData,ProjectionData,StitchIds,BaselineYear, include_neis = IncludeNEIs)
 
 # Top stocks in major countries
-TopStocks<-CountryTopStocks(DataU=UnlumpedProjectionData,DataL=ProjectionData,BaselineYear,Policies=c('Business As Usual','Business As Usual Pessimistic','Catch Share Three','CatchShare','Fmsy Three','Fmsy'),
+TopStocks <- CountryTopStocks(DataU=UnlumpedProjectionData,DataL=ProjectionData,BaselineYear,Policies=c('Business As Usual','Business As Usual Pessimistic','Catch Share Three','CatchShare','Fmsy Three','Fmsy'),
                             NumberOfStocks='All',NumberOfCountries='All',Discount,ResultFolder,FileName='Country Results All Stocks')
 
 # Summarize current status by ISSCAAP and FAO Region
@@ -635,17 +638,11 @@ CodyPlotsProfit2050(FigureFolder,ResultFolder,Policy='Catch Share Three')
 # Calculate global results for Figure One
 FigOneGlobalResults<-GlobalResultsFigOne(UpsideAllStocks,UpsideOverfishOnly,Policies=c('Catch Share Three','Fmsy Three'),discRt=Discount,TimeHor=38)
 
-
-write.csv(file=paste(ResultFolder,'Projection Data.csv',sep=''),ProjectionData)
-
-write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
+# write.csv(file=paste(ResultFolder,'Projection Data.csv',sep=''),ProjectionData)
+# 
+# write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
 
 save(ProjectionData,UnlumpedProjectionData,file=paste(ResultFolder,'ProjectionData Data.rdata',sep=''))
 
-save.image(file=paste(ResultFolder,'Global Fishery Recovery Complete Results.rdata',sep=''))
-
-# Publish in Science ------------------------------------------------------
-# IUULevel<- 1.25
-# RunIUUDiagnostic(MsyData,RealModels,IUULevel=IUULevel,s,BatchFolder,SubSample=0)
-# 
+# save.image(file=paste(ResultFolder,'Global Fishery Recovery Complete Results.rdata',sep=''))
 

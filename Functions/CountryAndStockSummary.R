@@ -8,7 +8,7 @@
 
 
 
-StockAndCountrySummary<-function(UnlumpedProjectionData,ProjectionData,StitchIds,BaselineYear)
+StockAndCountrySummary<-function(UnlumpedProjectionData,ProjectionData,StitchIds,BaselineYear, include_neis)
 {
   # Create list of stocks
   
@@ -74,35 +74,36 @@ StockAndCountrySummary<-function(UnlumpedProjectionData,ProjectionData,StitchIds
               PercFvFmsyAboveOne=100*(sum(OverFishing,na.rm=T))/length(unique(IdOrig)))
   
   # calculate number of NEI fisheries
-  
-  CountryNeiSummary<- StockList[StockList$IdLevel=='Neis',] %>%
-    group_by(Country) %>% 
-    summarize(NeiStocks=length(unique(IdOrig)),NeiCatch=sum(Catch,na.rm=T),NeiMSY=sum(MSY,na.rm=T),
-              NeiMedianStatus=median(BvBmsy,na.rm=T))
-  #   
-  #   CountryNeiSummary<-ddply(StockList[StockList$IdLevel=='Neis',], c('Country'), summarize, NeiStocks=length(unique(IdOrig)),NeiCatch=sum(Catch,na.rm=T),NeiMSY=sum(MSY,na.rm=T),
-  #                            NeiMedianStatus=median(BvBmsy,na.rm=T))
-  
-  CountryNeiSummary<-CountryNeiSummary[with(CountryNeiSummary,order(-NeiMSY)),]
-  
-  CountrySummary$NeiCatch<- NA
-  
-  CountrySummary$NeiStocks<- NA
-  
-  # Add nei data to country summary
-  for(b in 1:nrow(CountrySummary))
+  if (include_neis == T)
   {
-    whereN<-match(CountrySummary$Country[b],CountryNeiSummary$Country)
+    CountryNeiSummary<- StockList[StockList$IdLevel=='Neis',] %>%
+      group_by(Country) %>% 
+      summarize(NeiStocks=length(unique(IdOrig)),NeiCatch=sum(Catch,na.rm=T),NeiMSY=sum(MSY,na.rm=T),
+                NeiMedianStatus=median(BvBmsy,na.rm=T))
+    #   
+    #   CountryNeiSummary<-ddply(StockList[StockList$IdLevel=='Neis',], c('Country'), summarize, NeiStocks=length(unique(IdOrig)),NeiCatch=sum(Catch,na.rm=T),NeiMSY=sum(MSY,na.rm=T),
+    #                            NeiMedianStatus=median(BvBmsy,na.rm=T))
     
-    if(is.na(whereN)==F) 
+    CountryNeiSummary<-CountryNeiSummary[with(CountryNeiSummary,order(-NeiMSY)),]
+    
+    CountrySummary$NeiCatch<- NA
+    
+    CountrySummary$NeiStocks<- NA
+    
+    # Add nei data to country summary
+    for(b in 1:nrow(CountrySummary))
     {
-      CountrySummary$NeiCatch[b]<-CountryNeiSummary$NeiCatch[whereN]
+      whereN<-match(CountrySummary$Country[b],CountryNeiSummary$Country)
       
-      CountrySummary$NeiStocks[b]<-CountryNeiSummary$NeiStock[whereN]
+      if(is.na(whereN)==F) 
+      {
+        CountrySummary$NeiCatch[b]<-CountryNeiSummary$NeiCatch[whereN]
+        
+        CountrySummary$NeiStocks[b]<-CountryNeiSummary$NeiStock[whereN]
+      }
+      rm(whereN)
     }
-    rm(whereN)
   }
-  
   # Calculate stats in FAO data
   #   FAO<-ddply(RawData[RawData$Dbase=='FAO' & RawData$Year==2012 & !(RawData$SpeciesCatName %in% SpeciesCategoriesToOmit),],c('Country'),summarize,
   #              TotalCatch=sum(Catch,na.rm=T),Fisheries=length(unique(IdOrig)))
@@ -164,22 +165,28 @@ StockAndCountrySummary<-function(UnlumpedProjectionData,ProjectionData,StitchIds
   pie(slices,labels=lbls,col=rainbow(2),main='Fraction of Total Global Catch Reported by FAO Included in Analysis',cex=3,cex.main=3,oma=c(0,0,2,0))
   dev.off()
   
-  IdLevelCoverage<- ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$CanProject==T,] %>%
-    group_by(Year,IdLevel) %>%
-    summarize(Stocks=length(unique(IdOrig)),
-              TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
-  
-  #   IdLevelCoverage<-ddply(ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$CanProject==T,],c('Year','IdLevel'),summarize,Stocks=length(unique(IdOrig)),
-  #                          TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
-  
-  IdLevelCoverage$PercOfDataset<-100*(IdLevelCoverage$TotalCatch/sum(IdLevelCoverage$TotalCatch))
-  
-  slices<-c(IdLevelCoverage$TotalCatch[2],IdLevelCoverage$TotalCatch[1])
-  lbls<-c('Species Level\n(79%, ~47.5 mill. MT)','Nei Level\n(21%, ~12.5 mill. MT)')
-  
-  png(filename=paste(FigureFolder,'Pie Chart of Catch by Id Level.png'),width=1440,height=1080)
-  pie(slices,labels=lbls,col=rainbow(2),main='Identification Level of Stocks Included in Analysis',cex=3,cex.main=3,oma=c(0,0,2,0))
-  dev.off()
+  if (include_neis == T)
+  {
+    
+    IdLevelCoverage<- ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$CanProject==T,] %>%
+      group_by(Year,IdLevel) %>%
+      summarize(Stocks=length(unique(IdOrig)),
+                TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
+    
+    #   IdLevelCoverage<-ddply(ProjectionData[ProjectionData$Year==BaselineYear & ProjectionData$CanProject==T,],c('Year','IdLevel'),summarize,Stocks=length(unique(IdOrig)),
+    #                          TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T))
+    
+    IdLevelCoverage$PercOfDataset<-100*(IdLevelCoverage$TotalCatch/sum(IdLevelCoverage$TotalCatch))
+    
+    
+    
+    slices<-c(IdLevelCoverage$TotalCatch[2],IdLevelCoverage$TotalCatch[1])
+    lbls<-c('Species Level\n(79%, ~47.5 mill. MT)','Nei Level\n(21%, ~12.5 mill. MT)')
+    
+    png(filename=paste(FigureFolder,'Pie Chart of Catch by Id Level.png'),width=1440,height=1080)
+    pie(slices,labels=lbls,col=rainbow(2),main='Identification Level of Stocks Included in Analysis',cex=3,cex.main=3,oma=c(0,0,2,0))
+    dev.off()
+  }
   ### Plot coverage statistics
   
   # Percent coverage all countries

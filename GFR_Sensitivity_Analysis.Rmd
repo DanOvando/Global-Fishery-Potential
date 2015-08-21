@@ -3,16 +3,16 @@ title: "GFR SOM Sensitivities"
 author: "Dan Ovando"
 date: "February 26, 2015"
 output:
-  word_document:
+  html_document:
     fig_caption: yes
-    fig_height: 6
-    fig_width: 8
   pdf_document:
     fig_caption: yes
     fig_height: 6
     fig_width: 8
-  html_document:
+  word_document:
     fig_caption: yes
+    fig_height: 6
+    fig_width: 8
 ---
 
 
@@ -23,11 +23,11 @@ We performed a series of routines to evaluate the impacts of a variety of potent
 * The effects of illegal, unreported, unregulated fishing (IUU)
 * Out of sample prediction of B/B~MSY~, F/F~MSY~, and MSY
 * Sensitivity of our predicted future values to uncertainty in
-  * MSY
-  * Profits
-  * Catch
-  * B/B~MSY~
-  * F/F~MSY~
+* MSY
+* Profits
+* Catch
+* B/B~MSY~
+* F/F~MSY~
 
 ## Key Results
 
@@ -62,16 +62,40 @@ Our median proportional error in B/B~MSY~ in 2012 (the primary year of interest)
 
 ```{r,echo=F,message=F,warning=FALSE,fig.cap='Proportional error in B/B~MSY~ over time resulting from individual jackknife'}
 
-setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
+# setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
 
 library(ggplot2)
+library(dplyr)
 
-BatchFolder<- "Results/4.2/"
+BatchFolder<- "Results/5.0 Downward Sloping Demand/"
+
+FigureFolder<- paste(BatchFolder,'Diagnostics/Regional Jackknife/',sep='')
+
+load(paste(FigureFolder,'Jacknife Plots.rdata',sep=''))
+
+reg_jack <- jackplots
+
+rm(jackplots)
 
 FigureFolder<- paste(BatchFolder,'Diagnostics/Individual Jackknife/',sep='')
 
-Plots<- load(paste(FigureFolder,'Jacknife Plots.rdata',sep=''))
+load(paste(FigureFolder,'Jacknife Plots.rdata',sep=''))
 
+ind_jack <- jackplots
+
+rm(jackplots)
+
+FigureFolder<- paste(BatchFolder,'Diagnostics/IUU/',sep='')
+
+load(paste(FigureFolder,'iuu_plot.rdata',sep=''))
+
+FigureFolder<- paste(BatchFolder,'Diagnostics/cmsy monte carlo/',sep='')
+
+load(paste(FigureFolder,'MonteCarlo Plots.rdata',sep=''))
+
+FigureFolder<- paste(BatchFolder,'Diagnostics/expanded monte carlo/',sep='')
+
+load(paste(FigureFolder,'BioMontePlots.Rdata',sep=''))
 ```
 
 The proportional error in our estimates of B/B~MSY~ is uncorrelated with catch in any given year (Fig.XX), but highly influenced by the "true"" B/B~MSY~ (Fig.XX). Specifically, we severely over-predict the B/B~MSY~ for highly overfished RAM stocks (i.e. when "true" B/B~MSY~ is less than 0.5, Fig.XX), and under-predict B/B~MSY~ when true B/B~MSY~ is high. 
@@ -91,17 +115,6 @@ The MSYs estimated through our individual jackknifing routine indicate that we a
 
 ## Regional Jackknife
 
-```{r,echo=F,message=FALSE,warning=FALSE}
-
-setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
-
-BatchFolder<- "Results/4.2/"
-
-FigureFolder<- paste(BatchFolder,'Diagnostics/Regional Jackknife/',sep='')
-
-Plots<- load(paste(FigureFolder,'Jacknife Plots.rdata',sep=''))
-
-```
 
 We might expect the out-of-sample predictive ability of our model to be fairly good when simply omitting and predicting one single fishery. This paper's results depend though on the ability of our model to predict fisheries that are very much out of sample; we are trying to predict Indonesia using Alaska. As such, we also performed a regional jackknifing routine. In this procedure, we sequentially removed all the RAM stocks in each unique region (roughly country) in RAM. We then re-estimated the PRM omitting all of the RAM stocks from that region, and then predicted the omitted region. The predictions were then passed to Catch-MSY, and the individual predictions for MSY, B/B~MSY~, and F/F~MSY~ for each omitted fishery are stored. Our broad results on the out-of-sample error in B/B~MSY~ F/F~MSY~ and MSY did not substantially change from the individual jackknifing, as such we will focus on the out of sample regional predictive power demonstrated by this analysis. 
 
@@ -119,21 +132,6 @@ Catch-MSY provides a range of plausible values for *g* and MSY (often thousands 
 
 Our results show that the total MSY estimated by Catch-MSY has relatively little variability, with most estimates of total MSY falling between 27 and 29 million MT ( Fig.XX ). 
 
-```{r,echo=F,message=FALSE,warning=FALSE}
-
-setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
-
-BatchFolder<- "Results/4.2/"
-
-FigureFolder<- paste(BatchFolder,'Diagnostics/cmsy monte carlo/',sep='')
-
-load(paste(FigureFolder,'MonteCarlo Plots.rdata',sep=''))
-
-FigureFolder<- paste(BatchFolder,'Diagnostics/expanded monte carlo/',sep='')
-
-load(paste(FigureFolder,'BioMontePlots.Rdata',sep=''))
-
-```
 
 
 Our estimates of total catch in 2050 vary greatly among policies (as they are intended to do), with highest catches coming F~MSY~, and lowest catch (and highest uncertainty) under BAU S2
@@ -155,51 +153,55 @@ Our results show that while the point estimates of the total outcomes of any ind
 
 To illustrate this point, we tallied the frequency of rankings by biomass and profits for each policy across the Monte Carlo iterations.Rankings were determined for each policy in each iteration by descending order of biomass and profits (separately). We see that the relative rankings of the policies in terms of 2050 biomass are relatively constant across the Monte Carlo iterations (Fig.XX), with RBFM always producing the highest biomass and BAU the lowest. We do see some switching between 3rd and 4th place in the relative rankings of 2050 biomass between F~MSY~ and BAU (CC), indicating that it is somewhat unclear from our simulations which of these two policies will produce more biomass in the sea in 2050. Our profit rankings are even clearer. There is no variation in the relative ranking by 2050 profits across the Monte Carlo iterations among the policies; RBFM always produced the highest total profits, BAU the last.  
 
-![Effects of IUU. Proportional error represents the % change from the current estimate of B/B~MSY~ (bPE), F/F~MSY~(fPE), and MSY (MSYPE). The black vertical line marks a proportional error of zero. The red line is the percentage of IUU used](IUU_Effect.pdf)
+```{r,echo=F,message=F,warning=FALSE,fig.cap='Effects of IUU. Proportional error represents the % change from the current estimate of B/B~MSY~ (bPE), F/F~MSY~(fPE), and MSY (MSYPE). The black vertical line marks a proportional error of zero. The red line is the percentage of IUU used'}
+
+iuu_plot
+
+```
 
 
 ```{r,echo=F,message=F,warning=FALSE,fig.cap='Distribution of proportional error in B/B~MSY~ over time resulting from individual jackknife'}
 
-B_Error_By_Time
-  
+ind_jack$B_Error_By_Time
+
 ```
 
 ```{r,echo=F,message=FALSE,warning=FALSE,dpi=200,fig.cap='Distribution of proportional error in B/B~MSY~ for individual fisheries resulting from individual jackknife as a function of the catch experienced by a fishery in any given year' }
 
-B_Error_By_LogCatch
+ind_jack$B_Error_By_LogCatch
 
 ```
 
 ```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Distribution of proportional error in B/B~MSY~ for individual fisheries resulting from individual jackknife as a function of the RAM value of B/B~MSY~ for a fishery in a given year' }
 
-B_Error_By_RamB
+ind_jack$B_Error_By_RamB
 
 ```
 
 ```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Distribution of proportional error in F/F~MSY~ of individual fisheries over time resulting from individual jackknife' }
 
-F_Error_By_Time
+ind_jack$F_Error_By_Time
 
 ```
 
-```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Proportional error in MSY' }
+```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Proportional error in MSY from individual jackknife' }
 
-MSY_Error
+ind_jack$MSY_Error
 ```
 
 ```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Distribution of proportional error in  MSY for each stocks included in the individual jackknife' }
 
-MSY_Error_By_LogCatch
+ind_jack$MSY_Error_By_LogCatch
 
 ```
 
 ```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Distributions of proportional error in B/B~MSY~ of individual fisheries by time and region resulting from regional jackknifing' }
 
-B_Error_Time_Country
+reg_jack$B_Error_Time_Country
 ```
 
 ```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Distribution of proportional error in MSY of individual fisheries by region resulting from regional jackknifing' }
-MSY_Error_By_Country
+reg_jack$MSY_Error_By_Country
 ```
 
 ```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Distribution of total MSY of all fisheries contained in the Catch-MSY Monte Carlo' }

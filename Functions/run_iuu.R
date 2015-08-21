@@ -1,8 +1,13 @@
 run_iuu <- function(runfolder,NumCPUs, IUULevel = 1.25, iterations)
 {
-load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
-# NumCPUs<- 2
-# IUULevel<- 1.25
+  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Complete Results.rdata', sep = ''))
+ 
+   funcs <- as.vector(lsf.str())
+  
+  rm(list = funcs)
+  
+  sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
+  
 
 iuu_test <- run_iuu_diagnostic(Data = MsyData,Regressions = RealModels,IUULevel=IUULevel,
                              NumCatchMSYIterations = iterations,BatchFolder = BatchFolder,

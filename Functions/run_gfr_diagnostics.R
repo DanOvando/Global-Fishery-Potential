@@ -1,9 +1,9 @@
 run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_iterations = 1000,
-                            run_iuu = F, run_ind_jack = F, run_reg_jack = F,do_cmsy_montecarlo = F,
-                            do_expanded_montecarlo = F)
-
+                                run_iuu = F, run_ind_jack = F, run_reg_jack = F,do_cmsy_montecarlo = F,
+                                do_expanded_montecarlo = F, mciterations = 250)
+  
 {
-  library(plyr)
+  library(dplyr)
   library(lattice)
   library(rfishbase)
   library(stringr)
@@ -17,8 +17,10 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
   library(ggplot2)
   library(gridExtra)
   library(reshape2)
+  
   sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
   
+  BaselineYear <<- 2012
   if (run_iuu == T)
   {
     iuu_analysis <- run_iuu(runfolder = runfolder, NumCPUs = NumCPUs,
@@ -41,13 +43,13 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
   }
   if (do_cmsy_montecarlo ==T)
   {
-    cmsy_montecarlo_analysis <- cmsy_monte_carlo(runfolder = runfolder, CPUs = 1, mciterations = 10)
-    show('Finished cmsy montecarl analysis')
+    cmsy_montecarlo_analysis <- cmsy_monte_carlo(runfolder = runfolder, CPUs = NumCPUs, mciterations = mciterations)
+    show('Finished cmsy montecarlo analysis')
     
   }
   if (do_expanded_montecarlo ==T)
   {
-    expanded_montecarlo_analysis <- expanded_monte_carlo(runfolder = runfolder, CPUs = 1, mciterations = 10)
+    expanded_montecarlo_analysis <- expanded_monte_carlo(runfolder = runfolder, CPUs = NumCPUs, mciterations = mciterations)
     
     show('Finished expanded montecarlo analysis')
     
@@ -60,6 +62,5 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
   {
     eval(parse(text = paste('diagnostics$',files[f],'=',files[f], sep = '')))
   }
-  
   return(diagnostics)
 }

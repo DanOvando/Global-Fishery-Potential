@@ -1,5 +1,6 @@
-regional_jackknife <- function(runfolder,CPUs, iterations)
+regional_jackknife <- function(runfolder,CPUs, iterations, BaselineYear = 2012)
 {
+  show('damn it all to hell')
   
   # 1. Loop over RAM regions you can use
   #
@@ -13,15 +14,28 @@ regional_jackknife <- function(runfolder,CPUs, iterations)
   #
   # 6. Store Real B/Bmsy, F/Fmsy, MSY, PRM B/Bmsy, MSY BvBmsy, FvFmsy, MSY with and without priors, and year
   # rm(list=ls())
-  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
+  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Complete Results.rdata', sep = ''))
+
+  # load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
+  
+  
+  funcs <- as.vector(lsf.str())
+  
+  rm(list = funcs)
+  
+  sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
   
   NumCPUs <- CPUs
   
-  FigureFolder<<- paste(BatchFolder,'Diagnostics/Regional Jackknife/',sep='')
+  FigureFolder <- paste('Results/',runfolder,'/Diagnostics/Regional Jackknife/',sep='')
   
-  IdVar <<- 'IdOrig'
+  IdVar <- 'IdOrig'
   
   dir.create(FigureFolder,recursive=T)
+  
+  FigureFolder <<- FigureFolder
+  
+  IdVar <<- IdVar
   
   RamData<- RamData[RamData$Year<=BaselineYear,]
   
@@ -91,9 +105,9 @@ regional_jackknife <- function(runfolder,CPUs, iterations)
           eval(parse(text=paste('RealModelFactorLevels$',Model,'<- RealModels$',Model,'$xlevels$SpeciesCatName',sep='')))
         }
         
-        Jacked<- InsertFisheryPredictions(Jacked,JackModel) #Add fishery predictions back into main dataframe
+        Jacked <- InsertFisheryPredictions(Jacked,JackModel) #Add fishery predictions back into main dataframe
         
-        RealModelSdevs<- CreateSdevBins(JackModel$Models,Jacked,TransbiasBin)
+        RealModelSdevs <- CreateSdevBins(JackModel$Models,Jacked,TransbiasBin)
         
         
         AllPossible<- unique(data.frame(I(Jacked$SpeciesCatName),I(Jacked$SpeciesCat)))
@@ -207,7 +221,6 @@ regional_jackknife <- function(runfolder,CPUs, iterations)
   } #Close regions loop
   
   
-  
   Prm<- cbind(JackStore[,c('Assessid','Year','Country','Catch','RamB','PrmB','RamMSY','CmsyMSY','RamF','CmsyF')],'PRM')
   
   CmsyB<- cbind(JackStore[,c('Assessid','Year','Country','Catch','RamB','CmsyB','RamMSY','CmsyMSY','RamF','CmsyF')],'Cmsy')
@@ -247,6 +260,8 @@ regional_jackknife <- function(runfolder,CPUs, iterations)
   PlotJack$ProportionalMSYError<- 100*((PlotJack$CmsyMSY-PlotJack$RamMSY)/PlotJack$RamMSY)
   
   PlotJack$ProportionalFError<- 100*((PlotJack$CmsyF-PlotJack$RamF)/PlotJack$RamF)
+  show('made it here')
+#   sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
   
   JackknifePlots(PlotJack,FigureFolder)
   

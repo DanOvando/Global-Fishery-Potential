@@ -13,18 +13,26 @@ individual_jackknife <- function(runfolder,CPUs, iterations, BaselineYear = 2012
   #
   # 6. Store Real B/Bmsy, F/Fmsy, MSY, PRM B/Bmsy, MSY BvBmsy, FvFmsy, MSY with and without priors, and year
   # rm(list=ls())
-  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
+  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Complete Results.rdata', sep = ''))
+  
+  funcs <- as.vector(lsf.str())
+  
+  rm(list = funcs)
+  
+  sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
   
   NumCPUs <- CPUs
   
   #   load('Results/4.2/Data/Global Fishery Recovery Results.rdata')
   
   #   NumCPUs<- 1
-  FigureFolder<<- paste(BatchFolder,'Diagnostics/Individual Jackknife/',sep='')
+  FigureFolder<- paste(BatchFolder,'Diagnostics/Individual Jackknife/',sep='')
+  
+  dir.create(FigureFolder,recursive=T)
   
   IdVar <<- 'IdOrig'
   
-  dir.create(FigureFolder,recursive=T)
+  FigureFolder <<- FigureFolder
   
   RamData<- RamData[RamData$Year<=BaselineYear,]
   
