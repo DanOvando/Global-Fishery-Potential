@@ -214,9 +214,11 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
     
   }
   
-  ProjectionData <- ProjectionData %>%
-    dplyr::select(-alpha,-pricek,-global_catch)
-  
+  if (elastic_demand == T)
+  {
+    ProjectionData <- ProjectionData %>%
+      dplyr::select(-alpha,-pricek,-global_catch)
+  }
   ### Bind all composite policies to ProjectionData
   if (elastic_demand == F){
     
