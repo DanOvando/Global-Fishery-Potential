@@ -12,7 +12,7 @@
 
 
 
-BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elasticity = -0.7, Discount = 0,sp_group_demand = F)
+BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elasticity = -0.7, Discount = 0,sp_group_demand = F)
 {
   
   ### 1) "Business As Usual Pessimistic" Where all non RAM and Catch share stocks go to Open Access
@@ -213,7 +213,6 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
     ProjectionData <- filter(ProjectionData, Policy != 'CatchShare' & Policy != 'Fmsy')
     
   }
-  
   if (elastic_demand == T)
   {
     ProjectionData <- ProjectionData %>%
