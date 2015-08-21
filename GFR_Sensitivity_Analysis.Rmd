@@ -62,11 +62,12 @@ Our median proportional error in B/B~MSY~ in 2012 (the primary year of interest)
 
 ```{r,echo=F,message=F,warning=FALSE,fig.cap='Proportional error in B/B~MSY~ over time resulting from individual jackknife'}
 
-setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
+# setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
 
 library(ggplot2)
+library(dplyr)
 
-BatchFolder<- "Results/SCRATCH/"
+BatchFolder<- "Results/5.0 Downward Sloping Demand/"
 
 FigureFolder<- paste(BatchFolder,'Diagnostics/Regional Jackknife/',sep='')
 
@@ -83,6 +84,18 @@ load(paste(FigureFolder,'Jacknife Plots.rdata',sep=''))
 ind_jack <- jackplots
 
 rm(jackplots)
+
+FigureFolder<- paste(BatchFolder,'Diagnostics/IUU/',sep='')
+
+load(paste(FigureFolder,'iuu_plot.rdata',sep=''))
+
+FigureFolder<- paste(BatchFolder,'Diagnostics/cmsy monte carlo/',sep='')
+
+load(paste(FigureFolder,'MonteCarlo Plots.rdata',sep=''))
+
+FigureFolder<- paste(BatchFolder,'Diagnostics/expanded monte carlo/',sep='')
+
+load(paste(FigureFolder,'BioMontePlots.Rdata',sep=''))
 ```
 
 The proportional error in our estimates of B/B~MSY~ is uncorrelated with catch in any given year (Fig.XX), but highly influenced by the "true"" B/B~MSY~ (Fig.XX). Specifically, we severely over-predict the B/B~MSY~ for highly overfished RAM stocks (i.e. when "true" B/B~MSY~ is less than 0.5, Fig.XX), and under-predict B/B~MSY~ when true B/B~MSY~ is high. 
@@ -119,25 +132,6 @@ Catch-MSY provides a range of plausible values for *g* and MSY (often thousands 
 
 Our results show that the total MSY estimated by Catch-MSY has relatively little variability, with most estimates of total MSY falling between 27 and 29 million MT ( Fig.XX ). 
 
-```{r,echo=F,message=FALSE,warning=FALSE}
-
-# setwd('/Users/danovando/Desktop/Bren/SFG Work/Global Fisheries Recovery/')
-
-# BatchFolder<- "Results/SCRATCH/"
-
-FigureFolder<- paste(BatchFolder,'Diagnostics/IUU/',sep='')
-
-load(paste(FigureFolder,'iuu_plot.rdata',sep=''))
-
-FigureFolder<- paste(BatchFolder,'Diagnostics/cmsy monte carlo/',sep='')
-
-load(paste(FigureFolder,'MonteCarlo Plots.rdata',sep=''))
-
-FigureFolder<- paste(BatchFolder,'Diagnostics/expanded monte carlo/',sep='')
-
-load(paste(FigureFolder,'BioMontePlots.Rdata',sep=''))
-
-```
 
 
 Our estimates of total catch in 2050 vary greatly among policies (as they are intended to do), with highest catches coming F~MSY~, and lowest catch (and highest uncertainty) under BAU S2

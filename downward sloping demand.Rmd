@@ -1,0 +1,30 @@
+---
+title: "Downward sloping demand"
+author: "Dan Ovando"
+date: "August 17, 2015"
+output: pdf_document
+---
+
+We constructed a demand function in order to allow the price of fish in our model to fluctuate as a function of supply. Our assumption is that prices are a function of global supply of each ISSCAAP category, meaning that all species within an ISSCAAP category are part of the same global market and are perfect substitutes for each other. 
+
+We define demand *q* for a fishery *i* of species category *s* as a function of price *p* through the constant elasticity of demand function
+
+$$ q_{s,y} = \alpha_{i}(p_{i,y})^{e} $$
+
+and price as a function of *q* in year *y* per
+
+$$ p_{i,y} = (\frac{1}{\alpha_{i}})^{\frac{1}{e}} (q_{s,y})^{\frac{1}{e}} $$ 
+
+$\alpha$ is calculated by 
+
+$$ \alpha_{i} = \frac{q_{s,y=2012}}{(p_{i,y=2012})^{e}} $$
+
+For simulations, *q* is the amount (MT) of global supply of fish in a given ISSCAAP species category in year *y*, and *e*  is set to -0.7 per Green et al. (2012 KENT SEND ARTICLE XX). 
+
+For projections under the RBFM and F~MSY~ policies, we assume fisheries do not adjust their policies to reflect dynamic changes in prices resulting from changes in supply. Profits for these scenarios are adjusted in any given year by appropriately modifying price as a function of the total supply of catch in each species category in a given year.  However, fishing effort of the open access fleets under BAU scenarios is governed by profits in the prior year. Therefore, for the open access fisheries we recaluate fishing effort in each time step to account for changes in profitability resulting from shifts in price as a function of supply. 
+
+
+
+
+
+
