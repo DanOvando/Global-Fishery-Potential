@@ -638,11 +638,11 @@ CodyPlotsProfit2050(FigureFolder,ResultFolder,Policy='Catch Share Three')
 # Calculate global results for Figure One
 FigOneGlobalResults<-GlobalResultsFigOne(UpsideAllStocks,UpsideOverfishOnly,Policies=c('Catch Share Three','Fmsy Three'),discRt=Discount,TimeHor=38)
 
-write.csv(file=paste(ResultFolder,'Projection Data.csv',sep=''),ProjectionData)
-
-write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
+# write.csv(file=paste(ResultFolder,'Projection Data.csv',sep=''),ProjectionData)
+# 
+# write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
 
 save(ProjectionData,UnlumpedProjectionData,file=paste(ResultFolder,'ProjectionData Data.rdata',sep=''))
 
-save.image(file=paste(ResultFolder,'Global Fishery Recovery Complete Results.rdata',sep=''))
+# save.image(file=paste(ResultFolder,'Global Fishery Recovery Complete Results.rdata',sep=''))
 
