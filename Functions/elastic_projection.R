@@ -1,7 +1,7 @@
 # Function to project stocks forward, 
 # adjusting prices and open access to reflect supply, post BAU policy construction
 elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05, 
-                               base_year = 2012,sp_group_demand = F, beta = 1.3,bvec = seq(0.00000001,2.5,length.out=30))
+                               base_year = 2013,sp_group_demand = F, beta = 1.3,bvec = seq(0.00000001,2.5,length.out=30))
 {
   OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
   {
@@ -18,6 +18,9 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
   }
   
   # Set up base conditions -------
+  
+  years <- unique(poldata$Year)
+  
   
   if (sp_group_demand == T)
   {
@@ -44,7 +47,6 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
     poldata$global_catch <- supply$global_catch
   }
   
-  years <- unique(poldata$Year)
 
   poldata$Price[poldata$Year == base_year] <- (poldata$pricek * poldata$global_catch^(1/elasticity))[poldata$Year == base_year] #adjust prices
   
@@ -132,7 +134,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
   
   poldata <- poldata %>%
     group_by(Year) %>%
-    mutate(DiscProfits = Profits * (1 + discount)^-(Year-base_year))
+    mutate(DiscProfits = Profits * (1 + discount)^-(Year-(base_year-1)))
 
   poldata <- poldata %>%
     dplyr::select(-alpha,-pricek,-global_catch)
