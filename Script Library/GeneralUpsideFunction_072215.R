@@ -8,13 +8,13 @@
 # Code description: This code contains a general function for calculating upsides based on aggregating criteria specified by a grouping
 # variable
 #
+# *** FUNCTION CURRENTLY ONLY WORKS FOR WHEN GROUPING IS SET TO COUNTRY
+#
 ##################################################################---------------------------------------------------------------------
 
 # Variables for testing
 # DataU<-UnlumpedProjectionData
 # Grouping<-'Country'
-
-
 
 UpsideFunction(DataU,Grouping)
 {
@@ -24,25 +24,49 @@ UpsideFunction(DataU,Grouping)
     tbl_df() %>%
     select(Dbase,IdOrig,Country,RegionFAO,SciName,CommName,SpeciesCatName,Year,Policy,BvBmsy,FvFmsy,MSY,Catch,Profits,Biomass,Price)
   
-    # Calculate totals aggregated by grouping variables
-  group<- c(Grouping,'Policy','Year')  
-
-  Upsides<- DataU %>%
-      group_by_(group) %>%
+  # Calculate totals aggregated by grouping variables
+  if(Grouping=='Country')
+  {
+    Upsides<- DataU %>%
+      tbl_df() %>%
+      group_by(Country,Policy,Year) %>%
       summarize(Fisheries=length(unique(IdOrig)),MedianBvBmsy=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),TotalMSY=sum(MSY,na.rm=T),
                 TotalCatch=sum(Catch,na.rm=T), TotalBiomass=sum(Biomass,na.rm=T),TotalProfits=sum(Profits,na.rm=T),MeanPrice=mean(Price,na.rm=T))
-    
+  }
+
+  if(Grouping=='IdOrig')
+  {
+  Upsides<- DataU %>%
+    tbl_df() %>%
+    rename(MedianBvBmsy=BvBmsy,MedianFvFmsy=FvFmsy,TotalMSY=MSY,
+           TotalCatch=Catch, TotalBiomass=Biomass,TotalProfits=Profits,MeanPrice=Price)
+  }
+      
     # Subset baseline year 
     Base<-Upsides %>%
+      tbl_df() %>%
       filter(Year==BaselineYear) %>%
       ungroup() %>%
       select(-TotalMSY,-Year,-Policy) %>%
       rename(BaselineBvBmsy=MedianBvBmsy,BaselineFvFmsy=MedianFvFmsy,BaselineCatch=TotalCatch,BaselineBiomass=TotalBiomass,BaselineProfits=TotalProfits)
     
     # Join upsides and baseline data
-    Upsides<-inner_join(Upsides,Base,by=Grouping)
+    if(Grouping=='Country') { Upsides<-inner_join(Upsides,Base,by=c('Country')) }
+    if(Grouping=='IdOrig') { Upsides<-inner_join(Upsides,Base,by=c('IdOrig')) }
     
     ### Calculate upsides relative to today (Baseline) --------------------------------------------------------------------------------
+    
+    # Define perc upside function
+    PercChange<- function(A,B)
+    {
+      PC<- ((A-B)/(B))*100*sign(B)
+      
+      PC[B<=0 & (A-B)>0]<- 999
+      
+      PC[B<=0 & (A-B)<=0]<- -999
+      
+      return(PC)
+    }
     
     # Calculate abs upsides
     Upsides$AbsChangeCatch<-Upsides$TotalCatch-Upsides$BaselineCatch
@@ -98,5 +122,24 @@ UpsideFunction(DataU,Grouping)
     Scenarios$PercChangeCatchBAU<-PercChange(Scenarios$TotalCatch,Scenarios$TotalCatchBAU)
     Scenarios$PercChangeBiomassBAU<-PercChange(Scenarios$TotalBiomass,Scenarios$TotalBiomassBAU)
     Scenarios$PercChangeProfitsBAU<-PercChange(Scenarios$TotalProfits,Scenarios$TotalProfitsBAU)
+    
+    # Subset to final year of projection and RBFM policy
+    Scenarios2050<-Scenarios %>%
+      tbl_df() %>%
+      filter(Year==2050 & Policy=='RBFM') %>%
+      select(-MeanPrice.y,-Fisheries.y)
+    
+    # Reorder columns to have Policy and Scenario adjacent
+    Scenarios2050<-Scenarios2050[c(1,2,23,3:22,24:35)]
+    
+    # save data
+    write.csv(Scenarios2050,file=paste(ResultFolder,'RBFM_Upside_ByScenario.csv',sep=''))
+    
+    # Test calculations match global totals in paper - They do
+    Scenarios2050 %>%
+      group_by(Scenario) %>%
+      summarize(TotalBiomass=sum(TotalBiomass,na.rm=T),TotalProfits=sum(TotalProfits,na.rm=T))
+    
+  return(Scenarios2050)
   
 }

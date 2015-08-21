@@ -12,7 +12,7 @@ library(dplyr)
 ### Load data -----------------------------------------------------
 
 ## NEI
-nei<-read.csv('/Users/Tyler/Documents/Sustainable Fisheries Group/SFG 2014/Global Fishery Potential/Results/4.2/Data/UnLumped Projection DataAll Stocks Profit Upsides From NEIs.csv',stringsAsFactors=F)
+nei<-read.csv('/Results/5.1 global demand spcat phi/Data/UnLumped Projection DataAll Stocks Profit Upsides From NEIs.csv',stringsAsFactors=F)
 
 nei$Percent.of.Total.Profit.Upside.from.NEIs<-format(round(nei$Percent.of.Total.Profit.Upside.from.NEIs,2),nsmall=2)
 
@@ -23,17 +23,17 @@ nei$Scenario<-'Cons. Concern'
 ## Costs
 
 # Cost to revenue ratios
-costratio<-read.csv('/Users/Tyler/Documents/Sustainable Fisheries Group/SFG 2014/Global Fishery Potential/Results/4.2/Data/Cost_Revenue_Ratios_ISSCAAP.csv',stringsAsFactors=F)
+costratio<-read.csv('/Users/Tyler/Documents/Sustainable Fisheries Group/SFG 2014/Global Fishery Potential/Results/5.1 global demand spcat phi/Data/Cost_Revenue_Ratios_ISSCAAP.csv',stringsAsFactors=F)
 
 # Cost per ton
-costperton<-read.csv('/Users/Tyler/Documents/Sustainable Fisheries Group/SFG 2014/Global Fishery Potential/Results/4.2/Data/CostPerTon_Ratios_ISSCAAP.csv',stringsAsFactors=F)
+costperton<-read.csv('/Users/Tyler/Documents/Sustainable Fisheries Group/SFG 2014/Global Fishery Potential/Results/5.1 global demand spcat phi/Data/CostPerTon_Ratios_ISSCAAP.csv',stringsAsFactors=F)
 
 cost<-inner_join(costratio[,c('ISSCAAP.Group','Median','Mean')],costperton[,c('ISSCAAP.Group','Median','Mean')],by=c('ISSCAAP.Group'))
 
 colnames(cost)<-c('ISSCAAP Category','Median Ratio','Mean Ratio','Median $/Ton','Mean $/Ton')
 
 ## Global results for fig 3
-fig3<-read.csv('/Users/Tyler/Documents/Sustainable Fisheries Group/SFG 2014/Global Fishery Potential/Results/4.2/Data/Fig3data_Profit2050.csv',stringsAsFactors=F)
+fig3<-read.csv('/Users/Tyler/Documents/Sustainable Fisheries Group/SFG 2014/Global Fishery Potential/Results/5.1 global demand spcat phi/Data/Fig3data_Profit2050.csv',stringsAsFactors=F)
 
 fig3$Policy<-c('Business As Usual S1','Business As Usual S2','RBFM S1','RBFM S2','FMSY S1','FMSY S2','Today')
 
@@ -46,11 +46,14 @@ fig3$Catch<-format(round(fig3$Catch,2),nsmall=2)
 colnames(fig3)<-c('Policy','Biomass (MMT)','Annual Profit ($ Billions)','Harvest (MMT)')
 
 ## RAM stock list
-ram<-read.csv('/Users/Tyler/Documents/Sustainable Fisheries Group/SFG 2014/Global Fishery Potential/Results/4.2/Data/Ram Stock List.csv',stringsAsFactors=F)
+ram<-read.csv('/Users/Tyler/Documents/Sustainable Fisheries Group/SFG 2014/Global Fishery Potential/Results/5.1 global demand spcat phi/Data/Ram Stock List.csv',stringsAsFactors=F)
 
 ram<-ram[,c('IdOrig','CommName','Country','RegionFAO')]
 
 colnames(ram)<-c('Stock ID','Stock Name','Assigned Country','FAO Region')
+
+## Species specific phi values
+
 
 ```
 
