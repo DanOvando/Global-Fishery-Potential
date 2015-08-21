@@ -19,29 +19,30 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
   # Set up base conditions -------
   years <- unique(poldata$Year)
   
-  if (sp_group_demand == T)
-  {
-    base_supply <- filter(poldata,Year == years[1]) %>%
-      group_by(SpeciesCatName) %>%
-      summarise(global_catch = sum(Catch, na.rm = T))
-    
-    poldata <- join(poldata,base_supply, by = 'SpeciesCatName')
-    
-  }
+  #   if (sp_group_demand == T)
+  #   {
+  #     base_supply <- filter(poldata,Year == years[1]) %>%
+  #       group_by(SpeciesCatName) %>%
+  #       summarise(global_catch = sum(Catch, na.rm = T))
+  #     
+  #     poldata <- join(poldata,base_supply, by = 'SpeciesCatName')
+  #     
+  #   }
+  #   
+  #   if (sp_group_demand == F)
+  #   {
+  #     base_supply <- filter(poldata,Year == years[1]) %>%
+  #       summarise(global_catch = sum(Catch, na.rm = T))
+  #     
+  #     poldata$global_catch <- base_supply$global_catch
+  #     
+  #   }
   
-  if (sp_group_demand == F)
-  {
-    base_supply <- filter(poldata,Year == years[1]) %>%
-      summarise(global_catch = sum(Catch, na.rm = T))
-    
-    poldata$global_catch <- base_supply$global_catch
-    
-  }
-  poldata <- poldata %>%
-    group_by(IdOrig) %>%
-    mutate(alpha = global_catch / Price^elasticity, 
-           pricek = (1 / alpha)^(1 / elasticity)) %>%
-    ungroup()
+  #   poldata <- poldata %>%
+  #     group_by(IdOrig) %>%
+  #     mutate(alpha = global_catch / Price^elasticity, 
+  #            pricek = (1 / alpha)^(1 / elasticity)) %>%
+  #     ungroup()
   
   oa <- subset(poldata, IdOrig %in% oa_ids)
   
@@ -90,7 +91,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
     {
       supply <- poldata %>%
         ungroup() %>%
-        filter(Year == years[y]) %>%
+        subset(Year == years[y]) %>%
         summarise(global_catch = sum(Catch, na.rm = T))
     }
     
