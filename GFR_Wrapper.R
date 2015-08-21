@@ -531,7 +531,7 @@ if (IncludeForageFish==FALSE)
 
 # Add new "Business as Usual Policies" by combining the results of the respective status quo policies for certain types of stocks, outlined in the function
 
-ProjectionData <- BuildPolicyBAUs(ProjectionData,BaselineYear,elastic_demand = elastic_demand, elasticity = -0.7, 
+ProjectionData <- BuildPolicyBAUs(ProjectionData,BaselineYear,elastic_demand = elastic_demand, elasticity = -0.7,
                                   Discount = Discount,sp_group_demand = T)
 
 # ProjectionData<- ddply(ProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
