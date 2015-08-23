@@ -5,7 +5,7 @@
 
 AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,NeiModelSdevs,TransbiasBin,J) 
 {
-  
+  show('ballsack')
   #   Data<- rus
   #   Data<- BiomassData[Biomass_CountryLocater,]
   #   
@@ -37,29 +37,49 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
   
   SummaryStats$LastYear<- max(Data$Year)
   
-  SummaryStats$DataBases<- ddply(Data,.(Year,Dbase),summarize,Count=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T))
+  SummaryStats$DataBases<- Data %>% group_by(Year,Dbase) %>% summarize(Count=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T))
   
-  SummaryStats$IdLevel<- ddply(Data,.(Year,IdLevel),summarize,Count=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T))
+  SummaryStats$IdLevel<-  Data %>% group_by(Year,IdLevel) %>% summarize(Count=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T))
   
-  SummaryStats$SpeciesCats<- ddply(Data,.(Year,SpeciesCatName),summarize,Count=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T))
+  SummaryStats$SpeciesCats<- Data %>% group_by(Year,SpeciesCatName) %>% summarize(Count=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T))
   
-  
+#   SummaryStats$DataBases<- ddply(Data,.(Year,Dbase),summarize,Count=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T))
+#   
+#   SummaryStats$IdLevel<- ddply(Data,.(Year,IdLevel),summarize,Count=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T))
+#   
+#   SummaryStats$SpeciesCats<- ddply(Data,.(Year,SpeciesCatName),summarize,Count=length(unique(IdOrig)),Catch=sum(Catch,na.rm=T))
+#   
+#   
   # Analyze Catch Statistics ------------------------------------------------
   
   Data$Catch[is.infinite(Data$Catch)]<- NA
+
+  CatchStats$FisherySizes<- Data %>% group_by(IdOrig) %>% summarize(LifetimeCatch=sum(Catch,na.rm=T)) 
   
-  CatchStats$FisherySizes<- ddply(Data,.(IdOrig),summarize,LifetimeCatch=sum(Catch,na.rm=T)) 
+#   CatchStats$FisherySizes<- ddply(Data,.(IdOrig),summarize,LifetimeCatch=sum(Catch,na.rm=T)) 
   
   plot(cumsum(sort(CatchStats$FisherySizes$LifetimeCatch,decreasing=T)),xlab='Fishery',ylab='Cumulative Catch (MT)')
   
-  CatchStats$Catch<- ddply(Data,.(),summarize,NumberOfStocks=length(unique(IdOrig)),MeanCatch=mean(Catch,na.rm=T),
+#   CatchStats$Catch<- ddply(Data,.(),summarize,NumberOfStocks=length(unique(IdOrig)),MeanCatch=mean(Catch,na.rm=T),
+#                            MedianCatch=median(Catch,na.rm=T),TotalCatch=sum(Catch,na.rm=T),SDofCatch=sd(Catch,na.rm=T))
+#   
+#   CatchStats$YearCatch<- ddply(Data,.(Year),summarize,NumberOfStocks=length(unique(IdOrig)),MeanCatch=mean(Catch,na.rm=T),
+#                                MedianCatch=median(Catch,na.rm=T),TotalCatch=sum(Catch,na.rm=T),SDofCatch=sd(Catch,na.rm=T))
+#   
+#   CatchStats$CountryYearCatch<- ddply(Data,.(Country,Year),summarize,NumberOfStocks=length(unique(IdOrig)),MeanCatch=mean(Catch,na.rm=T),
+#                                       MedianCatch=median(Catch,na.rm=T),TotalCatch=sum(Catch,na.rm=T),SDofCatch=sd(Catch,na.rm=T))
+#   
+  
+  CatchStats$Catch<- Data %>% summarize(NumberOfStocks=length(unique(IdOrig)),MeanCatch=mean(Catch,na.rm=T),
                            MedianCatch=median(Catch,na.rm=T),TotalCatch=sum(Catch,na.rm=T),SDofCatch=sd(Catch,na.rm=T))
   
-  CatchStats$YearCatch<- ddply(Data,.(Year),summarize,NumberOfStocks=length(unique(IdOrig)),MeanCatch=mean(Catch,na.rm=T),
+  CatchStats$YearCatch<- Data %>% group_by(Year) %>% summarize(NumberOfStocks=length(unique(IdOrig)),MeanCatch=mean(Catch,na.rm=T),
                                MedianCatch=median(Catch,na.rm=T),TotalCatch=sum(Catch,na.rm=T),SDofCatch=sd(Catch,na.rm=T))
   
-  CatchStats$CountryYearCatch<- ddply(Data,.(Country,Year),summarize,NumberOfStocks=length(unique(IdOrig)),MeanCatch=mean(Catch,na.rm=T),
+  CatchStats$CountryYearCatch<- Data %>% group_by(Country,Year) %>% summarize(NumberOfStocks=length(unique(IdOrig)),MeanCatch=mean(Catch,na.rm=T),
                                       MedianCatch=median(Catch,na.rm=T),TotalCatch=sum(Catch,na.rm=T),SDofCatch=sd(Catch,na.rm=T))
+  
+  
   
   plot(CatchStats$YearCatch$Year,CatchStats$YearCatch$TotalCatch,type='b',xlab='Year',ylab='Total Catch (MT)')
   
@@ -189,8 +209,12 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
       Data$BvBmsySD<- TempBioSd
       
       
-      BioStats<- ddply(Data,.(Year),summarize,Median=median((BvBmsy),na.rm=T),Q2.5=quantile((BvBmsy),c(0.025),na.rm=T),Q25=quantile((BvBmsy),c(0.25),na.rm=T),
+      BioStats<- Data %>% group_by(Year) %>% summarize(Median=median((BvBmsy),na.rm=T),Q2.5=quantile((BvBmsy),c(0.025),na.rm=T),Q25=quantile((BvBmsy),c(0.25),na.rm=T),
                        Q75=quantile((BvBmsy),c(0.75),na.rm=T),Q97.5=quantile((BvBmsy),c(0.975),na.rm=T))
+      
+#       
+#       BioStats<- ddply(Data,.(Year),summarize,Median=median((BvBmsy),na.rm=T),Q2.5=quantile((BvBmsy),c(0.025),na.rm=T),Q25=quantile((BvBmsy),c(0.25),na.rm=T),
+#                        Q75=quantile((BvBmsy),c(0.75),na.rm=T),Q97.5=quantile((BvBmsy),c(0.975),na.rm=T))
       
       BioStats<- BioStats[is.na(BioStats$Median)==F,]      
       
@@ -207,9 +231,13 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
     else
     {
       
-      BioStats<- ddply(Data,.(Year),summarize,Median=median(exp(BvBmsy)),Q2.5=quantile(exp(BvBmsy),c(0.025)),Q25=quantile(exp(BvBmsy),c(0.25)),
-                       Q75=quantile(exp(BvBmsy),c(0.75)),Q97.5=quantile(exp(BvBmsy),c(0.975)))
+#       BioStats<- ddply(Data,.(Year),summarize,Median=median(exp(BvBmsy)),Q2.5=quantile(exp(BvBmsy),c(0.025)),Q25=quantile(exp(BvBmsy),c(0.25)),
+#                        Q75=quantile(exp(BvBmsy),c(0.75)),Q97.5=quantile(exp(BvBmsy),c(0.975)))
       
+      BioStats<- Data %>%
+        group_by(Year) %>%
+        summarize(Median=median(exp(BvBmsy)),Q2.5=quantile(exp(BvBmsy),c(0.025)),Q25=quantile(exp(BvBmsy),c(0.25)),
+                       Q75=quantile(exp(BvBmsy),c(0.75)),Q97.5=quantile(exp(BvBmsy),c(0.975)))
       
       BioStats<- BioStats[is.na(BioStats$Median)==F,]      
       

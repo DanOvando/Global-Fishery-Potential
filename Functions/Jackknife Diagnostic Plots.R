@@ -1,6 +1,5 @@
 JackknifePlots<- function(PlotJack,FigureFolder,BaselineYear = 2012)
 {
-  show('woo?')
   PlotJack$ProportionalBError[PlotJack$ProportionalBError>250]<- 250
   
   PlotJack$ProportionalFError[PlotJack$ProportionalFError>250]<- 250
@@ -167,7 +166,11 @@ JackknifePlots<- function(PlotJack,FigureFolder,BaselineYear = 2012)
   #         scale_x_discrete(breaks=as.character(seq(from=2000,to=2012,by=4))))
   dev.off()
   
-  LifetimeJack<- ddply(PlotJack,c('Id'),summarize,CatchMSY_MSY=unique(CmsyMSY),RamMSY=unique(RamMSY),TotalCatch=sum(Catch,na.rm=T))
+#   LifetimeJack<- ddply(PlotJack,c('Id'),summarize,CatchMSY_MSY=unique(CmsyMSY),RamMSY=unique(RamMSY),TotalCatch=sum(Catch,na.rm=T))
+
+  LifetimeJack<- PlotJack %>%
+    group_by(Id) %>%
+    summarize(CatchMSY_MSY=unique(CmsyMSY),RamMSY=unique(RamMSY),TotalCatch=sum(Catch,na.rm=T))
   
   LifetimeJack$ProportionalMSYError<- pmin(250,100*((LifetimeJack$CatchMSY_MSY-LifetimeJack$RamMSY)/LifetimeJack$RamMSY))
   

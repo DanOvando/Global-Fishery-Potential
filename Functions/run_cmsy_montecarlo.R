@@ -1,7 +1,7 @@
 run_cmsy_montecarlo<- function(Iterations,Stocks,ProjectionData,
                                CatchMSYPossibleParams,PolicyStorage,ErrorVars,
                                ErrorSize,NumCPUs,BaselineYear = 2012, CatchSharePrice = 1.31,
-                               CatchShareCost = 0.77)
+                               CatchShareCost = 0.77,elastic_demand = F, elasticity = -0.7, sp_group_demand = F, Discount = 0)
 {
   
   Sim_Forward= function(FStatusQuo,BStatusQuo,Policy,Policies,IsCatchShare,bvec,b0,Time = 38,p,MSY,c,g,phi,beta,omega)
@@ -51,12 +51,12 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,ProjectionData,
     pi = b
     y = b
     b[1,] = b0;
-#     BCount=ddply(Policies,c('IdOrig'),summarize,NumB=length(b))
+    #     BCount=ddply(Policies,c('IdOrig'),summarize,NumB=length(b))
     BCount = Policies %>%
       group_by(IdOrig) %>%
       summarize(NumB=length(b))
     
-        BCount=unique(BCount$NumB)
+    BCount=unique(BCount$NumB)
     if (Policy=='StatusQuoOpenAccess'){f[1,]<- FStatusQuo}
     if (Policy=='CatchShare') # apply price cost effects of catch share policy to non-catch share stocks
     {
@@ -73,7 +73,7 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,ProjectionData,
     
     MsyProfits<- MSY*p-c*(g)^beta
     
-#     Omega<- 0.1
+    #     Omega<- 0.1
     
     PastF<- FStatusQuo
     
@@ -152,9 +152,9 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,ProjectionData,
     
     Price<- RecentStockData$Price * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
     
-#     beta <- base_beta * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
-#     
-#     omega <- base_omega * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
+    #     beta <- base_beta * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
+    #     
+    #     omega <- base_omega * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
     
     beta <-  runif(dim(RecentStockData)[1],0.75*base_beta,1.25*base_beta)
     
@@ -243,14 +243,17 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,ProjectionData,
       
     } #Close policies loop
     
-    
+    ProjectionMat$DiscProfits<- ProjectionMat$Profits * (1+Discount)^-(ProjectionMat$Year-BaselineYear)
     
     PercDone<- round(100*(k/Iterations),2)
     
     write.table(paste(PercDone, '% done with Monte Carlo',sep=''), file = 'MonteCarloProgess.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
     
     #     ProjectionMat$Biomass <- (ProjectionMat$BvBmsy * ProjectionMat$Bmsy)
-    ProjectionMat<-BuildPolicyBAUs(ProjectionMat,BaselineYear)
+    ProjectionMat<-BuildPolicyBAUs(ProjectionMat,BaselineYear,elastic_demand = elastic_demand, elasticity = -0.7,
+                                   Discount = Discount,sp_group_demand = sp_group_demand )
+    
+    
     return(ProjectionMat)
   } #Close McIterations
   

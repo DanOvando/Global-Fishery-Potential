@@ -3,6 +3,7 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
                                 do_expanded_montecarlo = F, mciterations = 250)
   
 {
+  library(plyr)
   library(dplyr)
   library(lattice)
   library(rfishbase)
