@@ -31,7 +31,7 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
   MonteMat<- (run_expanded_montecarlo(mciterations,Stocks=Stocks,ProjectionData=ProjectionData,BiomassData=BiomassData,
                                       MsyData=MsyData,CatchMSYPossibleParams=CatchMSYPossibleParams,
                                       PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0, NumCPUs = CPUs,
-                                      ResultFolder = ResultFolder))
+                                      ResultFolder = ResultFolder, elastic_demand = T, sp_group_demand = T))
   
   #    Rprof(NULL)
   #     RProfData<- readProfileData('Rprof.out')

@@ -1,6 +1,6 @@
 run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,
                                    CatchMSYPossibleParams,PolicyStorage,ErrorVars,ErrorSize,NumCPUs = 1,BaselineYear = 2012,
-                                   CatchSharePrice = 1.3,CatchShareCost = 0.77,ResultFolder)
+                                   CatchSharePrice = 1.3,CatchShareCost = 0.77,ResultFolder,elastic_demand = F,sp_group_demand = F)
 {
   
   Sim_Forward= function(FStatusQuo,BStatusQuo,Stocks,Policy,Policies,IsCatchShare,bvec,b0,Time = 38,p,MSY,c,g,phi,beta,omega)
@@ -246,6 +246,9 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,
     
     ProjectionMat$Biomass<- ProjectionMat$BvBmsy * ProjectionMat$Bmsy
     
+    ProjectionMat$DiscProfits<- ProjectionMat$Profits * (1+Discount)^-(ProjectionMat$Year-BaselineYear)
+    
+    
     #     SpeciesSummary<- ddply(ProjectionMat,c('Policy','SpeciesCatName','Year'),summarize,b25=quantile(BvBmsy,0.25,na.rm=T),
     #                            f75=quantile(FvFmsy,0.75,na.rm=T)) %>% 
     #       mutate(GroupName=paste(Policy,SpeciesCatName,Year,sep='-'))
@@ -279,7 +282,9 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,
     
     BioMonte<- rbind(NEIs,Species)
 
-    BioMonte<-BuildPolicyBAUs(BioMonte,BaselineYear)
+#     BioMonte<-BuildPolicyBAUs(BioMonte,BaselineYear)
+    BioMonte<-BuildPolicyBAUs(BioMonte,BaselineYear,elastic_demand = elastic_demand, elasticity = -0.7,
+                                   Discount = Discount,sp_group_demand = sp_group_demand )
     
     BioMonte$Iteration<- k
     

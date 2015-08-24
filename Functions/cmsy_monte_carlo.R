@@ -21,7 +21,7 @@ cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
   Stocks<- Stocks[Stocks %in% CatchMSYPossibleParams$IdOrig ]
   
   MonteMat<- run_cmsy_montecarlo(Iterations = mciterations,Stocks=Stocks,ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
-                                 PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.25,NumCPUs = NumCPUs)
+                                 PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.25,NumCPUs = NumCPUs, elastic_demand = T,sp_group_demand = T)
   
 #   save(MonteMat,file=paste(FigureFolder,'MonteCarlo_Results.Rdata',sep=''))
   
