@@ -259,8 +259,7 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,ProjectionData,
     write.table(paste(PercDone, '% done with Monte Carlo',sep=''), file = 'MonteCarloProgess.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
     #     ProjectionMat$Biomass <- (ProjectionMat$BvBmsy * ProjectionMat$Bmsy)
     
-    show(elastic_demand)
-    show(sp_group_demand)
+
     ProjectionMat <- BuildPolicyBAUs(ProjectionData = ProjectionMat,BaselineYear = BaselineYear,elastic_demand = elastic_demand, elasticity = -0.7,
                                     Discount = Discount,sp_group_demand = sp_group_demand )
     

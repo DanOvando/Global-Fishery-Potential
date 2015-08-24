@@ -1,5 +1,5 @@
 run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_iterations = 1000,
-                                run_iuu = F, run_ind_jack = F, run_reg_jack = F,do_cmsy_montecarlo = F,
+                                do_iuu = F, do_ind_jack = F, do_reg_jack = F,do_cmsy_montecarlo = F,
                                 do_expanded_montecarlo = F, mciterations = 250, elastic_demand = T, sp_group_demand = F)
   
 {
@@ -22,20 +22,20 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
   sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
   
   BaselineYear <<- 2012
-  if (run_iuu == T)
+  if (do_iuu == T)
   {
     iuu_analysis <- run_iuu(runfolder = runfolder, NumCPUs = NumCPUs,
                             IUULevel = IUULevel, iterations = cmsy_iterations)
     show('Finished iuu analysis')
   }
   
-  if (run_ind_jack == T)
+  if (do_ind_jack == T)
   {
     individual_jackknife_analysis <- individual_jackknife(runfolder = runfolder, CPUs = NumCPUs, iterations = cmsy_iterations)
     show('Finished individual jackknife analysis')
     
   }
-  if (run_reg_jack)
+  if (do_reg_jack)
   {
     regional_jackknife_analysis <- regional_jackknife(runfolder = runfolder, CPUs = NumCPUs, iterations = cmsy_iterations)
     
@@ -44,13 +44,15 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
   }
   if (do_cmsy_montecarlo ==T)
   {
-    cmsy_montecarlo_analysis <- cmsy_monte_carlo(runfolder = runfolder, CPUs = NumCPUs, mciterations = mciterations, elastic_demand = T, sp_group_demand = F)
+    cmsy_montecarlo_analysis <- cmsy_monte_carlo(runfolder = runfolder, CPUs = NumCPUs, mciterations = mciterations, real_elastic_demand = elastic_demand
+                                                 , real_sp_group_demand = sp_group_demand)
     show('Finished cmsy montecarlo analysis')
     
   }
   if (do_expanded_montecarlo ==T)
   {
-    expanded_montecarlo_analysis <- expanded_monte_carlo(runfolder = runfolder, CPUs = NumCPUs, mciterations = mciterations)
+    expanded_montecarlo_analysis <- expanded_monte_carlo(runfolder = runfolder, CPUs = NumCPUs, mciterations = mciterations,real_elastic_demand = elastic_demand
+                                                         , real_sp_group_demand = sp_group_demand)
     
     show('Finished expanded montecarlo analysis')
     
