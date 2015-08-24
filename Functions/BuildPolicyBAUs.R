@@ -25,25 +25,25 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
   {
     if (sp_group_demand == T)
     {
-      base_supply <- filter(ProjectionData,Year == 2012) %>%
-        group_by(SpeciesCatName) %>%
-        summarise(global_catch = sum(Catch, na.rm = T))
-      
-#       base_supply <- filter(ProjectionData,Year == 2012 & Policy =='Historic') %>%
+#       base_supply <- filter(ProjectionData,Year == 2012) %>%
 #         group_by(SpeciesCatName) %>%
 #         summarise(global_catch = sum(Catch, na.rm = T))
+      
+      base_supply <- filter(ProjectionData,Year == 2012 & Policy =='Historic') %>%
+        group_by(SpeciesCatName) %>%
+        summarise(global_catch = sum(Catch, na.rm = T))
       
       ProjectionData <- join(ProjectionData,base_supply, by = 'SpeciesCatName')
       
     }
     if (sp_group_demand == F)
     {
-      base_supply <- filter(ProjectionData,Year == 2012) %>%
+#       base_supply <- filter(ProjectionData,Year == 2012) %>%
+#         summarise(global_catch = sum(Catch, na.rm = T))
+      
+      base_supply <- filter(ProjectionData,Year == 2012 & Policy =='Historic') %>%
         summarise(global_catch = sum(Catch, na.rm = T))
       
-#       base_supply <- filter(ProjectionData,Year == 2012 & Policy =='Historic') %>%
-#         summarise(global_catch = sum(Catch, na.rm = T))
-#       
       ProjectionData$global_catch <- base_supply$global_catch
       
     }

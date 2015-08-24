@@ -1,7 +1,7 @@
 run_cmsy_montecarlo<- function(Iterations,Stocks,ProjectionData,
                                CatchMSYPossibleParams,PolicyStorage,ErrorVars,
                                ErrorSize,NumCPUs,BaselineYear = 2012, CatchSharePrice = 1.31,
-                               CatchShareCost = 0.77,elastic_demand = F, elasticity = -0.7, sp_group_demand = F, Discount = 0)
+                               CatchShareCost = 0.77,elastic_demand = T, elasticity = -0.7, sp_group_demand = F, Discount = 0)
 {
   
   Sim_Forward= function(FStatusQuo,BStatusQuo,Policy,Policies,IsCatchShare,bvec,b0,Time = 38,p,MSY,c,g,phi,beta,omega)
@@ -136,7 +136,7 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,ProjectionData,
     #  
     Projection$Year<- Projection$Year+(BaselineYear-1)
     
-#     Projection<- subset(Projection,Year==BaselineYear | Year==max(Year))
+    #     Projection<- subset(Projection,Year==BaselineYear | Year==max(Year))
     return(Projection)
   }
   
@@ -248,12 +248,21 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,ProjectionData,
     
     ProjectionMat$MarginalCost <- ProjectionMat$Cost
     
+    Historic <- subset(ProjectionMat, Policy == 'CatchShare' & Year == 2012)
+    
+    Historic$Policy <- 'Historic'
+    
+    ProjectionMat <- rbind(ProjectionMat, Historic)
+    
     PercDone<- round(100*(k/Iterations),2)
     
     write.table(paste(PercDone, '% done with Monte Carlo',sep=''), file = 'MonteCarloProgess.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
     #     ProjectionMat$Biomass <- (ProjectionMat$BvBmsy * ProjectionMat$Bmsy)
-    ProjectionMat<-BuildPolicyBAUs(ProjectionData = ProjectionMat,BaselineYear = BaselineYear,elastic_demand = elastic_demand, elasticity = -0.7,
-                                    Discount = Discount,sp_group_demand = elastic_demand )
+    
+    show(elastic_demand)
+    show(sp_group_demand)
+    ProjectionMat <- BuildPolicyBAUs(ProjectionData = ProjectionMat,BaselineYear = BaselineYear,elastic_demand = elastic_demand, elasticity = -0.7,
+                                    Discount = Discount,sp_group_demand = sp_group_demand )
     
     
     return(ProjectionMat)
