@@ -1,6 +1,8 @@
 cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250,BaselineYear = 2012, elastic_demand = T, sp_group_demand = F)
 {
-  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Complete Results.rdata', sep = ''))
+  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
+
+#   load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Complete Results.rdata', sep = ''))
   
   funcs <- as.vector(lsf.str())
   show(mciterations)
