@@ -141,7 +141,8 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,ProjectionData,
   }
   
   
-  McIterations<- function(k,Iterations,Index,PossibleParams,PolicyStorage,Stocks,ErrorSize,base_omega = 0.1,base_beta = 1.3)
+  McIterations<- function(k,Iterations,Index,PossibleParams,PolicyStorage,Stocks,ErrorSize,base_omega = 0.1,base_beta = 1.3,
+                          elastic_demand = F, sp_group_demand = F, Discount = 0)
   {
     
     PossParams<- PossibleParams[Index[,k],]
@@ -269,7 +270,10 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,ProjectionData,
     Index[i,]<- sample(which(PossibleParams$IdOrig==Stocks[i]),Iterations,replace=T)
   }
   
-  Projections<- mclapply(1:Iterations,McIterations,mc.cores=NumCPUs,Index=Index,Iterations=Iterations,PossibleParams=PossibleParams,PolicyStorage=PolicyStorage,Stocks=Stocks,ErrorSize=ErrorSize)
+  Projections<- mclapply(1:Iterations,McIterations,mc.cores=NumCPUs,Index=Index,
+                         Iterations=Iterations,PossibleParams=PossibleParams,
+                         PolicyStorage=PolicyStorage,Stocks=Stocks,ErrorSize=ErrorSize,elastic_demand = elastic_demand,
+                         sp_group_demand = sp_group_demand)
   
   Projections<- ldply(Projections)
   
