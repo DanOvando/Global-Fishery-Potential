@@ -44,13 +44,15 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
   }
   if (do_cmsy_montecarlo ==T)
   {
-    cmsy_montecarlo_analysis <- cmsy_monte_carlo(runfolder = runfolder, CPUs = NumCPUs, mciterations = mciterations, elastic_demand = T, sp_group_demand = F)
+    cmsy_montecarlo_analysis <- cmsy_monte_carlo(runfolder = runfolder, CPUs = NumCPUs, mciterations = mciterations, elastic_demand = elastic_demand
+                                                 , sp_group_demand = sp_group_demand)
     show('Finished cmsy montecarlo analysis')
     
   }
   if (do_expanded_montecarlo ==T)
   {
-    expanded_montecarlo_analysis <- expanded_monte_carlo(runfolder = runfolder, CPUs = NumCPUs, mciterations = mciterations)
+    expanded_montecarlo_analysis <- expanded_monte_carlo(runfolder = runfolder, CPUs = NumCPUs, mciterations = mciterations,elastic_demand = elastic_demand
+                                                         , sp_group_demand = sp_group_demand)
     
     show('Finished expanded montecarlo analysis')
     
