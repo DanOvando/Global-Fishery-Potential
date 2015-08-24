@@ -25,19 +25,25 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
   {
     if (sp_group_demand == T)
     {
-      base_supply <- filter(ProjectionData,Year == 2012 & Policy =='Historic') %>%
+      base_supply <- filter(ProjectionData,Year == 2012) %>%
         group_by(SpeciesCatName) %>%
         summarise(global_catch = sum(Catch, na.rm = T))
+      
+#       base_supply <- filter(ProjectionData,Year == 2012 & Policy =='Historic') %>%
+#         group_by(SpeciesCatName) %>%
+#         summarise(global_catch = sum(Catch, na.rm = T))
       
       ProjectionData <- join(ProjectionData,base_supply, by = 'SpeciesCatName')
       
     }
-    
     if (sp_group_demand == F)
     {
-      base_supply <- filter(ProjectionData,Year == 2012 & Policy =='Historic') %>%
+      base_supply <- filter(ProjectionData,Year == 2012) %>%
         summarise(global_catch = sum(Catch, na.rm = T))
       
+#       base_supply <- filter(ProjectionData,Year == 2012 & Policy =='Historic') %>%
+#         summarise(global_catch = sum(Catch, na.rm = T))
+#       
       ProjectionData$global_catch <- base_supply$global_catch
       
     }
@@ -210,7 +216,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
     #       group_by(Year,Policy) %>%
     #       summarize(NumStocks = length(unique(IdOrig)),TotalCatch = sum(Catch, na.rm = T), TotalProfits = sum(Profits, na.rm = T))
     
-    ProjectionData <- filter(ProjectionData, Policy != 'CatchShare' & Policy != 'Fmsy')
+    ProjectionData <- subset(ProjectionData, Policy != 'CatchShare' & Policy != 'Fmsy')
     
   }
   if (elastic_demand == T)

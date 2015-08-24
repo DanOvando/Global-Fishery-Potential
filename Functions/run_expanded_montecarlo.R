@@ -1,6 +1,6 @@
 run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,
                                    CatchMSYPossibleParams,PolicyStorage,ErrorVars,ErrorSize,NumCPUs = 1,BaselineYear = 2012,
-                                   CatchSharePrice = 1.3,CatchShareCost = 0.77,ResultFolder,elastic_demand = F,sp_group_demand = F)
+                                   CatchSharePrice = 1.3,CatchShareCost = 0.77,ResultFolder,elastic_demand = F,sp_group_demand = F, Discount = 0)
 {
   
   Sim_Forward= function(FStatusQuo,BStatusQuo,Stocks,Policy,Policies,IsCatchShare,bvec,b0,Time = 38,p,MSY,c,g,phi,beta,omega)
@@ -144,7 +144,7 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,
     
     Projection<- Projection %>%
       group_by(IdOrig) %>%
-      mutate(NPV=cumsum(Profits*(1+0.05)^-(Year-BaselineYear)))
+      mutate(NPV=cumsum(Profits*(1+Discount)^-(Year-BaselineYear)))
     
     #     Projection<- subset(Projection,Year==BaselineYear | Year==max(Year))
     return(Projection)

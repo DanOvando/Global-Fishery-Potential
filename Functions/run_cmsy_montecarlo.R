@@ -136,7 +136,7 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,ProjectionData,
     #  
     Projection$Year<- Projection$Year+(BaselineYear-1)
     
-    Projection<- subset(Projection,Year==BaselineYear | Year==max(Year))
+#     Projection<- subset(Projection,Year==BaselineYear | Year==max(Year))
     return(Projection)
   }
   
@@ -246,13 +246,14 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,ProjectionData,
     
     ProjectionMat$DiscProfits<- ProjectionMat$Profits * (1+Discount)^-(ProjectionMat$Year-BaselineYear)
     
+    ProjectionMat$MarginalCost <- ProjectionMat$Cost
+    
     PercDone<- round(100*(k/Iterations),2)
     
     write.table(paste(PercDone, '% done with Monte Carlo',sep=''), file = 'MonteCarloProgess.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
-    
     #     ProjectionMat$Biomass <- (ProjectionMat$BvBmsy * ProjectionMat$Bmsy)
-    ProjectionMat<-BuildPolicyBAUs(ProjectionMat,BaselineYear,elastic_demand = elastic_demand, elasticity = -0.7,
-                                   Discount = Discount,sp_group_demand = sp_group_demand )
+    ProjectionMat<-BuildPolicyBAUs(ProjectionData = ProjectionMat,BaselineYear = BaselineYear,elastic_demand = elastic_demand, elasticity = -0.7,
+                                    Discount = Discount,sp_group_demand = elastic_demand )
     
     
     return(ProjectionMat)

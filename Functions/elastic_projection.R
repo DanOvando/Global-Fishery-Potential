@@ -47,18 +47,17 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
     poldata$global_catch <- supply$global_catch
   }
   
-
+  
   poldata$Price[poldata$Year == base_year] <- (poldata$pricek * poldata$global_catch^(1/elasticity))[poldata$Year == base_year] #adjust prices
   
   poldata$Profits[poldata$Year == base_year] <- ((poldata$Price * poldata$MSY * poldata$FvFmsy * poldata$BvBmsy) 
-                                      - poldata$MarginalCost * (poldata$FvFmsy * poldata$g)^beta )[poldata$Year == base_year] #adjust profits
+                                                 - poldata$MarginalCost * (poldata$FvFmsy * poldata$g)^beta )[poldata$Year == base_year] #adjust profits
   
   oa <- subset(poldata, IdOrig %in% oa_ids)
   
   oa_msyprofits <- (oa$MSY * oa$Price - oa$MarginalCost * (oa$g)^beta)[oa$Year == years[1]]
   
   # loops!-------
-  
   for (y in 2:length(years))
   {
     where_year <- oa$Year == years[y]
@@ -135,7 +134,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
   poldata <- poldata %>%
     group_by(Year) %>%
     mutate(DiscProfits = Profits * (1 + discount)^-(Year-(base_year-1)))
-
+  
   poldata <- poldata %>%
     dplyr::select(-alpha,-pricek,-global_catch)
   
