@@ -1,6 +1,8 @@
 run_iuu <- function(runfolder,NumCPUs, IUULevel = 1.25, iterations)
 {
-  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Complete Results.rdata', sep = ''))
+  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
+  
+#   load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Complete Results.rdata', sep = ''))
   
   funcs <- as.vector(lsf.str())
   

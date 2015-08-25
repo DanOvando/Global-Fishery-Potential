@@ -30,6 +30,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
 #         summarise(global_catch = sum(Catch, na.rm = T))
       
       base_supply <- filter(ProjectionData,Year == 2012 & Policy =='Historic') %>%
+        ungroup() %>%
         group_by(SpeciesCatName) %>%
         summarise(global_catch = sum(Catch, na.rm = T))
       
@@ -42,6 +43,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
 #         summarise(global_catch = sum(Catch, na.rm = T))
       
       base_supply <- subset(ProjectionData,Year == 2012 & Policy =='Historic') %>%
+        ungroup() %>%
         summarise(global_catch = sum(Catch, na.rm = T))
       
       ProjectionData$global_catch <- base_supply$global_catch
@@ -49,6 +51,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
     }
     
     ProjectionData <- ProjectionData %>%
+      ungroup() %>%
       group_by(IdOrig) %>%
       mutate(alpha = global_catch / Price^elasticity, 
              pricek = (1 / alpha)^(1 / elasticity)) %>%

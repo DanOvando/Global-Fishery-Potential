@@ -131,6 +131,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
   }
   
   poldata <- poldata %>%
+    ungroup() %>%
     group_by(Year) %>%
     mutate(DiscProfits = Profits * (1 + discount)^-(Year-(base_year-1)))
   
