@@ -41,7 +41,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
 #       base_supply <- filter(ProjectionData,Year == 2012) %>%
 #         summarise(global_catch = sum(Catch, na.rm = T))
       
-      base_supply <- filter(ProjectionData,Year == 2012 & Policy =='Historic') %>%
+      base_supply <- subset(ProjectionData,Year == 2012 & Policy =='Historic') %>%
         summarise(global_catch = sum(Catch, na.rm = T))
       
       ProjectionData$global_catch <- base_supply$global_catch
@@ -54,6 +54,8 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
              pricek = (1 / alpha)^(1 / elasticity)) %>%
       ungroup()
   }
+  
+  
   ram<-ProjectionData[ProjectionData$Policy=='StatusQuoFForever' & ProjectionData$Dbase=='RAM' & ProjectionData$CatchShare!=1,]
   
   ramids<-unique(ram$IdOrig)
