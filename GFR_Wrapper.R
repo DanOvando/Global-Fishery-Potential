@@ -563,7 +563,7 @@ UnlumpedData<-UnlumpFisheries(UnlumpedData,RawData,BaselineYear,YearsBack=4,Stit
 
 UnlumpedProjectionData<-UnlumpedData
 
-UnlumpedProjectionData<-CheckDuplicates(UnlumpedProjectionData[UnlumpedProjectionData$CanProject==T,]) # Final check for duplicated RAM and FAO stocks
+# UnlumpedProjectionData<-CheckDuplicates(UnlumpedProjectionData[UnlumpedProjectionData$CanProject==T,]) # Final check for duplicated RAM and FAO stocks
 
 rm(UnlumpedData)
 
