@@ -179,6 +179,10 @@ run_iuu_diagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,Ba
   
   Diagnostics$IUULevel <- IUULevel
   
+  dropit <- ls()[!(ls() %in% c('Diagnostics','FigureFolder','PostData'))]
+  
+  rm(list = dropit)
+  
   pdf(paste(FigureFolder,'IUU Effect.pdf',sep=''))
   iuu_plot<- (ggplot(data=Diagnostics,aes(x=value))
   +geom_density(fill='steelblue2',alpha=0.6)+geom_vline(aes(xintercept = 0))+geom_vline(aes(xintercept=100*(unique(IUULevel)-1)),color='red')

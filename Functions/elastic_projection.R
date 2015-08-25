@@ -18,7 +18,6 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
   }
   
   # Set up base conditions -------
-  show('BALLSACK')
   years <- unique(poldata$Year)
   
   
