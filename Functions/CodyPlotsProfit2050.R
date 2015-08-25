@@ -397,7 +397,7 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   
   if(IncludeNEIs==TRUE)
   {
-    colLabs[which(OverfishStocks$NeiUpsideSQOver50)]<-2
+    colLabs[which(OverfishStocks$NeiProfitsOver50)]<-2
   }
   
   #==add circles for legend
@@ -521,7 +521,7 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   
   if(IncludeNEIs==TRUE)
   {
-    colLabs[which(OverfishStocks$NeiUpsideSQOver50)]<-2
+    colLabs[which(OverfishStocks$NeiProfitsOver50)]<-2
   }
   
   #==represent MSY by area rather than radius
