@@ -1,6 +1,7 @@
 # Function to project stocks forward, 
 # adjusting prices and open access to reflect supply, post BAU policy construction
-elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05, base_year = 2012,sp_group_demand = F)
+elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05, 
+                               base_year = 2013,sp_group_demand = F, beta = 1.3,bvec = seq(0.00000001,2.5,length.out=30))
 {
   OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
   {
@@ -19,37 +20,43 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
   # Set up base conditions -------
   years <- unique(poldata$Year)
   
-  #   if (sp_group_demand == T)
-  #   {
-  #     base_supply <- filter(poldata,Year == years[1]) %>%
-  #       group_by(SpeciesCatName) %>%
-  #       summarise(global_catch = sum(Catch, na.rm = T))
-  #     
-  #     poldata <- join(poldata,base_supply, by = 'SpeciesCatName')
-  #     
-  #   }
-  #   
-  #   if (sp_group_demand == F)
-  #   {
-  #     base_supply <- filter(poldata,Year == years[1]) %>%
-  #       summarise(global_catch = sum(Catch, na.rm = T))
-  #     
-  #     poldata$global_catch <- base_supply$global_catch
-  #     
-  #   }
   
-  #   poldata <- poldata %>%
-  #     group_by(IdOrig) %>%
-  #     mutate(alpha = global_catch / Price^elasticity, 
-  #            pricek = (1 / alpha)^(1 / elasticity)) %>%
-  #     ungroup()
+  if (sp_group_demand == T)
+  {
+    supply <- poldata %>%
+      ungroup() %>%
+      filter(Year == years[1]) %>%
+      group_by(SpeciesCatName) %>%
+      summarise(global_catch = sum(Catch, na.rm = T))
+    
+    poldata <- poldata %>%
+      dplyr::select(-global_catch) %>%
+      join(supply, by = 'SpeciesCatName')
+  }
+  
+  if (sp_group_demand == F)
+  {
+    supply <- poldata %>%
+      ungroup() %>%
+      subset(Year == years[1]) %>%
+      summarise(global_catch = sum(Catch, na.rm = T))
+    
+    poldata <- poldata %>%
+      dplyr::select(-global_catch)
+    poldata$global_catch <- supply$global_catch
+  }
+  
+  
+  poldata$Price[poldata$Year == base_year] <- (poldata$pricek * poldata$global_catch^(1/elasticity))[poldata$Year == base_year] #adjust prices
+  
+  poldata$Profits[poldata$Year == base_year] <- ((poldata$Price * poldata$MSY * poldata$FvFmsy * poldata$BvBmsy) 
+                                                 - poldata$MarginalCost * (poldata$FvFmsy * poldata$g)^beta )[poldata$Year == base_year] #adjust profits
   
   oa <- subset(poldata, IdOrig %in% oa_ids)
   
   oa_msyprofits <- (oa$MSY * oa$Price - oa$MarginalCost * (oa$g)^beta)[oa$Year == years[1]]
   
   # loops!-------
-  
   for (y in 2:length(years))
   {
     where_year <- oa$Year == years[y]
@@ -124,8 +131,9 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
   }
   
   poldata <- poldata %>%
+    ungroup() %>%
     group_by(Year) %>%
-    mutate(DiscProfits = Profits * (1 + discount)^-(Year-base_year))
+    mutate(DiscProfits = Profits * (1 + discount)^-(Year-(base_year-1)))
   
   poldata <- poldata %>%
     dplyr::select(-alpha,-pricek,-global_catch)

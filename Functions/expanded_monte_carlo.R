@@ -1,8 +1,13 @@
-expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
+expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_demand = T, real_sp_group_demand = F)
 {
+
+  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
   
-  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Complete Results.rdata', sep = ''))
+  elastic_demand <- real_elastic_demand
   
+  sp_group_demand <- real_sp_group_demand
+  
+  show(elastic_demand)
   funcs <- as.vector(lsf.str())
   
   rm(list = funcs)
@@ -15,7 +20,9 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
   
   load(paste('Results/',runfolder,'/Data/MsyData.rdata', sep = ''))
   
-  FigureFolder<- paste(BatchFolder,'Diagnostics/expanded monte carlo/',sep='')
+  FigureFolder<- paste('Results/',runfolder,'/Diagnostics/expanded monte carlo/',sep='')
+  
+  ResultFolder<- paste('Results/',runfolder,'/Diagnostics/expanded monte carlo/',sep='')
   
   dir.create(FigureFolder,recursive=T)
   
@@ -29,15 +36,15 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
   
   # Rprof()
   MonteMat<- (run_expanded_montecarlo(mciterations,Stocks=Stocks,ProjectionData=ProjectionData,BiomassData=BiomassData,
-                                      MsyData=MsyData,CatchMSYPossibleParams=CatchMSYPossibleParams,
-                                      PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0, NumCPUs = CPUs,
-                                      ResultFolder = ResultFolder))
+                                      MsyData=MsyData,
+                                      PolicyStorage=PolicyStorage,ErrorSize=0, NumCPUs = CPUs,
+                                      ResultFolder = ResultFolder, elastic_demand = elastic_demand, sp_group_demand = sp_group_demand))
   
   #    Rprof(NULL)
   #     RProfData<- readProfileData('Rprof.out')
   #     flatProfile(RProfData,byTotal=TRUE)
   
-  save(file=paste(FigureFolder,'Expanded Monte Carlo.Rdata',sep=''),MonteMat)
+  #   save(file=paste(FigureFolder,'Expanded Monte Carlo.Rdata',sep=''),MonteMat)
   
   # load(file=paste(ResultFolder,'Bio Monte Carlo.Rdata',sep=''))
   
@@ -56,24 +63,35 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
     group_by(Name) %>%
     summarize(MeanFvFmsy=mean(FvFmsy),MeanBvBmsy=mean(BvBmsy),MeanMSY=mean(MSY),MeanBiomass=mean(Biomass),MeanCatch=mean(Catch))
   
-    
+  
   Comp<- join(LastProj,Check,by='Name')
   
   CmpCatch<- ggplot(data=subset(Comp),aes(Catch,MeanCatch,color=IdLevel))+geom_point()
   
   Wrong<- which((Comp$Biomass/Comp$MeanBiomass-1)>1)
+  #   
+  #   BioMonte<- ddply(subset(MonteMat,Policy %in% c('Business As Usual','Business As Usual Pessimistic'
+  #                                                  ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three'))
+  #                    ,c('Iteration','Policy'),summarize,FinalProfits=sum(Profits[Year==2050],na.rm=T)
+  #                    ,FinalBiomass=sum(Biomass[Year==2050],na.rm=T),FinalFisheries=length(unique(IdOrig)))
+  #   
+  #   
+  BioMonte<- subset(MonteMat, Year == 2050 & Policy %in% c('Business As Usual','Business As Usual Pessimistic'
+                                                           ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three')) %>%
+    group_by(Iteration,Policy) %>% 
+    summarize(FinalProfits=sum(Profits,na.rm=T)
+              ,FinalBiomass=sum(Biomass,na.rm=T),FinalFisheries=length(unique(IdOrig)))
   
-  BioMonte<- ddply(subset(MonteMat,Policy %in% c('Business As Usual','Business As Usual Pessimistic'
-                                                 ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three'))
-                   ,c('Iteration','Policy'),summarize,FinalProfits=sum(Profits[Year==2050],na.rm=T)
-                   ,FinalBiomass=sum(Biomass[Year==2050],na.rm=T),FinalFisheries=length(unique(IdOrig)))
+  #   ProjMonte<- ddply(subset(ProjectionData,Policy %in% c('Business As Usual','Business As Usual Pessimistic'
+  #                                                         ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three'))
+  #                     ,c('Policy'),summarize,FinalProfits=sum(Profits[Year==2050],na.rm=T)
+  #                     ,FinalBiomass=sum(Biomass[Year==2050],na.rm=T),FinalFisheries=length(unique(IdOrig)))
   
-  
-  
-  ProjMonte<- ddply(subset(ProjectionData,Policy %in% c('Business As Usual','Business As Usual Pessimistic'
-                                                        ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three'))
-                    ,c('Policy'),summarize,FinalProfits=sum(Profits[Year==2050],na.rm=T)
-                    ,FinalBiomass=sum(Biomass[Year==2050],na.rm=T),FinalFisheries=length(unique(IdOrig)))
+  ProjMonte<- subset(ProjectionData,Policy %in% c('Business As Usual','Business As Usual Pessimistic'
+                                                  ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three')) %>%
+    group_by(Policy) %>% 
+    summarize(FinalProfits=sum(Profits[Year==2050],na.rm=T)
+              ,FinalBiomass=sum(Biomass[Year==2050],na.rm=T),FinalFisheries=length(unique(IdOrig)))
   
   
   #   FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo 2/',sep='')
@@ -117,6 +135,11 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
   BioMonte$BioOrder<- as.factor(BioMonte$BioOrder)
   
   BioMonte$BioOrder<- reorder(BioMonte$BioOrder,-as.numeric(BioMonte$BioOrder))
+  
+  dropit <- ls()[!(ls() %in% c('BioMonte','BaselineYear','FigureFolder','BioMontePlot'))]
+  
+  rm(list = dropit)
+  
   Font<- 'Helvetica'
   
   FontColor<- 'Black'
@@ -133,10 +156,14 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
                 +ylab('Iterations')+scale_fill_brewer(palette='RdYlGn')+guides(fill=guide_legend(reverse=T,title='Biomass Ranking')))
   
   
-  save(BioMontePlot,ProfitRanking,BioRanking,file=paste(FigureFolder,'BioMontePlots.Rdata',sep=''))
+  expanded_montecarlo_plots <- list(BioMontePlot = BioMontePlot ,ProfitRanking = BioMontePlot,BioRanking = BioMontePlot)
   
-  save(MonteMat,file=paste(ResultFolder,'BioMonteCarlo_Results.Rdata',sep=''))
+  save(list = c('BioMontePlot','ProfitRanking','BioRanking'),file=paste(FigureFolder,'BioMontePlots.Rdata',sep=''))
   
-  return(list(MonteMat = MonteMat, BioMonte = BioMonte))
+  #   save(MonteMat,file=paste(ResultFolder,'BioMonteCarlo_Results.Rdata',sep=''))
+  
+  #   return(list(MonteMat = MonteMat, BioMonte = BioMonte))
+  return(expanded_montecarlo_plots)
+  
 }
 

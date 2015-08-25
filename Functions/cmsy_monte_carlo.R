@@ -1,9 +1,14 @@
-cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
+cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250,BaselineYear = 2012, real_elastic_demand = T, real_sp_group_demand = F)
 {
-  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Complete Results.rdata', sep = ''))
+  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
+
+  elastic_demand <- real_elastic_demand
+  
+  sp_group_demand <- real_sp_group_demand
+#   load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Complete Results.rdata', sep = ''))
   
   funcs <- as.vector(lsf.str())
-  
+  show(mciterations)
   rm(list = funcs)
   
   sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
@@ -20,11 +25,10 @@ cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
   
   Stocks<- Stocks[Stocks %in% CatchMSYPossibleParams$IdOrig ]
   
-  MonteMat<- run_cmsy_montecarlo(mciterations,Stocks=Stocks,ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
-                                 PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.25,NumCPUs = NumCPUs)
+  MonteMat<- run_cmsy_montecarlo(Iterations = mciterations,Stocks=Stocks,ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
+                                 PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.25,NumCPUs = NumCPUs, elastic_demand = elastic_demand,sp_group_demand = sp_group_demand)
   
-  save(MonteMat,file=paste(FigureFolder,'MonteCarlo_Results.Rdata',sep=''))
-  
+#   save(MonteMat,file=paste(FigureFolder,'MonteCarlo_Results.Rdata',sep=''))
   MonteCarlo<- subset(MonteMat,Policy=='Catch Share Three' | Policy=='Fmsy Three' |  Policy=='Business As Usual' | Policy=='Business As Usual Pessimistic') %>%
     group_by(Iteration,Year,Policy) %>%
     summarize(MSY=sum(MSY,na.rm=T),Profits=sum(Profits,na.rm=T),
@@ -43,11 +47,20 @@ cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
   #   FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo/',sep='')
   #   
   #   dir.create(FigureFolder,recursive=T)
-  pdf(file=paste(FigureFolder,'MonteCarlo_MSY.pdf',sep=''))
-  MCMSY<- (ggplot(data=subset(MonteCarlo,Policy=='RBFM' & Year==BaselineYear),aes(MSY),alpha=0.8)+geom_density(fill='steelblue2'))
-  print(MCMSY)
-  dev.off()
+
+#   pdf(file=paste(FigureFolder,'MonteCarlo_MSY.pdf',sep=''))
+#   show(object.size(MonteCarlo, units = 'GB'))
   
+  dropit <- ls()[!(ls() %in% c('MonteCarlo','BaselineYear','FigureFolder'))]
+  
+  rm(list = dropit)
+  
+  MCMSY<- (ggplot(data=subset(MonteCarlo,Policy=='RBFM' & Year==BaselineYear),aes(MSY),alpha=0.8)+geom_density(fill='steelblue2'))
+#   print(MCMSY)
+#   dev.off()
+#   ggsave(file=paste(FigureFolder,'MonteCarlo_MSY.pdf',sep=''), plot = MCMSY)
+  
+#   save(MCMSY, file = 'wtf.Rdata')
   
   # pdf(file=paste(FigureFolder,'MC_Profits.pdf',sep=''))
   # MCProfits<- (ggplot(data=MonteCarlo,aes(Profits,fill=factor(Year)))+geom_density(alpha=0.7)+facet_wrap(~Policy)
@@ -55,7 +68,6 @@ cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
   # print(MCProfits)
   # dev.off()
   
-  pdf(file=paste(FigureFolder,'MC_Profits.pdf',sep=''))
   MCProfits<- (ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(Profits,fill=Policy))+
                  geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))+
                  geom_vline(aes(xintercept=0,alpha=0.8),color='red',linetype='longdash',size=1)+facet_wrap(~Policy)+ylab("Scaled Density")
@@ -63,18 +75,21 @@ cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
                #                coord_cartesian(xlim=c(-3e11,2e11))
                
   )
-  print(MCProfits)
-  dev.off()
+  ggsave(file=paste(FigureFolder,'MC_Profits.pdf',sep=''), plot = MCProfits)
   
-  pdf(file=paste(FigureFolder,'MC_Catch.pdf',sep=''))
+#   print(MCProfits)
+#   dev.off()
+  
   MCCatch<- (ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(Catch,fill=Policy))+
                geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))+
                facet_wrap(~Policy)+ylab("Scaled Density")+scale_fill_discrete(name = "Policy Alternative")
              #                coord_cartesian(xlim=c(-3e11,2e11))
              
   )
-  print(MCCatch)
-  dev.off()
+  ggsave(file=paste(FigureFolder,'MC_Catch.pdf',sep=''), plot = MCCatch)
+  
+#   print(MCCatch)
+#   dev.off()
   
   # 
   # pdf(file=paste(FigureFolder,'MC_Catch.pdf',sep=''))
@@ -85,37 +100,43 @@ cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250)
   # dev.off()
   
   
-  pdf(file=paste(FigureFolder,'MC_BvBmsy.pdf',sep=''))
-  MCBvB<-(ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(BvBmsy,fill=(Policy)))+
+#   pdf(file=paste(FigureFolder,'MC_BvBmsy.pdf',sep=''))
+  MCBvB <- (ggplot(data=subset(MonteCarlo,Year==max(Year)),aes(BvBmsy,fill=(Policy)))+
             geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))
           +geom_vline(aes(xintercept=1),color='red',linetype='longdash')+xlim(c(0,2.5))+
             facet_wrap(~Policy)+scale_fill_discrete(name = "Policy Alternative"))
-  print(MCBvB)
-  dev.off()
+#   print(MCBvB)
+#   dev.off()
+    ggsave(file=paste(FigureFolder,'MC_BvBmsy.pdf',sep=''), plot = MCBvB)
+
   
-  pdf(file=paste(FigureFolder,'MC_BvBmsy_OA.pdf',sep=''))
+#   pdf(file=paste(FigureFolder,'MC_BvBmsy_OA.pdf',sep=''))
   MCBvB_OA<-(ggplot(data=subset(MonteCarlo,Year==max(Year) & Policy=='RBFM'),aes(MedianBOA,fill=(Policy)))+
                geom_density(alpha=0.7)+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9)))
-  print(MCBvB_OA)
-  dev.off()
+#   print(MCBvB_OA)
+#   dev.off()
+  ggsave(file=paste(FigureFolder,'MC_BvBmsy_OA.pdf',sep=''), plot = MCBvB_OA)
   
-  pdf(file=paste(FigureFolder,'MC_FvFmsy.pdf',sep=''))
+  
+#   pdf(file=paste(FigureFolder,'MC_FvFmsy.pdf',sep=''))
   MCFvF<-(ggplot(data=subset(MonteCarlo,Year==max(Year) ),aes(jitter(FvFmsy,factor=.1),fill=(Policy)))+
             geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))
           +xlab('F/Fmsy')+facet_wrap(~Policy)+scale_fill_discrete(name = "Policy Alternative")+xlim(c(0,2))
           +geom_vline(aes(xintercept=1),color='red',linetype='longdash')
           #         + coord_cartesian(ylim=c(0,25))+xlab('FvFmsy'))
   )
+  ggsave(file=paste(FigureFolder,'MC_FvFmsy.pdf',sep=''),plot = MCFvF)
+#   print(MCFvF)
+#   dev.off()
+#   browser()
+#   b <- list(a = MCProfits)
+#   save(b, file = 'workplease.Rdata')
+
+  save(list = c('MCProfits','MCCatch','MCBvB','MCFvF','MCMSY'),file=paste(FigureFolder,'MonteCarlo Plots.rdata',sep=''))
   
-  print(MCFvF)
-  dev.off()
+  cmsy_montecarlo_plot <- list (MCProfits = MCProfits ,MCCatch = MCCatch,MCBvB = MCBvB,MCFvF = MCFvF, MCMSY = MCMSY)
   
-  
-  
-  
-  save(MCProfits,MCCatch,MCBvB,MCFvF,MCMSY,file=paste(FigureFolder,'MonteCarlo Plots.rdata',sep=''))
-  
-  return(MonteCarlo)
+  return(cmsy_montecarlo_plot)
   
 }
 

@@ -1,7 +1,6 @@
 regional_jackknife <- function(runfolder,CPUs, iterations, BaselineYear = 2012)
 {
-  show('damn it all to hell')
-  
+
   # 1. Loop over RAM regions you can use
   #
   # 2. run regression on all except the selected ram stocks in the region
@@ -14,9 +13,9 @@ regional_jackknife <- function(runfolder,CPUs, iterations, BaselineYear = 2012)
   #
   # 6. Store Real B/Bmsy, F/Fmsy, MSY, PRM B/Bmsy, MSY BvBmsy, FvFmsy, MSY with and without priors, and year
   # rm(list=ls())
-  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Complete Results.rdata', sep = ''))
+#   load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Complete Results.rdata', sep = ''))
 
-  # load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
+  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
   
   
   funcs <- as.vector(lsf.str())
@@ -260,7 +259,6 @@ regional_jackknife <- function(runfolder,CPUs, iterations, BaselineYear = 2012)
   PlotJack$ProportionalMSYError<- 100*((PlotJack$CmsyMSY-PlotJack$RamMSY)/PlotJack$RamMSY)
   
   PlotJack$ProportionalFError<- 100*((PlotJack$CmsyF-PlotJack$RamF)/PlotJack$RamF)
-  show('made it here')
 #   sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
   
   JackknifePlots(PlotJack,FigureFolder)

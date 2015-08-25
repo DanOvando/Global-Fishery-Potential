@@ -1,6 +1,6 @@
 run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,MsyData,
-                                   CatchMSYPossibleParams,PolicyStorage,ErrorVars,ErrorSize,NumCPUs = 1,BaselineYear = 2012,
-                                   CatchSharePrice = 1.3,CatchShareCost = 0.77,ResultFolder)
+                                   PolicyStorage,ErrorSize,NumCPUs = 1,BaselineYear = 2012,
+                                   CatchSharePrice = 1.3,CatchShareCost = 0.77,ResultFolder,elastic_demand = F,sp_group_demand = F, Discount = 0)
 {
   
   Sim_Forward= function(FStatusQuo,BStatusQuo,Stocks,Policy,Policies,IsCatchShare,bvec,b0,Time = 38,p,MSY,c,g,phi,beta,omega)
@@ -75,7 +75,7 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,
     
     MsyProfits<- MSY*p-c*(g)^beta
     
-#     Omega<- 0.1
+    #     Omega<- 0.1
     
     PastF<- FStatusQuo
     
@@ -144,7 +144,7 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,
     
     Projection<- Projection %>%
       group_by(IdOrig) %>%
-      mutate(NPV=cumsum(Profits*(1+0.05)^-(Year-BaselineYear)))
+      mutate(NPV=cumsum(Profits*(1+Discount)^-(Year-BaselineYear)))
     
     #     Projection<- subset(Projection,Year==BaselineYear | Year==max(Year))
     return(Projection)
@@ -165,10 +165,10 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,
     
     RecentStockData$Price<- RecentStockData$Price * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
     
-#     RecentStockData$beta <- base_beta * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
-#     
-#     RecentStockData$omega <- base_omega * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
-#     
+    #     RecentStockData$beta <- base_beta * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
+    #     
+    #     RecentStockData$omega <- base_omega * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
+    #     
     RecentStockData$beta <-  runif(dim(RecentStockData)[1],0.75*base_beta,1.25*base_beta)
     
     RecentStockData$omega <-  runif(dim(RecentStockData)[1],0.75*base_omega,1.25*base_omega)
@@ -246,6 +246,8 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,
     
     ProjectionMat$Biomass<- ProjectionMat$BvBmsy * ProjectionMat$Bmsy
     
+    
+    
     #     SpeciesSummary<- ddply(ProjectionMat,c('Policy','SpeciesCatName','Year'),summarize,b25=quantile(BvBmsy,0.25,na.rm=T),
     #                            f75=quantile(FvFmsy,0.75,na.rm=T)) %>% 
     #       mutate(GroupName=paste(Policy,SpeciesCatName,Year,sep='-'))
@@ -259,11 +261,10 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,
     NEIs<- NearestNeighborNeis(BiomassData,MsyData,ProjectionMat,BaselineYear,
                                ResultFolder = ResultFolder,Spec_ISSCAAP = Spec_ISSCAAP)
     NEIs<- NEIs$ProjNeis[,colnames(NEIs$ProjNeis) %in% colnames(ProjectionMat)]
-    
     NEIs<- NEIs %>%
       subset(is.finite(BvBmsy)) %>%
       mutate(GroupName=paste(Policy,SpeciesCatName,Year,sep='-'),RunName=paste(Policy,IdOrig,sep='-')) %>% 
-      dplyr::select(RunName,IdOrig,Country,Year,Policy,BvBmsy,FvFmsy,Biomass,Catch,MSY,Profits,Dbase,CatchShare,SpeciesCatName,Price,g,Bmsy)
+      dplyr::select(RunName,IdOrig,Country,Year,Policy,BvBmsy,FvFmsy,Biomass,Catch,MSY,Profits,Dbase,CatchShare,SpeciesCatName,Price,g,Bmsy,phi,MarginalCost)
     
     
     
@@ -274,12 +275,26 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,
       dplyr::select(-RunName) %>%
       mutate(IdLevel='Nei')
     
-    Species<- dplyr::select(ProjectionMat,IdOrig,Country,Year,Policy,BvBmsy,FvFmsy,Biomass,Catch,MSY,Profits,Dbase,CatchShare,NPV,SpeciesCatName,Price,g,Bmsy) %>%
+    Species<- dplyr::select(ProjectionMat,IdOrig,Country,Year,Policy,BvBmsy,FvFmsy,Biomass,Catch,MSY,Profits,Dbase,CatchShare,NPV,SpeciesCatName,Price,g,Bmsy,phi,MarginalCost) %>%
       mutate(IdLevel='Species')
     
     BioMonte<- rbind(NEIs,Species)
-
-    BioMonte<-BuildPolicyBAUs(BioMonte,BaselineYear)
+    
+    BioMonte$DiscProfits<- BioMonte$Profits * (1+Discount)^-(BioMonte$Year-BaselineYear)
+    
+    
+    #     BioMonte<-BuildPolicyBAUs(BioMonte,BaselineYear)
+    #     
+    BioMonte <- subset(BioMonte,Policy != 'Historic')
+    
+    Historic <- subset(BioMonte, Policy == 'CatchShare' & Year == 2012)
+    
+    Historic$Policy <- 'Historic'
+    
+    BioMonte <- rbind(BioMonte, Historic)
+    
+    BioMonte<-BuildPolicyBAUs(BioMonte,BaselineYear,elastic_demand = elastic_demand, elasticity = -0.7,
+                              Discount = Discount,sp_group_demand = sp_group_demand )
     
     BioMonte$Iteration<- k
     

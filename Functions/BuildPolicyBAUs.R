@@ -12,7 +12,7 @@
 
 
 
-BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elasticity = -0.7, Discount = 0,sp_group_demand = F)
+BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elasticity = -0.7, Discount = 0,sp_group_demand = F)
 {
   
   ### 1) "Business As Usual Pessimistic" Where all non RAM and Catch share stocks go to Open Access
@@ -25,17 +25,25 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
   {
     if (sp_group_demand == T)
     {
+#       base_supply <- filter(ProjectionData,Year == 2012) %>%
+#         group_by(SpeciesCatName) %>%
+#         summarise(global_catch = sum(Catch, na.rm = T))
+      
       base_supply <- filter(ProjectionData,Year == 2012 & Policy =='Historic') %>%
+        ungroup() %>%
         group_by(SpeciesCatName) %>%
         summarise(global_catch = sum(Catch, na.rm = T))
       
       ProjectionData <- join(ProjectionData,base_supply, by = 'SpeciesCatName')
       
     }
-    
     if (sp_group_demand == F)
     {
-      base_supply <- filter(ProjectionData,Year == 2012 & Policy =='Historic') %>%
+#       base_supply <- filter(ProjectionData,Year == 2012) %>%
+#         summarise(global_catch = sum(Catch, na.rm = T))
+      
+      base_supply <- subset(ProjectionData,Year == 2012 & Policy =='Historic') %>%
+        ungroup() %>%
         summarise(global_catch = sum(Catch, na.rm = T))
       
       ProjectionData$global_catch <- base_supply$global_catch
@@ -43,11 +51,14 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
     }
     
     ProjectionData <- ProjectionData %>%
+      ungroup() %>%
       group_by(IdOrig) %>%
       mutate(alpha = global_catch / Price^elasticity, 
              pricek = (1 / alpha)^(1 / elasticity)) %>%
       ungroup()
   }
+  
+  
   ram<-ProjectionData[ProjectionData$Policy=='StatusQuoFForever' & ProjectionData$Dbase=='RAM' & ProjectionData$CatchShare!=1,]
   
   ramids<-unique(ram$IdOrig)
@@ -66,7 +77,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
   if (elastic_demand == T){
     
     elastic_BAUpess <- elastic_projection(poldata = BAUpess,oa_ids = otherids, elasticity = elasticity,
-                                          discount = Discount, base_year = BaselineYear, sp_group_demand = sp_group_demand )  
+                                          discount = Discount, base_year = BaselineYear+1, sp_group_demand = sp_group_demand )  
   }
   #   nonelastic<- subset(BAUpess, (IdOrig %in% otherids))
   #   
@@ -108,7 +119,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
   BAUoptim$Policy<-'Business As Usual'
   if (elastic_demand == T){
     
-    elastic_BAUoptim <- elastic_projection(poldata = BAUoptim,oa_ids = overFFids, elasticity = elasticity, discount = Discount, base_year = BaselineYear,sp_group_demand = sp_group_demand)  
+    elastic_BAUoptim <- elastic_projection(poldata = BAUoptim,oa_ids = overFFids, elasticity = elasticity, discount = Discount, base_year = BaselineYear+1,sp_group_demand = sp_group_demand)  
   }
   ### 3 & 4) "Catch Share Three" and "Fmsy Three" - Adjust results for CS and Fmsy policies so that the policy is not applied to underfished/underfishing stocks
   
@@ -133,7 +144,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
   CatchShareThree$Policy<-'Catch Share Three'
   if (elastic_demand == T){
     
-    elastic_CatchShareThree <- elastic_projection(poldata = CatchShareThree, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear,sp_group_demand = sp_group_demand)  
+    elastic_CatchShareThree <- elastic_projection(poldata = CatchShareThree, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear + 1,sp_group_demand = sp_group_demand)  
     
   }
   
@@ -148,7 +159,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
   
   if (elastic_demand == T){
     
-    elastic_FmsyThree <- elastic_projection(poldata = FmsyThree, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear, sp_group_demand = sp_group_demand )  
+    elastic_FmsyThree <- elastic_projection(poldata = FmsyThree, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear + 1, sp_group_demand = sp_group_demand )  
   }
   
   # Modify Catch Share Policy with Elastic Demand ---------------------------
@@ -159,13 +170,13 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
     
     f_for_elastic$Policy<-'Fmsy'
     
-    elastic_Fmsy <- elastic_projection(poldata = f_for_elastic, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear, sp_group_demand = sp_group_demand)  
+    elastic_Fmsy <- elastic_projection(poldata = f_for_elastic, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear + 1, sp_group_demand = sp_group_demand)  
     
     catchshare_for_elastic <-subset(ProjectionData,Policy=='CatchShare')
     
     catchshare_for_elastic$Policy<-'CatchShare'
     
-    elastic_catchshare <- elastic_projection(poldata = catchshare_for_elastic, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear, sp_group_demand = sp_group_demand)  
+    elastic_catchshare <- elastic_projection(poldata = catchshare_for_elastic, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear + 1, sp_group_demand = sp_group_demand)  
     
     
     #     darg <- ProjectionData %>%
@@ -210,10 +221,9 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = F, elast
     #       group_by(Year,Policy) %>%
     #       summarize(NumStocks = length(unique(IdOrig)),TotalCatch = sum(Catch, na.rm = T), TotalProfits = sum(Profits, na.rm = T))
     
-    ProjectionData <- filter(ProjectionData, Policy != 'CatchShare' & Policy != 'Fmsy')
+    ProjectionData <- subset(ProjectionData, Policy != 'CatchShare' & Policy != 'Fmsy')
     
   }
-  
   if (elastic_demand == T)
   {
     ProjectionData <- ProjectionData %>%

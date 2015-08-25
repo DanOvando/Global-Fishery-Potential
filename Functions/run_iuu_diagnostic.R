@@ -1,9 +1,13 @@
 run_iuu_diagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,BatchFolder,SubSample,
-                              RealModelSdevs,NeiModelSdevs)
+                              RealModelSdevs,NeiModelSdevs, NumCPUs = 1)
 {
   FigureFolder<- paste(BatchFolder,'Diagnostics/IUU/',sep='')
   
   dir.create(FigureFolder,recursive=T)
+  
+  IdVar <<- 'IdOrig'
+  
+  FigureFolder <<- FigureFolder
   
   NumSamples<- length(unique(Data$IdOrig))
   
@@ -174,6 +178,10 @@ run_iuu_diagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,Ba
   Diagnostics<- melt(PostData[,c('bPE','fPE','MSYPE')])
   
   Diagnostics$IUULevel <- IUULevel
+  
+  dropit <- ls()[!(ls() %in% c('Diagnostics','FigureFolder','PostData'))]
+  
+  rm(list = dropit)
   
   pdf(paste(FigureFolder,'IUU Effect.pdf',sep=''))
   iuu_plot<- (ggplot(data=Diagnostics,aes(x=value))
