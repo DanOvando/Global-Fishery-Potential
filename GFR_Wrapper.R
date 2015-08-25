@@ -565,6 +565,9 @@ UnlumpedProjectionData<-UnlumpedData
 
 # UnlumpedProjectionData<-CheckDuplicates(UnlumpedProjectionData[UnlumpedProjectionData$CanProject==T,]) # Final check for duplicated RAM and FAO stocks
 
+
+UnlumpedProjectionData <- UnlumpedProjectionData[!(is.na(UnlumpedProjectionData$IdOrig)),]
+
 rm(UnlumpedData)
 
 UnlumpedProjectionData<- UnlumpedProjectionData %>%
@@ -618,9 +621,9 @@ ProjectionValidationData<-ProjectionValidation(UnlumpedProjectionData,BaselineYe
 PercentCoverage <- StockAndCountrySummary(UnlumpedProjectionData,ProjectionData,StitchIds,BaselineYear, include_neis = IncludeNEIs)
 
 # Top stocks in major countries
+
 TopStocks <- CountryTopStocks(DataU=UnlumpedProjectionData,DataL=ProjectionData,BaselineYear,Policies=c('Business As Usual','Business As Usual Pessimistic','Catch Share Three','CatchShare','Fmsy Three','Fmsy'),
                             NumberOfStocks='All',NumberOfCountries='All',Discount,ResultFolder,FileName='Country Results All Stocks')
-
 # Summarize current status by ISSCAAP and FAO Region
 StatusByRegionAndISSCAAP<-RegionFaoAndISSCAAPSummary(ProjectionData,BaselineYear)
 
