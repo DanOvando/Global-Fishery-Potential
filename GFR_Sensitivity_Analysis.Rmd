@@ -67,7 +67,7 @@ Our median proportional error in B/B~MSY~ in 2012 (the primary year of interest)
 library(ggplot2)
 library(dplyr)
 
-BatchFolder<- "Results/5.0 Downward Sloping Demand/"
+BatchFolder<- "Results/5.1 global demand spcat phi/"
 
 FigureFolder<- paste(BatchFolder,'Diagnostics/Regional Jackknife/',sep='')
 
