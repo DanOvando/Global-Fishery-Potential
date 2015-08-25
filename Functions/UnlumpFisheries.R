@@ -32,11 +32,21 @@ UnlumpFisheries<-function(Data,RawData,BaselineYear,YearsBack,StitchIds)
     
     raw<-RawData[(RawData$IdOrig %in% stids) & RawData$Year<=BaselineYear& RawData$Year>=(BaselineYear-YearsBack),c('IdOrig','Country','Year','CommName','Catch')] # pull out pre stitched catch data
     
-    t<-ddply(raw,c('Year'),summarize,TotalCatch=sum(Catch,na.rm=T)) # calculate total catch each year
+#     t<-ddply(raw,c('Year'),summarize,TotalCatch=sum(Catch,na.rm=T)) # calculate total catch each year
+
+    t<- raw %>%
+      group_by(Year) %>%
+      summarize(TotalCatch=sum(Catch,na.rm=T)) # calculate total catch each year
     
+        
     raw$YearTotal<-t$TotalCatch # add total catch
     
-    percent<-ddply(raw,c('IdOrig','Country'),summarize,Percent=sum(Catch,na.rm=T)/sum(YearTotal,na.rm=T)) # calculate percent of 5 year total catch
+#     percent<-ddply(raw,c('IdOrig','Country'),summarize,Percent=sum(Catch,na.rm=T)/sum(YearTotal,na.rm=T)) # calculate percent of 5 year total catch
+    
+    percent<- raw %>% 
+      group_by(IdOrig,Country) %>%
+      summarize(Percent=sum(Catch,na.rm=T)/sum(YearTotal,na.rm=T)) # calculate percent of 5 year total catch
+    
       
     stids<-unique(percent$IdOrig[(percent$Percent>0)])
     
@@ -46,7 +56,6 @@ UnlumpFisheries<-function(Data,RawData,BaselineYear,YearsBack,StitchIds)
     UnLumped<-data.frame(matrix(nrow=0,ncol=ncol(lumpproj)))
 
     colnames(UnLumped)<-colnames(lumpproj)
-    
     for(b in 1:length(stids))
     {
       # calculate projection data results for projected policies
