@@ -366,13 +366,11 @@ if (RunAnalyses==TRUE)
   GlobalStatus$Data$BvBmsySD[GlobalStatus$Data$Dbase=='SOFIA']<- 0.1
   
   
-  missing <- read.csv('Fish missing from phi.csv')
-  colnames(missing) <- c('nothing','IdOrig')
-#   (GlobalStatus$Data)
+#   missing <- read.csv('Fish missing from phi.csv')
+#   colnames(missing) <- c('nothing','IdOrig')
+# #   (GlobalStatus$Data)
   
 #   huh <- GlobalStatus$Data[GlobalStatus$Data$IdOrig %in% missing$IdOrig,]
-  
-  
   
   CatchMSYresults<- (RunCatchMSY( (GlobalStatus$Data),ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   
