@@ -16,10 +16,10 @@ MatrixSnowCatchMSY<- function(s,Data,CommonError,CommonRange,sigR,Smooth,Display
     with(as.list(parbound),
          {
            
-           if (start_g[1]>0){ 
+#            if (start_g[1]>0){ 
              
              gi = rep(exp(runif(n, log(start_g[1]), log(start_g[2]))),length(startbt))  ## get N values between g[1] and g[2], assign to ri
-           }
+           # }
 #            if (start_g[1]<0) { 
 # 
 #             start_g <- abs(start_g)
@@ -307,12 +307,12 @@ MatrixSnowCatchMSY<- function(s,Data,CommonError,CommonRange,sigR,Smooth,Display
       
       mean_ln_msy = mean(log(msy),na.rm=T)
       negative_g <- F
-      if (any(g < 0))
-      {
-        negative_g <- T
-        g <- abs(g)
-      }
-      
+#       if (any(g < 0))
+#       {
+#         negative_g <- T
+#         g <- abs(g)
+#       }
+#       
       mean_ln_g<- mean(log(g),na.rm=T)
       
       mean_ln_k<- mean(log(k),na.rm=T)
