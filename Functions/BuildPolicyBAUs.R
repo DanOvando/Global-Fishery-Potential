@@ -58,7 +58,6 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
       ungroup()
   }
   
-  browser()
   ram<-ProjectionData[ProjectionData$Policy=='StatusQuoFForever' & ProjectionData$Dbase=='RAM' & ProjectionData$CatchShare!=1,]
   
   ramids<-unique(ram$IdOrig)
