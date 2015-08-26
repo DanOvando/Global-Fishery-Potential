@@ -2,7 +2,7 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
 {
 
   load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
-  
+  show(mciterations)
   elastic_demand <- real_elastic_demand
   
   sp_group_demand <- real_sp_group_demand

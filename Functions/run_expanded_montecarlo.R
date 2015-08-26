@@ -260,7 +260,9 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,
     
     NEIs<- NearestNeighborNeis(BiomassData,MsyData,ProjectionMat,BaselineYear,
                                ResultFolder = ResultFolder,Spec_ISSCAAP = Spec_ISSCAAP)
+    
     NEIs<- NEIs$ProjNeis[,colnames(NEIs$ProjNeis) %in% colnames(ProjectionMat)]
+    
     NEIs<- NEIs %>%
       subset(is.finite(BvBmsy)) %>%
       mutate(GroupName=paste(Policy,SpeciesCatName,Year,sep='-'),RunName=paste(Policy,IdOrig,sep='-')) %>% 
@@ -287,9 +289,13 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,BiomassData,
     #     
     BioMonte <- subset(BioMonte,Policy != 'Historic')
     
-    Historic <- subset(BioMonte, Policy == 'CatchShare' & Year == 2012)
+    Historic <- subset(ProjectionData, Policy == 'Historic' & Year == 2012) %>%
+      dplyr::select(IdOrig,Country,Year,Policy,BvBmsy,FvFmsy,Biomass,Catch,MSY,Profits,Dbase,CatchShare,NPV,SpeciesCatName,Price,g,Bmsy,phi,MarginalCost,IdLevel)
     
-    Historic$Policy <- 'Historic'
+    Historic$DiscProfits<- Historic$Profits * (1+Discount)^-(Historic$Year-BaselineYear)
+    
+    
+    #     Historic$Policy <- 'Historic'
     
     BioMonte <- rbind(BioMonte, Historic)
     
