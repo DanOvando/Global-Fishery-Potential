@@ -616,15 +616,15 @@ MakeKobePlot(ProjectionData,BaselineYear,'Global Kobe Plot.pdf')
 ProjectionValidationData<-ProjectionValidation(UnlumpedProjectionData,BaselineYear)
 
 # Produce table with values for paper from Rens scripts
-# ValuesForPaper<-RenSummaryTable(UnlumpedData=UnlumpedProjectionData,LumpedData=ProjectionData,BaselineYear,ResultFolder,FigureFolder)
+ValuesForPaper<-RenSummaryTable(UnlumpedData=UnlumpedProjectionData,LumpedData=ProjectionData,BaselineYear,ResultFolder,FigureFolder)
 
 # Produce Country Summary table and Stock List (returns list with Country summaries and Stock list, writes csvs of both)
 PercentCoverage <- StockAndCountrySummary(UnlumpedProjectionData,ProjectionData,StitchIds,BaselineYear, include_neis = IncludeNEIs)
 
 # Top stocks in major countries
-
-TopStocks <- CountryTopStocks(DataU=UnlumpedProjectionData,DataL=ProjectionData,BaselineYear,Policies=c('Business As Usual','Business As Usual Pessimistic','Catch Share Three','CatchShare','Fmsy Three','Fmsy'),
-                            NumberOfStocks='All',NumberOfCountries='All',Discount,ResultFolder,FileName='Country Results All Stocks')
+# 
+# TopStocks <- CountryTopStocks(DataU=UnlumpedProjectionData,DataL=ProjectionData,BaselineYear,Policies=c('Business As Usual','Business As Usual Pessimistic','Catch Share Three','CatchShare','Fmsy Three','Fmsy'),
+#                             NumberOfStocks='All',NumberOfCountries='All',Discount,ResultFolder,FileName='Country Results All Stocks')
 # Summarize current status by ISSCAAP and FAO Region
 StatusByRegionAndISSCAAP<-RegionFaoAndISSCAAPSummary(ProjectionData,BaselineYear)
 
