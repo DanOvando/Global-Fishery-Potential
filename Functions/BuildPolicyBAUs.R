@@ -49,7 +49,6 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
       ProjectionData$global_catch <- base_supply$global_catch
       
     }
-    
     ProjectionData <- ProjectionData %>%
       ungroup() %>%
       group_by(IdOrig) %>%
