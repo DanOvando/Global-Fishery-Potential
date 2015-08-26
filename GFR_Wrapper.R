@@ -370,11 +370,11 @@ if (RunAnalyses==TRUE)
   colnames(missing) <- c('nothing','IdOrig')
 #   (GlobalStatus$Data)
   
-  huh <- GlobalStatus$Data[GlobalStatus$Data$IdOrig %in% missing$IdOrig,]
+#   huh <- GlobalStatus$Data[GlobalStatus$Data$IdOrig %in% missing$IdOrig,]
   
   
   
-  CatchMSYresults<- (RunCatchMSY(huh,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
+  CatchMSYresults<- (RunCatchMSY( (GlobalStatus$Data),ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   
   show("Completed CatchMSY")
   
