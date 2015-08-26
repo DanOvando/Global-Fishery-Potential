@@ -425,7 +425,7 @@ if (RunAnalyses==TRUE)
   
   MsyData$CanProject<- is.na(MsyData$MSY)==F & is.na(MsyData$g)==F #Identify disheries that have both MSY and r
   
-  save(file=paste(ResultFolder,"MsyData.rdata",sep=""),MsyData)
+  save(file=paste(ResultFolder,"MsyData.rdata",sep=""),MsyData, BiomassData)
   
   # load(file=paste(ResultFolder,"MsyData.rdata",sep=""))
   
@@ -452,7 +452,7 @@ if (RunAnalyses==TRUE)
   {
     #    Rprof()
     Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
-    
+    browser()
     NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear,ResultFolder,Spec_ISSCAAP,NumCPUs = NumCPUs) #Run Nearest Neighbor NEI analysis    
     #Put NEI stocks back in the appropriate dataframes, remove stocks still missing data
     
@@ -530,7 +530,7 @@ if (IncludeForageFish==FALSE)
 }
 
 # Add new "Business as Usual Policies" by combining the results of the respective status quo policies for certain types of stocks, outlined in the function
-ProjectionData <- BuildPolicyBAUs(ProjectionData,BaselineYear,elastic_demand = elastic_demand, elasticity = -0.7,
+ProjectionData <- BuildPolicyBAUs(ProjectionData,BaselineYear,elastic_demand = elastic_demand, elasticity = elasticity,
                                   Discount = Discount,sp_group_demand = sp_group_demand)
 
 # ProjectionData<- ddply(ProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
