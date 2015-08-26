@@ -365,14 +365,16 @@ if (RunAnalyses==TRUE)
   
   GlobalStatus$Data$BvBmsySD[GlobalStatus$Data$Dbase=='SOFIA']<- 0.1
   
-  #   arg<- sample(GlobalStatus$Data$IdOrig,100,replace=F)
   
-  #   CatchMSYresults<- (RunCatchMSY(subset(GlobalStatus$Data,IdOrig=='2013-FAO-61-34'),ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
-  CatchMSYresults<- (RunCatchMSY((GlobalStatus$Data),ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
+  missing <- read.csv('Fish missing from phi.csv')
+  colnames(missing) <- c('nothing','IdOrig')
+#   (GlobalStatus$Data)
   
-  #   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data[GlobalStatus$Data$IdOrig %in% arg,],ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
+  huh <- GlobalStatus$Data[GlobalStatus$Data$IdOrig %in% missing$IdOrig,]
   
-  #   CatchMSYresults<- (RunCatchMSY(GlobalStatus$Data[GlobalStatus$Data$IdOrig=='10041-FAO-41-44',],ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
+  
+  
+  CatchMSYresults<- (RunCatchMSY(huh,ErrorSize,sigR,Smooth,Display,BestValues,ManualFinalYear,NumCatchMSYIterations,NumCPUs,CatchMSYTrumps))
   
   show("Completed CatchMSY")
   
@@ -530,7 +532,6 @@ if (IncludeForageFish==FALSE)
 }
 
 # Add new "Business as Usual Policies" by combining the results of the respective status quo policies for certain types of stocks, outlined in the function
-
 ProjectionData <- BuildPolicyBAUs(ProjectionData,BaselineYear,elastic_demand = elastic_demand, elasticity = -0.7,
                                   Discount = Discount,sp_group_demand = sp_group_demand)
 
