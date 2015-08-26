@@ -122,16 +122,20 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultF
   
   nei_stock<-unique(NeiStats$SciName)
   
-  TryNEIs<- try(load(paste(ResultFolder,'NEIData.Rdata',sep='')),silent=T)
-  
-  if (class(TryNEIs) == "try-error")  
-  { 
+#   TryNEIs<- try(load(paste(ResultFolder,'NEIData.Rdata',sep='')),silent=T)
+#   
+#   if (class(TryNEIs) == "try-error")  
+#   { 
     
     if (Sys.info()[1]!='Windows') 
     {
       
-      tempNEIs<-(mclapply(1:length(nei_stock),SnowNEIs2,nei_stock=nei_stock,NEIs=NEIs,SpeciesLevel=SpeciesLevel,NeiStats=NeiStats,Spec_ISSCAAP=Spec_ISSCAAP,
-                          VarsToFill=VarsToFill,mc.cores=NumCPUs))
+#       tempNEIs<-(mclapply(1:length(nei_stock),SnowNEIs2,nei_stock=nei_stock,NEIs=NEIs,SpeciesLevel=SpeciesLevel,NeiStats=NeiStats,Spec_ISSCAAP=Spec_ISSCAAP,
+#                           VarsToFill=VarsToFill,mc.cores=NumCPUs))
+
+            tempNEIs<-(lapply(1:length(nei_stock),SnowNEIs2,nei_stock=nei_stock,NEIs=NEIs,SpeciesLevel=SpeciesLevel,NeiStats=NeiStats,Spec_ISSCAAP=Spec_ISSCAAP,
+                                VarsToFill=VarsToFill))
+                                 
     }
     if (Sys.info()[1]=='Windows')
     {
@@ -153,11 +157,10 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultF
     
     NEIs<-ldply(tempNEIs,data.frame)
     
-    save(file=paste(ResultFolder,'NEIData.Rdata',sep=''),NEIs)
-    
+#     save(file=paste(ResultFolder,'NEIData.Rdata',sep=''),NEIs)
     
     show("Completed NEI ldply")
-  }
+  # }
   
 #   browser()
 #   NEIs_newmsy<- NEIs %>%
