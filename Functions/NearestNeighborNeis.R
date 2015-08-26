@@ -11,10 +11,13 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultF
   
   #Pull out NEI fisheries
   NEIs<-MsyData[MsyData$Dbase!='RAM' & MsyData$RanCatchMSY==F & ((grepl("nei",MsyData$CommName,ignore.case=T)) | (grepl("nei",MsyData$CommName,ignore.case=T) & (is.infinite(MsyData$BvBmsy)==T | MsyData$BvBmsy==999)) | (grepl("spp",MsyData$SciName) & grepl("not identified",MsyData$SpeciesCatName) & MsyData$Dbase=="FAO")),]
+  FinalYear<- NEIs %>%
+    group_by(IdOrig) %>%
+    summarize(MaxYear=max(Year,na.rm=T))
   
-  FinalYear<- ddply(NEIs,c('IdOrig'),summarize,MaxYear=max(Year,na.rm=T))
-  
-  FinalProjYear<- ddply(ProjData,c('IdOrig'),summarize,MaxYear=max(Year,na.rm=T))
+  FinalProjYear<- ProjData %>%
+    group_by(IdOrig) %>%
+    summarize(MaxYear=max(Year,na.rm=T))
   
   DropItProj<- FinalProjYear$IdOrig[FinalProjYear$MaxYear<BaselineYear]
   
@@ -99,7 +102,9 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultF
   
   SpeciesLevel<-ProjData[!(ProjData$IdOrig %in% unique(NEIs$IdOrig)) & !(ProjData$IdOrig %in% DropItProj),] 
   
-  allstocks<-ddply(SpeciesLevel,c('Year','Policy'),summarize,BvBmsy25=quantile(BvBmsy,c(0.25),na.rm=T),
+  allstocks<- SpeciesLevel %>%
+    group_by(Year,Policy) %>%
+    summarize(BvBmsy25=quantile(BvBmsy,c(0.25),na.rm=T),
                    FvFmsy75=quantile(FvFmsy,c(0.75),na.rm=T),MedianR=median(g,na.rm=T),MedianK=median(k,na.rm=T),
                    MedianPrice=median(Price,na.rm=T),MedianCost=median(MarginalCost,na.rm=T),JStocks=length(unique(IdOrig)))
   
@@ -154,10 +159,19 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultF
     show("Completed NEI ldply")
   }
   
+#   browser()
+#   NEIs_newmsy<- NEIs %>%
+#     ungroup() %>%
+#     subset(Year == 2012 & Policy == 'Historic') %>%
+#     group_by(IdOrig) %>%
+#     summarize(NewMSY= (Catch/(BvBmsy*FvFmsy)))
   
   NEIs<- NEIs %>%
-    dplyr::group_by(IdOrig) %>%
-    dplyr::mutate(NewMSY= (Catch/(BvBmsy*FvFmsy))[Policy=='Historic' & Year==BaselineYear] )
+    ungroup() %>%
+    group_by(IdOrig) %>%
+    mutate(NewMSY= (Catch/(BvBmsy*FvFmsy))[Policy=='Historic' & Year==2012] )
+  
+  
   
   NEIs$MSY<- NEIs$NewMSY 
   
