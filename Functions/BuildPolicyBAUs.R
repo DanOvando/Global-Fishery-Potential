@@ -25,9 +25,9 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
   {
     if (sp_group_demand == T)
     {
-#       base_supply <- filter(ProjectionData,Year == 2012) %>%
-#         group_by(SpeciesCatName) %>%
-#         summarise(global_catch = sum(Catch, na.rm = T))
+      #       base_supply <- filter(ProjectionData,Year == 2012) %>%
+      #         group_by(SpeciesCatName) %>%
+      #         summarise(global_catch = sum(Catch, na.rm = T))
       
       base_supply <- filter(ProjectionData,Year == 2012 & Policy =='Historic') %>%
         ungroup() %>%
@@ -39,8 +39,8 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
     }
     if (sp_group_demand == F)
     {
-#       base_supply <- filter(ProjectionData,Year == 2012) %>%
-#         summarise(global_catch = sum(Catch, na.rm = T))
+      #       base_supply <- filter(ProjectionData,Year == 2012) %>%
+      #         summarise(global_catch = sum(Catch, na.rm = T))
       
       base_supply <- subset(ProjectionData,Year == 2012 & Policy =='Historic') %>%
         ungroup() %>%
@@ -177,49 +177,6 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
     catchshare_for_elastic$Policy<-'CatchShare'
     
     elastic_catchshare <- elastic_projection(poldata = catchshare_for_elastic, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear + 1, sp_group_demand = sp_group_demand)  
-    
-    
-    #     darg <- ProjectionData %>%
-    #       group_by(Policy,Year) %>%
-    #       summarize(tc = sum(Catch,na.rm = T), tp = sum(Profits, na.rm = T))
-    #     
-    # 
-    # damn <- catchshare_for_elastic %>%
-    #   group_by(SpeciesCatName,Year) %>%
-    #   summarize(TotalCatch = sum(Catch,na.rm = T), TotalProfits = sum(Profits, na.rm = T)) %>%
-    #   ungroup() %>%
-    #   group_by(SpeciesCatName) %>%
-    #   summarize(CatchChange = 100*(TotalCatch[Year == 2050]/TotalCatch[Year == 2013] -1),
-    #             ProfitChange = 100*(TotalProfits[Year == 2050]/TotalProfits[Year == 2013] -1)) %>%
-    #   arrange(ProfitChange)
-    # 
-    # quartz()
-    # ggplot(damn,aes(Year,TotalProfits, fill = SpeciesCatName)) + geom_bar(stat = 'identity')
-    # 
-    #     
-    #     #     browser()
-    # #     
-    # #     
-    #     huh <- data.frame(elastic_Fmsy$IdOrig,elastic_Fmsy$Year,elastic_Fmsy$Price,elastic_Fmsy$Catch,
-    #                       f_for_elastic$Price,elastic_Fmsy$SpeciesCatName)
-    #     
-    #     colnames(huh) <- c('IdOrig','Year','elastic_price','Catch','inelastic_price','species_cat')
-    #     
-    #     huh <- huh %>%
-    #       group_by(IdOrig) %>%
-    #       mutate(CatchChange = 100*(Catch/Catch[1]))
-    #     
-    #     quartz()
-    #     wtf <- ggplot(huh,aes(inelastic_price,elastic_price,color = species_cat)) + geom_point()
-    #     ggsave('price change for Fmsy.pdf', plot = wtf)
-    #     
-    #     quartz()
-    #     ggplot(huh,aes(Year,log(Catch),group = IdOrig,color = log(CatchChange))) + geom_point()
-    #     
-    #     
-    #     huh <- subset(elastic_catchshare, Year == 2050) %>%
-    #       group_by(Year,Policy) %>%
-    #       summarize(NumStocks = length(unique(IdOrig)),TotalCatch = sum(Catch, na.rm = T), TotalProfits = sum(Profits, na.rm = T))
     
     ProjectionData <- subset(ProjectionData, Policy != 'CatchShare' & Policy != 'Fmsy')
     
