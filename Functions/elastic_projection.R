@@ -102,9 +102,9 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
       
       order<-toupper(NeiCat) # order of nei stock (translate to uppercase to match sheet)
       
-      WhereComp<-Spec_ISSCAAP$Order==order
+      WhereComp<-species_types$Order==order
       
-      compstocks<-unique(Spec_ISSCAAP$Species_AFSIS[WhereComp])
+      compstocks<-unique(species_types$Species_AFSIS[WhereComp])
     }
     
     lookup_table <- data.frame(NeiCat,compstocks, stringsAsFactors = F)
