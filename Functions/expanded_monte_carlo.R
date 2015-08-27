@@ -1,4 +1,4 @@
-expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_demand = T, real_sp_group_demand = F)
+expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_demand = T, real_sp_group_demand = F, elasticity = -0.9)
 {
 
   load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
@@ -38,7 +38,8 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
   MonteMat<- (run_expanded_montecarlo(mciterations,Stocks=Stocks,ProjectionData=ProjectionData,BiomassData=BiomassData,
                                       MsyData=MsyData,
                                       PolicyStorage=PolicyStorage,ErrorSize=0, NumCPUs = CPUs,
-                                      ResultFolder = ResultFolder, elastic_demand = elastic_demand, sp_group_demand = sp_group_demand))
+                                      ResultFolder = ResultFolder, elastic_demand = elastic_demand, sp_group_demand = sp_group_demand,
+                                      elasticity = elasticity))
   
   #    Rprof(NULL)
   #     RProfData<- readProfileData('Rprof.out')
@@ -76,8 +77,12 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
   #                    ,FinalBiomass=sum(Biomass[Year==2050],na.rm=T),FinalFisheries=length(unique(IdOrig)))
   #   
   #   
+  #   
+  
+  MonteMat$Year[MonteMat$Policy == 'Historic' & MonteMat$Year == 2012] <- 2050
+  
   BioMonte<- subset(MonteMat, Year == 2050 & Policy %in% c('Business As Usual','Business As Usual Pessimistic'
-                                                           ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three')) %>%
+                                                           ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three','Historic')) %>%
     group_by(Iteration,Policy) %>% 
     summarize(FinalProfits=sum(Profits,na.rm=T)
               ,FinalBiomass=sum(Biomass,na.rm=T),FinalFisheries=length(unique(IdOrig)))
@@ -109,6 +114,9 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
   BioMonte$Policy[BioMonte$Policy=='CatchShare']<- 'RBFM'
   
   BioMonte$Policy[BioMonte$Policy=='Fmsy Three']<- 'Fmsy (CC)'
+  
+  BioMonte$Policy[BioMonte$Policy=='Historic']<- 'Today'
+  
   
   BioMontePlot<- (ggplot(data=BioMonte,aes(x=FinalBiomass,y=FinalProfits,color=Policy))+geom_point(size=4,alpha=0.7)+
                     ylab('2050 Profits ($)')+xlab('2050 Biomass (MT)'))

@@ -73,8 +73,6 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
   
   BAUpess$Policy<-'Business As Usual Pessimistic'
   
-  arg <- ProjectionData[!(ProjectionData$IdOrig %in% unique(BAUpess$IdOrig)),]
-  
   if (elastic_demand == T){
     
     elastic_BAUpess <- elastic_projection(poldata = BAUpess,oa_ids = otherids, elasticity = elasticity,
