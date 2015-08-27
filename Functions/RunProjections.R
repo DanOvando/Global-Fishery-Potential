@@ -41,7 +41,7 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy, Policies = c
     Projections <- (mclapply(1:(length(Stocks)), SnowProjections,mc.cores=NumCPUs,
                              Data=Data,BaselineYear=BaselineYear,Stocks=Stocks,IdVar=IdVar,bvec=bvec,
                              Discount=Discount,tol=tol,beta=beta,CatchSharePrice=CatchSharePrice,CatchShareCost=CatchShareCost,
-                             Policies=Policies,ProjectionTime=ProjectionTime,TempStockMatrix=TempStockMatrix,StatusQuoPolicy=StatusQuoPolicy))
+                             Policies=Policies,ProjectionTime=ProjectionTime,TempStockMatrix=TempStockMatrix,StatusQuoPolicy=StatusQuoPolicy,mc.cleanup = T))
     }
     if (Sys.info()[1]=='Windows')
     {

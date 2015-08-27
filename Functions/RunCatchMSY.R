@@ -67,7 +67,7 @@ RunCatchMSY<- function(Data,ErrorSize = 0.85,sigR = 0,Smooth = F,Display = F,Bes
     {
       
       CMSYResults <- (mclapply(1:length(stock_id), MatrixSnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,CommonRange=CommonRange,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
-                             CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
+                             CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar,mc.cleanup = T))
     }
     if (Sys.info()[1]=='Windows')
     {
@@ -89,8 +89,7 @@ RunCatchMSY<- function(Data,ErrorSize = 0.85,sigR = 0,Smooth = F,Display = F,Bes
     pdf(file=paste(FigureFolder,'Catch-MSY Diagnostics.pdf',sep=''))
     
     CMSYResults <- (mclapply(1:length(stock_id), MatrixSnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,CommonRange=CommonRange,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
-                             CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
-    
+                             CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar,mc.cleanup = T))
     #     CMSYResults <- (mclapply(1:length(stock_id), SnowCatchMSY,mc.cores=NumCPUs,Data=Data,CommonError=CommonError,sigR=sigR,Smooth=Smooth,Display=Display,BestValues=BestValues,ManualFinalYear=ManualFinalYear,n=n,NumCPUs=NumCPUs,
     #                              CatchMSYTrumps=CatchMSYTrumps,stock_id=stock_id,IdVar=IdVar))
     
