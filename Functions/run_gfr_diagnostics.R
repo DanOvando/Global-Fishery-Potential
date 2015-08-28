@@ -4,13 +4,12 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
   
 {
   library(plyr)
-  library(dplyr)
   library(lattice)
   library(rfishbase)
   library(stringr)
   library(RCurl)
   library(XML)
-  library(MASS)
+#   library(MASS)
   library(zoo)
   library(proftools)
   library(snowfall)
@@ -18,6 +17,8 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
   library(ggplot2)
   library(gridExtra)
   library(reshape2)
+  library(dplyr)
+  
   
   sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
   

@@ -72,36 +72,12 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
   BAUpess<-rbind(ram,cs,other)
   
   BAUpess$Policy<-'Business As Usual Pessimistic'
-  
   if (elastic_demand == T){
     
     elastic_BAUpess <- elastic_projection(poldata = BAUpess,oa_ids = otherids, elasticity = elasticity,
                                           discount = Discount, base_year = BaselineYear+1, sp_group_demand = sp_group_demand )  
   }
-  #   nonelastic<- subset(BAUpess, (IdOrig %in% otherids))
-  #   
-  #   elastic<- subset(elastic_BAUpess, (IdOrig %in% otherids))
-  #   
-  #     browser()
-  #   
-  #     quartz()
-  #     ggplot(nonelastic,aes(factor(Year),log(Price))) + geom_boxplot() + facet_wrap(~SpeciesCatName)
-  #     
-  #   elastic_summary <- elastic %>%
-  #     group_by(Year) %>%
-  #     summarize(TotalCatch = sum(Catch,na.rm = T), MeanPrice = mean(Price, na.rm = T))
-  #   
-  #   quartz()
-  #   ggplot(elastic_summary,aes(TotalCatch,(MeanPrice))) + geom_point()
-  #   
-  
-  ### 2) "Business As Usual Current Management"
-  
-  # RAM - Fmsy
-  # Catch shares - Opt
-  # Overfished and Overfishing - Open Access
-  # Myctophids - StatusQuoBForever
-  
+ 
   overFFids<-ProjectionData$IdOrig[ProjectionData$Year==BaselineYear & (!(ProjectionData$IdOrig %in% c(ramids,csids)) & 
                                                                           ((ProjectionData$FvFmsy>1 & ProjectionData$BvBmsy<1) | (ProjectionData$FvFmsy>1 & ProjectionData$BvBmsy>1) |
                                                                              (ProjectionData$FvFmsy<1 & ProjectionData$BvBmsy<1)))]

@@ -3,7 +3,6 @@
 elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
                                base_year = 2013,sp_group_demand = F, beta = 1.3,bvec = seq(0.00000001,2.5,length.out=30))
 {
-
   OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
   {
     #Function to adjust f in response to prior profits
@@ -43,7 +42,9 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
       summarise(global_catch = sum(Catch, na.rm = T))
 
     poldata <- poldata %>%
+      ungroup() %>%
       dplyr::select(-global_catch)
+    
     poldata$global_catch <- supply$global_catch
   }
 
