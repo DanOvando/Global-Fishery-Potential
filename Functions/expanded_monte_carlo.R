@@ -1,7 +1,6 @@
 expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_demand = T, real_sp_group_demand = F, elasticity = -0.9)
 {
-
-  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
+  #   load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
   show(mciterations)
   elastic_demand <- real_elastic_demand
   
@@ -18,7 +17,10 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
   
   load(paste('Results/',runfolder,'/Data/ProjectionData Data.rdata', sep = ''))
   
-  load(paste('Results/',runfolder,'/Data/MsyData.rdata', sep = ''))
+  PolicyStorage <- read.csv(paste('Results/',runfolder,'/Data/PolicyStorage.csv', sep = ''))
+  
+  rm(UnlumpedProjectionData)
+  #   load(paste('Results/',runfolder,'/Data/MsyData.rdata', sep = ''))
   
   FigureFolder<- paste('Results/',runfolder,'/Diagnostics/expanded monte carlo/',sep='')
   
@@ -35,8 +37,8 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
   PolicyStorage<- PolicyStorage[order(PolicyStorage$IdOrig),]
   
   # Rprof()
-  MonteMat<- (run_expanded_montecarlo(mciterations,Stocks=Stocks,ProjectionData=ProjectionData,BiomassData=BiomassData,
-                                      MsyData=MsyData,
+  
+  MonteMat<- (run_expanded_montecarlo(mciterations,Stocks=Stocks,ProjectionData=ProjectionData,
                                       PolicyStorage=PolicyStorage,ErrorSize=0, NumCPUs = CPUs,
                                       ResultFolder = ResultFolder, elastic_demand = elastic_demand, sp_group_demand = sp_group_demand,
                                       elasticity = elasticity))
@@ -78,7 +80,6 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
   #   
   #   
   #   
-  
   MonteMat$Year[MonteMat$Policy == 'Historic' & MonteMat$Year == 2012] <- 2050
   
   BioMonte<- subset(MonteMat, Year == 2050 & Policy %in% c('Business As Usual','Business As Usual Pessimistic'
