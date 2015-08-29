@@ -25,7 +25,8 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
   {
     supply <- poldata %>%
       ungroup() %>%
-      filter(Year == years[1]) %>%
+      filter(Year == min(Year, na.rm = T)) %>%
+#       filter(Year == years[1]) %>%
       group_by(SpeciesCatName) %>%
       summarise(global_catch = sum(Catch, na.rm = T))
 
@@ -138,21 +139,24 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
     current_non_neis <- poldata[poldata$Year == years[y] & poldata$IdLevel != 'Neis',]
 
     current_neis <- poldata[poldata$Year == years[y] & poldata$IdLevel == 'Neis',]
+    
     if (dim(current_neis)[1]>0){
-      current_nei_types <- unique(current_neis$SciName)
+     
+       current_nei_types <- unique(current_neis$SciName)
 
       for (n in 1:length(current_nei_types)){
 
         nei_type <- current_nei_types[n]
 
         compstocks <- nei_lookup_table$compstocks[nei_lookup_table$NeiCat == nei_type]
-
-        results<- current_non_neis %>%
-          subset(SciName %in% compstocks) %>%
+        
+        comp_current_non_neis <- subset(current_non_neis,SciName %in% compstocks)
+        
+        results<- comp_current_non_neis %>%
           summarize(BvBmsy25=quantile(BvBmsy,c(0.25),na.rm=T),FvFmsy75=quantile(FvFmsy,c(0.75),na.rm=T),
                     MedianG=median(g,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T)
                     ,MedianCost=median(MarginalCost,na.rm=T)
-                    ,JStocks=length(unique(IdOrig)),VarBvBmsy=var(BvBmsy,na.rm=T),VarFvFmsy=var(FvFmsy,na.rm=T))
+                    ,JStocks=length(unique(IdOrig)))
 
         where_nei_type <- current_neis$SciName == nei_type
 
