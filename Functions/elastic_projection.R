@@ -152,12 +152,26 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
         
         comp_current_non_neis <- subset(current_non_neis,SciName %in% compstocks)
         
-        results<- comp_current_non_neis %>%
-          summarize(BvBmsy25=quantile(BvBmsy,c(0.25),na.rm=T),FvFmsy75=quantile(FvFmsy,c(0.75),na.rm=T),
-                    MedianG=median(g,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T)
-                    ,MedianCost=median(MarginalCost,na.rm=T)
-                    ,JStocks=length(unique(IdOrig)))
-
+        results <- NULL
+#         results<- comp_current_non_neis %>%
+#           summarize(BvBmsy25=quantile(BvBmsy,c(0.25),na.rm=T),FvFmsy75=quantile(FvFmsy,c(0.75),na.rm=T),
+#                     MedianG=median(g,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T)
+#                     ,MedianCost=median(MarginalCost,na.rm=T)
+#                     ,JStocks=length(unique(IdOrig)))
+        results$BvBmsy25 <- quantile(comp_current_non_neis$BvBmsy,c(0.25),na.rm=T)
+        
+        results$FvFmsy75 =quantile(comp_current_non_neis$FvFmsy,c(0.75),na.rm=T)
+        
+        results$MedianG=median(comp_current_non_neis$g,na.rm=T)
+        
+        results$MedianK=median(comp_current_non_neis$k,na.rm=T)
+        
+        results$MedianPrice=median(comp_current_non_neis$Price,na.rm=T)
+        
+        results$MedianCost=median(comp_current_non_neis$MarginalCost,na.rm=T)
+        
+        results$JStocks=length(unique(comp_current_non_neis$IdOrig))
+        
         where_nei_type <- current_neis$SciName == nei_type
 
         current_neis$BvBmsy[where_nei_type] <- results$BvBmsy25
