@@ -19,8 +19,6 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
 
   # Set up base conditions -------
   years <- unique(poldata$Year)
-
-  show(elasticity)
   if (sp_group_demand == T)
   {
     supply <- poldata %>%
@@ -105,7 +103,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
 
     current_oa_f <- OpenAccessFleet(f = last_oa_f,pi = last_oa_pi,t = y,omega = 0.1,MsyProfits = oa_msyprofits )
 
-    current_oa_b <- pmax(min(bvec), last_oa_b + ((oa_phi+1)/oa_phi)*oa_g*last_oa_b*(1-last_oa_b^oa_phi/(oa_phi+1))
+    current_oa_b <- pmax(min(bvec), last_oa_b + ((oa_phi+1)/oa_phi)*oa_g*last_oa_b*(1-(last_oa_b^oa_phi)/(oa_phi+1))
                          - oa_g*last_oa_b*last_oa_f)
 
     oa$BvBmsy[where_year] <- current_oa_b
@@ -115,27 +113,9 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
     oa$FvFmsy[where_year] <- current_oa_f
 
     oa$Catch[where_year] <- (oa$MSY * oa$FvFmsy * oa$BvBmsy)[where_year]
-
-    if (sp_group_demand == T)
-    {
-      supply <- poldata %>%
-        ungroup() %>%
-        filter(Year == years[y]) %>%
-        group_by(SpeciesCatName) %>%
-        summarise(global_catch = sum(Catch, na.rm = T))
-
-    }
-
-    if (sp_group_demand == F)
-    {
-      supply <- poldata %>%
-        ungroup() %>%
-        subset(Year == years[y]) %>%
-        summarise(global_catch = sum(Catch, na.rm = T))
-    }
-
+    
     poldata[poldata$IdOrig %in% oa_ids & poldata$Year == years[y],] <- oa[where_year,] #Put open access stocks in the given year back in the general population
-
+    
     current_non_neis <- poldata[poldata$Year == years[y] & poldata$IdLevel != 'Neis',]
 
     current_neis <- poldata[poldata$Year == years[y] & poldata$IdLevel == 'Neis',]
@@ -184,6 +164,26 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
 
       poldata[poldata$Year == years[y] & poldata$IdLevel == 'Neis',] <- current_neis #Put open access stocks in the given year back in the general population
     } #close if nei statement
+    
+    
+    if (sp_group_demand == T)
+    {
+      supply <- poldata %>%
+        ungroup() %>%
+        filter(Year == years[y]) %>%
+        group_by(SpeciesCatName) %>%
+        summarise(global_catch = sum(Catch, na.rm = T))
+      
+    }
+    
+    if (sp_group_demand == F)
+    {
+      supply <- poldata %>%
+        ungroup() %>%
+        subset(Year == years[y]) %>%
+        summarise(global_catch = sum(Catch, na.rm = T))
+    }
+    
     where_all_year <- poldata$Year == years[y]
 
     if (sp_group_demand == T)
