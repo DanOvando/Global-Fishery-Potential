@@ -25,7 +25,8 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
   {
     supply <- poldata %>%
       ungroup() %>%
-      filter(Year == years[1]) %>%
+      filter(Year == min(Year, na.rm = T)) %>%
+#       filter(Year == years[1]) %>%
       group_by(SpeciesCatName) %>%
       summarise(global_catch = sum(Catch, na.rm = T))
 
@@ -42,7 +43,9 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
       summarise(global_catch = sum(Catch, na.rm = T))
 
     poldata <- poldata %>%
+      ungroup() %>%
       dplyr::select(-global_catch)
+    
     poldata$global_catch <- supply$global_catch
   }
 
@@ -58,63 +61,25 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
 
   nei <- subset(poldata, IdLevel == 'Neis')
 
-  nei_ids <- unique(nei$IdOrig)
+  if (dim(nei)[1] > 0)
+  {
 
-  nei_type_table<-unique(nei[c("CommName", "SciName","SpeciesCatName")]) # find unique combinations of nei stocks
+    nei_ids <- unique(nei$IdOrig)
 
-  nei_type_table$TaxonLevel<-NA
+    nei_type_table<-unique(nei[c("CommName", "SciName","SpeciesCatName")]) # find unique combinations of nei stocks
 
-  nei_type_table$TaxonLevel[grepl("spp",nei_type_table$SciName)==T]<-"Genus"
+    nei_type_table$TaxonLevel<-NA
 
-  nei_type_table$TaxonLevel[grepl("spp",nei_type_table$SciName)==F]<-"Non-Genus"
+    nei_type_table$TaxonLevel[grepl("spp",nei_type_table$SciName)==T]<-"Genus"
 
-  nei_types <-unique(nei_type_table$SciName)
+    nei_type_table$TaxonLevel[grepl("spp",nei_type_table$SciName)==F]<-"Non-Genus"
 
-  species_types <- read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
+    nei_types <-unique(nei_type_table$SciName)
 
-#   make_nei_lookup <- function(n,nei_type_table, species_types){
-#     NeiCat <- nei_type_table$SciName[n]
-#
-#     tax_level <- nei_type_table$TaxonLevel[n]
-#
-#     if(tax_level =="Genus") # find scientific names for all genus level nei stocks
-#     {
-#
-#       Genus<-unlist(str_split(NeiCat,pattern=" "))[1] # pull out genus
-#
-#       WhereComp<-grepl(Genus,species_types$Species_AFSIS) # search for species names in that genus
-#
-#       compstocks<-unique(species_types$Species_AFSIS[WhereComp]) # pull out species names
-#
-#     }
-#
-#     if (tax_level =="Non-Genus" & (NeiCat %in% species_types$Family)) # determine if non-genus stock is a family name
-#     {
-#       family<-NeiCat # if so find species within that family
-#
-#       WhereComp<-species_types$Family==family
-#
-#       compstocks<-unique(species_types$Species_AFSIS[WhereComp])
-#     }
-#
-#     if(tax_level == "Non-Genus" & (tolower(NeiCat) %in% tolower(species_types$Order))) # determine if non-genus stock is an order name
-#     {
-#
-#       order<-toupper(NeiCat) # order of nei stock (translate to uppercase to match sheet)
-#
-#       WhereComp<-species_types$Order==order
-#
-#       compstocks<-unique(species_types$Species_AFSIS[WhereComp])
-#     }
-#
-#     lookup_table <- data.frame(NeiCat,compstocks, stringsAsFactors = F)
-#
-#     return(lookup_table)
-#
-#   } #close make nei function
+    species_types <- read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
 
-  nei_lookup_table <- lapply(1:length(nei_types),make_nei_lookup,nei_type_table = nei_type_table,species_types = species_types) %>% ldply()
-
+    nei_lookup_table <- lapply(1:length(nei_types),make_nei_lookup,nei_type_table = nei_type_table,species_types = species_types) %>% ldply()
+  }
   # Back to open access -------------------------------------------------------
 
   oa <- subset(oa, IdLevel != 'Neis')
@@ -174,34 +139,37 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
     current_non_neis <- poldata[poldata$Year == years[y] & poldata$IdLevel != 'Neis',]
 
     current_neis <- poldata[poldata$Year == years[y] & poldata$IdLevel == 'Neis',]
+    
+    if (dim(current_neis)[1]>0){
+     
+       current_nei_types <- unique(current_neis$SciName)
 
-    current_nei_types <- unique(current_neis$SciName)
+      for (n in 1:length(current_nei_types)){
 
-    for (n in 1:length(current_nei_types)){
+        nei_type <- current_nei_types[n]
 
-      nei_type <- current_nei_types[n]
+        compstocks <- nei_lookup_table$compstocks[nei_lookup_table$NeiCat == nei_type]
+        
+        comp_current_non_neis <- subset(current_non_neis,SciName %in% compstocks)
+        
+        results<- comp_current_non_neis %>%
+          summarize(BvBmsy25=quantile(BvBmsy,c(0.25),na.rm=T),FvFmsy75=quantile(FvFmsy,c(0.75),na.rm=T),
+                    MedianG=median(g,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T)
+                    ,MedianCost=median(MarginalCost,na.rm=T)
+                    ,JStocks=length(unique(IdOrig)))
 
-      compstocks <- nei_lookup_table$compstocks[nei_lookup_table$NeiCat == nei_type]
+        where_nei_type <- current_neis$SciName == nei_type
 
-      results<- current_non_neis %>%
-        subset(SciName %in% compstocks) %>%
-        summarize(BvBmsy25=quantile(BvBmsy,c(0.25),na.rm=T),FvFmsy75=quantile(FvFmsy,c(0.75),na.rm=T),
-                  MedianG=median(g,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T)
-                  ,MedianCost=median(MarginalCost,na.rm=T)
-                  ,JStocks=length(unique(IdOrig)),VarBvBmsy=var(BvBmsy,na.rm=T),VarFvFmsy=var(FvFmsy,na.rm=T))
+        current_neis$BvBmsy[where_nei_type] <- results$BvBmsy25
 
-      where_nei_type <- current_neis$SciName == nei_type
+        current_neis$FvFmsy[where_nei_type] <- results$FvFmsy75
 
-      current_neis$BvBmsy[where_nei_type] <- results$BvBmsy25
+        current_neis$Catch[where_nei_type] <- (current_neis$MSY * current_neis$BvBmsy * current_neis$FvFmsy)[where_nei_type]
 
-      current_neis$FvFmsy[where_nei_type] <- results$FvFmsy75
+      } #close nei type loop
 
-      current_neis$Catch[where_nei_type] <- (current_neis$MSY * current_neis$BvBmsy * current_neis$FvFmsy)[where_nei_type]
-
-    } #close nei type loop
-
-    poldata[poldata$Year == years[y] & poldata$IdLevel == 'Neis',] <- current_neis #Put open access stocks in the given year back in the general population
-
+      poldata[poldata$Year == years[y] & poldata$IdLevel == 'Neis',] <- current_neis #Put open access stocks in the given year back in the general population
+    } #close if nei statement
     where_all_year <- poldata$Year == years[y]
 
     if (sp_group_demand == T)
