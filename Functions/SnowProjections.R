@@ -262,8 +262,14 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     eval(parse(text=paste('Policy<-',Policies[p],'Policy',sep=''))) 
     
     eval(parse(text=paste('PolicyStorage$',Policies[p],'<-', Policies[p],'Policy',sep='' )))
-    
-    Projection<- Sim_Forward(Policies[p],Policy,IsCatchShare,bvec,RecentStockData$BvBmsy,ProjectionTime,Price,MSY,cost,g,phi,beta)
+#     browser()
+    bvbmsy_start_projection <- max(min(bvec), with(RecentStockData,BvBmsy + ((phi+1)/phi)*g*BvBmsy*(1-BvBmsy^phi/(phi+1)) - g*BvBmsy*FvFmsy))
+
+#     Sim_Forward= function(Policy,fpolicy,IsCatchShare,bvec,b0,Time,p,MSY,c,g,phi,beta)
+      
+    Projection<- Sim_Forward(Policy = Policies[p],fpolicy = Policy,IsCatchShare = IsCatchShare,
+                             bvec = bvec,b0 = bvbmsy_start_projection,Time = ProjectionTime,
+                             p = Price,MSY = MSY,c = cost,g = g,phi = phi,beta = beta)
     
     PolicyMatrix<- as.data.frame(matrix(NA,nrow=ProjectionTime,ncol=dim(TempMat)[2]))
     
