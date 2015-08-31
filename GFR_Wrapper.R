@@ -13,8 +13,14 @@ sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
 
 if (RunAnalyses==TRUE)
 {
+
+  textfiles <- list.files(pattern = '.txt')
+  if (length(textfiles)>0)
+  {
+    unlink(textfiles)
+  }
   
-  if (file.exists(paste(ResultFolder,'Cleaned Compiled Database.csv',sep=''))==F)
+    if (file.exists(paste(ResultFolder,'Cleaned Compiled Database.csv',sep=''))==F)
   {
     
     #     source('Database_Build.R') #Build Tyler's database
@@ -537,7 +543,7 @@ trend_check <- ProjectionData %>%
   group_by(Year,Policy) %>%
   summarize(total_catch = sum(Catch, na.rm = T), total_profits = sum(Profits, na.rm = T), total_biomass = sum(Biomass, na.rm = T))
 
-trend_plot <- ggplot(trend_check,aes(Year,total_catch,fill = Policy)) + geom_point(shape = 21,alpha = 0.6)
+trend_plot <- ggplot(trend_check,aes(Year,total_catch,fill = Policy,size = total_profits)) + geom_point(shape = 21,alpha = 0.6)
 
 # ProjectionData<- ddply(ProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
 
