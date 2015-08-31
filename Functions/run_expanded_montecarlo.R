@@ -47,12 +47,14 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
       }
       return(f)
     }
+    show(BaselineYear)
+    b = matrix(0,Time,length(FStatusQuo))
+    #     b = matrix(0,Time+1,length(FStatusQuo))
     
-    b = matrix(0,Time+1,length(FStatusQuo))
     f = b
     pi = b
     y = b
-    b[1,] = b0;
+    b[1,] = b0
     #     BCount=ddply(Policies,c('IdOrig'),summarize,NumB=length(b))
     
     BCount<- Policies %>%
@@ -95,11 +97,11 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
         f[t,]=OpenAccessFleet(PastF,pi[t-1,],t,omega = omega,MsyProfits)
         PastF<- f[t,]
       }
-      if (t==1)
-      {
-        f[t,]<- FStatusQuo
-        b[t,]<- BStatusQuo
-      }
+      #       if (t==1)
+      #       {
+      #         f[t,]<- FStatusQuo
+      #         b[t,]<- BStatusQuo
+      #       }
       pi[t,] = p*MSY*f[t,]*b[t,] - c*(f[t,]*g)^beta
       y[t,] = MSY*f[t,]*b[t,]
       if (t<Time+1)
@@ -137,8 +139,9 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
     #     {
     #       browser()
     #     }
-    #
-    Projection$Year<- Projection$Year+(BaselineYear-1)
+    Projection$Year<- Projection$Year+(BaselineYear)
+    Projection <- subset(Projection, Year <=2050)
+    #     Projection$Year<- Projection$Year+(BaselineYear-1)
     
     Projection$IdOrig <- as.character(Projection$IdOrig)
     #     Projection<- ddply(Projection,c('IdOrig'),mutate,NPV=cumsum(Profits*(1+0.05)^-(Year-BaselineYear)))
@@ -158,34 +161,45 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
     
     show('hello')
     #     PossParams<- PossibleParams[Index[,k],]
-#     CurrentBio<- BioError[,k]
-        CurrentBio<- 1 #BioError[,k]
+    #     CurrentBio<- BioError[,k]
+    lower_unif <- 1
+    
+    upper_unif <- 1
+    
     
     PolicyFuncs<- PolicyStorage[PolicyStorage$IdOrig %in% Stocks,]
     
     RecentStockData<- ProjectionData[ProjectionData$IdOrig %in% Stocks & ProjectionData$Year==BaselineYear,]
     
-    RecentStockData$Price<- RecentStockData$Price * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
+    year_one_bvbmsy <-  ProjectionData[ProjectionData$Policy == 'Fmsy' & ProjectionData$IdOrig %in% Stocks & ProjectionData$Year==BaselineYear+1,]$BvBmsy
     
-    #     RecentStockData$beta <- base_beta * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
+    CurrentBio<- runif(dim(RecentStockData)[1],lower_unif,upper_unif) #BioError[,k]
+    
+    #      RecentStockData$BvBmsy<- RecentStockData$BvBmsy* CurrentBio
+    year_one_bvbmsy <- year_one_bvbmsy * CurrentBio
+    
+    
+    RecentStockData$Price<- RecentStockData$Price * runif(dim(RecentStockData)[1],lower_unif,upper_unif)
+    
+    RecentStockData$beta <- base_beta * runif(dim(RecentStockData)[1],lower_unif,upper_unif)
     #
-    #     RecentStockData$omega <- base_omega * rlnorm(dim(RecentStockData)[1],0,ErrorSize)
+    RecentStockData$omega <- base_omega * runif(dim(RecentStockData)[1],lower_unif,upper_unif)
     #
-    RecentStockData$beta <-  runif(dim(RecentStockData)[1],1,1)
+    #     RecentStockData$beta <-  runif(dim(RecentStockData)[1],1.3,1.3)
     #     RecentStockData$beta <-  runif(dim(RecentStockData)[1],1,1.6)
     
     #     RecentStockData$omega <-  runif(dim(RecentStockData)[1],0.75*base_omega,1.25*base_omega)
-    RecentStockData$omega <-  runif(dim(RecentStockData)[1],base_omega,base_omega)
+    #     RecentStockData$omega <-  runif(dim(RecentStockData)[1],base_omega,base_omega)
     
-    CatchSharePrice<- CatchSharePrice  *rlnorm(1,0,ErrorSize)
+    CatchSharePrice<- CatchSharePrice  * runif(dim(RecentStockData)[1],lower_unif,upper_unif)
     
-    CatchShareCost<- CatchShareCost  *rlnorm(1,0,ErrorSize)
+    CatchShareCost<- CatchShareCost  * runif(dim(RecentStockData)[1],lower_unif,upper_unif)
     
-    RecentStockData$BOA<- pmin(0.9*((RecentStockData$phi+1)^(1/(RecentStockData$phi))),RecentStockData$BvBmsyOpenAccess *rlnorm(dim(RecentStockData)[1],0,ErrorSize))
+    RecentStockData$BOA<- pmin(0.9*((RecentStockData$phi+1)^(1/(RecentStockData$phi))),RecentStockData$BvBmsyOpenAccess * runif(dim(RecentStockData)[1],lower_unif,upper_unif))
     
-    RecentStockData$MSY<- RecentStockData$MSY * rlnorm(length(Stocks),0,ErrorSize)
+    RecentStockData$MSY<- RecentStockData$MSY * runif(dim(RecentStockData)[1],lower_unif,upper_unif)
     
-    RecentStockData$g<- RecentStockData$g * rlnorm(length(Stocks),0,ErrorSize)
+    RecentStockData$g<- RecentStockData$g * runif(dim(RecentStockData)[1],lower_unif,upper_unif)
     
     RecentStockData$k <-  (RecentStockData$MSY * (RecentStockData$phi + 1)^(1/ RecentStockData$phi)) / RecentStockData$g
     
@@ -193,9 +207,13 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
     
     #     phi<- RecentStockData$phi
     
-    RecentStockData$BvBmsy<- pmin(2.5,RecentStockData$BvBmsy* CurrentBio)
     
-    RecentStockData$FvFmsy<- pmin(6,(RecentStockData$Catch/RecentStockData$MSY)/RecentStockData$BvBmsy)
+    #     RecentStockData$FvFmsy<- (RecentStockData$Catch/RecentStockData$MSY)/RecentStockData$BvBmsy
+    
+    #     RecentStockData$BvBmsy<- pmin(2.5,RecentStockData$BvBmsy* CurrentBio)
+    #     
+    #     RecentStockData$FvFmsy<- pmin(6,(RecentStockData$Catch/RecentStockData$MSY)/RecentStockData$BvBmsy)
+    #     
     
     IsCatchShare<- RecentStockData$CatchShare
     
@@ -232,7 +250,7 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
       
       Projection<- Sim_Forward(FStatusQuo=RecentStockData$FvFmsy,BStatusQuo=RecentStockData$BvBmsy,
                                Policy=Policies[p],Policies=PolicyFuncs,IsCatchShare=IsCatchShare,bvec=bvec,
-                               b0=RecentStockData$BvBmsy,p=RecentStockData$Price
+                               b0=year_one_bvbmsy,p=RecentStockData$Price
                                ,MSY=RecentStockData$MSY,c=RecentStockData$cost,g=RecentStockData$g,phi=RecentStockData$phi,
                                beta=RecentStockData$beta,omega = RecentStockData$omega,Stocks=Stocks)
       Projection<- join(Projection,RecentStockData[,c('IdOrig','Country','Dbase','SciName','CommName','IdLevel','SpeciesCatName','CatchShare','MSY','g','k','phi','Price','cost','MsyProfits','BOA','beta')],by='IdOrig',match='first')
@@ -393,15 +411,11 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
     BioMonte<- rbind(nei,Species)
     
     BioMonte$DiscProfits<- BioMonte$Profits * (1+Discount)^-(BioMonte$Year-BaselineYear)
-#     if (k ==2 )
-#     {
-#       browser()
-#     }
-#     rm(nei,ProjectionData,PolicyStorage)
-    BioMonte<-BuildPolicyBAUs(BioMonte,BaselineYear,elastic_demand = elastic_demand, elasticity = elasticity,
-                               Discount = Discount,sp_group_demand = sp_group_demand )
+    
+    BioMonte <- BuildPolicyBAUs(BioMonte,BaselineYear,elastic_demand = elastic_demand, elasticity = elasticity,
+                                 Discount = Discount,sp_group_demand = sp_group_demand )
     BioMonte$Iteration<- k
-    BioMonte<- subset(BioMonte,Year==2012 | Year==2013 | Year==2050)
+    #     BioMonte<- subset(BioMonte,Year==2012 | Year==2013 | Year==2050)
     return(BioMonte)
   } #Close McIterations
   
@@ -411,18 +425,18 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
   #   PossibleParams<- CatchMSYPossibleParams
   
   NumStocks<- length(unique(PossibleParams$IdOrig))
-  BioError<- replicate(Iterations,runif(length(Stocks),0.5,1.5))
+  BioError<- replicate(Iterations,runif(length(Stocks),0.75,1.25))
   
   #   Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
   
   Projections<- lapply(1:Iterations,McIterations,BioError=BioError,Iterations=Iterations,
-                         ProjectionData=ProjectionData,BaselineYear=BaselineYear,
-                         PolicyStorage=PolicyStorage,Stocks=Stocks,ErrorSize=ErrorSize,Spec_ISSCAAP=Spec_ISSCAAP)
+                       ProjectionData=ProjectionData,BaselineYear=BaselineYear,
+                       PolicyStorage=PolicyStorage,Stocks=Stocks,ErrorSize=ErrorSize,Spec_ISSCAAP=Spec_ISSCAAP)
   
-#   Projections<- mclapply(1:Iterations,McIterations,BioError=BioError,Iterations=Iterations,
-#                          ProjectionData=ProjectionData,BaselineYear=BaselineYear,
-#                          PolicyStorage=PolicyStorage,Stocks=Stocks,ErrorSize=ErrorSize,Spec_ISSCAAP=Spec_ISSCAAP,mc.cores=NumCPUs)
-#   
+  #   Projections<- mclapply(1:Iterations,McIterations,BioError=BioError,Iterations=Iterations,
+  #                          ProjectionData=ProjectionData,BaselineYear=BaselineYear,
+  #                          PolicyStorage=PolicyStorage,Stocks=Stocks,ErrorSize=ErrorSize,Spec_ISSCAAP=Spec_ISSCAAP,mc.cores=NumCPUs)
+  #   
   
   Projections<- ldply(Projections)
   
