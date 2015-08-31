@@ -37,7 +37,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
   {
     supply <- poldata %>%
       ungroup() %>%
-      subset(Year == years[1]) %>%
+      subset(Year == min(Year, na.rm = T)) %>%
       summarise(global_catch = sum(Catch, na.rm = T))
 
     poldata <- poldata %>%
@@ -46,7 +46,6 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
     
     poldata$global_catch <- supply$global_catch
   }
-
 
   poldata$Price[poldata$Year == base_year] <- (poldata$pricek * poldata$global_catch^(1/elasticity))[poldata$Year == base_year] #adjust prices
 
