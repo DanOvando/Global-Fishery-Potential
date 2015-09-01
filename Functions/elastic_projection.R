@@ -19,8 +19,6 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
 
   # Set up base conditions -------
   years <- unique(poldata$Year)
-
-  show(elasticity)
   if (sp_group_demand == T)
   {
     supply <- poldata %>%
@@ -39,7 +37,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
   {
     supply <- poldata %>%
       ungroup() %>%
-      subset(Year == years[1]) %>%
+      subset(Year == min(Year, na.rm = T)) %>%
       summarise(global_catch = sum(Catch, na.rm = T))
 
     poldata <- poldata %>%
@@ -48,7 +46,6 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
     
     poldata$global_catch <- supply$global_catch
   }
-
 
   poldata$Price[poldata$Year == base_year] <- (poldata$pricek * poldata$global_catch^(1/elasticity))[poldata$Year == base_year] #adjust prices
 
@@ -105,7 +102,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
 
     current_oa_f <- OpenAccessFleet(f = last_oa_f,pi = last_oa_pi,t = y,omega = 0.1,MsyProfits = oa_msyprofits )
 
-    current_oa_b <- pmax(min(bvec), last_oa_b + ((oa_phi+1)/oa_phi)*oa_g*last_oa_b*(1-last_oa_b^oa_phi/(oa_phi+1))
+    current_oa_b <- pmax(min(bvec), last_oa_b + ((oa_phi+1)/oa_phi)*oa_g*last_oa_b*(1-(last_oa_b^oa_phi)/(oa_phi+1))
                          - oa_g*last_oa_b*last_oa_f)
 
     oa$BvBmsy[where_year] <- current_oa_b
@@ -115,27 +112,9 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
     oa$FvFmsy[where_year] <- current_oa_f
 
     oa$Catch[where_year] <- (oa$MSY * oa$FvFmsy * oa$BvBmsy)[where_year]
-
-    if (sp_group_demand == T)
-    {
-      supply <- poldata %>%
-        ungroup() %>%
-        filter(Year == years[y]) %>%
-        group_by(SpeciesCatName) %>%
-        summarise(global_catch = sum(Catch, na.rm = T))
-
-    }
-
-    if (sp_group_demand == F)
-    {
-      supply <- poldata %>%
-        ungroup() %>%
-        subset(Year == years[y]) %>%
-        summarise(global_catch = sum(Catch, na.rm = T))
-    }
-
+    
     poldata[poldata$IdOrig %in% oa_ids & poldata$Year == years[y],] <- oa[where_year,] #Put open access stocks in the given year back in the general population
-
+    
     current_non_neis <- poldata[poldata$Year == years[y] & poldata$IdLevel != 'Neis',]
 
     current_neis <- poldata[poldata$Year == years[y] & poldata$IdLevel == 'Neis',]
@@ -152,12 +131,26 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
         
         comp_current_non_neis <- subset(current_non_neis,SciName %in% compstocks)
         
-        results<- comp_current_non_neis %>%
-          summarize(BvBmsy25=quantile(BvBmsy,c(0.25),na.rm=T),FvFmsy75=quantile(FvFmsy,c(0.75),na.rm=T),
-                    MedianG=median(g,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T)
-                    ,MedianCost=median(MarginalCost,na.rm=T)
-                    ,JStocks=length(unique(IdOrig)))
-
+        results <- NULL
+#         results<- comp_current_non_neis %>%
+#           summarize(BvBmsy25=quantile(BvBmsy,c(0.25),na.rm=T),FvFmsy75=quantile(FvFmsy,c(0.75),na.rm=T),
+#                     MedianG=median(g,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T)
+#                     ,MedianCost=median(MarginalCost,na.rm=T)
+#                     ,JStocks=length(unique(IdOrig)))
+        results$BvBmsy25 <- quantile(comp_current_non_neis$BvBmsy,c(0.25),na.rm=T)
+        
+        results$FvFmsy75 =quantile(comp_current_non_neis$FvFmsy,c(0.75),na.rm=T)
+        
+        results$MedianG=median(comp_current_non_neis$g,na.rm=T)
+        
+        results$MedianK=median(comp_current_non_neis$k,na.rm=T)
+        
+        results$MedianPrice=median(comp_current_non_neis$Price,na.rm=T)
+        
+        results$MedianCost=median(comp_current_non_neis$MarginalCost,na.rm=T)
+        
+        results$JStocks=length(unique(comp_current_non_neis$IdOrig))
+        
         where_nei_type <- current_neis$SciName == nei_type
 
         current_neis$BvBmsy[where_nei_type] <- results$BvBmsy25
@@ -170,6 +163,26 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
 
       poldata[poldata$Year == years[y] & poldata$IdLevel == 'Neis',] <- current_neis #Put open access stocks in the given year back in the general population
     } #close if nei statement
+    
+    
+    if (sp_group_demand == T)
+    {
+      supply <- poldata %>%
+        ungroup() %>%
+        filter(Year == years[y]) %>%
+        group_by(SpeciesCatName) %>%
+        summarise(global_catch = sum(Catch, na.rm = T))
+      
+    }
+    
+    if (sp_group_demand == F)
+    {
+      supply <- poldata %>%
+        ungroup() %>%
+        subset(Year == years[y]) %>%
+        summarise(global_catch = sum(Catch, na.rm = T))
+    }
+    
     where_all_year <- poldata$Year == years[y]
 
     if (sp_group_demand == T)

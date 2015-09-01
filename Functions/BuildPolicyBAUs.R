@@ -56,7 +56,6 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
              pricek = (1 / alpha)^(1 / elasticity)) %>%
       ungroup()
   }
-  
   ram<-ProjectionData[ProjectionData$Policy=='StatusQuoFForever' & ProjectionData$Dbase=='RAM' & ProjectionData$CatchShare!=1,]
   
   ramids<-unique(ram$IdOrig)
@@ -78,7 +77,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
                                           discount = Discount, base_year = BaselineYear+1, sp_group_demand = sp_group_demand )  
   }
  
-  overFFids<-ProjectionData$IdOrig[ProjectionData$Year==BaselineYear & (!(ProjectionData$IdOrig %in% c(ramids,csids)) & 
+  overFFids <- ProjectionData$IdOrig[ProjectionData$Year==BaselineYear & (!(ProjectionData$IdOrig %in% c(ramids,csids)) & 
                                                                           ((ProjectionData$FvFmsy>1 & ProjectionData$BvBmsy<1) | (ProjectionData$FvFmsy>1 & ProjectionData$BvBmsy>1) |
                                                                              (ProjectionData$FvFmsy<1 & ProjectionData$BvBmsy<1)))]
   

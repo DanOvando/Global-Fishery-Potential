@@ -10,7 +10,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   RunDynamicOpt2= function(MSY,g,phi,p,cost,beta,disc,bvec,tol)
   {
-
+    
     delta= 1/(1+disc) #Discount parameter
     t=0
     
@@ -62,7 +62,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   GFRM_funR= function(f,b,p,MSY,cost,phi,gar,beta,V,bvec,delta)
   {  
-   #Dynamic Optimization workhorse function 
+    #Dynamic Optimization workhorse function 
     g<- gar
     
     profit= p*MSY*f*b - cost*(f*g)^beta
@@ -87,26 +87,26 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
   {
     #Function to adjust f in response to prior profits
-    if (t==1)
-    {
-      f=f
-    }
-    if (t>1)
-    {
+#     if (t==1)
+#     {
+#       f=f
+#     }
+#     if (t>1)
+#     {
       f<- pmin(4,pmax(f+omega*(pi/MsyProfits),.0001))
-    }
+    # }
     return(f)
   }
   
-  Sim_Forward= function(Policy,fpolicy,IsCatchShare,bvec,b0,Time,p,MSY,c,g,phi,beta)
+  Sim_Forward= function(Policy,fpolicy,IsCatchShare,bvec,b0,pre_f,pre_profits,Time,p,MSY,c,g,phi,beta)
   {  
-    #Functino to simulate fishery populations over time
+    #Function to simulate fishery populations over time
     b = matrix(0,Time,1)
     f = b
     pi = b
     y = b
-    b[1] = b0;
-    if (Policy=='StatusQuoOpenAccess'){f[1]<- fpolicy}
+    b[1] = b0
+    if (Policy=='StatusQuoOpenAccess'){f[1]<- pre_f}
     if (Policy=='CatchShare' & IsCatchShare==0) # apply price cost effects of catch share policy to non-catch share stocks
     {
       p<- p*CatchSharePrice
@@ -126,16 +126,19 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     
     PastF<- f[1]
     
+    PastPi <- pre_profits
     for (t in 1:Time)
     {
       if (Policy!='StatusQuoOpenAccess'){ f[t] = approx(bvec,fpolicy,b[t])$y}
       if (Policy=='StatusQuoOpenAccess')
       {
+    
+        f[t]=OpenAccessFleet(PastF,PastPi,t,Omega,MsyProfits)
         
-        f[t]=OpenAccessFleet(PastF,pi[t-1],t,Omega,MsyProfits)
         PastF<- f[t]
       }
       pi[t] = p*MSY*f[t]*b[t] - c*(f[t]*g)^beta
+      PastPi = pi[t]
       y[t] = MSY*f[t]*b[t]
       if (t<Time) #Move pella tomlinson forward
       {
@@ -232,7 +235,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   #   
   CatchSharePolicy<- OptPolicy
   
-#   FoodPolicy<-  RunDynamicOpt2(MSY,g,phi,Price,0,beta,0,bvec,tol)$Policy
+  #   FoodPolicy<-  RunDynamicOpt2(MSY,g,phi,Price,0,beta,0,bvec,tol)$Policy
   
   StatusQuoFForeverPolicy<- FStatusQuo*matrix(1,nrow=dim(OptPolicy)[1],ncol=dim(OptPolicy)[2])  
   
@@ -262,8 +265,18 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     eval(parse(text=paste('Policy<-',Policies[p],'Policy',sep=''))) 
     
     eval(parse(text=paste('PolicyStorage$',Policies[p],'<-', Policies[p],'Policy',sep='' )))
+    #     browser()
+    #     
+    bvbmsy_start_projection <- max(min(bvec), with(RecentStockData,BvBmsy + ((phi+1)/phi)*g*BvBmsy*(1-BvBmsy^phi/(phi+1)) - g*BvBmsy*FvFmsy))
     
-    Projection<- Sim_Forward(Policies[p],Policy,IsCatchShare,bvec,RecentStockData$BvBmsy,ProjectionTime,Price,MSY,cost,g,phi,beta)
+    fvfmsy_pre_projection<- RecentStockData$FvFmsy
+    
+    profits_pre_projection <- RecentStockData$Price*RecentStockData$Catch - cost*(RecentStockData$g*RecentStockData$FvFmsy)^beta 
+    
+    Projection<- Sim_Forward(Policy = Policies[p],fpolicy = Policy,IsCatchShare = IsCatchShare,
+                             bvec = bvec,b0 = bvbmsy_start_projection,pre_f = fvfmsy_pre_projection,
+                             pre_profits = profits_pre_projection,Time = ProjectionTime,
+                             p = Price,MSY = MSY,c = cost,g = g,phi = phi,beta = beta)
     
     PolicyMatrix<- as.data.frame(matrix(NA,nrow=ProjectionTime,ncol=dim(TempMat)[2]))
     
@@ -272,7 +285,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     colnames(PolicyMatrix)<- c(colnames(RecentStockData),'Policy','Profits')
     
     PolicyMatrix$Catch<- Projection$Yields
-
+    
     PolicyMatrix$Price<- Projection$Price
     
     PolicyMatrix$MarginalCost<- Projection$MarginalCost
@@ -286,7 +299,7 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     PolicyMatrix$Profits<- Projection$Profits
     
     PolicyMatrix$Policy<- Policies[p]
-        
+    
     TempMat[counter:(counter+-1+(dim(PolicyMatrix)[1])),]<- I(PolicyMatrix)
     #     
     counter<- (counter+(dim(PolicyMatrix)[1]))
@@ -296,12 +309,12 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   #   
   if (any(is.na(TempMat$Bmsy)))
   {
-#     TempMat$Bmsy<- TempMat$k * TempMat$BtoKRatio
+    #     TempMat$Bmsy<- TempMat$k * TempMat$BtoKRatio
     
     TempMat$k<- ((TempMat$MSY/TempMat$g)*(1/TempMat$BtoKRatio))
     
     TempMat$Bmsy<- (TempMat$MSY/TempMat$g)
-        
+    
   }
   
   TempMat$Biomass<- (TempMat$BvBmsy* (TempMat$Bmsy))
