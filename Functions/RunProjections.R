@@ -9,8 +9,12 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy, Policies = c
   Data$MarginalCost<- NA
   
   # Loop over Each Stock ----------------------------------------------------
+  #     if(IsCatchShare==1) # adjust prices and costs for catch share fisheries before dynamic optimization
+  #     {
+  #     
+  where_catch_share <- Data$CatchShare == 1 & Data$Year == 2012
   
-  
+  Data$Price[where_catch_share] <- Data$Price[where_catch_share]*CatchSharePrice
   
   Data$BvBmsy<- pmin(1/Data$BtoKRatio,Data$BvBmsy) #Note capping projection data now
   
@@ -101,6 +105,8 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy, Policies = c
   cost = (c_num/c_den)[HistoricData]
   
   Data$MarginalCost[HistoricData]<- cost
+  
+  Data$MarginalCost[HistoricData == T & where_catch_share ==T] <- Data$MarginalCost * CatchShareCost
   
   Data$Profits[HistoricData]= Data$Price[HistoricData]*Data$MSY[HistoricData]*Data$FvFmsy[HistoricData]*Data$BvBmsy[HistoricData] - Data$MarginalCost[HistoricData]*(Data$FvFmsy[HistoricData]*Data$g[HistoricData])^beta
   

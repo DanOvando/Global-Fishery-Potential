@@ -209,9 +209,9 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
   
   if(IsCatchShare==1) # adjust prices and costs for catch share fisheries before dynamic optimization
   {
-    Price<-Price*CatchSharePrice
-    
-    Data$Price[Where]<-Price
+#     Price<-Price*CatchSharePrice
+#     
+#     Data$Price[Where]<-Price
     
     cost<-cost*CatchShareCost
     
