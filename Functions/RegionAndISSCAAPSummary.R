@@ -100,6 +100,9 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       
       BaselineData<- subset(temp,subset=Year==BaselineYear & is.na(FvFmsy)==F & is.na(BvBmsy)==F)
       
+      KobeMedians<- BaselineData %>%
+        summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T))
+      
       BaselineData$FvFmsy[BaselineData$FvFmsy>4]<- 4
       
       BaselineData$BvBmsy[BaselineData$BvBmsy>2.5]<- 2.5
@@ -125,7 +128,17 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
         mtext(outer=T,side=2,expression(F/F[MSY]),line=2)
       }
       
-      points(BaselineData$BvBmsy,BaselineData$FvFmsy,pch=16,col=(as.factor(BaselineData$Dbase)),cex=0.75+(BaselineData$Catch)/max(BaselineData$Catch,na.rm=T))
+      inCols<-as.numeric(as.factor(BaselineData$Dbase))		# inCols should be the current colors
+      OutCols<-inCols
+      
+      RGBcols	<-c("#000000","#FF0000","#00CC00") #black, red, green
+      AddTrans	<-65		# adjusts the transparency--lower is more transparent
+      
+      for(x in 1:3)
+        OutCols[inCols==x]<-paste(RGBcols[x],AddTrans,sep="")
+      
+      points(BaselineData$BvBmsy,BaselineData$FvFmsy,pch=16,col=OutCols,cex=0.75+(BaselineData$Catch)/max(BaselineData$Catch,na.rm=T))
+      points(KobeMedians$MedianB,KobeMedians$MedianF,pch=17,col=RGBcols[3], cex=1.5)
       box()
       abline(h=1,v=1,lty=2)
       legend("topright",tempName,bty='n')
@@ -138,9 +151,9 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
 
   # Make Figure on Kobe plot with regions 67,27,61,71
   
-  zone<-c('Northeast Pacific','Northeast Atlantic','Northwest Pacific','Western Central Pacific')
+  zone<-c('Global','Northeast Pacific','Northeast Atlantic','Western Central Pacific')
   
-  codes<-c('67','27','61','71') # codes
+  codes<-c('all','67','27','71') # codes
   
   names<-data.frame(zone,codes,stringsAsFactors=F) # df of names and corresponding codes for every FAO major region
   
@@ -156,9 +169,19 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
   
   for(a in 1:length(codes))
   {
-    temp<-data[data$Year==BaselineYear & grepl(codes[a],data$RegionFAO),]
+    if(codes[a]=='all') 
+      {
+      temp<- data
+      
+      tempName<-names$zone[names$code==codes[a]]
+      }
     
-    tempName<-names$zone[names$code==codes[a]]
+    if(codes[a]!='all')
+    {
+      temp<-data[data$Year==BaselineYear & grepl(codes[a],data$RegionFAO),]
+      
+      tempName<-names$zone[names$code==codes[a]]
+    }
     
     if(nrow(temp)>0)
     {
@@ -166,6 +189,9 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       if (any(temp$BvBmsy<0,na.rm=T)){temp$BvBmsy<- exp(temp$BvBmsy)}
       
       BaselineData<- subset(temp,subset=Year==BaselineYear & is.na(FvFmsy)==F & is.na(BvBmsy)==F)
+      
+      KobeMedians<- BaselineData %>%
+        summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T))
       
       BaselineData$FvFmsy[BaselineData$FvFmsy>4]<- 4
       
@@ -192,7 +218,17 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
         mtext(outer=T,side=2,expression(F/F[MSY]),line=2)
       }
       
-      points(BaselineData$BvBmsy,BaselineData$FvFmsy,pch=16,col=(as.factor(BaselineData$Dbase)),cex=0.75+(BaselineData$Catch)/max(BaselineData$Catch,na.rm=T))
+      inCols<-as.numeric(as.factor(BaselineData$Dbase))		# inCols should be the current colors
+      OutCols<-inCols
+      
+      RGBcols	<-c("#000000","#FF0000","#00CC00") #black, red, green
+      AddTrans	<-65		# adjusts the transparency--lower is more transparent
+      
+      for(x in 1:3)
+        OutCols[inCols==x]<-paste(RGBcols[x],AddTrans,sep="")
+      
+      points(BaselineData$BvBmsy,BaselineData$FvFmsy,pch=16,col=OutCols,cex=0.75+(BaselineData$Catch)/max(BaselineData$Catch,na.rm=T))
+      points(KobeMedians$MedianB,KobeMedians$MedianF,pch=17,col=RGBcols[3], cex=1.5)
       box()
       abline(h=1,v=1,lty=2)
       legend("topright",tempName,bty='n')
