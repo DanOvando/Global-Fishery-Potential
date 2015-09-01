@@ -1,6 +1,6 @@
 expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_demand = T, real_sp_group_demand = F, elasticity = -0.9)
 {
-      load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
+  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
   show(mciterations)
   elastic_demand <- real_elastic_demand
   
@@ -15,26 +15,26 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
   
   NumCPUs <- CPUs
   
-#   load(paste('Results/',runfolder,'/Data/ProjectionData Data.rdata', sep = ''))
+    load(paste('Results/',runfolder,'/Data/ProjectionData Data.rdata', sep = ''))
   
   PolicyStorage <- read.csv(paste('Results/',runfolder,'/Data/PolicyStorage.csv', sep = ''))
   
+  RealProjectionData <- ProjectionData
   
-    ProjectionData<- OriginalProjectionData #Fisheries that have B/Bmsy, MSY, and we've run the projections
-    
-    NoBmsy<- is.na(ProjectionData$Bmsy)
-    
-    ProjectionData$k[NoBmsy]<- ((ProjectionData$MSY/ProjectionData$g)*(1/ProjectionData$BtoKRatio))[NoBmsy]
-    
-    ProjectionData$Bmsy[NoBmsy]<- (ProjectionData$MSY/ProjectionData$g)[NoBmsy]
-    
-    ProjectionData$Biomass[is.na(ProjectionData$Biomass) | ProjectionData$Biomass==0]<- (ProjectionData$BvBmsy*ProjectionData$Bmsy)[is.na(ProjectionData$Biomass) | ProjectionData$Biomass==0]
-    
-    ProjectionData<- ProjectionData %>%
-      group_by(IdOrig,Policy) %>%
-      mutate(NPV=cumsum(DiscProfits))
-    
-  rm(OriginalProjectionData,OriginalBiomassData,OriginalFullData,OriginalMsyData,MsyData)
+  ProjectionData<- OriginalProjectionData #Fisheries that have B/Bmsy, MSY, and we've run the projections
+  
+  NoBmsy<- is.na(ProjectionData$Bmsy)
+  
+  ProjectionData$k[NoBmsy]<- ((ProjectionData$MSY/ProjectionData$g)*(1/ProjectionData$BtoKRatio))[NoBmsy]
+  
+  ProjectionData$Bmsy[NoBmsy]<- (ProjectionData$MSY/ProjectionData$g)[NoBmsy]
+  
+  ProjectionData$Biomass[is.na(ProjectionData$Biomass) | ProjectionData$Biomass==0]<- (ProjectionData$BvBmsy*ProjectionData$Bmsy)[is.na(ProjectionData$Biomass) | ProjectionData$Biomass==0]
+  
+  ProjectionData<- ProjectionData %>%
+    group_by(IdOrig,Policy) %>%
+    mutate(NPV=cumsum(DiscProfits))
+  rm(OriginalProjectionData,OriginalBiomassData,OriginalFullData,OriginalMsyData,MsyData,UnlumpedProjectionData)
   #   load(paste('Results/',runfolder,'/Data/MsyData.rdata', sep = ''))
   
   FigureFolder<- paste('Results/',runfolder,'/Diagnostics/expanded monte carlo/',sep='')
@@ -53,7 +53,7 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
   
   # Rprof()
   
-  MonteMat<- (run_expanded_montecarlo(mciterations,Stocks=Stocks,ProjectionData=ProjectionData,
+  MonteMat<- (run_expanded_montecarlo(mciterations,Stocks=Stocks,projdata=ProjectionData,
                                       PolicyStorage=PolicyStorage,ErrorSize=0, NumCPUs = CPUs,
                                       ResultFolder = ResultFolder, elastic_demand = elastic_demand, sp_group_demand = sp_group_demand,
                                       elasticity = elasticity))
@@ -104,7 +104,7 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
               ,FinalBiomass=sum(Biomass,na.rm=T),FinalCatch = sum(Catch, na.rm = T),FinalFisheries=length(unique(IdOrig)),sum(is.na(Profits)))
   
   ProjMonte<- subset(ProjectionData,Year == 2050 & Policy %in% c('Business As Usual','Business As Usual Pessimistic'
-                                                  ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three')) %>%
+                                                                 ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three')) %>%
     group_by(Policy) %>% 
     summarize(FinalProfits=sum(Profits,na.rm=T)
               ,FinalBiomass=sum(Biomass,na.rm=T),FinalCatch = sum(Catch, na.rm = T),

@@ -1,10 +1,11 @@
-run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
+run_expanded_montecarlo<- function(Iterations,Stocks,projdata,
                                    PolicyStorage,ErrorSize,NumCPUs = 1,BaselineYear = 2012,
                                    CatchSharePrice = 1.3,CatchShareCost = 0.77,ResultFolder,elastic_demand = F,sp_group_demand = F,
                                    Discount = 0, elasticity = -0.9)
 {
   
-  Sim_Forward= function(FStatusQuo,BStatusQuo,Stocks,Policy,Policies,IsCatchShare,bvec,b0,Time = 38,p,MSY,c,g,phi,beta,omega)
+  
+  Sim_Forward= function(Stocks,Policy,Policies,IsCatchShare,bvec,b0,pre_f,pre_profits,Time = 38,p,MSY,c,g,phi,beta,omega)
   {
     #Function to move each fishery forward in time simultaneously
     FindF<- function(Stocks,CurrentB,Policy,Policies,BCount) #Function that finds f for each fishery by it's closeest match from bvec
@@ -15,96 +16,116 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
       
       FVecMat<- matrix(Policies[,Policy],nrow=BCount,ncol=length(CurrentB),byrow=F)
       
-      BDiff=(BvecMat-CurrentBMat)^2
+#       BDiff=(BvecMat-CurrentBMat)^2
       
-      ClosestB<- apply(BDiff, 2, function(x) max(which(x == min(x, na.rm = TRUE))))
+      BDiff=(BvecMat-CurrentBMat)
       
-      ClosestB<- data.frame(unique(Policies$IdOrig),ClosestB)
+      BDiff[BDiff > 0] <- NA
+      
+      ClosestB<- apply(BDiff, 2, function(x) min(which(x == max(x, na.rm = TRUE))))
+      
+      ClosestB<- data.frame(unique(Policies$IdOrig),ClosestB) #find index of closest B
+      
+      b_real <- CurrentB
+      
+      bdex <- ClosestB$ClosestB
+     
+      b_a <- BvecMat[bdex,1]
+      
+      b_maxed <- bdex >= BCount
+      
+      next_bdex <- bdex
+      
+      next_bdex[b_maxed == F] <- pmin(BCount,next_bdex + 1)[b_maxed == F]
+      
+      b_b <- BvecMat[next_bdex,1]
       
       #Find the closest value in bvec for each fishery
       
       FFun= function(x,FVecMat,ClosestB,Stocks)
       {
         #         Which<- (ClosestB[,1]==Stocks[x])
-        y=FVecMat[ClosestB[x,2],x]
+        y=FVecMat[ClosestB[x],x]
       }
-      NextF<- sapply(1:length(Stocks),FFun,FVecMat=FVecMat,ClosestB=ClosestB,Stocks=Stocks)    #Calculate next f based on current b
-      #       NextF<- FVecMat[ClosestB,]
-      #       NextF<- approx(StockPol$b,StockPol[,Policy],CurrentB[i])$y
-      return(NextF)
+      
+      f_a<- sapply(1:length(Stocks),FFun,FVecMat=FVecMat,ClosestB=bdex,Stocks=Stocks)    #Calculate next f based on current b
+      
+      f_b<- sapply(1:length(Stocks),FFun,FVecMat=FVecMat,ClosestB=next_bdex,Stocks=Stocks)    #Calculate next f based on current b
+      
+      f_b[b_maxed] <- f_a[b_maxed]
+      
+      slope = (f_b - f_a)/(b_b - b_a)
+      
+      f_star <- slope*b_real + (f_a-slope*b_a)
+      
+      f_star[b_maxed] <- f_b[b_maxed]
+
+      return(f_star)
     }
     
     OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
     {
-      #Change f in response to profits
-      if (t==1)
-      {
-        f=f
-      }
-      if (t>1)
-      {
-        f<- pmin(4,pmax(f+omega*(pi/MsyProfits),.0000001))
-      }
+      #Function to adjust f in response to prior profits
+      #     if (t==1)
+      #     {
+      #       f=f
+      #     }
+      #     if (t>1)
+      #     {
+      f<- pmin(4,pmax(f+omega*(pi/MsyProfits),.0001))
+      # }
       return(f)
     }
     show(BaselineYear)
-    b = matrix(0,Time,length(FStatusQuo))
-    #     b = matrix(0,Time+1,length(FStatusQuo))
+    b = matrix(0,Time,length(pre_f))
     
     f = b
     pi = b
     y = b
     b[1,] = b0
-    #     BCount=ddply(Policies,c('IdOrig'),summarize,NumB=length(b))
     
     BCount<- Policies %>%
       group_by(IdOrig) %>%
       summarize(NumB=length(b))
     
     BCount=unique(BCount$NumB)
-    if (Policy=='StatusQuoOpenAccess'){f[1,]<- FStatusQuo}
-    if (Policy=='CatchShare') # apply price cost effects of catch share policy to non-catch share stocks
-    {
-      p[IsCatchShare==0]<- p[IsCatchShare==0]*CatchSharePrice
-      
-      c[IsCatchShare==0]<- c[IsCatchShare==0]*CatchShareCost
-    }
+#     if (Policy=='CatchShare') # apply price cost effects of catch share policy to non-catch share stocks
+#     {
+#       p[IsCatchShare==0]<- p[IsCatchShare==0]*CatchSharePrice
+#       
+#       c[IsCatchShare==0]<- c[IsCatchShare==0]*CatchShareCost
+#     }
     
-    if(Policy=='StatusQuoOpenAccess') # revert previously applied price and cost effects of catch share fisheries for Open Access policy
-    {
-      p[IsCatchShare==1]<-p[IsCatchShare==1]/CatchSharePrice
-      c[IsCatchShare==1]<-c[IsCatchShare==1]/CatchShareCost
-    }
+#     if(Policy=='StatusQuoOpenAccess') # revert previously applied price and cost effects of catch share fisheries for Open Access policy
+#     {
+#       p[IsCatchShare==1]<-p[IsCatchShare==1]/CatchSharePrice
+#       c[IsCatchShare==1]<-c[IsCatchShare==1]/CatchShareCost
+#     }
     
     MsyProfits<- MSY*p-c*(g)^beta
     
-    #     Omega<- 0.1
+    PastF<- pre_f
     
-    PastF<- FStatusQuo
+    PastPi <- pre_profits
     
-    for (t in 1:(Time+1))
+    for (t in 1:(Time))
     {
       if (Policy!='StatusQuoOpenAccess')
       {
-        #         browser()
-        #         f[t,]<- system.time(lapply(1:length(Stocks),FindF,Stocks=S
         f[t,]<- (FindF(Stocks=Stocks,CurrentB=b[t,],Policy,Policies,BCount))
       }
       
       if (Policy=='StatusQuoOpenAccess')
       {
-        
-        f[t,]=OpenAccessFleet(PastF,pi[t-1,],t,omega = omega,MsyProfits)
+        f[t,]=OpenAccessFleet(PastF,PastPi,t,omega = omega,MsyProfits)
         PastF<- f[t,]
       }
-      #       if (t==1)
-      #       {
-      #         f[t,]<- FStatusQuo
-      #         b[t,]<- BStatusQuo
-      #       }
+      
       pi[t,] = p*MSY*f[t,]*b[t,] - c*(f[t,]*g)^beta
+      PastPi = pi[t,]
       y[t,] = MSY*f[t,]*b[t,]
-      if (t<Time+1)
+      
+      if (t<Time)
       {
         #         b[t+1,] =pmax(min(bvec), b[t,] + r*b[t,]*(1-b[t,]/2) - r/2*b[t,]*f[t,])
         b[t+1,] =pmax(min(bvec), b[t,] + ((phi+1)/phi)*g*b[t,]*(1-b[t,]^phi/(phi+1)) - g*b[t,]*f[t,])
@@ -140,7 +161,7 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
     #       browser()
     #     }
     Projection$Year<- Projection$Year+(BaselineYear)
-    Projection <- subset(Projection, Year <=2050)
+    #     Projection <- subset(Projection, Year <=2050)
     #     Projection$Year<- Projection$Year+(BaselineYear-1)
     
     Projection$IdOrig <- as.character(Projection$IdOrig)
@@ -155,7 +176,8 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
   }
   
   
-  McIterations<- function(k,Iterations,BioError,ProjectionData,
+  
+  McIterations<- function(k,Iterations,BioError,projdata,
                           BaselineYear,PolicyStorage,Stocks,ErrorSize,Spec_ISSCAAP,base_omega = 0.1, base_beta = 1.3)
   {
     
@@ -169,9 +191,9 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
     
     PolicyFuncs<- PolicyStorage[PolicyStorage$IdOrig %in% Stocks,]
     
-    RecentStockData<- ProjectionData[ProjectionData$IdOrig %in% Stocks & ProjectionData$Year==BaselineYear,]
+    RecentStockData<- projdata[projdata$IdOrig %in% Stocks & projdata$Year==BaselineYear,]
     
-    year_one_bvbmsy <-  ProjectionData[ProjectionData$Policy == 'Fmsy' & ProjectionData$IdOrig %in% Stocks & ProjectionData$Year==BaselineYear+1,]$BvBmsy
+    year_one_bvbmsy <-  projdata[projdata$Policy == 'Fmsy' & projdata$IdOrig %in% Stocks & projdata$Year==BaselineYear+1,]$BvBmsy
     
     CurrentBio<- runif(dim(RecentStockData)[1],lower_unif,upper_unif) #BioError[,k]
     
@@ -225,17 +247,17 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
     
     RecentStockData$cost = c_num/c_den
     
-    RecentStockData$Price[IsCatchShare==1]<- RecentStockData$Price[IsCatchShare==1]*CatchSharePrice
-    
-    
-    RecentStockData$ cost[IsCatchShare==1]<- RecentStockData$cost[IsCatchShare==1]*CatchShareCost
-    
+#     RecentStockData$Price[IsCatchShare==1]<- RecentStockData$Price[IsCatchShare==1]*CatchSharePrice
+#     
+#     
+#     RecentStockData$ cost[IsCatchShare==1]<- RecentStockData$cost[IsCatchShare==1]*CatchShareCost
+#     
     
     RecentStockData$MsyProfits = RecentStockData$Price*RecentStockData$MSY - RecentStockData$cost*(RecentStockData$g)^RecentStockData$beta
     
     Policies<- colnames(PolicyFuncs)
     
-    Policies<- Policies[!(Policies %in% c('IdOrig','b'))]
+    Policies<- Policies[!(Policies %in% c('X','IdOrig','b'))]
     
     bvec<- PolicyFuncs$b
     
@@ -247,12 +269,11 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
     {
       
       cc<- cc+1
-      
-      Projection<- Sim_Forward(FStatusQuo=RecentStockData$FvFmsy,BStatusQuo=RecentStockData$BvBmsy,
-                               Policy=Policies[p],Policies=PolicyFuncs,IsCatchShare=IsCatchShare,bvec=bvec,
-                               b0=year_one_bvbmsy,p=RecentStockData$Price
-                               ,MSY=RecentStockData$MSY,c=RecentStockData$cost,g=RecentStockData$g,phi=RecentStockData$phi,
-                               beta=RecentStockData$beta,omega = RecentStockData$omega,Stocks=Stocks)
+      Projection<- Sim_Forward(
+        Policy=Policies[p],Policies=PolicyFuncs,IsCatchShare=IsCatchShare,bvec=bvec,
+        b0=year_one_bvbmsy,pre_f = RecentStockData$FvFmsy,pre_profits = RecentStockData$Profits,p=RecentStockData$Price
+        ,MSY=RecentStockData$MSY,c=RecentStockData$cost,g=RecentStockData$g,phi=RecentStockData$phi,
+        beta=RecentStockData$beta,omega = RecentStockData$omega,Stocks=Stocks)
       Projection<- join(Projection,RecentStockData[,c('IdOrig','Country','Dbase','SciName','CommName','IdLevel','SpeciesCatName','CatchShare','MSY','g','k','phi','Price','cost','MsyProfits','BOA','beta')],by='IdOrig',match='first')
       
       Projection$Policy<- Policies[p]
@@ -261,6 +282,7 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
       Projection$Iteration<- k
       
       ProjectionMat<- rbind(ProjectionMat,Projection)
+      browser()
       
     } #Close policies loop
     PercDone<- round(100*(k/Iterations),2)
@@ -270,14 +292,6 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
     ProjectionMat$Bmsy<- ProjectionMat$MSY/ProjectionMat$g
     
     ProjectionMat$Biomass<- ProjectionMat$BvBmsy * ProjectionMat$Bmsy
-    
-    
-    
-    #     SpeciesSummary<- ddply(ProjectionMat,c('Policy','SpeciesCatName','Year'),summarize,b25=quantile(BvBmsy,0.25,na.rm=T),
-    #                            f75=quantile(FvFmsy,0.75,na.rm=T)) %>%
-    #       mutate(GroupName=paste(Policy,SpeciesCatName,Year,sep='-'))
-    
-    #     ProjectionMat$k<- NA
     
     ProjectionMat$MarginalCost<- ProjectionMat$cost
     
@@ -290,7 +304,7 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
     ProjectionMat <- subset(ProjectionMat, Year > BaselineYear) %>%
       rbind(Historic)
     
-    nei <- subset(ProjectionData, IdLevel == 'Neis' & Policy %in% unique(ProjectionMat$Policy))
+    nei <- subset(projdata, IdLevel == 'Neis' & Policy %in% unique(ProjectionMat$Policy))
     
     nei_ids <- unique(nei$IdOrig)
     
@@ -413,13 +427,13 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
     BioMonte$DiscProfits<- BioMonte$Profits * (1+Discount)^-(BioMonte$Year-BaselineYear)
     
     BioMonte <- BuildPolicyBAUs(BioMonte,BaselineYear,elastic_demand = elastic_demand, elasticity = elasticity,
-                                 Discount = Discount,sp_group_demand = sp_group_demand )
+                                Discount = Discount,sp_group_demand = sp_group_demand )
     BioMonte$Iteration<- k
     #     BioMonte<- subset(BioMonte,Year==2012 | Year==2013 | Year==2050)
     return(BioMonte)
   } #Close McIterations
   
-  PossibleParams<- subset(ProjectionData,IdOrig %in% PolicyStorage$IdOrig)
+  PossibleParams<- subset(projdata,IdOrig %in% PolicyStorage$IdOrig)
   
   ErrorVars<- c('Price','BOA')
   #   PossibleParams<- CatchMSYPossibleParams
@@ -430,7 +444,7 @@ run_expanded_montecarlo<- function(Iterations,Stocks,ProjectionData,
   #   Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
   
   Projections<- lapply(1:Iterations,McIterations,BioError=BioError,Iterations=Iterations,
-                       ProjectionData=ProjectionData,BaselineYear=BaselineYear,
+                       projdata=projdata,BaselineYear=BaselineYear,
                        PolicyStorage=PolicyStorage,Stocks=Stocks,ErrorSize=ErrorSize,Spec_ISSCAAP=Spec_ISSCAAP)
   
   #   Projections<- mclapply(1:Iterations,McIterations,BioError=BioError,Iterations=Iterations,

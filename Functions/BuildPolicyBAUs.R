@@ -70,13 +70,18 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
   
   BAUpess<-rbind(ram,cs,other)
   
-  BAUpess$Policy<-'Business As Usual Pessimistic'
   if (elastic_demand == T){
     
     elastic_BAUpess <- elastic_projection(poldata = BAUpess,oa_ids = otherids, elasticity = elasticity,
                                           discount = Discount, base_year = BaselineYear+1, sp_group_demand = sp_group_demand )  
-  }
+  
+    elastic_BAUpess$Policy<-'Business As Usual Pessimistic'
+    
+    }
  
+  BAUpess$Policy<-'Business As Usual Pessimistic'
+  
+  
   overFFids <- ProjectionData$IdOrig[ProjectionData$Year==BaselineYear & (!(ProjectionData$IdOrig %in% c(ramids,csids)) & 
                                                                           ((ProjectionData$FvFmsy>1 & ProjectionData$BvBmsy<1) | (ProjectionData$FvFmsy>1 & ProjectionData$BvBmsy>1) |
                                                                              (ProjectionData$FvFmsy<1 & ProjectionData$BvBmsy<1)))]
@@ -89,11 +94,16 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
   
   BAUoptim<-rbind(ram,cs,overff,mctofid)
   
-  BAUoptim$Policy<-'Business As Usual'
   if (elastic_demand == T){
     
     elastic_BAUoptim <- elastic_projection(poldata = BAUoptim,oa_ids = overFFids, elasticity = elasticity, discount = Discount, base_year = BaselineYear+1,sp_group_demand = sp_group_demand)  
-  }
+  
+    elastic_BAUoptim$Policy<-'Business As Usual'
+    
+    }
+  
+  BAUoptim$Policy<-'Business As Usual'
+  
   ### 3 & 4) "Catch Share Three" and "Fmsy Three" - Adjust results for CS and Fmsy policies so that the policy is not applied to underfished/underfishing stocks
   
   PolicyOverFFids<-ProjectionData$IdOrig[ProjectionData$Year==BaselineYear & (ProjectionData$BvBmsy<1 | ProjectionData$FvFmsy>1)] # overfished/overfishing stocks
