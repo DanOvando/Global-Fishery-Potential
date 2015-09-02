@@ -155,7 +155,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
 
         current_neis$Catch[where_nei_type] <- (current_neis$MSY * current_neis$BvBmsy * current_neis$FvFmsy)[where_nei_type]
 
-        current_neis$MarginalCost[where_nei_type] <- results$MedianCost
+#         current_neis$MarginalCost[where_nei_type] <- results$MedianCost
         
       } #close nei type loop
 
