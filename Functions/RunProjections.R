@@ -5,7 +5,7 @@
 
 RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy, Policies = c('StatusQuoOpenAccess','Opt','CatchShare','StatusQuoFForever','StatusQuoBForever','Fmsy','CloseDown'))
 {
-
+  
   Data$MarginalCost<- NA
   
   # Loop over Each Stock ----------------------------------------------------
@@ -42,10 +42,10 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy, Policies = c
     if (Sys.info()[1]!='Windows') {
       
       
-    Projections <- (mclapply(1:(length(Stocks)), SnowProjections,mc.cores=NumCPUs,
-                             Data=Data,BaselineYear=BaselineYear,Stocks=Stocks,IdVar=IdVar,bvec=bvec,
-                             Discount=Discount,tol=tol,beta=beta,CatchSharePrice=CatchSharePrice,CatchShareCost=CatchShareCost,
-                             Policies=Policies,ProjectionTime=ProjectionTime,TempStockMatrix=TempStockMatrix,StatusQuoPolicy=StatusQuoPolicy,mc.cleanup = T))
+      Projections <- (mclapply(1:(length(Stocks)), SnowProjections,mc.cores=NumCPUs,
+                               Data=Data,BaselineYear=BaselineYear,Stocks=Stocks,IdVar=IdVar,bvec=bvec,
+                               Discount=Discount,tol=tol,beta=beta,CatchSharePrice=CatchSharePrice,CatchShareCost=CatchShareCost,
+                               Policies=Policies,ProjectionTime=ProjectionTime,TempStockMatrix=TempStockMatrix,StatusQuoPolicy=StatusQuoPolicy,mc.cleanup = T))
     }
     if (Sys.info()[1]=='Windows')
     {
@@ -63,7 +63,7 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy, Policies = c
                                       Policies=Policies,ProjectionTime=ProjectionTime,TempStockMatrix=TempStockMatrix,StatusQuoPolicy=StatusQuoPolicy)
       sfStop()
     }
-
+    
   }
   if (NumCPUs==1)
   {    
@@ -106,7 +106,7 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy, Policies = c
   
   Data$MarginalCost[HistoricData]<- cost
   
-  Data$MarginalCost[HistoricData == T & where_catch_share ==T] <- Data$MarginalCost * CatchShareCost
+  Data$MarginalCost[HistoricData == T & Data$CatchShare ==1] <- (Data$MarginalCost * CatchShareCost)[HistoricData == T & Data$CatchShare ==1]
   
   Data$Profits[HistoricData]= Data$Price[HistoricData]*Data$MSY[HistoricData]*Data$FvFmsy[HistoricData]*Data$BvBmsy[HistoricData] - Data$MarginalCost[HistoricData]*(Data$FvFmsy[HistoricData]*Data$g[HistoricData])^beta
   
