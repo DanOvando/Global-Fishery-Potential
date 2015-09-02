@@ -132,11 +132,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
         comp_current_non_neis <- subset(current_non_neis,SciName %in% compstocks)
         
         results <- NULL
-#         results<- comp_current_non_neis %>%
-#           summarize(BvBmsy25=quantile(BvBmsy,c(0.25),na.rm=T),FvFmsy75=quantile(FvFmsy,c(0.75),na.rm=T),
-#                     MedianG=median(g,na.rm=T),MedianK=median(k,na.rm=T),MedianPrice=median(Price,na.rm=T)
-#                     ,MedianCost=median(MarginalCost,na.rm=T)
-#                     ,JStocks=length(unique(IdOrig)))
+        
         results$BvBmsy25 <- quantile(comp_current_non_neis$BvBmsy,c(0.25),na.rm=T)
         
         results$FvFmsy75 =quantile(comp_current_non_neis$FvFmsy,c(0.75),na.rm=T)
@@ -159,6 +155,8 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
 
         current_neis$Catch[where_nei_type] <- (current_neis$MSY * current_neis$BvBmsy * current_neis$FvFmsy)[where_nei_type]
 
+        current_neis$MarginalCost[where_nei_type] <- results$MedianCost
+        
       } #close nei type loop
 
       poldata[poldata$Year == years[y] & poldata$IdLevel == 'Neis',] <- current_neis #Put open access stocks in the given year back in the general population
