@@ -5,7 +5,8 @@
 ##
 ######################################################
 
-NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultFolder,Spec_ISSCAAP,NumCPUs = 1,beta = 1.3)
+NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultFolder,Spec_ISSCAAP,
+                               CatchSharePrice,CatchShareCost,NumCPUs = 1,beta = 1.3)
 {
   
   
@@ -198,6 +199,8 @@ NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultF
   cost<- cost
   
   NEIs$MarginalCost<- cost
+  
+  NEIs$MarginalCost[NEIs$Policy == 'CatchShare'] <-  (NEIs$MarginalCost * CatchShareCost)[NEIs$Policy == 'CatchShare']
   
   NEIs$Bmsy<- NEIs$MSY/NEIs$g
   

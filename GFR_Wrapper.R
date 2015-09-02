@@ -458,8 +458,15 @@ if (RunAnalyses==TRUE)
   {
     #    Rprof()
     Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
-    NeiData<- NearestNeighborNeis(BiomassData,MsyData,ProjectionData,BaselineYear,ResultFolder,Spec_ISSCAAP,NumCPUs = NumCPUs) #Run Nearest Neighbor NEI analysis    
-    #Put NEI stocks back in the appropriate dataframes, remove stocks still missing data
+    NeiData<- NearestNeighborNeis(BiomassData = BiomassData,MsyData = MsyData,ProjData = ProjectionData,
+                                  BaselineYear = BaselineYear,ResultFolder = ResultFolder,
+                                  Spec_ISSCAAP = Spec_ISSCAAP,CatchSharePrice = CatchSharePrice,
+                                  CatchShareCost = CatchShareCost,NumCPUs = NumCPUs,beta = beta) #Run Nearest Neighbor NEI analysis    
+   
+#     NearestNeighborNeis<- function(BiomassData,MsyData,ProjData,BaselineYear,ResultFolder,Spec_ISSCAAP,
+#                                    CatchSharePrice,CatchShareCost,NumCPUs = 1,beta = 1.3)
+    
+     #Put NEI stocks back in the appropriate dataframes, remove stocks still missing data
     
     #    Rprof(NULL)
     #     RProfData<- readProfileData('Rprof.out')
@@ -542,9 +549,19 @@ trend_check <- ProjectionData %>%
   subset(Policy %in% c('Business As Usual','Business As Usual Pessimistic'
                        ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three','Historic')) %>%
   group_by(Year,Policy) %>%
-  summarize(total_catch = sum(Catch, na.rm = T), total_profits = sum(Profits, na.rm = T), total_biomass = sum(Biomass, na.rm = T))
+  summarize(total_catch = sum(Catch, na.rm = T), total_profits = sum(Profits, na.rm = T), 
+            total_biomass = sum(Biomass, na.rm = T),total_discp = sum(DiscProfits, na.rm = T),
+            mean_p = mean(Price,na.rm = T),mean_f = mean(FvFmsy, na.rm = T))
 
-trend_plot <- ggplot(trend_check,aes(Year,total_catch,fill = Policy,size = total_profits)) + geom_point(shape = 21,alpha = 0.6)
+oa_check <- ProjectionData %>%
+  subset(Dbase == 'FAO' & CatchShare == 0 & Policy == 'Business As Usual Pessimistic') %>%
+  group_by(Year,Policy) %>%
+  summarize(total_catch = sum(Catch, na.rm = T), total_profits = sum(Profits, na.rm = T), 
+            total_biomass = sum(Biomass, na.rm = T),total_discp = sum(DiscProfits, na.rm = T),
+            mean_p = mean(Price,na.rm = T),mean_f = mean(FvFmsy, na.rm = T))
+
+
+trend_plot <- ggplot(trend_check,aes(Year,total_catch,fill = Policy,size = mean_f)) + geom_point(shape = 21,alpha = 0.6)
 
 # ProjectionData<- ddply(ProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
 
