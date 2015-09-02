@@ -1,6 +1,6 @@
 expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_demand = T, real_sp_group_demand = F, elasticity = -0.9)
 {
-  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
+#   load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
   show(mciterations)
   elastic_demand <- real_elastic_demand
   
@@ -101,20 +101,10 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
                                                            ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three','Historic')) %>%
     group_by(Iteration,Policy) %>% 
     summarize(FinalProfits=sum(Profits,na.rm=T)
-              ,FinalBiomass=sum(Biomass,na.rm=T),FinalCatch = sum(Catch, na.rm = T),FinalFisheries=length(unique(IdOrig)),sum(is.na(Profits)))
-  
-  ProjMonte<- subset(ProjectionData,Year == 2050 & Policy %in% c('Business As Usual','Business As Usual Pessimistic'
-                                                                 ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three')) %>%
-    group_by(Policy) %>% 
-    summarize(FinalProfits=sum(Profits,na.rm=T)
               ,FinalBiomass=sum(Biomass,na.rm=T),FinalCatch = sum(Catch, na.rm = T),
-              FinalFisheries=length(unique(IdOrig)),sum(is.na(Profits)))
-  browser()
-  #   FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo 2/',sep='')
-  #   
-  #   dir.create(FigureFolder,recursive=T)
-  
-  pdf(file=paste(FigureFolder,'BvBmsy Monte Carlo.pdf',sep=''),width=7,height=5)
+              FinalFisheries=length(unique(IdOrig))) %>%
+    ungroup() 
+#     dplyr::select(-Iteration)
   
   BioMonte$Policy[BioMonte$Policy=='Business As Usual']<- 'BAU (CC)'
   
@@ -129,8 +119,51 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
   BioMonte$Policy[BioMonte$Policy=='Historic']<- 'Today'
   
   
-  BioMontePlot<- (ggplot(data=BioMonte,aes(x=FinalBiomass,y=FinalProfits,color=Policy))+geom_point(size=4,alpha=0.7)+
+  RealProjectionData$Year[RealProjectionData$Policy == 'Historic' & RealProjectionData$Year == 2012] <- 2050
+  
+  
+  ProjMonte<- subset(RealProjectionData,Year == 2050 & Policy %in% c('Business As Usual','Business As Usual Pessimistic'
+                                                                 ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three','Historic')) %>%
+    group_by(Policy) %>% 
+    summarize(FinalProfits=sum(Profits,na.rm=T)
+              ,FinalBiomass=sum(Biomass,na.rm=T),FinalCatch = sum(Catch, na.rm = T),
+              FinalFisheries=length(unique(IdOrig)))
+  
+  ProjMonte$Policy[ProjMonte$Policy=='Business As Usual']<- 'BAU (CC)'
+  
+  ProjMonte$Policy[ProjMonte$Policy=='Business As Usual Pessimistic']<- 'BAU'
+  
+  ProjMonte$Policy[ProjMonte$Policy=='Catch Share Three']<- 'RBFM (CC)'
+  
+  ProjMonte$Policy[ProjMonte$Policy=='CatchShare']<- 'RBFM'
+  
+  ProjMonte$Policy[ProjMonte$Policy=='Fmsy Three']<- 'Fmsy (CC)'
+  
+  ProjMonte$Policy[ProjMonte$Policy=='Historic']<- 'Today'
+  
+    #   FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo 2/',sep='')
+  #   
+  #   dir.create(FigureFolder,recursive=T)
+  
+#   pdf(file=paste(FigureFolder,'BvBmsy Monte Carlo.pdf',sep=''),width=7,height=5)
+  
+  
+  BioMonte$monte <- 'MonteCarlo'
+  
+  ProjMonte$monte <- 'Real'
+  
+  CompMonte <- rbind(BioMonte,ProjMonte)
+  
+  
+  
+  BioMontePlot<- (ggplot(data=BioMonte,aes(x=FinalBiomass,y=FinalProfits,color=Policy,size = FinalCatch))+geom_point(alpha=0.7)+
                     ylab('2050 Profits ($)')+xlab('2050 Biomass (MT)'))
+  
+  
+#   BioCompPlot<- (ggplot(data=CompMonte,aes(x=FinalBiomass,y=FinalProfits,color=Policy,size = FinalCatch))+geom_point(alpha=0.7)+
+#                     ylab('2050 Profits ($)')+xlab('2050 Biomass (MT)') + facet_wrap(~monte))
+#   browser()
+
   
   print(BioMontePlot)
   dev.off()
