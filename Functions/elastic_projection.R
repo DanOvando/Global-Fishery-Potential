@@ -6,14 +6,14 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
   OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
   {
     #Function to adjust f in response to prior profits
-    if (t==1)
-    {
-      f=f
-    }
-    if (t>1)
-    {
+#     if (t==1)
+#     {
+#       f=f
+#     }
+#     if (t>1)
+#     {
       f<- pmin(4,pmax(f+omega*(pi/MsyProfits),.0001))
-    }
+    # }
     return(f)
   }
 
