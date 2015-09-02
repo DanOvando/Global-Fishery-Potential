@@ -108,7 +108,8 @@ RunProjection<- function(Data,BaselineYear,NumCPUs,StatusQuoPolicy, Policies = c
   
   Data$MarginalCost[HistoricData == T & Data$CatchShare ==1] <- (Data$MarginalCost * CatchShareCost)[HistoricData == T & Data$CatchShare ==1]
   
-  Data$Profits[HistoricData]= Data$Price[HistoricData]*Data$MSY[HistoricData]*Data$FvFmsy[HistoricData]*Data$BvBmsy[HistoricData] - Data$MarginalCost[HistoricData]*(Data$FvFmsy[HistoricData]*Data$g[HistoricData])^beta
+#   Data$Profits[HistoricData]= Data$Price[HistoricData]*Data$MSY[HistoricData]*Data$FvFmsy[HistoricData]*Data$BvBmsy[HistoricData] - Data$MarginalCost[HistoricData]*(Data$FvFmsy[HistoricData]*Data$g[HistoricData])^beta
+  Data$Profits[HistoricData]= Data$Price[HistoricData]*Data$Catch[HistoricData] - Data$MarginalCost[HistoricData]*(Data$FvFmsy[HistoricData]*Data$g[HistoricData])^beta
   
   DataPlus<- rbind((Data),(TempStockMatrix))
   
