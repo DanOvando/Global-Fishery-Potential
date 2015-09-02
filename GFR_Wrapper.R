@@ -537,6 +537,7 @@ if (IncludeForageFish==FALSE)
 # Add new "Business as Usual Policies" by combining the results of the respective status quo policies for certain types of stocks, outlined in the function
 ProjectionData <- BuildPolicyBAUs(ProjectionData,BaselineYear,elastic_demand = elastic_demand, elasticity = elasticity,
                                   Discount = Discount,sp_group_demand = sp_group_demand)
+
 trend_check <- ProjectionData %>%
   subset(Policy %in% c('Business As Usual','Business As Usual Pessimistic'
                        ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three','Historic')) %>%
@@ -656,7 +657,7 @@ FigOneGlobalResults<-GlobalResultsFigOne(UpsideAllStocks,UpsideOverfishOnly,Poli
 # 
 # write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
 
-save(ProjectionData,UnlumpedProjectionData,file=paste(ResultFolder,'ProjectionData Data.rdata',sep=''))
+save(ProjectionData,UnlumpedProjectionData,OriginalProjectionData,file=paste(ResultFolder,'ProjectionData Data.rdata',sep=''))
 
 # save.image(file=paste(ResultFolder,'Global Fishery Recovery Complete Results.rdata',sep=''))
 
