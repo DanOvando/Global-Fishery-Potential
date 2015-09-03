@@ -1,7 +1,7 @@
 # Function to project stocks forward,
 # adjusting prices and open access to reflect supply, post BAU policy construction
 elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
-                               base_year = 2013,sp_group_demand = F, beta = 1.3,bvec = seq(0.00000001,2.5,length.out=30))
+                               base_year = 2013,sp_group_demand = F, beta = 1.3,bvec = seq(0.00000001,2.5,length.out=30),omega = 0.1)
 {
   OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
   {
@@ -16,7 +16,9 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
     # }
     return(f)
   }
-
+  poldata$beta <- beta
+  
+  poldata$omega <- omega
   # Set up base conditions -------
   years <- unique(poldata$Year)
   if (sp_group_demand == T)
@@ -50,7 +52,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
   poldata$Price[poldata$Year == base_year] <- (poldata$pricek * poldata$global_catch^(1/elasticity))[poldata$Year == base_year] #adjust prices
 
   poldata$Profits[poldata$Year == base_year] <- ((poldata$Price * poldata$MSY * poldata$FvFmsy * poldata$BvBmsy)
-                                                 - poldata$MarginalCost * (poldata$FvFmsy * poldata$g)^beta )[poldata$Year == base_year] #adjust profits
+                                                 - poldata$MarginalCost * (poldata$FvFmsy * poldata$g)^poldata$beta )[poldata$Year == base_year] #adjust profits
 
   oa <- subset(poldata, IdOrig %in% oa_ids)
 
@@ -83,7 +85,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
 
   oa_ids <- unique(oa$IdOrig)
 
-  oa_msyprofits <- (oa$MSY * oa$Price - oa$MarginalCost * (oa$g)^beta)[oa$Year == years[1]]
+  oa_msyprofits <- (oa$MSY * oa$Price - oa$MarginalCost * (oa$g)^oa$beta)[oa$Year == years[1]]
 
   # loops!-------
   for (y in 2:length(years))
@@ -100,7 +102,9 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
 
     oa_phi <- oa$phi[oa$Year == years[y - 1]]
 
-    current_oa_f <- OpenAccessFleet(f = last_oa_f,pi = last_oa_pi,t = y,omega = 0.1,MsyProfits = oa_msyprofits )
+    oa_omega <- oa$omega[oa$Year == years[y - 1]]
+    
+    current_oa_f <- OpenAccessFleet(f = last_oa_f,pi = last_oa_pi,t = y,omega = oa_omega,MsyProfits = oa_msyprofits )
 
     current_oa_b <- pmax(min(bvec), last_oa_b + ((oa_phi+1)/oa_phi)*oa_g*last_oa_b*(1-(last_oa_b^oa_phi)/(oa_phi+1))
                          - oa_g*last_oa_b*last_oa_f)
@@ -202,7 +206,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
     poldata$Price[where_all_year] <- (poldata$pricek * poldata$global_catch^(1/elasticity))[where_all_year] #adjust prices
 
     poldata$Profits[where_all_year] <- ((poldata$Price * poldata$MSY * poldata$FvFmsy * poldata$BvBmsy)
-                                        - poldata$MarginalCost * (poldata$FvFmsy * poldata$g)^beta )[where_all_year] #adjust profits
+                                        - poldata$MarginalCost * (poldata$FvFmsy * poldata$g)^poldata$beta )[where_all_year] #adjust profits
 
   }
 

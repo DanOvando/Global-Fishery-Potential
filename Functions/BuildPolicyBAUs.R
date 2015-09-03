@@ -12,15 +12,19 @@
 
 
 
-BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elasticity = -0.7, Discount = 0,sp_group_demand = F)
+BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elasticity = -0.7, 
+                          Discount = 0,sp_group_demand = F,omega = 0.1,beta = 1.3)
 {
-  
   ### 1) "Business As Usual Pessimistic" Where all non RAM and Catch share stocks go to Open Access
   
   # RAM - F current forever
   # Catch shares - Opt
   # All others - Open Access
   # 
+  ProjectionData$omega <- omega
+  
+  ProjectionData$beta <- beta
+  
   if (elastic_demand == T)
   {
     if (sp_group_demand == T)
@@ -73,7 +77,8 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
   if (elastic_demand == T){
     
     elastic_BAUpess <- elastic_projection(poldata = BAUpess,oa_ids = otherids, elasticity = elasticity,
-                                          discount = Discount, base_year = BaselineYear+1, sp_group_demand = sp_group_demand )  
+                                          discount = Discount, base_year = BaselineYear+1, sp_group_demand = sp_group_demand,
+                                          omega = BAUpess$omega,beta = BAUpess$beta )  
   
     elastic_BAUpess$Policy<-'Business As Usual Pessimistic'
     
@@ -96,7 +101,10 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
   
   if (elastic_demand == T){
     
-    elastic_BAUoptim <- elastic_projection(poldata = BAUoptim,oa_ids = overFFids, elasticity = elasticity, discount = Discount, base_year = BaselineYear+1,sp_group_demand = sp_group_demand)  
+    elastic_BAUoptim <- elastic_projection(poldata = BAUoptim,oa_ids = overFFids, 
+                                           elasticity = elasticity, discount = Discount, 
+                                           base_year = BaselineYear+1,sp_group_demand = sp_group_demand,
+                                           omega = BAUoptim$omega, beta = BAUoptim$beta)  
   
     elastic_BAUoptim$Policy<-'Business As Usual'
     
@@ -127,7 +135,10 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
   CatchShareThree$Policy<-'Catch Share Three'
   if (elastic_demand == T){
     
-    elastic_CatchShareThree <- elastic_projection(poldata = CatchShareThree, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear + 1,sp_group_demand = sp_group_demand)  
+    elastic_CatchShareThree <- elastic_projection(poldata = CatchShareThree, oa_ids = 'none',
+                                                  elasticity = elasticity, discount = Discount, base_year = BaselineYear + 1,
+                                                  sp_group_demand = sp_group_demand,omega = CatchShareThree$omega,
+                                                  beta = CatchShareThree$beta)  
     
   }
   
@@ -142,7 +153,10 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
   
   if (elastic_demand == T){
     
-    elastic_FmsyThree <- elastic_projection(poldata = FmsyThree, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear + 1, sp_group_demand = sp_group_demand )  
+    elastic_FmsyThree <- elastic_projection(poldata = FmsyThree, oa_ids = 'none', 
+                                            elasticity = elasticity, discount = Discount, 
+                                            base_year = BaselineYear + 1, sp_group_demand = sp_group_demand,
+                                            omega = FmsyThree$omega,beta = FmsyThree$beta)  
   }
   
   # Modify Catch Share Policy with Elastic Demand ---------------------------
@@ -153,13 +167,19 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
     
     f_for_elastic$Policy<-'Fmsy'
     
-    elastic_Fmsy <- elastic_projection(poldata = f_for_elastic, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear + 1, sp_group_demand = sp_group_demand)  
+    elastic_Fmsy <- elastic_projection(poldata = f_for_elastic, oa_ids = 'none', 
+                                       elasticity = elasticity, discount = Discount, 
+                                       base_year = BaselineYear + 1, sp_group_demand = sp_group_demand,
+                                       omega = f_for_elastic$omega,beta = f_for_elastic$beta)  
     
     catchshare_for_elastic <-subset(ProjectionData,Policy=='CatchShare')
     
     catchshare_for_elastic$Policy<-'CatchShare'
     
-    elastic_catchshare <- elastic_projection(poldata = catchshare_for_elastic, oa_ids = 'none', elasticity = elasticity, discount = Discount, base_year = BaselineYear + 1, sp_group_demand = sp_group_demand)  
+    elastic_catchshare <- elastic_projection(poldata = catchshare_for_elastic, oa_ids = 'none', 
+                                             elasticity = elasticity, discount = Discount, 
+                                             base_year = BaselineYear + 1, sp_group_demand = sp_group_demand,
+                                             omega = catchshare_for_elastic$omega,beta = catchshare_for_elastic$beta)  
     
     ProjectionData <- subset(ProjectionData, Policy != 'CatchShare' & Policy != 'Fmsy')
     
