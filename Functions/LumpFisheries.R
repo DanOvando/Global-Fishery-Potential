@@ -49,7 +49,7 @@ LumpFisheries<- function(Data,GroupsToGroup)
           
           GroupYears<- sort(unique(GroupRegSpeciesData$Year))
           
-          GroupIds<-unique(GroupRegSpeciesData$IdOrig)
+          GroupIds<-unique(GroupRegSpeciesData$IdOrig[is.na(GroupRegSpeciesData$Catch)==F]) # ignore stocks that are all NAs b/c some overlapping stocks remain with just NAs
           
           TempStitch<- as.data.frame(matrix(NA,nrow=length(GroupYears),ncol=dim(Data)[2]))
           
