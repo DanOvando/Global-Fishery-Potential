@@ -145,7 +145,7 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
   #   
   #   dir.create(FigureFolder,recursive=T)
   
-#   pdf(file=paste(FigureFolder,'BvBmsy Monte Carlo.pdf',sep=''),width=7,height=5)
+  pdf(file=paste(FigureFolder,'BvBmsy Monte Carlo.pdf',sep=''),width=7,height=5)
   
   
   BioMonte$monte <- 'MonteCarlo'
