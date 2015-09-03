@@ -439,7 +439,7 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   colnames(outs)<-c("Bio","Profit","MSY","Catch","Country")
   
   #==CHANGE THIS TO OUTPUT WHEREEVER YOU WANAT
-#   write.csv(outs,paste(ResultFolder,'Fig2data_Profits2050.csv',sep=''))
+  write.csv(outs,paste(ResultFolder,'Fig2data_Profits2050.csv',sep=''))
   
   #==Plot the plot
   #dev.new(width=6,height=6)

@@ -1,20 +1,3 @@
-# 
-# real <- trendit(subset(ProjectionData, IdLevel == 'Species'))
-# 
-# fake <- trendit(subset(MonteMat, Iteration == 1 & IdLevel == 'Species'))
-# 
-# fake$dataset <- 'fake'
-# 
-# real$dataset <- 'real'
-# 
-# fok <- rbind(fake, real)
-# 
-# quartz()
-# 
-# arrr <- ggplot(subset(fok, Policy == 'Business As Usual Pessimistic'),
-#                aes(Year,total_catch, color = dataset,size = total_profits)) + geom_point()
-
-
 
 trendit <- function(dat)
 {
