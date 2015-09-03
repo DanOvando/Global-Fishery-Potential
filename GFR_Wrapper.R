@@ -565,7 +565,8 @@ quick_fig3 <- (ggplot(subset(cheat_fig3,Year == max(Year)),
                  xlab('Total Biomass') + 
                  ylab('Total Profits'))
 
-ggsave(paste(FigureFolder,'Quick Figure 3 Profits 2050.pdf',sep = ''),plot = quick_fig3)
+ggsave(paste(FigureFolder,'Quick Figure 3 Profits 2050.pdf',sep = ''),plot = quick_fig3,
+       height = 8,width = 10)
 
 trend_check <- ProjectionData %>%
   subset(Policy %in% c('Business As Usual','Business As Usual Pessimistic'
