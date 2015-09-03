@@ -545,6 +545,28 @@ if (IncludeForageFish==FALSE)
 ProjectionData <- BuildPolicyBAUs(ProjectionData,BaselineYear,elastic_demand = elastic_demand, elasticity = elasticity,
                                   Discount = Discount,sp_group_demand = sp_group_demand)
 
+cheat_fig3 <- ProjectionData %>%
+  group_by(Policy,Year) %>%
+  summarize(total_catch = sum(Catch, na.rm = T), 
+            num_stocks = length(unique(IdOrig)), total_profits = sum(Profits, na.rm = T), mb = mean(BvBmsy, na.rm = T)
+            ,mf = mean(FvFmsy, na.rm = T), total_biomass = sum(Biomass, na.rm = T)) %>%
+  subset(Policy %in% c('Business As Usual','Business As Usual Pessimistic'
+                         ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three','Historic'))
+
+cheat_fig3$Year[cheat_fig3$Policy == 'Historic' & cheat_fig3$Year == 2012] <- 2050
+
+quick_fig3 <- (ggplot(subset(cheat_fig3,Year == max(Year)),
+                      aes(total_biomass,total_profits,size = total_catch,fill = Policy))
+               + geom_point(shape = 21,alpha = 0.6) + 
+                 scale_size_continuous(range  = c(8,15)) + 
+                 geom_text(aes(label = Policy),size = 3) + 
+                 ylim(c(0,8e10)) + 
+                 xlim(c(4e8,14e8)) + 
+                 xlab('Total Biomass') + 
+                 ylab('Total Profits'))
+
+ggsave(paste(FigureFolder,'Quick Figure 3 Profits 2050.pdf',sep = ''),plot = quick_fig3)
+
 trend_check <- ProjectionData %>%
   subset(Policy %in% c('Business As Usual','Business As Usual Pessimistic'
                        ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three','Historic')) %>%
