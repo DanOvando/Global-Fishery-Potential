@@ -77,6 +77,15 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
   
   Data<-Overlap$FilteredData
   
+  # Find stocks that only have NAs for catch and remove from dataset (these stocks are most likely overlapping stocks where only NAs years remain after RemoveOverlap)
+  NoNas<-Data %>%
+    group_by(IdOrig) %>%
+    summarize(AllNas=all(is.na(Catch))) %>%
+    filter(AllNas==T)
+  
+  # Remove stocks identified to only have NAs
+  Data<-subset(Data,!(IdOrig %in% NoNas$IdOrig))
+  
   #   Data$Country[Data$Dbase=="SOFIA" & grepl(", ",Data$Country)==T] <- "Multinational" # rename Country for multinational Sofia stocks to "Multinational"
   StitchedData<- LumpFisheries(Data,SpeciesCategoriesToLump)
   
