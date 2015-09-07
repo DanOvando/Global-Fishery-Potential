@@ -1,7 +1,5 @@
 expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_demand = T, real_sp_group_demand = F, elasticity = -0.9)
 {
-#   load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
-  show(mciterations)
   elastic_demand <- real_elastic_demand
   
   sp_group_demand <- real_sp_group_demand
@@ -17,7 +15,7 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
   
     load(paste('Results/',runfolder,'/Data/ProjectionData Data.rdata', sep = ''))
   
-  PolicyStorage <- read.csv(paste('Results/',runfolder,'/Data/PolicyStorage.csv', sep = ''))
+  PolicyStorage <- read.csv(paste('Results/',runfolder,'/Data/PolicyStorage.csv', sep = ''),stringsAsFactors = F)
   
   RealProjectionData <- ProjectionData
   
@@ -67,7 +65,6 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
   # load(file=paste(ResultFolder,'Bio Monte Carlo.Rdata',sep=''))
   
   
-  
   LastProj<- subset(ProjectionData,Policy=='CatchShare') %>%
     dplyr::select(IdOrig,Year,MSY,BvBmsy,FvFmsy,Catch,IdLevel,Biomass) %>%
     mutate(Iteration=0,Name=paste(IdOrig,Year,sep='-'))
@@ -103,7 +100,7 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
     summarize(FinalProfits=sum(Profits,na.rm=T)
               ,FinalBiomass=sum(Biomass,na.rm=T),FinalCatch = sum(Catch, na.rm = T),
               FinalFisheries=length(unique(IdOrig))) %>%
-    ungroup() 
+    ungroup() #%>%
 #     dplyr::select(-Iteration)
   
   BioMonte$Policy[BioMonte$Policy=='Business As Usual']<- 'BAU (CC)'
@@ -152,14 +149,13 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
   
   ProjMonte$monte <- 'Real'
   
-  CompMonte <- rbind(BioMonte,ProjMonte)
+#   CompMonte <- rbind(BioMonte,ProjMonte)
   
-  
-  
+
   BioMontePlot<- (ggplot(data=BioMonte,aes(x=FinalBiomass,y=FinalProfits,color=Policy,size = FinalCatch))+geom_point(alpha=0.7)+
                     ylab('2050 Profits ($)')+xlab('2050 Biomass (MT)'))
   
-  
+#   
 #   BioCompPlot<- (ggplot(data=CompMonte,aes(x=FinalBiomass,y=FinalProfits,color=Policy,size = FinalCatch))+geom_point(alpha=0.7)+
 #                     ylab('2050 Profits ($)')+xlab('2050 Biomass (MT)') + facet_wrap(~monte))
 #   browser()

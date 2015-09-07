@@ -17,7 +17,7 @@ cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250,BaselineYear = 20
   
   load(paste('Results/',runfolder,'/Data/ProjectionData Data.rdata', sep = ''))
   
-  FigureFolder<- paste(runfolder,'/Diagnostics/cmsy monte carlo/',sep='')
+  FigureFolder<- paste('Results/',runfolder,'/Diagnostics/cmsy monte carlo/',sep='')
   
   dir.create(FigureFolder,recursive=T)
   
@@ -25,7 +25,9 @@ cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250,BaselineYear = 20
   
   Stocks<- Stocks[Stocks %in% CatchMSYPossibleParams$IdOrig ]
   
-  MonteMat<- run_cmsy_montecarlo2(Iterations = mciterations,Stocks=Stocks,projdata =ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
+  PolicyStorage <- read.csv(paste('Results/',runfolder,'/Data/PolicyStorage.csv', sep = ''),stringsAsFactors = F)
+  
+  MonteMat<- run_cmsy_montecarlo(Iterations = mciterations,Stocks=Stocks,projdata =ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
                                  PolicyStorage=PolicyStorage,ErrorSize=0.25,NumCPUs = NumCPUs, elastic_demand = elastic_demand,sp_group_demand = sp_group_demand)
   
 #   save(MonteMat,file=paste(FigureFolder,'MonteCarlo_Results.Rdata',sep=''))
@@ -75,7 +77,7 @@ cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250,BaselineYear = 20
                #                coord_cartesian(xlim=c(-3e11,2e11))
                
   )
-  ggsave(file=paste(FigureFolder,'MC_Profits.pdf',sep=''), plot = MCProfits)
+  ggsave(file=paste(FigureFolder,'MC_Profits.pdf',sep=''), plot = MCProfits,height = 6,width = 8)
   
 #   print(MCProfits)
 #   dev.off()
@@ -86,7 +88,7 @@ cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250,BaselineYear = 20
              #                coord_cartesian(xlim=c(-3e11,2e11))
              
   )
-  ggsave(file=paste(FigureFolder,'MC_Catch.pdf',sep=''), plot = MCCatch)
+  ggsave(file=paste(FigureFolder,'MC_Catch.pdf',sep=''), plot = MCCatch,height = 6,width = 8)
   
 #   print(MCCatch)
 #   dev.off()
@@ -107,7 +109,7 @@ cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250,BaselineYear = 20
             facet_wrap(~Policy)+scale_fill_discrete(name = "Policy Alternative"))
 #   print(MCBvB)
 #   dev.off()
-    ggsave(file=paste(FigureFolder,'MC_BvBmsy.pdf',sep=''), plot = MCBvB)
+    ggsave(file=paste(FigureFolder,'MC_BvBmsy.pdf',sep=''), plot = MCBvB,height = 6,width = 8)
 
   
 #   pdf(file=paste(FigureFolder,'MC_BvBmsy_OA.pdf',sep=''))
@@ -115,7 +117,7 @@ cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250,BaselineYear = 20
                geom_density(alpha=0.7)+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9)))
 #   print(MCBvB_OA)
 #   dev.off()
-  ggsave(file=paste(FigureFolder,'MC_BvBmsy_OA.pdf',sep=''), plot = MCBvB_OA)
+  ggsave(file=paste(FigureFolder,'MC_BvBmsy_OA.pdf',sep=''), plot = MCBvB_OA,height = 6,width = 8)
   
   
 #   pdf(file=paste(FigureFolder,'MC_FvFmsy.pdf',sep=''))
@@ -125,7 +127,7 @@ cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250,BaselineYear = 20
           +geom_vline(aes(xintercept=1),color='red',linetype='longdash')
           #         + coord_cartesian(ylim=c(0,25))+xlab('FvFmsy'))
   )
-  ggsave(file=paste(FigureFolder,'MC_FvFmsy.pdf',sep=''),plot = MCFvF)
+  ggsave(file=paste(FigureFolder,'MC_FvFmsy.pdf',sep=''),plot = MCFvF,height = 6,width = 8)
 #   print(MCFvF)
 #   dev.off()
 #   browser()
