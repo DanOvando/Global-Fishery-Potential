@@ -327,7 +327,7 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,projdata,PolicyStorage,CatchMSY
   Projections<- mclapply(1:Iterations,McIterations,Iterations=Iterations,
                          projdata=projdata,Index = Index,PossibleParams=PossibleParams,BaselineYear=BaselineYear,
                          PolicyStorage=PolicyStorage,Stocks=Stocks,ErrorSize=ErrorSize,Spec_ISSCAAP=Spec_ISSCAAP,
-                         lower_unif = 0.75,upper_unif = 1.25,mc.cores = NumCPUs)
+                         lower_unif = 0.75,upper_unif = 1.25,mc.cores = NumCPUs,mc.cleanup = T)
   
   
   Projections<- ldply(Projections)
