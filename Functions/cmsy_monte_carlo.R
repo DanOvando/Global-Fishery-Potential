@@ -1,11 +1,11 @@
 cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250,BaselineYear = 2012, real_elastic_demand = T, real_sp_group_demand = F)
 {
-  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
+#   load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
 
   elastic_demand <- real_elastic_demand
   
   sp_group_demand <- real_sp_group_demand
-#   load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Complete Results.rdata', sep = ''))
+  load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
   
   funcs <- as.vector(lsf.str())
   show(mciterations)
@@ -17,7 +17,7 @@ cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250,BaselineYear = 20
   
   load(paste('Results/',runfolder,'/Data/ProjectionData Data.rdata', sep = ''))
   
-  FigureFolder<- paste(BatchFolder,'Diagnostics/cmsy monte carlo/',sep='')
+  FigureFolder<- paste(runfolder,'/Diagnostics/cmsy monte carlo/',sep='')
   
   dir.create(FigureFolder,recursive=T)
   
@@ -25,8 +25,8 @@ cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250,BaselineYear = 20
   
   Stocks<- Stocks[Stocks %in% CatchMSYPossibleParams$IdOrig ]
   
-  MonteMat<- run_cmsy_montecarlo(Iterations = mciterations,Stocks=Stocks,ProjectionData=ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
-                                 PolicyStorage=PolicyStorage,ErrorVars=ErrorVars,ErrorSize=0.25,NumCPUs = NumCPUs, elastic_demand = elastic_demand,sp_group_demand = sp_group_demand)
+  MonteMat<- run_cmsy_montecarlo2(Iterations = mciterations,Stocks=Stocks,projdata =ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
+                                 PolicyStorage=PolicyStorage,ErrorSize=0.25,NumCPUs = NumCPUs, elastic_demand = elastic_demand,sp_group_demand = sp_group_demand)
   
 #   save(MonteMat,file=paste(FigureFolder,'MonteCarlo_Results.Rdata',sep=''))
   MonteCarlo<- subset(MonteMat,Policy=='Catch Share Three' | Policy=='Fmsy Three' |  Policy=='Business As Usual' | Policy=='Business As Usual Pessimistic') %>%
