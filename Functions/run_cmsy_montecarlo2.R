@@ -1,5 +1,4 @@
-run_cmsy_montecarlo2<- function(Iterations,Stocks,projdata,
-                                   PolicyStorage,CatchMSYPossibleParams,ErrorSize,NumCPUs = 1,BaselineYear = 2012,
+run_cmsy_montecarlo2<- function(Iterations,Stocks,projdata,PolicyStorage,CatchMSYPossibleParams,ErrorSize,NumCPUs = 1,BaselineYear = 2012,
                                    CatchSharePrice = 1.31,CatchShareCost = 0.77,ResultFolder,elastic_demand = F,sp_group_demand = F,
                                    Discount = 0, elasticity = -0.9)
 {
@@ -204,8 +203,11 @@ run_cmsy_montecarlo2<- function(Iterations,Stocks,projdata,
     
     RecentStockData<- projdata[projdata$IdOrig %in% Stocks & projdata$Year==BaselineYear,]
     
+<<<<<<< HEAD
     year_one_bvbmsy <- RecentStockData$BvBmsy
     
+=======
+>>>>>>> cde7c0274c9f45e0af39f485b70cb3b2a4a404bd
     RecentStockData$MSY<- PossParams$MSY
     
     RecentStockData$g<- PossParams$g
