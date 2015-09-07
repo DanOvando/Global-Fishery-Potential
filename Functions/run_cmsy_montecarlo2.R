@@ -203,11 +203,8 @@ run_cmsy_montecarlo2<- function(Iterations,Stocks,projdata,PolicyStorage,CatchMS
     
     RecentStockData<- projdata[projdata$IdOrig %in% Stocks & projdata$Year==BaselineYear,]
     
-<<<<<<< HEAD
     year_one_bvbmsy <- RecentStockData$BvBmsy
     
-=======
->>>>>>> cde7c0274c9f45e0af39f485b70cb3b2a4a404bd
     RecentStockData$MSY<- PossParams$MSY
     
     RecentStockData$g<- PossParams$g
