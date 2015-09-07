@@ -28,7 +28,7 @@ individual_jackknife <- function(runfolder,CPUs, iterations, BaselineYear = 2012
   #   load('Results/4.2/Data/Global Fishery Recovery Results.rdata')
   
   #   NumCPUs<- 1
-  FigureFolder<- paste(BatchFolder,'Diagnostics/Individual Jackknife/',sep='')
+  FigureFolder<- paste('Results/',runfolder,'/Diagnostics/cmsy monte carlo/',sep='')
   
   dir.create(FigureFolder,recursive=T)
   
@@ -236,7 +236,7 @@ individual_jackknife <- function(runfolder,CPUs, iterations, BaselineYear = 2012
   #
   # load(file=paste(ResultFolder,'Individual JackKnife.rdata',sep=''))
   
-  FigureFolder<- paste(BatchFolder,'Diagnostics/Individual Jackknife/',sep='')
+#   FigureFolder<- paste(BatchFolder,'Diagnostics/Individual Jackknife/',sep='')
   
   # PlotJack$ModelBvBmsy[PlotJack$ModelBvBmsy>2.5]<- 2.5
   
