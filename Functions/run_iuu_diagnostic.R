@@ -1,7 +1,7 @@
 run_iuu_diagnostic<- function(Data,Regressions,IUULevel,NumCatchMSYIterations,BatchFolder,SubSample,
-                              RealModelSdevs,NeiModelSdevs, NumCPUs = 1)
+                              RealModelSdevs,NeiModelSdevs, FigureFolder,NumCPUs = 1)
 {
-  FigureFolder<- paste(BatchFolder,'Diagnostics/IUU/',sep='')
+#   FigureFolder<- paste(BatchFolder,'Diagnostics/IUU/',sep='')
   
   dir.create(FigureFolder,recursive=T)
   

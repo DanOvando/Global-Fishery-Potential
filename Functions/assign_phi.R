@@ -1,4 +1,4 @@
-assign_phi <- function(data, taxdata, phidata, default_phi = 0.188)
+assign_phi <- function(data, taxdata, phidata, default_phi = 0.188, min_phi = 0.00001)
 {
   
   phidata$order <- tolower(phidata$order)
@@ -7,7 +7,7 @@ assign_phi <- function(data, taxdata, phidata, default_phi = 0.188)
   
   for (p in 1:dim(phidata)[1])
   {
-    phidata$phi[p] <- find_phi(target_msy_ratio = phidata$msy_ratio[p])
+    phidata$phi[p] <- pmax(min_phi,find_phi(target_msy_ratio = phidata$msy_ratio[p]))
   }
   
   data$paste_name <- paste(data$SciName,data$CommName, sep = '-')
