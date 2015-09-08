@@ -242,7 +242,7 @@ regional_jackknife <- function(runfolder,CPUs, iterations, BaselineYear = 2012)
   
   PlotJack<- join(PlotJack, SpeciesInfo,by='Id',match='first')
   
-  save(PlotJack,JackStore,file=paste(ResultFolder,'Regional JackKnife.rdata',sep=''))
+  save(PlotJack,JackStore,file=paste(FigureFolder,'Regional JackKnife.rdata',sep=''))
   
   # load(paste(ResultFolder,'Regional JackKnife.rdata',sep=''))
   #
