@@ -48,7 +48,12 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
     
     #MakeKobePlot(temp,BaselineYear,FigureName=paste('FAO Region ',regs[c],' Kobe Plot.pdf',sep=''))
     
-    temp<-ddply(temp,c('Year'),summarize,MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T))
+    # temp<-ddply(temp,c('Year'),summarize,MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T))
+    
+    temp<- temp %>%
+      group_by(Year) %>%
+      summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T)) %>%
+      ungroup()
     
     RegionStatus$RegionFAO[c]<-regs[c]
     
@@ -101,6 +106,7 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       BaselineData<- subset(temp,subset=Year==BaselineYear & is.na(FvFmsy)==F & is.na(BvBmsy)==F)
       
       KobeMedians<- BaselineData %>%
+        group_by(Year) %>%
         summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T))
       
       BaselineData$FvFmsy[BaselineData$FvFmsy>4]<- 4
@@ -131,8 +137,9 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       inCols<-as.numeric(as.factor(BaselineData$Dbase))		# inCols should be the current colors
       OutCols<-inCols
       
-      RGBcols	<-c("#000000","#FF0000","#00CC00") #black, red, green
-      AddTrans	<-65		# adjusts the transparency--lower is more transparent
+      # RGBcols	<-c("#000000","#FF0000","#00CC00") #black, red, green
+      RGBcols<-c('#A0A0A0','#FC6969','#00FF80')
+      AddTrans	<-99		# adjusts the transparency--lower is more transparent
       
       for(x in 1:3)
         OutCols[inCols==x]<-paste(RGBcols[x],AddTrans,sep="")
@@ -191,6 +198,7 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       BaselineData<- subset(temp,subset=Year==BaselineYear & is.na(FvFmsy)==F & is.na(BvBmsy)==F)
       
       KobeMedians<- BaselineData %>%
+        group_by(Year) %>%
         summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T))
       
       BaselineData$FvFmsy[BaselineData$FvFmsy>4]<- 4
@@ -221,8 +229,9 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       inCols<-as.numeric(as.factor(BaselineData$Dbase))		# inCols should be the current colors
       OutCols<-inCols
       
-      RGBcols	<-c("#000000","#FF0000","#00CC00") #black, red, green
-      AddTrans	<-65		# adjusts the transparency--lower is more transparent
+      # RGBcols	<-c("#000000","#FF0000","#00CC00") #black, red, green
+      RGBcols<-c('#A0A0A0','#FC6969','#00FF80')
+      AddTrans	<-99		# adjusts the transparency--lower is more transparent
       
       for(x in 1:3)
         OutCols[inCols==x]<-paste(RGBcols[x],AddTrans,sep="")
