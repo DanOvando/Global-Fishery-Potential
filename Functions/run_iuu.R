@@ -11,7 +11,7 @@ run_iuu <- function(runfolder,CPUs, IUULevel = 1.25, iterations)
   sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
   
   NumCPUs <- CPUs
-  
+  show(NumCPUs)
   FigureFolder <- paste('Results/',runfolder,'/Diagnostics/Regional Jackknife/',sep='')
   
   
