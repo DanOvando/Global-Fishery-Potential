@@ -3,6 +3,7 @@
 elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
                                base_year = 2013,sp_group_demand = F, beta = 1.3,bvec = seq(0.00000001,2.5,length.out=30),omega = 0.1)
 {
+  show(elasticity)
   OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
   {
     #Function to adjust f in response to prior profits
