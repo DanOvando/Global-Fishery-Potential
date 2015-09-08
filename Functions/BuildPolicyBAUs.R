@@ -20,7 +20,12 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
   # RAM - F current forever
   # Catch shares - Opt
   # All others - Open Access
-  # 
+  #
+  commodity_names <- read.csv('Data/CommodityNames.csv', stringsAsFactors = F) %>%
+    rename(SpeciesCatName = ISSCAAP)
+  
+  ProjectionData <- left_join(ProjectionData, commodity_names, by = "SpeciesCatName")
+  
   ProjectionData$omega <- omega
   
   ProjectionData$beta <- beta
@@ -35,10 +40,10 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
       
       base_supply <- filter(ProjectionData,Year == 2012 & Policy =='Historic') %>%
         ungroup() %>%
-        group_by(SpeciesCatName) %>%
+        group_by(CommodityName) %>%
         summarise(global_catch = sum(Catch, na.rm = T))
       
-      ProjectionData <- join(ProjectionData,base_supply, by = 'SpeciesCatName')
+      ProjectionData <- join(ProjectionData,base_supply, by = 'CommodityName')
       
     }
     if (sp_group_demand == F)
