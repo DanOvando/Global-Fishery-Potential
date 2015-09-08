@@ -142,7 +142,7 @@ UnlumpFisheries<-function(Data,ProjData,RawData,BaselineYear,YearsBack,StitchIds
       unlumphist$DiscProfits<-unlumphist$DiscProfits*unlumphist$Percent
       
       unlumphist<- unlumphist %>%
-        select(-Percent)
+        dplyr::select(-Percent)
     
       UnLumpedHist<-rbind(UnLumpedHist,unlumphist)
       
