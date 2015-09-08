@@ -1,4 +1,4 @@
-run_iuu <- function(runfolder,CPUs, IUULevel = 1.25, iterations)
+run_iuu <- function(runfolder,CPUs = 1, IUULevel = 1.25, iterations)
 {
   load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
   
@@ -12,7 +12,7 @@ run_iuu <- function(runfolder,CPUs, IUULevel = 1.25, iterations)
   
   NumCPUs <- CPUs
   show(NumCPUs)
-  FigureFolder <- paste('Results/',runfolder,'/Diagnostics/Regional Jackknife/',sep='')
+  FigureFolder <- paste('Results/',runfolder,'/Diagnostics/IUU/',sep='')
   
   
   iuu_test <- run_iuu_diagnostic(Data = MsyData,Regressions = RealModels,IUULevel=IUULevel,
