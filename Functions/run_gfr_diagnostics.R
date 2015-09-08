@@ -25,7 +25,7 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
   BaselineYear <<- 2012
   if (do_iuu == T)
   {
-    iuu_analysis <- run_iuu(runfolder = runfolder, NumCPUs = NumCPUs,
+    iuu_analysis <- run_iuu(runfolder = runfolder, CPUs = NumCPUs,
                             IUULevel = IUULevel, iterations = cmsy_iterations)
     show('Finished iuu analysis')
   }
