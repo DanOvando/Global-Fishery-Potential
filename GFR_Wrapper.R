@@ -611,7 +611,7 @@ UnlumpedData<-DivyUpSofia(ProjectionData,RawData) # Divide up SOFIA multinationa
 
 UnlumpedData<-DivyMultinational(Data=UnlumpedData,RawData,BaselineYear,YearsBack=4) # Divide up RAM multinational
 
-UnlumpedData<-UnlumpFisheries(UnlumpedData,RawData,BaselineYear,YearsBack=4,StitchIds) # Divide up lumped FAO fisheries
+UnlumpedData<-UnlumpFisheries(UnlumpedData,ProjectionData,RawData,BaselineYear,YearsBack=4,StitchIds) # Divide up lumped FAO fisheries
 
 UnlumpedProjectionData<-UnlumpedData
 

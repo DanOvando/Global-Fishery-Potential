@@ -9,13 +9,16 @@
 # This code only runs during CountriesToRun. When evaluating individual fisheries, the stock will remained lumped
 
 # StitchIds<-CleanedData$StitchIds
-# Data<-ProjectionData
+# Data<-UnlumpedData
+# ProjData<-ProjectionData
 # YearsBack<-4
 
-UnlumpFisheries<-function(Data,RawData,BaselineYear,YearsBack,StitchIds)
+UnlumpFisheries<-function(Data,ProjData,RawData,BaselineYear,YearsBack,StitchIds)
 {
   
   data<-Data[grepl('Lumped',Data$IdOrig),]
+  
+  ramdata<-subset(ProjData,Dbase=='RAM' & Year<=BaselineYear,c('IdOrig','Country','RegionFAO','Year','SciName','CommName','Catch'))
   
   ids<-unique(data$IdOrig)
   
@@ -23,72 +26,176 @@ UnlumpFisheries<-function(Data,RawData,BaselineYear,YearsBack,StitchIds)
   
   for(a in 1:length(ids))
   {
-    ## calculate the percent of 5 year total catch contributed by each stitched fishery 
-    tempdata<-data[data$IdOrig %in% ids[a],] # subset stitched data
+    # subset stitched data
+    tempdata<-data[data$IdOrig %in% ids[a],] 
     
-    stids<-StitchIds$StockIDs[StitchIds$LumpedID==ids[a]] # find ids of stocks that were stitched
+    # identify max year in the temp data (2050 means the stock was projected)
+    maxyr<-max(tempdata$Year)
     
-    stids<-unlist(str_split(stids,pattern='_')) # separate stocks
+    # find ids of stocks that were stitched
+    stids<-StitchIds$StockIDs[StitchIds$LumpedID==ids[a]] 
     
-    raw<-RawData[(RawData$IdOrig %in% stids) & RawData$Year<=BaselineYear& RawData$Year>=(BaselineYear-YearsBack),c('IdOrig','Country','Year','CommName','Catch')] # pull out pre stitched catch data
+    # separate stocks
+    stids<-unlist(str_split(stids,pattern='_')) 
     
-#     t<-ddply(raw,c('Year'),summarize,TotalCatch=sum(Catch,na.rm=T)) # calculate total catch each year
+    # pull out pre stitched catch data
+    raw1<-RawData[(RawData$IdOrig %in% stids),c('IdOrig','Country','RegionFAO','Year','SciName','CommName','Catch')] 
+    
+    # Check to see if any unlumped stocks would duplicate a RAM stock accidentally
+    check1<-left_join(raw1,ramdata,by=c('Country','Year','SciName','RegionFAO'))
+    
+    # find the years and stocks that overlap in unlumped
+    fuckers<-unique(check1[is.na(check1$IdOrig.y)==F,c('IdOrig.x','Year')])
+    
+    fuckers$pastename <- paste(fuckers$IdOrig.x,fuckers$Year,sep = '-')
+    
+    # remove these overlapping stock/year combinations. The remaining total catch should exactly match what's in the lumped fishery
+    check<-subset(check1,is.na(check1$IdOrig.y))
+    
+    # resubset raw and stids to only include the stock(s) remaining in check
+    stids<-unique(check$IdOrig.x)
+    
+    raw<-subset(raw1,IdOrig %in% check$IdOrig.x)
+    
+    raw$pastename <- paste(raw$IdOrig, raw$Year, sep = '-')
+    
+    raw<-subset(raw,!(pastename %in% fuckers$pastename))
 
-    t<- raw %>%
+    # calculate percent of historical timeseries to use for historical data
+    percentPast<-raw %>%
+      ungroup() %>%
       group_by(Year) %>%
-      summarize(TotalCatch=sum(Catch,na.rm=T)) # calculate total catch each year
+      mutate(YearTotal=sum(Catch,na.rm=T)) %>%
+      ungroup() %>%
+      group_by(Year,IdOrig,Country) %>%
+      summarize(Percent=sum(Catch,na.rm=T)/sum(YearTotal,na.rm=T))
     
-        
-    raw$YearTotal<-t$TotalCatch # add total catch
-    
-#     percent<-ddply(raw,c('IdOrig','Country'),summarize,Percent=sum(Catch,na.rm=T)/sum(YearTotal,na.rm=T)) # calculate percent of 5 year total catch
-    
-    percent<- raw %>% 
-      group_by(IdOrig,Country) %>%
-      summarize(Percent=sum(Catch,na.rm=T)/sum(YearTotal,na.rm=T)) # calculate percent of 5 year total catch
-    
+    # calculate percent of 5 year total catch to use for projections
+    if(maxyr>BaselineYear)
+    {
+      percentFuture<-raw %>%
+        filter(!(IdOrig %in% fuckers$IdOrig.x) & Year <= BaselineYear & Year >=(BaselineYear-YearsBack)) %>%
+        group_by(Year) %>%
+        mutate(YearTotal=sum(Catch,na.rm=T)) %>%
+        ungroup() %>%
+        group_by(IdOrig,Country) %>%
+        summarize(Percent=sum(Catch,na.rm=T)/sum(YearTotal,na.rm=T))
       
-    stids<-unique(percent$IdOrig[(percent$Percent>0)])
+      # find ids with projected data to loop over
+      futurestids<-unique(percentFuture$IdOrig[is.na(percentFuture$Percent)==F & percentFuture$Percent>0])
+      
+      # show sum of percents (This should always equal 1 or zero)
+      # show(sum(percentFuture$Percent,na.rm=T))
+    }
     
+    # test percentages
+    test<-percentPast %>%
+      ungroup() %>%
+      group_by(Year) %>%
+      summarize(TotalPerc=sum(Percent,na.rm=T))
+    
+    # show(unique(test$TotalPerc))
+  
     ## create new stocks for country upside analysis and apply percentages to the projections of the lumped stock
     lumpproj<-tempdata
     
-    UnLumped<-data.frame(matrix(nrow=0,ncol=ncol(lumpproj)))
-
-    colnames(UnLumped)<-colnames(lumpproj)
+    # initialize dataframes to store historical and projected results
+    UnLumpedHist<-data.frame(matrix(nrow=0,ncol=ncol(lumpproj)))
+    colnames(UnLumpedHist)<-colnames(lumpproj)
+    
+    UnLumpedProj<-data.frame(matrix(nrow=0,ncol=ncol(lumpproj)))
+    colnames(UnLumpedProj)<-colnames(lumpproj)
+    
+    # loop over all stitched ids and unlump historical
+    
+    # pull out historical timeseries and apply past percentages
     for(b in 1:length(stids))
     {
-      # calculate projection data results for projected policies
-      unlumpproj<-lumpproj
+      # if it's an overlapping fucker only use the non-overlapping timeframe
+      if(stids[b] %in% fuckers$IdOrig.x)
+      {
+        fuckeryrs<-unique(fuckers$Year[fuckers$IdOrig.x==stids[b]])
+        
+        unlumphist<-subset(lumpproj,Year<=BaselineYear & !(Year %in% fuckeryrs))
+      }
       
-      unlumpproj$Country<-unique(RawData$Country[RawData$IdOrig==stids[b]])
+      # if not, use all historical data
+      if(!(stids[b] %in% fuckers$IdOrig.x)) { unlumphist<-subset(lumpproj,Year<=BaselineYear) }
       
-      unlumpproj$IdOrig<-stids[b]
+      unlumphist$Country<-unique(percentPast$Country[percentPast$IdOrig==stids[b]])
       
-      unlumpproj$Catch<-unlumpproj$Catch*percent$Percent[percent$IdOrig==stids[b]]
+      unlumphist$IdOrig<-stids[b]
       
-      unlumpproj$Biomass<-unlumpproj$Biomass*percent$Percent[percent$IdOrig==stids[b]]
+      # Join past percentages with historical data and apply to all relevent categories
+      unlumphist<-left_join(unlumphist,percentPast,by=c('Year','IdOrig','Country'))
       
-      unlumpproj$MSY<-unlumpproj$MSY*percent$Percent[percent$IdOrig==stids[b]]
+      unlumphist$Catch<-unlumphist$Catch*unlumphist$Percent
       
-      unlumpproj$k<-unlumpproj$k*percent$Percent[percent$IdOrig==stids[b]]
+      unlumphist$Biomass<-unlumphist$Biomass*unlumphist$Percent
       
-      unlumpproj$Profits<-unlumpproj$Profits*percent$Percent[percent$IdOrig==stids[b]]
+      unlumphist$MSY<-unlumphist$MSY*unlumphist$Percent
       
-      unlumpproj$DiscProfits<-unlumpproj$DiscProfits*percent$Percent[percent$IdOrig==stids[b]]
+      unlumphist$k<-unlumphist$k*unlumphist$Percent
       
-      UnLumped<-rbind(UnLumped,unlumpproj)
+      unlumphist$Profits<-unlumphist$Profits*unlumphist$Percent
       
-    } # close stids loop
+      unlumphist$DiscProfits<-unlumphist$DiscProfits*unlumphist$Percent
+      
+      unlumphist<- unlumphist %>%
+        select(-Percent)
     
-    UnlumpedFaoData[[a]]<-UnLumped
+      UnLumpedHist<-rbind(UnLumpedHist,unlumphist)
+      
+#       a=unlumphist$Catch
+#       b=raw$Catch[raw$Year %in% unlumphist$Year & raw$IdOrig==stids[b]]
+    }
     
-    show(a)
+      # if(nrow(unlumpproj)>0 & is.na(percentFuture$Percent[percentFuture$IdOrig==stids[b]])==F)
+      # if((nrow(percentFuture)>0 & is.na(percentFuture$Percent[percentFuture$IdOrig==stids[b]])==F) & stids[b] %in% percentFuture$IdOrig) & percentFuture$Percent[percentFuture$IdOrig==stids[b]]>0)
+      
+    if(maxyr>BaselineYear & length(futurestids)>0)
+    {
+      for(b in 1:length(futurestids))
+        {
+          # copy lumped stock's projected data
+          unlumpproj<-subset(lumpproj,Year>BaselineYear)
+          
+          unlumpproj$Country<-unique(percentFuture$Country[percentFuture$IdOrig==futurestids[b]])
+          
+          unlumpproj$IdOrig<-futurestids[b]
+          
+          unlumpproj$Catch<-unlumpproj$Catch*percentFuture$Percent[percentFuture$IdOrig==futurestids[b]]
+          
+          unlumpproj$Biomass<-unlumpproj$Biomass*percentFuture$Percent[percentFuture$IdOrig==futurestids[b]]
+          
+          unlumpproj$MSY<-unlumpproj$MSY*percentFuture$Percent[percentFuture$IdOrig==futurestids[b]]
+          
+          unlumpproj$k<-unlumpproj$k*percentFuture$Percent[percentFuture$IdOrig==futurestids[b]]
+          
+          unlumpproj$Profits<-unlumpproj$Profits*percentFuture$Percent[percentFuture$IdOrig==futurestids[b]]
+          
+          unlumpproj$DiscProfits<-unlumpproj$DiscProfits*percentFuture$Percent[percentFuture$IdOrig==futurestids[b]]
+          
+          UnLumpedProj<-rbind(UnLumpedProj,unlumpproj)
+        }
+    }
+      # UnLumped<-rbind(UnLumped,unlumphist,unlumpproj)
+      show(a)
+      
+      All<-rbind(UnLumpedHist,UnLumpedProj)
+      
+      UnlumpedFaoData[[a]]<-All
+    
+    # show(a)
   
   } # close lumped stock loop
   
   # flatten to one dataframe
   UnLumpedFaoData<-ldply(UnlumpedFaoData, data.frame) 
+  
+#   testAll<-inner_join(UnLumpedFaoData,RawData[,c('IdOrig','Year','Catch')],by=c('IdOrig','Year'))
+#   plot(testAll$Catch.x,testAll$Catch.y)
+  
   
   FinalData<-Data[!(grepl('Lumped',Data$IdOrig)),]
 
