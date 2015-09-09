@@ -141,7 +141,7 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
     #   FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo 2/',sep='')
   #   
   #   dir.create(FigureFolder,recursive=T)
-#   pdf(file=paste(FigureFolder,'BvBmsy Monte Carlo.pdf',sep=''),width=7,height=5)
+  pdf(file=paste(FigureFolder,'BvBmsy Monte Carlo.pdf',sep=''),width=7,height=5)
   
   
   BioMonte$monte <- 'MonteCarlo'
@@ -156,9 +156,7 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
   
   BioCompPlot<- (ggplot(data=CompMonte,aes(x=FinalBiomass,y=FinalProfits,color=Policy,size = FinalCatch))+geom_point(alpha=0.7)+
                     ylab('2050 Profits ($)')+xlab('2050 Biomass (MT)') + facet_wrap(~monte))
-#   browser()
 
-  
   print(BioMontePlot)
   dev.off()
   

@@ -1,6 +1,7 @@
 run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_iterations = 1000,
                                 do_iuu = F, do_ind_jack = F, do_reg_jack = F,do_cmsy_montecarlo = F,
-                                do_expanded_montecarlo = F, mciterations = 250, elastic_demand = T, sp_group_demand = F)
+                                do_expanded_montecarlo = F, mciterations = 250, elastic_demand = T, sp_group_demand = F,
+                                elasticity = -1.15)
   
 {
   library(plyr)
@@ -46,7 +47,7 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
   if (do_cmsy_montecarlo ==T)
   {
     cmsy_montecarlo_analysis <- cmsy_monte_carlo(runfolder = runfolder, CPUs = NumCPUs, mciterations = mciterations, real_elastic_demand = elastic_demand
-                                                 , real_sp_group_demand = sp_group_demand)
+                                                 , real_sp_group_demand = sp_group_demand, elasticity = elasticity)
 
     show('Finished cmsy montecarlo analysis')
     
@@ -54,7 +55,7 @@ run_gfr_diagnostics <- function(runfolder, NumCPUs = 1, IUULevel = 1.25, cmsy_it
   if (do_expanded_montecarlo ==T)
   {
     expanded_montecarlo_analysis <- expanded_monte_carlo(runfolder = runfolder, CPUs = NumCPUs, mciterations = mciterations,real_elastic_demand = elastic_demand
-                                                         , real_sp_group_demand = sp_group_demand)
+                                                         , real_sp_group_demand = sp_group_demand, elasticity = elasticity)
 
     show('Finished expanded montecarlo analysis')
     
