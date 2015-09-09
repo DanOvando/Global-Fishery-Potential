@@ -326,7 +326,8 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,projdata,PolicyStorage,CatchMSY
                                 omega = ProjectionMat$omega)
     
     ProjectionMat$Iteration<- k
-    #     BioMonte<- subset(BioMonte,Year==2012 | Year==2013 | Year==2050)
+    
+    ProjectionMat<- subset(ProjectionMat,Year==2012 | Year==2013 | Year==2050)
     return(ProjectionMat)
   } #Close McIterations
   
