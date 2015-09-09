@@ -201,8 +201,6 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,projdata,PolicyStorage,CatchMSY
     
     RecentStockData<- projdata[projdata$IdOrig %in% Stocks & projdata$Year==BaselineYear,]
     
-    year_one_bvbmsy <- RecentStockData$BvBmsy
-    
     RecentStockData$MSY<- PossParams$MSY
     
     RecentStockData$g<- PossParams$g
@@ -233,13 +231,27 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,projdata,PolicyStorage,CatchMSY
     
     RecentStockData$cost <- RecentStockData$MarginalCost
     
+    c_num <-  RecentStockData$Price*RecentStockData$FOA*RecentStockData$BOA*RecentStockData$MSY
+    
+    c_den = (RecentStockData$g*RecentStockData$FOA)^RecentStockData$beta
+    
+    RecentStockData$cost = (c_num/c_den)
+    
     RecentStockData$MsyProfits = RecentStockData$Price*RecentStockData$MSY - RecentStockData$cost*(RecentStockData$g)^RecentStockData$beta
+   
+     bvec<- PolicyFuncs$b
+    
+     year_one_bvbmsy <- pmin(max(bvec),pmax(min(bvec), with(RecentStockData,BvBmsy + ((phi+1)/phi)*g*BvBmsy*(1-BvBmsy^phi/(phi+1)) - g*BvBmsy*FvFmsy)))
+     
+#     year_one_bvbmsy <- year_one_bvbmsy * CurrentBio
+    
+    RecentStockData$Profits <- RecentStockData$Price*RecentStockData$Catch - RecentStockData$cost*(RecentStockData$g*RecentStockData$FvFmsy)^RecentStockData$beta 
+    
     
     Policies<- colnames(PolicyFuncs)
     
     Policies<- Policies[!(Policies %in% c('X','IdOrig','b'))]
     
-    bvec<- PolicyFuncs$b
     
     ProjectionMat<- NULL
     

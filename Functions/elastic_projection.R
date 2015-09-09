@@ -3,6 +3,7 @@
 elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
                                base_year = 2013,sp_group_demand = F, beta = 1.3,bvec = seq(0.00000001,2.5,length.out=30),omega = 0.1)
 {
+  show(elasticity)
   OpenAccessFleet<- function(f,pi,t,omega,MsyProfits)
   {
     #Function to adjust f in response to prior profits
@@ -27,12 +28,12 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
       ungroup() %>%
       filter(Year == min(Year, na.rm = T)) %>%
 #       filter(Year == years[1]) %>%
-      group_by(SpeciesCatName) %>%
+      group_by(CommodityName) %>%
       summarise(global_catch = sum(Catch, na.rm = T))
 
     poldata <- poldata %>%
       dplyr::select(-global_catch) %>%
-      join(supply, by = 'SpeciesCatName')
+      join(supply, by = 'CommodityName')
   }
 
   if (sp_group_demand == F)
@@ -172,7 +173,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
       supply <- poldata %>%
         ungroup() %>%
         filter(Year == years[y]) %>%
-        group_by(SpeciesCatName) %>%
+        group_by(CommodityName) %>%
         summarise(global_catch = sum(Catch, na.rm = T))
       
     }
@@ -191,7 +192,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
     {
       poldata <- poldata %>%
         dplyr::select(-global_catch) %>%
-        join(supply, by = 'SpeciesCatName')
+        join(supply, by = 'CommodityName')
 
     }
 

@@ -142,6 +142,8 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
   
   OverlapToRemove<- c('Ram','Sofia','SofiaRam')
   
+  Data$MSY[Data$MSY <= 0] <- NA
+  
   return(list(CleanedData=Data,DroppedStocks= DroppedStocks,AllOverlap=AllOverlap,StitchIds=StitchIds,MultinationalOverlapIds=MultinationalOverlap,DroppedStocks2= DroppedStocks2))
   
 }

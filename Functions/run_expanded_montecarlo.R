@@ -192,30 +192,21 @@ run_expanded_montecarlo<- function(Iterations,Stocks,projdata,
   
   
   
-  McIterations<- function(k,Iterations,BioError,projdata,
+  McIterations<- function(k,Iterations,projdata,
                           BaselineYear,PolicyStorage,Stocks,ErrorSize,
                           Spec_ISSCAAP,base_omega = 0.1, base_beta = 1.3,
                           lower_unif = 0.75, upper_unif = 1.25)
   {
     
-    #     PossParams<- PossibleParams[Index[,k],]
-    #     CurrentBio<- BioError[,k]
-    #     lower_unif <- 0.75
-    #     
-    #     upper_unif <- 1.25
-    
+
     PolicyFuncs<- PolicyStorage[PolicyStorage$IdOrig %in% Stocks,]
     
     RecentStockData<- projdata[projdata$IdOrig %in% Stocks & projdata$Year==BaselineYear,]
-    
     
     CurrentBio<- runif(dim(RecentStockData)[1],lower_unif,upper_unif) #BioError[,k]
 
     RecentStockData$BvBmsy<- RecentStockData$BvBmsy* CurrentBio
     
-    year_one_bvbmsy <-  projdata[projdata$Policy == 'Fmsy' & projdata$IdOrig %in% Stocks & projdata$Year==BaselineYear+1,]$BvBmsy
-    
-    year_one_bvbmsy <- year_one_bvbmsy * CurrentBio
     
     RecentStockData$Price<- RecentStockData$Price * runif(dim(RecentStockData)[1],lower_unif,upper_unif)
     
@@ -248,7 +239,7 @@ run_expanded_montecarlo<- function(Iterations,Stocks,projdata,
     #     phi<- RecentStockData$phi
     
     
-    #         RecentStockData$FvFmsy<- (RecentStockData$Catch/RecentStockData$MSY)/RecentStockData$BvBmsy
+            RecentStockData$FvFmsy<- (RecentStockData$Catch/RecentStockData$MSY)/RecentStockData$BvBmsy
     
     #     RecentStockData$BvBmsy<- pmin(2.5,RecentStockData$BvBmsy* CurrentBio)
     #     
@@ -260,13 +251,27 @@ run_expanded_montecarlo<- function(Iterations,Stocks,projdata,
     RecentStockData$FOA<- ((RecentStockData$phi+1)/RecentStockData$phi)*(1-RecentStockData$BOA^RecentStockData$phi/(RecentStockData$phi+1))
     
     RecentStockData$cost <- RecentStockData$MarginalCost
+    
+    c_num <-  RecentStockData$Price*RecentStockData$FOA*RecentStockData$BOA*RecentStockData$MSY
+    
+    c_den = (RecentStockData$g*RecentStockData$FOA)^RecentStockData$beta
+    
+    RecentStockData$cost = (c_num/c_den)
+    
     RecentStockData$MsyProfits = RecentStockData$Price*RecentStockData$MSY - RecentStockData$cost*(RecentStockData$g)^RecentStockData$beta
+    
+    bvec<- PolicyFuncs$b
+    
+    year_one_bvbmsy <- pmin(max(bvec),pmax(min(bvec), with(RecentStockData,BvBmsy + ((phi+1)/phi)*g*BvBmsy*(1-BvBmsy^phi/(phi+1)) - g*BvBmsy*FvFmsy)))
+    
+    year_one_bvbmsy <- year_one_bvbmsy * CurrentBio
+    
+    RecentStockData$Profits <- RecentStockData$Price*RecentStockData$Catch - RecentStockData$cost*(RecentStockData$g*RecentStockData$FvFmsy)^RecentStockData$beta 
     
     Policies<- colnames(PolicyFuncs)
     
     Policies<- Policies[!(Policies %in% c('X','IdOrig','b'))]
     
-    bvec<- PolicyFuncs$b
     
     ProjectionMat<- NULL
     
@@ -406,8 +411,8 @@ run_expanded_montecarlo<- function(Iterations,Stocks,projdata,
       mutate( Catch = MSY * BvBmsy * FvFmsy, #this is changing 2012 catch
 FOA = (((phi+1)/phi)*(1-BOA^phi/(phi+1))),
               c_num =  Price*FOA*BOA*MSY,
-              c_den = (g*FOA)^beta,
-              MarginalCost = c_num/c_den) %>%
+              c_den = (g*FOA)^beta) %>%
+#               MarginalCost = c_num/c_den) %>%
       mutate(Bmsy = MSY/g, Biomass = BvBmsy * Bmsy) %>%
       mutate(Profits = (Price * MSY * BvBmsy * FvFmsy) -  
                MarginalCost * (FvFmsy * g)^beta)
@@ -431,6 +436,8 @@ FOA = (((phi+1)/phi)*(1-BOA^phi/(phi+1))),
     
     BioMonte$DiscProfits<- BioMonte$Profits * (1+Discount)^-(BioMonte$Year-BaselineYear)
     
+#     BioMonte <- subset(BioMonte, IdOrig != 'NWWG-CAPEICE-1977-2010-NEUBAUER')
+    
     BioMonte <- BuildPolicyBAUs(BioMonte,BaselineYear,elastic_demand = elastic_demand, elasticity = elasticity,
                                 Discount = Discount,sp_group_demand = sp_group_demand,beta = BioMonte$beta,
                                 omega = BioMonte$omega)
@@ -446,11 +453,11 @@ FOA = (((phi+1)/phi)*(1-BOA^phi/(phi+1))),
   #   PossibleParams<- CatchMSYPossibleParams
   
   NumStocks<- length(unique(PossibleParams$IdOrig))
-  BioError<- replicate(Iterations,runif(length(Stocks),0.75,1.25))
+#   BioError<- replicate(Iterations,runif(length(Stocks),0.75,1.25))
   
     Spec_ISSCAAP=read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
   
-  Projections<- mclapply(1:Iterations,McIterations,BioError=BioError,Iterations=Iterations,
+  Projections<- mclapply(1:Iterations,McIterations,Iterations=Iterations,
                        projdata=projdata,BaselineYear=BaselineYear,
                        PolicyStorage=PolicyStorage,Stocks=Stocks,ErrorSize=ErrorSize,Spec_ISSCAAP=Spec_ISSCAAP,
                        lower_unif = 0.75,upper_unif = 1.25,mc.cores = NumCPUs,mc.cleanup = T)

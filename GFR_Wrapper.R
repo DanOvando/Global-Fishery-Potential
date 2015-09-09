@@ -556,6 +556,8 @@ cheat_fig3 <- ProjectionData %>%
 
 cheat_fig3$Year[cheat_fig3$Policy == 'Historic' & cheat_fig3$Year == 2012] <- 2050
 
+write.csv(subset(cheat_fig3, Year == max(Year)),file =  paste(ResultFolder,'Figure 3 data.csv',sep = ''))
+
 quick_fig3 <- (ggplot(subset(cheat_fig3,Year == max(Year)),
                       aes(total_biomass,total_profits,size = total_catch,fill = Policy))
                + geom_point(shape = 21,alpha = 0.6) +
@@ -697,6 +699,7 @@ FigOneGlobalResults<-GlobalResultsFigOne(UpsideAllStocks,UpsideOverfishOnly,Poli
 # write.csv(file=paste(ResultFolder,'Projection Data.csv',sep=''),ProjectionData)
 #
 # write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
+gfr_qaqc(ProjectionData = ProjectionData, FigureFolder = FigureFolder)
 
 save(ProjectionData,UnlumpedProjectionData,OriginalProjectionData,file=paste(ResultFolder,'ProjectionData Data.rdata',sep=''))
 

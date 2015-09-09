@@ -1,4 +1,4 @@
-cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250,BaselineYear = 2012, real_elastic_demand = T, real_sp_group_demand = F)
+cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250,BaselineYear = 2012, real_elastic_demand = T, real_sp_group_demand = F, elasticity)
 {
   #   load(paste('Results/',runfolder,'/Data/Global Fishery Recovery Results.rdata', sep = ''))
   
@@ -28,7 +28,8 @@ cmsy_monte_carlo <- function(runfolder,CPUs,mciterations = 250,BaselineYear = 20
   PolicyStorage <- read.csv(paste('Results/',runfolder,'/Data/PolicyStorage.csv', sep = ''),stringsAsFactors = F)
   
   MonteMat<- run_cmsy_montecarlo(Iterations = mciterations,Stocks=Stocks,projdata =ProjectionData,CatchMSYPossibleParams=CatchMSYPossibleParams,
-                                 PolicyStorage=PolicyStorage,ErrorSize=0.25,NumCPUs = NumCPUs, elastic_demand = elastic_demand,sp_group_demand = sp_group_demand)
+                                 PolicyStorage=PolicyStorage,ErrorSize=0.25,NumCPUs = NumCPUs,
+                                 elastic_demand = elastic_demand,sp_group_demand = sp_group_demand, elasticity = elasticity)
   
   #   save(MonteMat,file=paste(FigureFolder,'MonteCarlo_Results.Rdata',sep=''))
   MonteCarlo<- subset(MonteMat,Policy=='Catch Share Three' | Policy=='Fmsy Three' |  Policy=='Business As Usual' | Policy=='Business As Usual Pessimistic') %>%
