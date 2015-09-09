@@ -454,7 +454,7 @@ FOA = (((phi+1)/phi)*(1-BOA^phi/(phi+1))),
   Projections<- mclapply(1:Iterations,McIterations,Iterations=Iterations,
                        projdata=projdata,BaselineYear=BaselineYear,
                        PolicyStorage=PolicyStorage,Stocks=Stocks,ErrorSize=ErrorSize,Spec_ISSCAAP=Spec_ISSCAAP,
-                       lower_unif = 1,upper_unif = 1,mc.cores = NumCPUs,mc.cleanup = T)
+                       lower_unif = 0.75,upper_unif = 1.25,mc.cores = NumCPUs,mc.cleanup = T)
   
   #   Projections<- mclapply(1:Iterations,McIterations,BioError=BioError,Iterations=Iterations,
   #                          ProjectionData=ProjectionData,BaselineYear=BaselineYear,
