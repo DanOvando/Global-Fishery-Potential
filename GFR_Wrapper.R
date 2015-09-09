@@ -697,6 +697,7 @@ FigOneGlobalResults<-GlobalResultsFigOne(UpsideAllStocks,UpsideOverfishOnly,Poli
 # write.csv(file=paste(ResultFolder,'Projection Data.csv',sep=''),ProjectionData)
 #
 # write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
+gfr_qaqc(ProjectionData = ProjectionData, FigureFolder = FigureFolder)
 
 save(ProjectionData,UnlumpedProjectionData,OriginalProjectionData,file=paste(ResultFolder,'ProjectionData Data.rdata',sep=''))
 
