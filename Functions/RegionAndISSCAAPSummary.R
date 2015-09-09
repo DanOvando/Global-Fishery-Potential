@@ -230,7 +230,7 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       OutCols<-inCols
       
       # RGBcols	<-c("#000000","#FF0000","#00CC00") #black, red, green
-      RGBcols<-c('#A0A0A0','#FC6969','#00FF80')
+      RGBcols<-c('#A0A0A0','#FC6969','#0B610B')
       AddTrans	<-99		# adjusts the transparency--lower is more transparent
       
       for(x in 1:3)

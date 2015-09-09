@@ -70,6 +70,8 @@ UnlumpFisheries<-function(Data,ProjData,RawData,BaselineYear,YearsBack,StitchIds
       group_by(Year,IdOrig,Country) %>%
       summarize(Percent=sum(Catch,na.rm=T)/sum(YearTotal,na.rm=T))
     
+    percentPast$Percent[percentPast$Percent==0]<-NA
+    
     # calculate percent of 5 year total catch to use for projections
     if(maxyr>BaselineYear)
     {
@@ -141,6 +143,13 @@ UnlumpFisheries<-function(Data,ProjData,RawData,BaselineYear,YearsBack,StitchIds
       
       unlumphist$DiscProfits<-unlumphist$DiscProfits*unlumphist$Percent
       
+      # Nullify BvBmsy and FvFmsy for any years where there is zero catch
+      if(any(is.na(unlumphist$Catch)))
+      {
+        unlumphist$BvBmsy[is.na(unlumphist$Catch)]<-NA
+        unlumphist$FvFmsy[is.na(unlumphist$Catch)]<-NA
+      }
+
       unlumphist<- unlumphist %>%
         dplyr::select(-Percent)
     

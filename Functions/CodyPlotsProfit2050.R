@@ -40,7 +40,7 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   pdf(file=paste(FigureFolder,'Figure 1 Profit 2050.pdf',sep=''),height=6,width=6)
   
   #==hardcoded numbers
-  discRt    	<- 0.05	# discount rate in annuity calculation
+  discRt    	<- 0.00	# discount rate in annuity calculation
   TimeHor			<- max(PlotTrend$Year)-2012		# time horizon in annuity calculation
   cutin				<- -75	# minimum value for figures
   cutoff			<- 200	# maximum value in figures
@@ -454,7 +454,7 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   symbols(x=xQuant,y=yQuant,circles=radius,
           bg=useCol,fg='black',inches=sizeCirc,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,xaxt='n')
-  text(xQuant,jitter(yQuant,factor=10),labs,cex=.75,col=colLabs)
+  text(xQuant,jitter(yQuant,factor=0),labs,cex=.75,col=colLabs)
   mtext(side=2,"Change Annual Profit ($ Billion)",line=2.25)
   mtext(side=1,"Change in Biomass (MMT)",outer=T)
   text(y=legendY*.84,x=legendX,"MSY ",cex=.7)
@@ -500,7 +500,7 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   useInd			<-match(tmp,tmp2)
   useInd			<-useInd[!is.na(useInd)]
   AllStocks		<-AllStocks[useInd,]
-  
+
   #==find which countries have the maximum of a quantity (NPV here)
   OverfishStocks  <-OverfishStocks[order(AllStocks$AbsChangeFromSQProfits,decreasing=T),]
   AllStocks       <-AllStocks[order(AllStocks$AbsChangeFromSQProfits,decreasing=T),]
@@ -517,11 +517,29 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
 #   yQuant			<-yQuant*discRt/(1-(1+discRt)^-TimeHor)
   
   labs<-c(as.character(OverfishStocks$Country))
+  
   colLabs<-rep(1,length(labs))
   
+  # Indicate which countries to label red
   if(IncludeNEIs==TRUE)
   {
     colLabs[which(OverfishStocks$NeiProfitsOver50)]<-2
+  }
+  
+  # Shorten long names
+  abbrev<-data.frame(c('Republic of Korea','Taiwan Province of China'),c('S. Korea','Taiwan'),stringsAsFactors = F)
+  colnames(abbrev)<-c('original','plotname')
+  
+  if(any(labs %in% abbrev$original))
+  {
+    swap<-labs[labs %in% abbrev$original]
+    
+    for(a in 1:length(swap)) 
+    { 
+      swapnew<-abbrev$plotname[abbrev$original==swap[a]]
+      b<-match(swap[a],labs)
+      labs[b]<-swapnew
+    }
   }
   
   #==represent MSY by area rather than radius
@@ -552,7 +570,7 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
           bg=useCol,fg='black',inches=sizeCirc,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,xaxt='n',yaxt='n')
   axis(side=4,las=1)
-  text(xQuant,jitter(yQuant,factor=10),labs,cex=.65,col=colLabs)
+  text(xQuant,jitter(yQuant,factor=0),labs,cex=.65,col=colLabs)
   #text(xQuant,yQuant,labs,cex=.65)
   text(x=45,y=0,"B")
   mtext(side=4,"Change in Annual Profit ($ Billion)",line=2.25)
@@ -650,7 +668,7 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   mtext(side=3,round(max(NoPastProfits),-1),adj=.94,line=-.05)
   color.legend(1987,105,2042,110,rect.col=col,legend="")
   par(xpd=FALSE)
-  mtext(side=2,expression('% Stocks not Overfished'),line=2.2)
+  mtext(side=2,expression('% Stocks above B/Bmsy of 0.8'),line=2.2)
   #   mtext(side=2,expression('B'[MSY]),line=2.1,adj=.75)
   mtext(side=1,"Year",line=2)
   par(new=T)
@@ -764,8 +782,24 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   par(new=T)
   symbols(x=plotx,y=ploty,plotz,
           inches=sizeCirc,ylim=ylimIn,xlim=xlimIn,bg=inCols,xaxt='n', yaxt='n',ylab='',xlab='',fg=1)
-  text(y=c(Profit[indPol],basePft),x=c(BioCur[indPol],baseBio),labName,cex=.85)
-  text(y=c(Profit[indPol]-catchAdj,basePft-catchAdj),x=c(BioCur[indPol],baseBio),round(c(CatCur[indPol],baseCat),1),cex=.65)
+  
+  
+  Yind<-c(Profit[indPol],basePft)
+  Yind2<-c(Profit[indPol]-catchAdj,basePft-catchAdj)
+  Xind<-c(BioCur[indPol],baseBio)
+  Xind2<-c(BioCur[indPol],baseBio)
+  #,round(c(CatCur[indPol],baseCat),1)
+  
+  # Adjust the position of the bubble labels. order is (BAU, BAUP, RBFM CC, RBFM All, Fmsy All, Fmsy, Today)
+  Xind<-  Xind+c(-125,0,0,0,0,0,125) 
+  Xind2<-Xind2+c(-125,0,0,0,0,0,125)
+  Yind<-  Yind+c(0,0,0,0,9,0,0)
+  Yind2<-Yind2+c(0,0,0,0,9,0,0)
+  
+  text(y=Yind,x=Xind,labName,cex=.85)
+  text(y=Yind2,x=Xind2,round(plotz,digits=1),cex=.65)
+  
+  
   mtext(side=1,"Biomass (MMT)",line=2)
   mtext(side=2,"Annual Profit ($ Billions)",line=2)
   legend("bottomleft",bty='n',col=c(col2,col3),pch=16,c("Policy applied to stocks of conservation concern",
