@@ -1,6 +1,6 @@
 gfr_qaqc <- function(ProjectionData,FigureFolder)
 {
-  
+  library(knitr)
   pdf(paste(FigureFolder,'check parameters.pdf', sep = ''))
   par(mfrow = c(2,2))
   hist(ProjectionData$MSY)
@@ -29,18 +29,18 @@ gfr_qaqc <- function(ProjectionData,FigureFolder)
   
   ids <- unique(ProjectionData$IdOrig)
   
-#   pdf(paste(FigureFolder,'check trajectories.pdf', sep = ''))
-#   for (i in 1:length(ids))
-#   {
-#     
-#     print(ggplot(subset(ProjectionData, IdOrig == ids[i] & Policy %in% c('Business As Usual','Business As Usual Pessimistic'
-#                                                                          ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three','Historic')), 
-#                  aes(Year,Catch, size = Profits, fill = Policy)) + 
-#             geom_point(shape = 21, alpha = 0.6) + 
-#             geom_vline(xintercept = 2012) + 
-#             ggtitle(ids[i]))
-#     
-#   }
-#   dev.off()
+  pdf(paste(FigureFolder,'check trajectories.pdf', sep = ''))
+  for (i in 1:length(ids))
+  {
+    
+    print(ggplot(subset(ProjectionData, IdOrig == ids[i] & Policy %in% c('Business As Usual','Business As Usual Pessimistic'
+                                                                         ,'Catch Share Three','CatchShare','Fmsy','Fmsy Three','Historic')), 
+                 aes(Year,Catch, size = Profits, fill = Policy)) + 
+            geom_point(shape = 21, alpha = 0.6) + 
+            geom_vline(xintercept = 2012) + 
+            ggtitle(ids[i]))
+    
+  }
+  dev.off()
   
 }
