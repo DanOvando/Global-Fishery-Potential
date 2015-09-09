@@ -141,26 +141,24 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
     #   FigureFolder<- paste(BatchFolder,'Diagnostics/Monte Carlo 2/',sep='')
   #   
   #   dir.create(FigureFolder,recursive=T)
-  pdf(file=paste(FigureFolder,'BvBmsy Monte Carlo.pdf',sep=''),width=7,height=5)
-  
   
   BioMonte$monte <- 'MonteCarlo'
   
   ProjMonte$monte <- 'Real'
   
-  CompMonte <- rbind(dplyr::select(BioMonte,-Iteration),ProjMonte)
-  
-
   BioMontePlot<- (ggplot(data=BioMonte,aes(x=FinalBiomass,y=FinalProfits,color=Policy,size = FinalCatch))+geom_point(alpha=0.7)+
                     ylab('2050 Profits ($)')+xlab('2050 Biomass (MT)'))
   
-  BioCompPlot<- (ggplot(data=CompMonte,aes(x=FinalBiomass,y=FinalProfits,color=Policy,size = FinalCatch))+geom_point(alpha=0.7)+
-                    ylab('2050 Profits ($)')+xlab('2050 Biomass (MT)') + facet_wrap(~monte))
-
-  ggsave(file=paste(FigureFolder,'BvBmsy Monte Carlo Comparison.pdf',sep=''),plot = BioCompPlot)
+  ggsave(file=paste(FigureFolder,'BvBmsy Monte Carlo.pdf',sep=''),plot = BioMontePlot,width=7,height=5)
   
-  print(BioMontePlot)
-  dev.off()
+#   print(BioMontePlot)
+#   dev.off()
+  
+  CompMonte <- rbind(dplyr::select(BioMonte,-Iteration),ProjMonte)
+  
+  BioCompPlot<- (ggplot(data=CompMonte,aes(x=FinalBiomass,y=FinalProfits,color=Policy,size = FinalCatch))+geom_point(alpha=0.7)+
+                   ylab('2050 Profits ($)')+xlab('2050 Biomass (MT)') + facet_wrap(~monte))
+  ggsave(file=paste(FigureFolder,'BvBmsy Monte Carlo Comparison.pdf',sep=''),plot = BioCompPlot)
   
   
   BioMonte<- BioMonte %>% 

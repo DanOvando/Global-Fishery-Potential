@@ -207,6 +207,7 @@ run_expanded_montecarlo<- function(Iterations,Stocks,projdata,
 
     RecentStockData$BvBmsy<- RecentStockData$BvBmsy* CurrentBio
     
+    RecentStockData$Price[RecentStockData$CatchShare == 1] <- (RecentStockData$Price / CatchSharePrice)[RecentStockData$CatchShare == 1]
     
     RecentStockData$Price<- RecentStockData$Price * runif(dim(RecentStockData)[1],lower_unif,upper_unif)
     
@@ -220,6 +221,9 @@ run_expanded_montecarlo<- function(Iterations,Stocks,projdata,
     #     RecentStockData$omega <-  runif(dim(RecentStockData)[1],0.75*base_omega,1.25*base_omega)
     #     RecentStockData$omega <-  runif(dim(RecentStockData)[1],base_omega,base_omega)
     CatchSharePrice<- CatchSharePrice  * runif(dim(RecentStockData)[1],lower_unif,upper_unif)
+    
+    RecentStockData$Price[RecentStockData$CatchShare == 1] <- (RecentStockData$Price * CatchSharePrice)[RecentStockData$CatchShare == 1]
+    
     
     CatchShareCost<- CatchShareCost  * runif(dim(RecentStockData)[1],lower_unif,upper_unif)
     
@@ -239,7 +243,7 @@ run_expanded_montecarlo<- function(Iterations,Stocks,projdata,
     #     phi<- RecentStockData$phi
     
     
-            RecentStockData$FvFmsy<- (RecentStockData$Catch/RecentStockData$MSY)/RecentStockData$BvBmsy
+#             RecentStockData$FvFmsy<- (RecentStockData$Catch/RecentStockData$MSY)/RecentStockData$BvBmsy
     
     #     RecentStockData$BvBmsy<- pmin(2.5,RecentStockData$BvBmsy* CurrentBio)
     #     
@@ -257,6 +261,10 @@ run_expanded_montecarlo<- function(Iterations,Stocks,projdata,
     c_den = (RecentStockData$g*RecentStockData$FOA)^RecentStockData$beta
     
     RecentStockData$cost = (c_num/c_den)
+    
+    RecentStockData$cost[RecentStockData$CatchShare == 1] <-  (RecentStockData$cost * CatchShareCost)[RecentStockData$CatchShare == 1]
+    
+    RecentStockData$MarginalCost = RecentStockData$cost
     
     RecentStockData$MsyProfits = RecentStockData$Price*RecentStockData$MSY - RecentStockData$cost*(RecentStockData$g)^RecentStockData$beta
     

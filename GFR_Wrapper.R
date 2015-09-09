@@ -563,8 +563,8 @@ quick_fig3 <- (ggplot(subset(cheat_fig3,Year == max(Year)),
                + geom_point(shape = 21,alpha = 0.6) +
                  scale_size_continuous(range  = c(8,15)) +
                  geom_text(aes(label = Policy),size = 3) +
-                 ylim(c(0,8e10)) +
-                 xlim(c(4e8,14e8)) +
+                 ylim(c(0,9e10)) +
+                 xlim(c(4e8,15e8)) +
                  xlab('Total Biomass') +
                  ylab('Total Profits'))
 
