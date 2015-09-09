@@ -239,7 +239,7 @@ run_expanded_montecarlo<- function(Iterations,Stocks,projdata,
     #     phi<- RecentStockData$phi
     
     
-    #         RecentStockData$FvFmsy<- (RecentStockData$Catch/RecentStockData$MSY)/RecentStockData$BvBmsy
+            RecentStockData$FvFmsy<- (RecentStockData$Catch/RecentStockData$MSY)/RecentStockData$BvBmsy
     
     #     RecentStockData$BvBmsy<- pmin(2.5,RecentStockData$BvBmsy* CurrentBio)
     #     
@@ -251,6 +251,12 @@ run_expanded_montecarlo<- function(Iterations,Stocks,projdata,
     RecentStockData$FOA<- ((RecentStockData$phi+1)/RecentStockData$phi)*(1-RecentStockData$BOA^RecentStockData$phi/(RecentStockData$phi+1))
     
     RecentStockData$cost <- RecentStockData$MarginalCost
+    
+    c_num <-  RecentStockData$Price*RecentStockData$FOA*RecentStockData$BOA*RecentStockData$MSY
+    
+    c_den = (RecentStockData$g*RecentStockData$FOA)^RecentStockData$beta
+    
+    RecentStockData$cost = (c_num/c_den)
     
     RecentStockData$MsyProfits = RecentStockData$Price*RecentStockData$MSY - RecentStockData$cost*(RecentStockData$g)^RecentStockData$beta
     

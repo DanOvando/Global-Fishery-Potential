@@ -231,6 +231,12 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,projdata,PolicyStorage,CatchMSY
     
     RecentStockData$cost <- RecentStockData$MarginalCost
     
+    c_num <-  RecentStockData$Price*RecentStockData$FOA*RecentStockData$BOA*RecentStockData$MSY
+    
+    c_den = (RecentStockData$g*RecentStockData$FOA)^RecentStockData$beta
+    
+    RecentStockData$cost = (c_num/c_den)
+    
     RecentStockData$MsyProfits = RecentStockData$Price*RecentStockData$MSY - RecentStockData$cost*(RecentStockData$g)^RecentStockData$beta
    
      bvec<- PolicyFuncs$b
