@@ -14,6 +14,7 @@ gfr_qaqc <- function(ProjectionData,FigureFolder)
   dev.off()
   
   summary_table <- ProjectionData %>%
+    ungroup() %>%
     summarize(min_msy = min(MSY,na.rm = T),max_msy = max(MSY, na.rm = T),
               min_g = min(g,na.rm = T), max_g = max(g, na.rm = T),
               max_price = max(Price, na.rm = T), min_price = min(Price, na.rm = T),
