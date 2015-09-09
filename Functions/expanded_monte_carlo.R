@@ -156,7 +156,6 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
   
   BioCompPlot<- (ggplot(data=CompMonte,aes(x=FinalBiomass,y=FinalProfits,color=Policy,size = FinalCatch))+geom_point(alpha=0.7)+
                     ylab('2050 Profits ($)')+xlab('2050 Biomass (MT)') + facet_wrap(~monte))
-
   ggsave(file=paste(FigureFolder,'BvBmsy Monte Carlo Comparison.pdf',sep=''),plot = BioCompPlot)
   
   print(BioMontePlot)
