@@ -209,11 +209,15 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,projdata,PolicyStorage,CatchMSY
     
     RecentStockData$Price<- RecentStockData$Price * runif(dim(RecentStockData)[1],lower_unif,upper_unif)
     
+    RecentStockData$Price[RecentStockData$CatchShare == 1] <- (RecentStockData$Price / CatchSharePrice)[RecentStockData$CatchShare == 1]
+    
     RecentStockData$beta <- base_beta * runif(dim(RecentStockData)[1],lower_unif,upper_unif)
     
     RecentStockData$omega <- base_omega * runif(dim(RecentStockData)[1],lower_unif,upper_unif)
     
     CatchSharePrice<- CatchSharePrice  * runif(dim(RecentStockData)[1],lower_unif,upper_unif)
+    
+    RecentStockData$Price[RecentStockData$CatchShare == 1] <- (RecentStockData$Price * CatchSharePrice)[RecentStockData$CatchShare == 1]
     
     CatchShareCost<- CatchShareCost  * runif(dim(RecentStockData)[1],lower_unif,upper_unif)
     
@@ -236,6 +240,10 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,projdata,PolicyStorage,CatchMSY
     c_den = (RecentStockData$g*RecentStockData$FOA)^RecentStockData$beta
     
     RecentStockData$cost = (c_num/c_den)
+    
+    RecentStockData$cost[RecentStockData$CatchShare == 1] <-  (RecentStockData$cost * CatchShareCost)[RecentStockData$CatchShare == 1]
+    
+    RecentStockData$MarginalCost = RecentStockData$cost
     
     RecentStockData$MsyProfits = RecentStockData$Price*RecentStockData$MSY - RecentStockData$cost*(RecentStockData$g)^RecentStockData$beta
    
@@ -318,7 +326,8 @@ run_cmsy_montecarlo<- function(Iterations,Stocks,projdata,PolicyStorage,CatchMSY
                                 omega = ProjectionMat$omega)
     
     ProjectionMat$Iteration<- k
-    #     BioMonte<- subset(BioMonte,Year==2012 | Year==2013 | Year==2050)
+    
+    ProjectionMat<- subset(ProjectionMat,Year==2012 | Year==2013 | Year==2050)
     return(ProjectionMat)
   } #Close McIterations
   
