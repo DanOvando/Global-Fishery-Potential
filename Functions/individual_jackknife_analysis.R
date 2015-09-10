@@ -28,7 +28,7 @@ individual_jackknife <- function(runfolder,CPUs, iterations, BaselineYear = 2012
   #   load('Results/4.2/Data/Global Fishery Recovery Results.rdata')
   
   #   NumCPUs<- 1
-  FigureFolder<- paste('Results/',runfolder,'/Diagnostics/cmsy monte carlo/',sep='')
+  FigureFolder<- paste('Results/',runfolder,'/Diagnostics/Individual Jackknife/',sep='')
   
   dir.create(FigureFolder,recursive=T)
   
