@@ -693,8 +693,12 @@ CodyPlots(FigureFolder,ResultFolder,Policy='Catch Share Three')
 
 CodyPlotsProfit2050(FigureFolder,ResultFolder,Policy='Catch Share Three')
 
+# RAM stock list
+ramlist<-subset(ProjectionData,Dbase=='RAM' & Year==2012,c('CommName','Country','RegionFAO'))
+write.csv(ramlist,file=paste(ResultFolder,'Ram Stock List.csv',sep=''))
+
 # Calculate global results for Figure One
-FigOneGlobalResults<-GlobalResultsFigOne(UpsideAllStocks,UpsideOverfishOnly,Policies=c('Catch Share Three','Fmsy Three'),discRt=Discount,TimeHor=38)
+# FigOneGlobalResults<-GlobalResultsFigOne(UpsideAllStocks,UpsideOverfishOnly,Policies=c('Catch Share Three','Fmsy Three'),discRt=Discount,TimeHor=38)
 
 # write.csv(file=paste(ResultFolder,'Projection Data.csv',sep=''),ProjectionData)
 #
