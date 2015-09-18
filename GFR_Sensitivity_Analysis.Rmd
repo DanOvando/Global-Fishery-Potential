@@ -3,16 +3,16 @@ title: "GFR SOM Sensitivities"
 author: "Dan Ovando"
 date: "February 26, 2015"
 output:
-  html_document:
-    fig_caption: yes
-  pdf_document:
-    fig_caption: yes
-    fig_height: 6
-    fig_width: 8
   word_document:
     fig_caption: yes
     fig_height: 6
     fig_width: 8
+  pdf_document:
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 8
+  html_document:
+    fig_caption: yes
 ---
 
 
@@ -55,7 +55,7 @@ Our results indicate that on average an IUU level of 25% has on average no effec
 
 We performed two jackknife routines to evaluate the ability of our model to predict out of sample. For both routines, we consider only RAM stocks, as these are the only instances we have "true" values for the parameters of interest (MSY, B/B~MSY~, F/F~MSY~). 
 
-We first performed an individual jackknife. We sequentially removed each RAM stock (n=398) from the regression block and re-estimated the PRM. We then predicted the status of the omitted stock using the re-estimated regression.  This predicted status was passed to Catch-MSY as the prior on final depletion, and the resulting predictions for B/B~MSY~, F/F~MSY~, and MSY for the omitted RAM stock were stored. 
+We first performed an individual jackknife. We sequentially removed each RAM stock (n=398XX) from the regression block and re-estimated the PRM. We then predicted the status of the omitted stock using the re-estimated regression.  This predicted status was passed to Catch-MSY as the prior on final depletion, and the resulting predictions for B/B~MSY~, F/F~MSY~, and MSY for the omitted RAM stock were stored. 
 
 Our median proportional error in B/B~MSY~ in 2012 (the primary year of interest) was  ~20%, suggesting that for the median fishery we are underestimating B/B~MSY~ in the most recent year available.  However, there is substantial variation in our estimates (Fig.XX). The individual jackknifing suggest that our estimates of B/B~MSY~ are on average negatively biased, but that there is substantial variation in the direction and magnitude of this bias for any individual fishery. 
 
@@ -67,7 +67,7 @@ Our median proportional error in B/B~MSY~ in 2012 (the primary year of interest)
 library(ggplot2)
 library(dplyr)
 
-BatchFolder<- "Results/5.1 global demand spcat phi/"
+BatchFolder<- "Results/5.6 global demand common phi/"
 
 FigureFolder<- paste(BatchFolder,'Diagnostics/Regional Jackknife/',sep='')
 
@@ -101,10 +101,6 @@ load(paste(FigureFolder,'BioMontePlots.Rdata',sep=''))
 The proportional error in our estimates of B/B~MSY~ is uncorrelated with catch in any given year (Fig.XX), but highly influenced by the "true"" B/B~MSY~ (Fig.XX). Specifically, we severely over-predict the B/B~MSY~ for highly overfished RAM stocks (i.e. when "true" B/B~MSY~ is less than 0.5, Fig.XX), and under-predict B/B~MSY~ when true B/B~MSY~ is high. 
 
 
-
-
-
-
 The F/F~MSY~ values from our individual jackknifing are highly positively biased, and have substantial amounts of error (Fig.XX)
 
 
@@ -128,30 +124,33 @@ We performed a Monte Carlo routine to evaluate the sensitivity of components of 
 
 This Monte Carlo routine only evaluates stocks that were run through Catch-MSY. It does not include RAM stocks for which we have "true" estimates of MSY, since at this time we do not have any method for estimating uncertainty around RAM values. This Monte Carlo also omits NEI stocks.  As a result this process provides an assessment of the broad degree of variability in our metrics of interest resulting from reasonably uncertainty in our parameter values. It is not a true assessment of the actual variability in our final results. 
 
-Catch-MSY provides a range of plausible values for *g* and MSY (often thousands of individual estimates for each fishery). For each iteration of the Monte Carlo, we drew random *g* and MSY pairs from Catch-MSY for each fishery.  For each fishery in each iteration we also apply a multiplicative  log-normal error term (~ln(0,0.25)) to price, B/B~MSY~ at open access (which implicitly affects costs), and the "RBFM effect" (the price and cost changes resulting from moving to an RBFM policy). We ran 500 Monte Carlo iterations for each fishery and stored results. 
+Catch-MSY provides a range of plausible pairs of *g* and MSY (often thousands of individual estimates for each fishery). For each iteration of the Monte Carlo, we drew random *g* and MSY pairs from Catch-MSY for each fishery.  For each fishery in each iteration we also apply a multiplicative  uniform error term (~U[0.75,1.25]) to price, B/B~MSY~ at open access (which implicitly affects costs), and the "RBFM effect" (the price and cost changes resulting from moving to an RBFM policy). We ran 500XX Monte Carlo iterations for each fishery and stored results. 
 
-Our results show that the total MSY estimated by Catch-MSY has relatively little variability, with most estimates of total MSY falling between 27 and 29 million MT ( Fig.XX ). 
-
-
-
-Our estimates of total catch in 2050 vary greatly among policies (as they are intended to do), with highest catches coming F~MSY~, and lowest catch (and highest uncertainty) under BAU S2
-
-
-Our 2050 distributions of profits for the Catch-MSY Monte Carlo retained the relative rankings of profitability by policy demonstrated in the paper. Profits were consistently lowest under the BAU scenarios, with the mean profits of the BAU (S2) scenario approaching zero. The RBFM and F~MSY~ policies retained their statuses as the most profitable, respectively. However, the magnitude of these profits varied substantially among iterations, by over 10 billion dollars in some instances.  This suggests that the relative rankings and orders of magnitude of our policies, with respect to future profits, are stable, but our estimates of total future profits (and NPV) themselves are much more uncertain than our estimates of future catch. This is to be expected, since our estimates of profits are dependent on more uncertain variables than catches alone (such as prices and costs). 
+Our results show that the total MSY estimated by Catch-MSY has relatively little variability, with most estimates of total MSY for this subset of stocks falling between 27 and 29 million MT ( Fig.XX ). 
 
 
 
-Our estimates of future B/B~MSY~ (Fig.xx) and F/F~MSY~ (Fig.XX) show very little variation within policies, and the relative differences among policies remain constant. However, this is of little surprise since most of our policies dictate F/F~MSY~ in order to achieve a particular B/B~MSY~. We do not re-optimize our policy functions for each Monte-Carlo run, so we do observe some variation in final B/B~MSY~ stemming from variation in *g*. The net result though is that our estimates of future B/B~MSY~ are largely unaffected by the values of the variables tested in the Monte Carlo. However, it is important to note that we do not consider any stochasticity the population dynamics (such as recruitment shocks), or any explicit errors in the application of management. 
+Our estimates of total catch in 2050 vary greatly among policies (as they are intended to do), with highest catches coming F~MSY~, and lowest catch (and highest uncertainty in catches) under BAU S2. Total catch in 2050 under the BAU policies is much more variable than the F~MSY~ or RBFM policies. 
+
+
+Our 2050 distributions of profits for the Catch-MSY Monte Carlo retained the relative rankings of profitability by policy demonstrated in the paper. Profits were consistently lowest under the BAU scenarios, with the mean profits of the BAU (S2) scenario approaching zero. The RBFM and F~MSY~ policies retained their statuses as the most profitable, respectively. However, the magnitude of these profits varied substantially among iterations, by over 5 billion dollars in some instances under RBFM. Total proifits under BAU policies had a 15 billion dollar range, but were always lower then F~MSY~ or RBFM. This suggests that the relative rankings and orders of magnitude of our RBFM and F~MSY~ policies, with respect to future profits, are stable, but our BAU estimates are much more uncertain. Our estimates of total future profits (and NPV) themselves are much more uncertain than our estimates of future catch. This is to be expected, since our estimates of profits are dependent on more uncertain variables than catches alone (such as prices and costs). 
+
+
+
+Our estimates of future B/B~MSY~ (Fig.xx) and F/F~MSY~ (Fig.XX) show very little variation within policies, and the relative differences among policies remain constant. However, this is of little surprise since the RBFM and F~MSY~ policies dictate F/F~MSY~ in order to achieve a particular B/B~MSY~. We do not re-optimize our policy functions for each Monte-Carlo run, so we do observe some variation in final B/B~MSY~ stemming from variation in *g*. The BAU policies are more uncertain due to the presence of open-access dynamics instead of fixed policy functions. The net result though is that our estimates of future B/B~MSY~ are largely unaffected by the values of the variables tested in the Monte Carlo. However, it is important to note that we do not consider any stochasticity the population dynamics (such as recruitment shocks), or any explicit errors in the application of management. 
 
 ## Expanded Monte Carlo
 
 Our Catch-MSY Monte Carlo analysis of our unassessed stocks provides an indicator of the variability of our results derived from the uncertainty resulting from Catch-MSY and reasonable uncertainty bounds in other critical parameters. However it does not directly reflect the potential uncertainty in the results reported in the body of the paper, since it does not include RAM, SOFIA, or NEI stocks. In order to address this, we performed an additional Monte Carlo routine, in which arbitrary amounts of error were applied to key parameters of all stocks included in our analysis in order to evaluate the effect of this uncertainty on the some of the key values reported in the body of the paper, particularly Fig.3. 
 
-B/B~MSY~ and F/F~MSY~ in 2012 are uncertain parameters in all of our fisheries. However, we do not have representative bounds on the uncertainty in these estimates for all stocks. As such, over this Monte Carlo we introduced an individual random multiplicative error term to B/B~MSY~ of each stock in 2012 (distributed uniform (0.5,1.5), and adjust F/F~MSY~ accordingly by $\frac{F}{F_{MSY}}= (\frac{Catch}{MSY}\frac{B_{MSY}}{B})$. We then also applied a random multiplicative log-normal error term (mean 0, sd 0.25) to our estimates of MSY, g, price, and B/B~MSY~ at open access (effectively costs) of each stock. Together these terms represent the primary drivers of our estimates of current and future profits, yields, and biomass. We then projected each stock forward for each policy in the same manner as described in the paper, producing a distribution around our projections of current and future profits, yields, and biomass. 
+B/B~MSY~ and F/F~MSY~ in 2012 are uncertain parameters in all of our fisheries. However, we do not have representative bounds on the uncertainty in these estimates for all stocks. As such, over this Monte Carlo we introduced an individual uniform random multiplicative error term to all parameters of interest (~ U[0.75,1.25]). The parameters tested are MSY, *g*, price, $\beta$, $\lambda$, B/B~MSY~ at open access (effectively costs), catch-share price and cost effects, B/B~MSY~ of each stock in 2012, and the 2012 F/F~MSY~ calculated by $\frac{F}{F_{MSY}}= (\frac{Catch}{MSY}\frac{B_{MSY}}{B})$. Together these terms represent the primary drivers of our estimates of current and future profits, yields, and biomass. We then projected each stock forward for each policy in the same manner as described in the paper, producing a distribution around our projections of current and future profits, yields, and biomass. 
 
-Our results show that while the point estimates of the total outcomes of any individual policy are variable, the general magnitude of each of the policies, and their performance relative to each other, does not change substantially as a result of introducing significant uncertainty into our model (Fig.XX). So, even if our estimates of status in 2012 are substantially wrong, this has relatively little impact in the findings of our paper. However, our results are more sensitive to our estimates of MSY, *g*, price, and BOA. It is important to note that for any given policy each of the points in Fig.XX shares a draw from the same iteration of the Monte Carlo routine with a point in the other policies. As such, while it may appear for example that in some instances the RBFM (CC) policy produced higher profits than the RBFM scenario, each point was not truly independently estimated for each policy, and so this is not a reliable comparison. Rather, the cloud for any given policy provides an estimate of the uncertainty around that particular policy, but is not as informative as to the ranking of that policy relative to other policies.   
+Our results show that while the point estimates of the total outcomes of any individual policy are variable, the general magnitude of each of the policies with respect to global profits, catch, and biomass, does not meaningfully change as a result of introducing significant uncertainty into the key parameters of our model, when compared to Fig.3 from the body of our paper (Fig.XX). Most policies had showed a spread in total profits of $10 billion and 100 MMT of total biomass. Total catches in 2050 varied very little within policies. The RBFM and F~MSY~ policies were much more consistent in their results, while the BAU policies, especially BAU applied to all stocks, showed the greatest variablity , especially in total profits. The results of this expanded Monte Carlo show that most of our policies  produce similar global results when substantial uncertainty is applied to all key parameters, both economic and biological, in the model. However, the BAU policies are much more uncertain than the RBFM and F~MSY~ policies. 
 
-To illustrate this point, we tallied the frequency of rankings by biomass and profits for each policy across the Monte Carlo iterations.Rankings were determined for each policy in each iteration by descending order of biomass and profits (separately). We see that the relative rankings of the policies in terms of 2050 biomass are relatively constant across the Monte Carlo iterations (Fig.XX), with RBFM always producing the highest biomass and BAU the lowest. We do see some switching between 3rd and 4th place in the relative rankings of 2050 biomass between F~MSY~ and BAU (CC), indicating that it is somewhat unclear from our simulations which of these two policies will produce more biomass in the sea in 2050. Our profit rankings are even clearer. There is no variation in the relative ranking by 2050 profits across the Monte Carlo iterations among the policies; RBFM always produced the highest total profits, BAU the last.  
+
+It is important to note that for any given policy each of the points in Fig.XX shares a draw from the same iteration of the Monte Carlo routine with a point in the other policies. As such, while it may appear for example that in some instances the RBFM (CC) policy produced higher profits than the RBFM scenario, each point was not truly independently estimated for each policy, and so this is not a reliable comparison. Rather, the cloud for any given policy provides an estimate of the uncertainty around that particular policy, but is not as informative as to the ranking of that policy relative to other policies.   
+
+To illustrate the uncertainty in the relative ranking of policies with respec to profits and biomass, we tallied the frequency of rankings by biomass and profits for each policy across the Monte Carlo iterations. Rankings were determined for each policy in each iteration by descending order of biomass and profits (separately). We see that the relative rankings of the policies in terms of 2050 biomass and profits are relatively constant across the Monte Carlo iterations (Fig.XX). RBFM (CC) always had the highest biomass, BAU the least. RBFM had the highest profits in every run, BAU the least. F~MSY~ and "Today" were the only policies to change substantially, suggesting that is somewhat unclear whether profits and biomass are greater under F~MSY~ than today.
 
 ```{r,echo=F,message=F,warning=FALSE,fig.cap='Effects of IUU. Proportional error represents the % change from the current estimate of B/B~MSY~ (bPE), F/F~MSY~(fPE), and MSY (MSYPE). The black vertical line marks a proportional error of zero. The red line is the percentage of IUU used'}
 
