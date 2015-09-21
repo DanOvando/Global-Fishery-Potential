@@ -16,9 +16,14 @@ Batch<-
 ## NEI
 nei<-read.csv('Results/6.0 global demand common phi/Data/UnLumped Projection DataAll Stocks Profit Upsides From NEIs.csv',stringsAsFactors=F)
 
-nei$Percent.of.Total.Profit.Upside.from.NEIs<-format(round(nei$Percent.of.Total.Profit.Upside.from.NEIs,2),nsmall=2)
+# nei$Percent.of.Total.Profit.Upside.from.NEIs<-format(round(nei$Percent.of.Total.Profit.Upside.from.NEIs,2),nsmall=2)
 
-colnames(nei)<-c('X','Country','Policy','Scenario','Identification Level','Profit Upside Relative to BAU from NEIs','Total Profit Upside','Percent of Total Profit Upside from NEIs')
+nei<-nei %>%
+  select(X,Country,Policy,Scenario,Identification.Level,Percent.of.Total.Country.Profits.from.NEIs)
+
+nei$Percent.of.Total.Country.Profits.from.NEIs<-format(round(nei$Percent.of.Total.Country.Profits.from.NEIs,2),nsmall=2)
+
+colnames(nei)<-c('X','Country','Policy','Scenario','Identification Level','Percent of Country Profits from NEIs')
 
 nei$Scenario<-'Cons. Concern'
 
@@ -31,6 +36,12 @@ costratio<-read.csv('Results/6.0 global demand common phi/Data/Cost_Revenue_Rati
 costperton<-read.csv('Results/6.0 global demand common phi/Data/CostPerTon_Ratios_ISSCAAP.csv',stringsAsFactors=F)
 
 cost<-inner_join(costratio[,c('ISSCAAP.Group','Median','Mean')],costperton[,c('ISSCAAP.Group','Median','Mean')],by=c('ISSCAAP.Group'))
+
+cost$Median.x<-format(round(cost$Median.x,2),nsmall=2)
+cost$Mean.x<-format(round(cost$Mean.x,2),nsmall=2)
+
+cost$Median.y<-format(round(cost$Median.y,0),nsmall=0)
+cost$Mean.y<-format(round(cost$Mean.y,0),nsmall=0)
 
 colnames(cost)<-c('ISSCAAP Category','Median Ratio','Mean Ratio','Median $/Ton','Mean $/Ton')
 
@@ -48,13 +59,31 @@ fig3$Catch<-format(round(fig3$Catch,1),nsmall=2)
 colnames(fig3)<-c('Policy','Biomass (MMT)','Annual Profit ($ Billions)','Harvest (MMT)')
 
 ## RAM stock list
-# ram<-read.csv('/Users/Tyler/Documents/Sustainable Fisheries Group/SFG 2014/Global Fishery Potential/Results/5.1 global demand spcat phi/Data/Ram Stock List.csv',stringsAsFactors=F)
-# 
-# ram<-ram[,c('IdOrig','CommName','Country','RegionFAO')]
-# 
-# colnames(ram)<-c('Stock ID','Stock Name','Assigned Country','FAO Region')
+ram<-read.csv('Results/6.0 global demand common phi/Data/Ram Stock List.csv',stringsAsFactors=F)
 
-## Species specific phi values
+ram<-ram[,c('CommName','Country','RegionFAO')] %>%
+  arrange(Country)
+
+colnames(ram)<-c('Stock Name','Assigned Country','FAO Region')
+
+## Commodity categories
+
+commods<-read.csv('Data/CommodityNames.csv',stringsAsFactors=F)
+
+  for(a in 1:nrow(commods))
+  {
+  if(commods$BestGuess...Not.included.in.2020[a]=='X') commods$CommodityName[a]<-paste(commods$CommodityName[a],'*',sep='')
+  }
+
+SpeciesCategoriesToOmit<- c('Corals','Frogs and other amphibians','Eared seals, hair seals, walruses',
+                            'Turtles','Pearls, mother-of-pearl, shells','Crocodiles and alligators','Miscellaneous aquatic plants','Freshwater crustaceans','Sperm-whales, pilot-whales','Green seaweeds','Red seaweeds','Brown seaweeds','Sea-squirts and other tunicates','Blue-whales, fin-whales','Miscellaneous aquatic mammals','Sponges','Krill, planktonic crustaceans','Miscellaneous freshwater fishes','River eels','Freshwater molluscs')
+
+commods<-commods %>%
+  select(ISSCAAP,CommodityName) %>%
+  filter(!(ISSCAAP %in% SpeciesCategoriesToOmit) & ISSCAAP!='Marine fishes nei') %>%
+  arrange(CommodityName)
+
+colnames(commods)<-c('Species Category (ISSCAAP)','Commodity Category')
 
 
 ```
@@ -67,7 +96,7 @@ kable(cost)
 ```
 
 **Table S6**  
-Global results for all policies (BAU, RBFM, and FMSY) and scenarios (S1 and S2) in 2050 as presented in Figure 3 of the main text  
+Global results for all policies (BAU, RBFM, and FMSY) and scenarios (S1 and S2) in 2050 as presented in Figure 3 of the main tex 
 ```{r,echo=F,results='asis'}
 kable(fig3)
 ```
@@ -75,13 +104,19 @@ kable(fig3)
 **Table S7**  
 Percent of upside in profit from NEI fisheries by Country for the RBFM policy applied to stocks of conservation concern
 ```{r,echo=FALSE,results='asis'}
-kable(nei[,c('Country','Scenario','Policy','Percent of Total Profit Upside from NEIs')])
+kable(nei[,c('Country','Scenario','Policy','Percent of Country Profits from NEIs')])
 ```
 
 **Table S8**  
 Fisheries included from the RAM Legacy Stock Assessment Database. Upsides for fisheries listed as "Multinational" were distributed to countries identified as participating in that fishery using FAO landings data (SOM)
 ```{r,echo=F,results='asis'}
-# kable(ram)
+kable(ram)
+```
+
+**Table S9**  
+ISSCAAP categories and their assigned commodity market categories as per Delgado et al. Asterisks indicate ISSCAAP categories that have been modified by the FAO since Delgado et al. and were categorized by the authors. ISSCAAP categories not included in Delgado et al. were categorized as 'Other marine animals'
+```{r,echo=F,results='asis'}
+kable(commods)
 ```
 
 
