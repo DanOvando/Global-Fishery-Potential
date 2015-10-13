@@ -18,10 +18,10 @@
 
 FishForeverCntry<-function(Data,FFCntrys,BaselineYear)
 {
-  library(plyr)
-  library(tidyr)
-  library(dplyr)
-  library(stringr)
+#   library(plyr)
+#   library(tidyr)
+#   library(dplyr)
+#   library(stringr)
   
   # Subset data to include Fish Forever Countries and relevant columns
   FF<- Data %>%
@@ -202,7 +202,15 @@ FishForeverCntry<-function(Data,FFCntrys,BaselineYear)
   
   FinalData<-ldply(FinalData)
   
-  write.csv(FinalData,file=paste(ResultFolder,'FF Country Upside Full Data V2.csv',sep=''))
+  write.csv(FinalData,file=paste(ResultFolder,'FF Country Upside Full Data.csv',sep=''))
+  
+  ### Create any desired data subsets --------------------------------------------------------------------------------
+  
+  rbfm<- FinalData %>%
+    filter(Policy=='RBFM' & Year==2020 & Subset!='Offshore') %>%
+    select(Country,Policy,Scenario,Subset,Year,Fisheries.x,TotalMSY,MeanPrice.x,TotalCatch,BaselineCatch,TotalCatchBAU,TotalProfits,BaselineProfits,TotalProfitsBAU,
+           AbsChangeProfits,PercChangeProfits,AbsChangeProfitsBAU,PercChangeProfitsBAU) %>%
+    group_by(Country,Policy,Scenario,Subset,Year) 
   
   ### Plot --------------------------------------------------------------------------------
 
