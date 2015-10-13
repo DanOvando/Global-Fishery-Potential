@@ -1,5 +1,5 @@
-rm(list = ls())
-load('Results/5.1 global demand spcat phi/Data/ProjectionData Data.rdata')
+# rm(list = ls())
+# load('Results/5.1 global demand spcat phi/Data/ProjectionData Data.rdata')
 
 damn <- UnlumpedProjectionData %>%
   ungroup() %>%

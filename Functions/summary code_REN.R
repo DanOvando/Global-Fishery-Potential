@@ -472,8 +472,8 @@ write.csv(T30,paste(ResultFolder,'STEVE_CS_Fmsy_BAU.csv',sep=''))
 ###PlotPercentages
 ###############################
 
-library(gridExtra)
-UniqName<-unique(DDU$Country)
+# library(gridExtra)
+# UniqName<-unique(DDU$Country)
 
 W<-list("Biomass_CatchShareVsToday_Rebuild",
 "Harvest_CatchShareVsToday_Rebuild",
@@ -488,57 +488,58 @@ W<-list("Biomass_CatchShareVsToday_Rebuild",
 "Harvest_CatchShareVsBAU_All",
 "Annuity_CatchShareVsBAU_All")
 
-pdf(file=paste(FigureFolder,"Plot_Percentages_Lumped.pdf",sep=''), onefile = TRUE)
-for (i in UniqName) {
-par(oma=c(8,0,0,0))
-
-if (i %in% AllPersU$PERCENTCHANGE){ 
-subdatU <- subset(AllPersU,AllPersU$PERCENTCHANGE == i)
-subdat2U <- t(subdatU)
-subdat2U<-subdat2U[-1,]} 
-else {
-subdat2U=list(0,0,0,0,0,0,0,0,0,0,0,0)
-names(subdat2U)<- W
-}
-
-if (i %in% AllPersL$PERCENTCHANGE){
-subdatL <- subset(AllPersL,AllPersL$PERCENTCHANGE == i)
-subdat2L <- t(subdatL)
-subdat2L<-subdat2L[-1,]}
-else{
-subdat2L=list(0,0,0,0,0,0,0,0,0,0,0,0)
-names(subdat2L)<- W
-}
-
-barplot(t(subdat2L),las=2,cex.names=0.8,ylab="Percent Change",main=i)
-}
-dev.off()
-
-pdf(file=paste(FigureFolder,"Plot_Percentages_Unlumped.pdf",sep=''), onefile = TRUE)
-for (i in UniqName) {
-par(oma=c(8,0,0,0))
-
-if (i %in% AllPersU$PERCENTCHANGE){ 
-subdatU <- subset(AllPersU,AllPersU$PERCENTCHANGE == i)
-subdat2U <- t(subdatU)
-subdat2U<-subdat2U[-1,]} 
-else {
-subdat2U=list(0,0,0,0,0,0,0,0,0,0,0,0)
-names(subdat2U)<- W
-}
-
-if (i %in% AllPersL$PERCENTCHANGE){
-subdatL <- subset(AllPersL,AllPersL$PERCENTCHANGE == i)
-subdat2L <- t(subdatL)
-subdat2L<-subdat2L[-1,]}
-else{
-subdat2L=list(0,0,0,0,0,0,0,0,0,0,0,0)
-names(subdat2L)<- W
-}
-
-barplot(t(subdat2U),las=2,cex.names=0.8,ylab="Percent Change",main=i)
-}
-dev.off()
+# pdf(file=paste(FigureFolder,"Plot_Percentages_Lumped.pdf",sep=''), onefile = TRUE)
+# for (i in UniqName) {
+# par(oma=c(8,0,0,0))
+# 
+# if (i %in% AllPersU$PERCENTCHANGE){ 
+# subdatU <- subset(AllPersU,AllPersU$PERCENTCHANGE == i)
+# subdat2U <- t(subdatU)
+# subdat2U<-subdat2U[-1,]} 
+# else {
+# subdat2U=list(0,0,0,0,0,0,0,0,0,0,0,0)
+# names(subdat2U)<- W
+# }
+# 
+# if (i %in% AllPersL$PERCENTCHANGE){
+# subdatL <- subset(AllPersL,AllPersL$PERCENTCHANGE == i)
+# subdat2L <- t(subdatL)
+# subdat2L<-subdat2L[-1,]}
+# else{
+# subdat2L=list(0,0,0,0,0,0,0,0,0,0,0,0)
+# names(subdat2L)<- W
+# }
+# 
+# barplot(t(subdat2L),las=2,cex.names=0.8,ylab="Percent Change",main=i)
+# }
+# dev.off()
+# 
+# pdf(file=paste(FigureFolder,"Plot_Percentages_Unlumped.pdf",sep=''), onefile = TRUE)
+# browser()
+# for (i in UniqName) {
+# par(oma=c(8,0,0,0))
+# 
+# if (i %in% AllPersU$PERCENTCHANGE){ 
+# subdatU <- subset(AllPersU,AllPersU$PERCENTCHANGE == i)
+# subdat2U <- t(subdatU)
+# subdat2U<-subdat2U[-1,]} 
+# else {
+# subdat2U=list(0,0,0,0,0,0,0,0,0,0,0,0)
+# names(subdat2U)<- W
+# }
+# 
+# if (i %in% AllPersL$PERCENTCHANGE){
+# subdatL <- subset(AllPersL,AllPersL$PERCENTCHANGE == i)
+# subdat2L <- t(subdatL)
+# subdat2L<-subdat2L[-1,]}
+# else{
+# subdat2L=list(0,0,0,0,0,0,0,0,0,0,0,0)
+# names(subdat2L)<- W
+# }
+# 
+# barplot(t(subdat2U),las=2,cex.names=0.8,ylab="Percent Change",main=i)
+# }
+# dev.off()
 
 # return values table
 
