@@ -1,5 +1,5 @@
 fuck <- subset(ProjectionData) %>%
-  group_by(Year,Policy,CommodityName) %>%
+  group_by(Year,Policy) %>%
   mutate(total_catch = sum(Catch, na.rm = T),total_profits = sum(Profits, na.rm = T),mean_price = mean(Price,na.rm = T))
 
 
@@ -8,9 +8,9 @@ fuck <- subset(ProjectionData) %>%
 #   theme(text = element_text(size = 6)))
 
 phew <- (ggplot(subset(fuck, Policy == 'Catch Share Three' & IdLevel == 'Species'), aes((total_catch), Price,group = IdOrig)) 
-         + geom_line(alpha = 0.1) + geom_point(aes(color = Year),alpha = 0.3) + facet_wrap(~CommodityName, scales = 'free') +xlab('Global Species Category Catch') + 
-           theme(text = element_text(size = 6)))
-
+         + geom_line(alpha = 0.1) + geom_point(shape = 21,aes(fill = Year),alpha = 0.3) +
+          facet_wrap(~CommodityName, scales = 'fixed') +xlab('Global Catch') + 
+           theme(text = element_text(size = 12),axis.text.x = element_text(size = 6)))
 fucker <- ProjectionData %>%
   group_by(Year,Policy) %>%
   summarize(total_catch = sum(Catch, na.rm = T),total_profits = sum(Profits, na.rm = T),mean_price = mean(Price,na.rm = T))
