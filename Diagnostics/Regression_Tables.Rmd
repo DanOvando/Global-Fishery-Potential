@@ -12,6 +12,7 @@ output:
 library(knitr)
 library(texreg)
 library(stargazer)
+library(broom)
 
 # Load regression data
 load('/Users/Tyler/Documents/Sustainable Fisheries Group/SFG 2014/Global Fishery Potential/Results/4.2/Data/PrmRegressions.Rdata')

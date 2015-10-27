@@ -3,7 +3,9 @@ GFR_Master.R
 .Rhistory
 .Rdata
 ~Data**/*.Rdata
+**/*.zip
 **/*.pdf
+**/*.png
 **/*.xlsx
 **/*.xls
 **/*.Rproj
