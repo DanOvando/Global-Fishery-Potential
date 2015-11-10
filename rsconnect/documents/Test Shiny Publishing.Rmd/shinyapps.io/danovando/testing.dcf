@@ -1,0 +1,8 @@
+name: testing
+account: danovando
+server: shinyapps.io
+bundleId: 293877
+url: https://danovando.shinyapps.io/testing
+when: 1445470444.51358
+asMultiple: FALSE
+asStatic: FALSE

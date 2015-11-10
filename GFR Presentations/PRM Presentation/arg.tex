@@ -1,0 +1,295 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+    \usepackage{xltxtra,xunicode}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\ifxetex
+  \usepackage[setpagesize=false, % page size defined by xetex
+              unicode=false, % unicode breaks when used with xetex
+              xetex]{hyperref}
+\else
+  \usepackage[unicode=true]{hyperref}
+\fi
+\hypersetup{breaklinks=true,
+            bookmarks=true,
+            pdfauthor={},
+            pdftitle={},
+            colorlinks=true,
+            citecolor=blue,
+            urlcolor=blue,
+            linkcolor=magenta,
+            pdfborder={0 0 0}}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\setcounter{secnumdepth}{0}
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{}
+  \pretitle{\vspace{\droptitle}}
+  \posttitle{}
+  \author{}
+  \preauthor{}\postauthor{}
+  \date{}
+  \predate{}\postdate{}
+
+
+
+\begin{document}
+
+\maketitle
+
+
+\pagenumbering{gobble}
+
+\begin{table}[h]
+\caption{Summary statistics for model 1}
+\begin{center}
+\begin{tabular}{l c }
+\hline
+                                            & Model 1 \\
+\hline
+(Intercept)                                 & $-2.75 \; (0.11)^{***}$ \\
+YearsBack                                   & $0.01 \; (0.00)^{***}$  \\
+ScaledCatch                                 & $0.29 \; (0.16)$        \\
+ScaledCatch1Back                            & $0.20 \; (0.17)$        \\
+ScaledCatch2Back                            & $0.07 \; (0.17)$        \\
+ScaledCatch3Back                            & $0.04 \; (0.16)$        \\
+ScaledCatch4Back                            & $-0.12 \; (0.13)$       \\
+MaxCatch                                    & $0.00 \; (0.00)$        \\
+TimeToMaxCatch                              & $0.02 \; (0.00)^{***}$  \\
+InitialScaledCatchSlope                     & $-4.05 \; (0.41)^{***}$ \\
+MeanScaledCatch                             & $0.63 \; (0.16)^{***}$  \\
+CatchToRollingMax                           & $0.91 \; (0.10)^{***}$  \\
+MaxLength                                   & $0.00 \; (0.00)^{*}$    \\
+AgeMat                                      & $0.03 \; (0.00)^{***}$  \\
+VonBertK                                    & $-0.18 \; (0.10)$       \\
+Temp                                        & $0.03 \; (0.01)^{***}$  \\
+SpeciesCatNameFlounders, halibuts, soles    & $0.72 \; (0.07)^{***}$  \\
+SpeciesCatNameHerrings, sardines, anchovies & $0.61 \; (0.06)^{***}$  \\
+SpeciesCatNameMiscellaneous coastal fishes  & $0.67 \; (0.20)^{***}$  \\
+SpeciesCatNameMiscellaneous demersal fishes & $1.17 \; (0.10)^{***}$  \\
+SpeciesCatNameMiscellaneous pelagic fishes  & $-0.42 \; (0.10)^{***}$ \\
+SpeciesCatNameSharks, rays, chimaeras       & $0.80 \; (0.23)^{***}$  \\
+SpeciesCatNameTunas, bonitos, billfishes    & $0.44 \; (0.09)^{***}$  \\
+\hline
+R$^2$                                       & 0.48                    \\
+Adj. R$^2$                                  & 0.47                    \\
+Num. obs.                                   & 3240                    \\
+RMSE                                        & 0.86                    \\
+\hline
+\multicolumn{2}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$}}
+\end{tabular}
+\label{table:coefficients}
+\end{center}
+\end{table}
+
+\begin{table}[h]
+\caption{Summary statistics for model 2}
+\begin{center}
+\begin{tabular}{l c }
+\hline
+                                            & Model 2 \\
+\hline
+(Intercept)                                 & $-1.05 \; (0.07)^{***}$ \\
+YearsBack                                   & $0.00 \; (0.00)$        \\
+ScaledCatch                                 & $-0.39 \; (0.11)^{***}$ \\
+ScaledCatch1Back                            & $0.27 \; (0.11)^{**}$   \\
+ScaledCatch2Back                            & $0.09 \; (0.10)$        \\
+ScaledCatch3Back                            & $0.01 \; (0.10)$        \\
+ScaledCatch4Back                            & $-0.14 \; (0.08)$       \\
+MaxCatch                                    & $-0.00 \; (0.00)^{***}$ \\
+TimeToMaxCatch                              & $0.01 \; (0.00)^{***}$  \\
+InitialScaledCatchSlope                     & $-0.42 \; (0.22)$       \\
+MeanScaledCatch                             & $0.32 \; (0.11)^{**}$   \\
+CatchToRollingMax                           & $1.46 \; (0.07)^{***}$  \\
+MaxLength                                   & $-0.00 \; (0.00)^{***}$ \\
+AgeMat                                      & $0.02 \; (0.00)^{***}$  \\
+VonBertK                                    & $0.02 \; (0.08)$        \\
+SpeciesCatNameFlounders, halibuts, soles    & $-0.41 \; (0.04)^{***}$ \\
+SpeciesCatNameHerrings, sardines, anchovies & $-0.06 \; (0.04)$       \\
+SpeciesCatNameMiscellaneous coastal fishes  & $0.10 \; (0.04)^{*}$    \\
+SpeciesCatNameMiscellaneous demersal fishes & $0.54 \; (0.04)^{***}$  \\
+SpeciesCatNameMiscellaneous pelagic fishes  & $-0.21 \; (0.05)^{***}$ \\
+SpeciesCatNameSharks, rays, chimaeras       & $0.72 \; (0.24)^{**}$   \\
+SpeciesCatNameTunas, bonitos, billfishes    & $0.48 \; (0.04)^{***}$  \\
+\hline
+R$^2$                                       & 0.32                    \\
+Adj. R$^2$                                  & 0.32                    \\
+Num. obs.                                   & 8075                    \\
+RMSE                                        & 0.94                    \\
+\hline
+\multicolumn{2}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$}}
+\end{tabular}
+\label{table:coefficients}
+\end{center}
+\end{table}
+
+\begin{table}[h]
+\caption{Summary statistics for model 3}
+\begin{center}
+\begin{tabular}{l c }
+\hline
+                                            & Model 3 \\
+\hline
+(Intercept)                                 & $-0.88 \; (0.32)^{**}$  \\
+YearsBack                                   & $0.00 \; (0.00)^{***}$  \\
+ScaledCatch                                 & $-0.25 \; (0.10)^{*}$   \\
+ScaledCatch1Back                            & $0.24 \; (0.09)^{**}$   \\
+ScaledCatch2Back                            & $0.08 \; (0.09)$        \\
+ScaledCatch3Back                            & $-0.00 \; (0.09)$       \\
+ScaledCatch4Back                            & $-0.19 \; (0.07)^{**}$  \\
+MaxCatch                                    & $-0.00 \; (0.00)^{***}$ \\
+TimeToMaxCatch                              & $0.01 \; (0.00)^{***}$  \\
+InitialScaledCatchSlope                     & $0.20 \; (0.20)$        \\
+MeanScaledCatch                             & $0.35 \; (0.09)^{***}$  \\
+CatchToRollingMax                           & $1.26 \; (0.06)^{***}$  \\
+MaxLength                                   & $-0.00 \; (0.00)^{***}$ \\
+VonBertK                                    & $0.21 \; (0.07)^{**}$   \\
+SpeciesCatNameCods, hakes, haddocks         & $-0.31 \; (0.31)$       \\
+SpeciesCatNameFlounders, halibuts, soles    & $-0.58 \; (0.31)$       \\
+SpeciesCatNameHerrings, sardines, anchovies & $-0.26 \; (0.31)$       \\
+SpeciesCatNameLobsters, spiny-rock lobsters & $-1.19 \; (0.43)^{**}$  \\
+SpeciesCatNameMiscellaneous coastal fishes  & $-0.23 \; (0.31)$       \\
+SpeciesCatNameMiscellaneous demersal fishes & $0.42 \; (0.31)$        \\
+SpeciesCatNameMiscellaneous pelagic fishes  & $-0.67 \; (0.31)^{*}$   \\
+SpeciesCatNameSharks, rays, chimaeras       & $0.66 \; (0.39)$        \\
+SpeciesCatNameShrimps, prawns               & $-0.25 \; (0.35)$       \\
+SpeciesCatNameTunas, bonitos, billfishes    & $0.22 \; (0.31)$        \\
+\hline
+R$^2$                                       & 0.32                    \\
+Adj. R$^2$                                  & 0.32                    \\
+Num. obs.                                   & 9475                    \\
+RMSE                                        & 0.92                    \\
+\hline
+\multicolumn{2}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$}}
+\end{tabular}
+\label{table:coefficients}
+\end{center}
+\end{table}
+
+\begin{table}[h]
+\caption{Summary statistics for model 4}
+\begin{center}
+\begin{tabular}{l c }
+\hline
+                                            & Model 4 \\
+\hline
+(Intercept)                                 & $-0.82 \; (0.31)^{**}$  \\
+YearsBack                                   & $0.00 \; (0.00)^{***}$  \\
+ScaledCatch                                 & $-0.23 \; (0.09)^{**}$  \\
+ScaledCatch1Back                            & $0.25 \; (0.09)^{**}$   \\
+ScaledCatch2Back                            & $0.06 \; (0.08)$        \\
+ScaledCatch3Back                            & $-0.01 \; (0.08)$       \\
+ScaledCatch4Back                            & $-0.21 \; (0.07)^{**}$  \\
+MaxCatch                                    & $-0.00 \; (0.00)^{***}$ \\
+TimeToMaxCatch                              & $0.01 \; (0.00)^{***}$  \\
+InitialScaledCatchSlope                     & $0.16 \; (0.19)$        \\
+MeanScaledCatch                             & $0.28 \; (0.09)^{**}$   \\
+CatchToRollingMax                           & $1.17 \; (0.06)^{***}$  \\
+VonBertK                                    & $0.39 \; (0.06)^{***}$  \\
+SpeciesCatNameCods, hakes, haddocks         & $-0.53 \; (0.31)$       \\
+SpeciesCatNameFlounders, halibuts, soles    & $-0.61 \; (0.31)^{*}$   \\
+SpeciesCatNameHerrings, sardines, anchovies & $-0.40 \; (0.31)$       \\
+SpeciesCatNameLobsters, spiny-rock lobsters & $-1.20 \; (0.42)^{**}$  \\
+SpeciesCatNameMiscellaneous coastal fishes  & $-0.38 \; (0.31)$       \\
+SpeciesCatNameMiscellaneous demersal fishes & $0.24 \; (0.31)$        \\
+SpeciesCatNameMiscellaneous pelagic fishes  & $-0.81 \; (0.31)^{**}$  \\
+SpeciesCatNameSharks, rays, chimaeras       & $0.23 \; (0.32)$        \\
+SpeciesCatNameShrimps, prawns               & $-0.24 \; (0.35)$       \\
+SpeciesCatNameTunas, bonitos, billfishes    & $-0.20 \; (0.31)$       \\
+\hline
+R$^2$                                       & 0.30                    \\
+Adj. R$^2$                                  & 0.30                    \\
+Num. obs.                                   & 10463                   \\
+RMSE                                        & 0.91                    \\
+\hline
+\multicolumn{2}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$}}
+\end{tabular}
+\label{table:coefficients}
+\end{center}
+\end{table}
+
+\begin{table}[h]
+\caption{Summary statistics for model 5}
+\begin{center}
+\begin{tabular}{l c }
+\hline
+                                              & Model 5 \\
+\hline
+(Intercept)                                   & $-0.66 \; (0.07)^{***}$ \\
+YearsBack                                     & $0.01 \; (0.00)^{***}$  \\
+ScaledCatch                                   & $-0.11 \; (0.08)$       \\
+ScaledCatch1Back                              & $0.20 \; (0.07)^{**}$   \\
+ScaledCatch2Back                              & $0.02 \; (0.07)$        \\
+ScaledCatch3Back                              & $-0.03 \; (0.07)$       \\
+ScaledCatch4Back                              & $-0.20 \; (0.06)^{***}$ \\
+MaxCatch                                      & $-0.00 \; (0.00)^{***}$ \\
+TimeToMaxCatch                                & $0.01 \; (0.00)^{***}$  \\
+InitialScaledCatchSlope                       & $0.77 \; (0.15)^{***}$  \\
+MeanScaledCatch                               & $0.04 \; (0.07)$        \\
+CatchToRollingMax                             & $1.07 \; (0.05)^{***}$  \\
+SpeciesCatNameClams, cockles, arkshells       & $0.57 \; (0.16)^{***}$  \\
+SpeciesCatNameCods, hakes, haddocks           & $-0.48 \; (0.07)^{***}$ \\
+SpeciesCatNameCrabs, sea-spiders              & $-0.06 \; (0.10)$       \\
+SpeciesCatNameFlounders, halibuts, soles      & $-0.42 \; (0.07)^{***}$ \\
+SpeciesCatNameHerrings, sardines, anchovies   & $-0.16 \; (0.07)^{*}$   \\
+SpeciesCatNameKing crabs, squat-lobsters      & $0.20 \; (0.11)$        \\
+SpeciesCatNameLobsters, spiny-rock lobsters   & $-0.69 \; (0.08)^{***}$ \\
+SpeciesCatNameMiscellaneous coastal fishes    & $-0.42 \; (0.07)^{***}$ \\
+SpeciesCatNameMiscellaneous demersal fishes   & $0.22 \; (0.07)^{**}$   \\
+SpeciesCatNameMiscellaneous pelagic fishes    & $-0.70 \; (0.07)^{***}$ \\
+SpeciesCatNameScallops, pectens               & $-0.87 \; (0.13)^{***}$ \\
+SpeciesCatNameSharks, rays, chimaeras         & $0.19 \; (0.10)^{*}$    \\
+SpeciesCatNameShrimps, prawns                 & $-0.64 \; (0.10)^{***}$ \\
+SpeciesCatNameSquids, cuttlefishes, octopuses & $0.60 \; (0.17)^{***}$  \\
+SpeciesCatNameTunas, bonitos, billfishes      & $-0.08 \; (0.07)$       \\
+\hline
+R$^2$                                         & 0.27                    \\
+Adj. R$^2$                                    & 0.27                    \\
+Num. obs.                                     & 13611                   \\
+RMSE                                          & 0.90                    \\
+\hline
+\multicolumn{2}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$}}
+\end{tabular}
+\label{table:coefficients}
+\end{center}
+\end{table}
+
+\end{document}

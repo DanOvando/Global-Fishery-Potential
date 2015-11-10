@@ -3,7 +3,10 @@ GFR_Master.R
 .Rhistory
 .Rdata
 ~Data**/*.Rdata
+**/*.DS_Store
+**/*.zip
 **/*.pdf
+**/*.png
 **/*.xlsx
 **/*.xls
 **/*.Rproj
