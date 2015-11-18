@@ -8,6 +8,7 @@ GFR_Master.R
 **/*.pdf
 **/*.png
 **/*.xlsx
+**/*.key
 **/*.xls
 **/*.Rproj
 **/*.Rdata
