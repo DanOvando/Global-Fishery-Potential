@@ -530,6 +530,15 @@ if (RunAnalyses==F) #Load baseline versions of key dataframes for analysis after
 
 ### Process results and prepare summary tables --------------------------------------------------
 
+### TEMPORARY REMOVAL OF DUPLICATED TUNA STOCKS ### !!!!!!!
+ProjectionData<-ProjectionData %>%
+  filter(!(IdOrig %in% c("Lumped-Southern bluefin tuna-FaoRegion51",
+                         "Lumped-Atlantic bluefin tuna-FaoRegion37",
+                         "Lumped-Southern bluefin tuna-FaoRegion57",
+                         "Lumped-Southern bluefin tuna-FaoRegion41",
+                         "Lumped-Southern bluefin tuna-FaoRegion47",
+                         "Lumped-Southern bluefin tuna-FaoRegion81")))
+
 # Remove NEIs and forage fish if desired
 
 if (IncludeNEIs==FALSE)
@@ -589,14 +598,9 @@ oa_check <- ProjectionData %>%
 
 trend_plot <- ggplot(trend_check,aes(Year,total_catch,fill = Policy,size = mean_f)) + geom_point(shape = 21,alpha = 0.6)
 
-# ProjectionData<- ddply(ProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
-
 ProjectionData<- ProjectionData %>%
   group_by(IdOrig,Policy) %>%
   mutate(NPV=cumsum(DiscProfits))
-
-#   ddply(ProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
-
 
 ProjectionData$NPV[ProjectionData$Policy == 'Historic']<- NA
 
@@ -629,27 +633,21 @@ UnlumpedProjectionData<- UnlumpedProjectionData %>%
   group_by(IdOrig,Policy) %>%
   mutate(NPV=cumsum(DiscProfits))
 
-# UnlumpedProjectionData<- ddply(UnlumpedProjectionData,c('IdOrig','Policy'),mutate,NPV=cumsum(DiscProfits))
-
 UnlumpedProjectionData$NPV[UnlumpedProjectionData$Policy=='Historic']<- NA
 
 # write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
 
 # Calculate fishery upsides from UnlumpedProjectionData
-
 UnlumpedUpsideAllStocks<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='Business As Usual',
                                            RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='All Stocks',IncludeNEIs)
 
-# write.csv(file=paste(ResultFolder,'Unlumped Country Upsides All Stocks.csv',sep=''),UnlumpedUpsideAllStocks$CountryUpsides)
 
 UnlumpedUpsideOverfishOnly<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYear,DenominatorPolicy='Business As Usual',
                                               RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='Overfish Only',IncludeNEIs)
 
-# write.csv(file=paste(ResultFolder,'Unlumped Country Upsides Overfish Only.csv',sep=''),UnlumpedUpsideOverfishOnly$CountryUpsides)
 
 # Calculate global upsides relative to Trevor denominator
-GlobalUpsideTrevor<-TrevorDenominator(GlobalUpsideOverF=UnlumpedUpsideOverfishOnly$GlobalUpside,GlobalUpsideAll=UnlumpedUpsideAllStocks$GlobalUpside,Discount)
-
+# GlobalUpsideTrevor<-TrevorDenominator(GlobalUpsideOverF=UnlumpedUpsideOverfishOnly$GlobalUpside,GlobalUpsideAll=UnlumpedUpsideAllStocks$GlobalUpside,Discount)
 
 ### Plot figures for paper and diagnostics  --------------------------------------------------
 
@@ -665,12 +663,15 @@ MakeKobePlot(ProjectionData,BaselineYear,'Global Kobe Plot.pdf')
 
 ### Diagnostics and Summary Tables -----------------------------------------------------------------------------
 
+## Scenario Results
+globalscenarios<-ScenarioResults(DataU = UnlumpedProjectionData,BaselineYear = BaselineYear,ResultFolder = ResultFolder,
+                      Level = 'Global')
+
+countryscenarios<-ScenarioResults(DataU = UnlumpedProjectionData,BaselineYear = BaselineYear,ResultFolder = ResultFolder,
+                      Level = 'Country')
 
 # Projection validation data for Chris
 ProjectionValidationData<-ProjectionValidation(UnlumpedProjectionData,BaselineYear)
-
-# Produce table with values for paper from Rens scripts
-ValuesForPaper<-RenSummaryTable(UnlumpedData=UnlumpedProjectionData,LumpedData=ProjectionData,BaselineYear,ResultFolder,FigureFolder)
 
 # Produce Country Summary table and Stock List (returns list with Country summaries and Stock list, writes csvs of both)
 PercentCoverage <- StockAndCountrySummary(UnlumpedProjectionData,ProjectionData,StitchIds,BaselineYear, include_neis = IncludeNEIs)
@@ -679,6 +680,7 @@ PercentCoverage <- StockAndCountrySummary(UnlumpedProjectionData,ProjectionData,
 #
 # TopStocks <- CountryTopStocks(DataU=UnlumpedProjectionData,DataL=ProjectionData,BaselineYear,Policies=c('Business As Usual','Business As Usual Pessimistic','Catch Share Three','CatchShare','Fmsy Three','Fmsy'),
 #                             NumberOfStocks='All',NumberOfCountries='All',Discount,ResultFolder,FileName='Country Results All Stocks')
+
 # Summarize current status by ISSCAAP and FAO Region
 StatusByRegionAndISSCAAP<-RegionFaoAndISSCAAPSummary(ProjectionData,BaselineYear)
 
@@ -697,11 +699,11 @@ CodyPlotsProfit2050(FigureFolder,ResultFolder,Policy='Catch Share Three')
 ramlist<-subset(ProjectionData,Dbase=='RAM' & Year==2012,c('CommName','Country','RegionFAO'))
 write.csv(ramlist,file=paste(ResultFolder,'Ram Stock List.csv',sep=''))
 
-# Calculate global results for Figure One
-# FigOneGlobalResults<-GlobalResultsFigOne(UpsideAllStocks,UpsideOverfishOnly,Policies=c('Catch Share Three','Fmsy Three'),discRt=Discount,TimeHor=38)
+# Values for paper
+ValuesForPaper<-ResultsForPaper(DataU = UnlumpedProjectionData,DataL = ProjectionData,RawData = RawData, BaselineYear = BaselineYear,ResultFolder = ResultFolder)
 
 # write.csv(file=paste(ResultFolder,'Projection Data.csv',sep=''),ProjectionData)
-#
+
 # write.csv(file=paste(ResultFolder,'Unlumped Projection Data.csv',sep=''),UnlumpedProjectionData)
 gfr_qaqc(ProjectionData = ProjectionData, FigureFolder = FigureFolder)
 

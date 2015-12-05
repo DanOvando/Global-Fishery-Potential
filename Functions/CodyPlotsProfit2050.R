@@ -697,8 +697,8 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   tmp				<-unique(OverfishStocks$Country)
   tmp2				<-unique(AllStocks$Country)
   useCountry			<-intersect(tmp,tmp2)
-  AllStocks			<-AllStocks[!is.na(match(AllStocks$Country,useCountry)),]
-  OverfishStocks		<-OverfishStocks[!is.na(match(OverfishStocks$Country,useCountry)),]
+#   AllStocks			<-AllStocks[!is.na(match(AllStocks$Country,useCountry)),]
+#   OverfishStocks		<-OverfishStocks[!is.na(match(OverfishStocks$Country,useCountry)),]
   
   unqPols		<-unique(AllStocks$Policy)
   ChangeBioCur	<-rep(0,length(unqPols))
