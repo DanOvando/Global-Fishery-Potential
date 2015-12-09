@@ -11,10 +11,10 @@ library(dplyr)
 
 ### Load data -----------------------------------------------------
 
-Batch<-
+
 
 ## NEI
-nei<-read.csv('Results/6.0 global demand common phi/Data/UnLumped Projection DataAll Stocks Profit Upsides From NEIs.csv',stringsAsFactors=F)
+nei<-read.csv('Results/TUNA TEST/Data/UnLumped Projection DataAll Stocks Profit Upsides From NEIs.csv',stringsAsFactors=F)
 
 # nei$Percent.of.Total.Profit.Upside.from.NEIs<-format(round(nei$Percent.of.Total.Profit.Upside.from.NEIs,2),nsmall=2)
 
@@ -30,10 +30,10 @@ nei$Scenario<-'Cons. Concern'
 ## Costs
 
 # Cost to revenue ratios
-costratio<-read.csv('Results/6.0 global demand common phi/Data/Cost_Revenue_Ratios_ISSCAAP.csv',stringsAsFactors=F)
+costratio<-read.csv('Results/TUNA TEST/Data/Cost_Revenue_Ratios_ISSCAAP.csv',stringsAsFactors=F)
 
 # Cost per ton
-costperton<-read.csv('Results/6.0 global demand common phi/Data/CostPerTon_Ratios_ISSCAAP.csv',stringsAsFactors=F)
+costperton<-read.csv('Results/TUNA TEST/Data/CostPerTon_Ratios_ISSCAAP.csv',stringsAsFactors=F)
 
 cost<-inner_join(costratio[,c('ISSCAAP.Group','Median','Mean')],costperton[,c('ISSCAAP.Group','Median','Mean')],by=c('ISSCAAP.Group'))
 
@@ -46,7 +46,7 @@ cost$Mean.y<-format(round(cost$Mean.y,0),nsmall=0)
 colnames(cost)<-c('ISSCAAP Category','Median Ratio','Mean Ratio','Median $/Ton','Mean $/Ton')
 
 ## Global results for fig 3
-fig3<-read.csv('Results/6.0 global demand common phi/Data/Fig3data_Profit2050.csv',stringsAsFactors=F)
+fig3<-read.csv('Results/TUNA TEST/Data/Fig3data_Profit2050.csv',stringsAsFactors=F)
 
 fig3$Policy<-c('Business As Usual S1','Business As Usual S2','RBFM S1','RBFM S2','FMSY S1','FMSY S2','Today')
 
@@ -59,7 +59,7 @@ fig3$Catch<-format(round(fig3$Catch,1),nsmall=2)
 colnames(fig3)<-c('Policy','Biomass (MMT)','Annual Profit ($ Billions)','Harvest (MMT)')
 
 ## RAM stock list
-ram<-read.csv('Results/6.0 global demand common phi/Data/Ram Stock List.csv',stringsAsFactors=F)
+ram<-read.csv('Results/TUNA TEST/Data/Ram Stock List.csv',stringsAsFactors=F)
 
 ram<-ram[,c('CommName','Country','RegionFAO')] %>%
   arrange(Country)
