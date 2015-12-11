@@ -14,7 +14,7 @@ library(dplyr)
 
 
 ## NEI
-nei<-read.csv('Results/TUNA TEST/Data/UnLumped Projection DataAll Stocks Profit Upsides From NEIs.csv',stringsAsFactors=F)
+nei<-read.csv('Results/6.01 global demand common phi/Data/UnLumped Projection DataAll Stocks Profit Upsides From NEIs.csv',stringsAsFactors=F)
 
 # nei$Percent.of.Total.Profit.Upside.from.NEIs<-format(round(nei$Percent.of.Total.Profit.Upside.from.NEIs,2),nsmall=2)
 
@@ -30,10 +30,10 @@ nei$Scenario<-'Cons. Concern'
 ## Costs
 
 # Cost to revenue ratios
-costratio<-read.csv('Results/TUNA TEST/Data/Cost_Revenue_Ratios_ISSCAAP.csv',stringsAsFactors=F)
+costratio<-read.csv('Results/6.01 global demand common phi/Data/Cost_Revenue_Ratios_ISSCAAP.csv',stringsAsFactors=F)
 
 # Cost per ton
-costperton<-read.csv('Results/TUNA TEST/Data/CostPerTon_Ratios_ISSCAAP.csv',stringsAsFactors=F)
+costperton<-read.csv('Results/6.01 global demand common phi/Data/CostPerTon_Ratios_ISSCAAP.csv',stringsAsFactors=F)
 
 cost<-inner_join(costratio[,c('ISSCAAP.Group','Median','Mean')],costperton[,c('ISSCAAP.Group','Median','Mean')],by=c('ISSCAAP.Group'))
 
@@ -46,7 +46,7 @@ cost$Mean.y<-format(round(cost$Mean.y,0),nsmall=0)
 colnames(cost)<-c('ISSCAAP Category','Median Ratio','Mean Ratio','Median $/Ton','Mean $/Ton')
 
 ## Global results for fig 3
-fig3<-read.csv('Results/TUNA TEST/Data/Fig3data_Profit2050.csv',stringsAsFactors=F)
+fig3<-read.csv('Results/6.01 global demand common phi/Data/Fig3data_Profit2050.csv',stringsAsFactors=F)
 
 fig3$Policy<-c('Business As Usual S1','Business As Usual S2','RBFM S1','RBFM S2','FMSY S1','FMSY S2','Today')
 
@@ -59,7 +59,7 @@ fig3$Catch<-format(round(fig3$Catch,1),nsmall=2)
 colnames(fig3)<-c('Policy','Biomass (MMT)','Annual Profit ($ Billions)','Harvest (MMT)')
 
 ## RAM stock list
-ram<-read.csv('Results/TUNA TEST/Data/Ram Stock List.csv',stringsAsFactors=F)
+ram<-read.csv('Results/6.01 global demand common phi/Data/Ram Stock List.csv',stringsAsFactors=F)
 
 ram<-ram[,c('CommName','Country','RegionFAO')] %>%
   arrange(Country)
@@ -85,7 +85,25 @@ commods<-commods %>%
 
 colnames(commods)<-c('Species Category (ISSCAAP)','Commodity Category')
 
+## FAO regions and status estimates
+regnames<-c('Arctic Sea','Atlantic, Northwest','Atlantic, Northeast','Atlantic, West Central','Atlantic, Eastern Central',
+  'Mediterranean and Black Sea','Atlantic, Southwest,','Atlantic, Southeast','Indian Ocean, Western','Indian Ocean, Eastern','Pacific, Northwest','Pacific, Northeast','Pacific, Western Central','Pacific, Eastern Central','Pacific, Southwest','Pacific, Southeast','Atlantic, Antarctic','Indian Ocean, Antarctic','Pacific, Antarctic')
 
+regcodes<-c(18,21,27,31,34,37,41,47,51,57,61,67,71,77,81,87,48,58,88)
+
+region<-data.frame(regnames,regcodes,stringsAsFactors = F)
+colnames(region)<-c('FAO Zone','Code')
+
+
+regstatus<-read.csv('Results/6.01 global demand common phi/Data/Status by FAO Region.csv',stringsAsFactors=F) %>%
+  rename(Code=RegionFAO)
+
+regstatus<-left_join(region,regstatus) %>%
+  select(-X)
+
+regstatus[,3:6]<-round(regstatus[,3:6],2)
+
+colnames(regstatus)<-c('FAO Zone','Code','Median B/Bmsy','Median F/Fmsy','Catch-weighted mean B/Bmsy','Catch-weigthed mean F/Fmsy')
 ```
 
 
@@ -119,4 +137,9 @@ ISSCAAP categories and their assigned commodity market categories as per Delgado
 kable(commods)
 ```
 
+**Table S9**  
+FAO major statistical fishing zones, codes, and estimated median and catch-weighted mean B/Bmsy and FvFmsy  
+```{r,echo=F,results='asis'}
+kable(regstatus)
+```
 

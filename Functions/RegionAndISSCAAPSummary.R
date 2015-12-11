@@ -38,9 +38,9 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
   
   regs<-unique(data$RegionFAO[data$Dbase=='FAO'])
   
-  RegionStatus<-data.frame(matrix(NA,nrow=length(regs),ncol=3))
+  RegionStatus<-data.frame(matrix(NA,nrow=length(regs),ncol=5))
   
-  colnames(RegionStatus)<-c('RegionFAO','MedianBvBmsy','MedianFvFmsy')
+  colnames(RegionStatus)<-c('RegionFAO','MedianBvBmsy','MedianFvFmsy','CatchWtMeanB','CatchWtMeanF')
   
   for(c in 1:length(regs))
   {
@@ -51,15 +51,21 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
     # temp<-ddply(temp,c('Year'),summarize,MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T))
     
     temp<- temp %>%
+      mutate(bxcatch=BvBmsy*Catch,fxcatch=FvFmsy*Catch) %>%
       group_by(Year) %>%
-      summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T)) %>%
+      summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T),
+                WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T)) %>%
       ungroup()
     
     RegionStatus$RegionFAO[c]<-regs[c]
     
     RegionStatus$MedianBvBmsy[c]<-temp$MedianB
     
-    RegionStatus$MedianFvFmsy[c]<-temp$MedianF 
+    RegionStatus$MedianFvFmsy[c]<-temp$MedianF
+    
+    RegionStatus$CatchWtMeanB[c]<-temp$WtMeanB
+    
+    RegionStatus$CatchWtMeanF[c]<-temp$WtMeanF
   }
   
   write.csv(RegionStatus,file=paste(ResultFolder,'Status by FAO Region.csv',sep=''))
@@ -106,8 +112,10 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       BaselineData<- subset(temp,subset=Year==BaselineYear & is.na(FvFmsy)==F & is.na(BvBmsy)==F)
       
       KobeMedians<- BaselineData %>%
+        mutate(bxcatch=BvBmsy*Catch,fxcatch=FvFmsy*Catch) %>%
         group_by(Year) %>%
-        summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T))
+        summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T),
+                  WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T))
       
       BaselineData$FvFmsy[BaselineData$FvFmsy>4]<- 4
       
@@ -117,7 +125,7 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       
       FTrend<- ddply(temp,c('Year','Dbase'),summarize,FTrend=mean(FvFmsy,na.rm=T))
       
-      KobeColors<- colorRampPalette(c("lightskyblue", "white",'gold1'))
+      KobeColors<- colorRampPalette(c("powderblue", "white",'#FFFF99'))
       
       DbaseColors<- colorRampPalette(c('Red','Black','Green'))
       
@@ -146,6 +154,7 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       
       points(BaselineData$BvBmsy,BaselineData$FvFmsy,pch=16,col=OutCols,cex=0.75+(BaselineData$Catch)/max(BaselineData$Catch,na.rm=T))
       points(KobeMedians$MedianB,KobeMedians$MedianF,pch=17,col=RGBcols[3], cex=1.5)
+      points(KobeMedians$WtMeanB,KobeMedians$WtMeanF,pch=15,col=RGBcols[3], cex=1.5)
       box()
       abline(h=1,v=1,lty=2)
       legend("topright",tempName,bty='n')
@@ -156,7 +165,11 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
   
   dev.off()
 
-  # Make Figure on Kobe plot with regions 67,27,61,71
+  # ####################################################
+  # ##
+  # ## Make Figure One Kobe Plot
+  # ##
+  # #####################################################
   
   zone<-c('Global','Northeast Pacific','Northeast Atlantic','Western Central Pacific')
   
@@ -198,8 +211,10 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       BaselineData<- subset(temp,subset=Year==BaselineYear & is.na(FvFmsy)==F & is.na(BvBmsy)==F)
       
       KobeMedians<- BaselineData %>%
+        mutate(bxcatch=BvBmsy*Catch,fxcatch=FvFmsy*Catch) %>%
         group_by(Year) %>%
-        summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T))
+        summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T),
+                  WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T))
       
       BaselineData$FvFmsy[BaselineData$FvFmsy>4]<- 4
       
@@ -209,7 +224,7 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       
       FTrend<- ddply(temp,c('Year','Dbase'),summarize,FTrend=mean(FvFmsy,na.rm=T))
       
-      KobeColors<- colorRampPalette(c("lightskyblue", "white",'gold1'))
+      KobeColors<- colorRampPalette(c("powderblue", "white",'#FFFF99'))
       
       DbaseColors<- colorRampPalette(c('Red','Black','Green'))
       
@@ -238,6 +253,7 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       
       points(BaselineData$BvBmsy,BaselineData$FvFmsy,pch=16,col=OutCols,cex=0.75+(BaselineData$Catch)/max(BaselineData$Catch,na.rm=T))
       points(KobeMedians$MedianB,KobeMedians$MedianF,pch=17,col=RGBcols[3], cex=1.5)
+      points(KobeMedians$WtMeanB,KobeMedians$WtMeanF,pch=15,col=RGBcols[3], cex=1.5)
       box()
       abline(h=1,v=1,lty=2)
       legend("topright",tempName,bty='n')
@@ -251,7 +267,7 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
 
   # ####################################################
   # ##
-  # ## Make Global Kobe Plot
+  # ## Make SI Global Kobe Plot
   # ##
   # #####################################################
   
@@ -265,7 +281,7 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
   
   par(mfrow=c(1,1),mar=c(.1,.1,.1,.1),oma=c(4,4,1,1))
   
-  for(a in 1:1)#length(codes))
+  for(a in 1:1) # only loop over global
   {
     if(codes[a]=='all') 
     {
@@ -289,8 +305,10 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       BaselineData<- subset(temp,subset=Year==BaselineYear & is.na(FvFmsy)==F & is.na(BvBmsy)==F)
       
       KobeMedians<- BaselineData %>%
+        mutate(bxcatch=BvBmsy*Catch,fxcatch=FvFmsy*Catch) %>%
         group_by(Year) %>%
-        summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T))
+        summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T),
+                  WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T))
       
       BaselineData$FvFmsy[BaselineData$FvFmsy>4]<- 4
       
@@ -300,7 +318,7 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       
       FTrend<- ddply(temp,c('Year','Dbase'),summarize,FTrend=mean(FvFmsy,na.rm=T))
       
-      KobeColors<- colorRampPalette(c("lightskyblue", "white",'gold1'))
+      KobeColors<- colorRampPalette(c("powderblue", "white",'#FFFF99'))
       
       DbaseColors<- colorRampPalette(c('Red','Black','Green'))
       
@@ -324,6 +342,7 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       
       points(BaselineData$BvBmsy,BaselineData$FvFmsy,pch=16,col=OutCols,cex=0.75+(BaselineData$Catch)/max(BaselineData$Catch,na.rm=T))
       points(KobeMedians$MedianB,KobeMedians$MedianF,pch=17,col=RGBcols[3], cex=1.5)
+      points(KobeMedians$WtMeanB,KobeMedians$WtMeanF,pch=15,col=RGBcols[3], cex=1.5)
       box()
       abline(h=1,v=1,lty=2)
       legend("topright",tempName,bty='n')
