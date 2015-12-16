@@ -23,13 +23,13 @@ TimeToRecover<-function(Data,Policy,BaselineYear)
     
     if(nrow(temp)==0)
     {
-      TimeToRecover$TimeToRecover[a]<-NA
+      TimeToRecover$TimeToRecover[a]<-48
       TimeToRecover$IdOrig[a]<-stocks[a]
       TimeToRecover$Year[a]<-'Not Recovered'
       TimeToRecover$BvBmsy[a]<-max(Data$BvBmsy[Data$IdOrig==stocks[a]])
     }      
     
-    show(a)
+    # show(a)
   }
   return(TimeToRecover)
 }

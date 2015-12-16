@@ -67,7 +67,7 @@ Our median proportional error in B/B~MSY~ in 2012 (the primary year of interest)
 library(ggplot2)
 library(dplyr)
 
-BatchFolder<- "Results/5.6 global demand common phi/"
+BatchFolder<- "Results/6.0 global demand common phi Backup/"
 
 FigureFolder<- paste(BatchFolder,'Diagnostics/Regional Jackknife/',sep='')
 
@@ -214,6 +214,22 @@ MCCatch
 
 ```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Distribution of total profits in 2050 for all stocks included in the Catch-MSY Monte Carlo' }
 MCProfits
+```
+
+```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Distribution of total catches and profits in 2050 for all stocks included in the Catch-MSY Monte Carlo' }
+newfigs<-MCProfits$data
+
+newfigs$Policy[newfigs$Policy=='BAU (S1)']<-'BAU (CC)'
+
+newfigs$Policy[newfigs$Policy=='BAU (S2)']<-'BAU'
+
+newfigs %>%
+  select(-MSY,-BvBmsy,-FvFmsy,-MedianBOA) %>%
+  gather("Metric","Value",4:5) %>%
+  ggplot(aes(Value,fill=Policy))+
+  geom_density(alpha=0.7,aes(y=..scaled..))+theme(axis.text.x=element_text(angle=45,hjust=0.9,vjust=0.9))+
+  geom_vline(aes(xintercept=0,alpha=0.8),linetype='longdash',size=1)+
+  facet_grid(Policy~Metric,scales = "free_x")+ylab("Scaled Density")
 ```
 
 ```{r,echo=F,message=FALSE,warning=FALSE,fig.cap='Distribution of B/B~MSY~ in 2050 across all stocks included in the Catch-MSY Monte Carlo' }

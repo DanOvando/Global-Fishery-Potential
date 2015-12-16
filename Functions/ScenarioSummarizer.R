@@ -17,7 +17,7 @@
 
 ### Initialize function --------------------------------------------------------------------------------
 
-ScenarioResults<-function(DataU,BaselineYear,Level)
+ScenarioResults<-function(DataU,BaselineYear,ResultFolder,Level)
 {
   
   ### Define internal functions to use --------------------------------------------------------------------------------
@@ -72,10 +72,11 @@ ScenarioResults<-function(DataU,BaselineYear,Level)
       ungroup() %>%
       filter(Year==BaselineYear) %>%
       select(-TotalMSY,-Year,-Policy,-Fisheries) %>%
-      rename(BaselineBvBmsy=MedianBvBmsy,BaselineFvFmsy=MedianFvFmsy,BaselineCatch=TotalCatch,BaselineBiomass=TotalBiomass,BaselineProfits=TotalProfits)
+      rename(BaselineBvBmsy=MedianBvBmsy,BaselineFvFmsy=MedianFvFmsy,BaselineCatch=TotalCatch,
+             BaselineBiomass=TotalBiomass,BaselineProfits=TotalProfits,BaselinePrice=MeanPrice)
     
     # Join upsides and baseline data
-    upsides<-inner_join(totals,base,by='Country') %>%
+    upsides<-inner_join(totals,base) %>%
       tbl_df()
   }
 
@@ -86,14 +87,16 @@ ScenarioResults<-function(DataU,BaselineYear,Level)
         group_by(SpeciesCatName,Policy,Year) %>%
         summarize(Fisheries=length(unique(IdOrig)),MedianBvBmsy=median(BvBmsy,na.rm=T),MedianFvFmsy=median(FvFmsy,na.rm=T),TotalMSY=sum(MSY,na.rm=T),
                   TotalCatch=sum(Catch,na.rm=T), TotalBiomass=sum(Biomass,na.rm=T),TotalProfits=sum(Profits,na.rm=T),MeanPrice=mean(Price,na.rm=T))
+      
       base<-totals %>%
         ungroup() %>%
         filter(Year==BaselineYear) %>%
         select(-TotalMSY,-Year,-Policy,-Fisheries) %>%
-        rename(BaselineBvBmsy=MedianBvBmsy,BaselineFvFmsy=MedianFvFmsy,BaselineCatch=TotalCatch,BaselineBiomass=TotalBiomass,BaselineProfits=TotalProfits)
+        rename(BaselineBvBmsy=MedianBvBmsy,BaselineFvFmsy=MedianFvFmsy,BaselineCatch=TotalCatch,
+               BaselineBiomass=TotalBiomass,BaselineProfits=TotalProfits,BaselinePrice=MeanPrice)
       
       # Join upsides and baseline data
-      upsides<-inner_join(totals,base,by='SpeciesCatName') %>%
+      upsides<-inner_join(totals,base) %>%
         tbl_df()
   }
     
@@ -110,11 +113,12 @@ ScenarioResults<-function(DataU,BaselineYear,Level)
     base<-totals %>%
       ungroup() %>%
       filter(Year==BaselineYear) %>%
-      select(-TotalMSY,-Year,-Fisheries) %>%
-      rename(BaselineBvBmsy=MedianBvBmsy,BaselineFvFmsy=MedianFvFmsy,BaselineCatch=TotalCatch,BaselineBiomass=TotalBiomass,BaselineProfits=TotalProfits)
+      select(-TotalMSY,-Year,-Fisheries,-Policy) %>%
+      rename(BaselineBvBmsy=MedianBvBmsy,BaselineFvFmsy=MedianFvFmsy,BaselineCatch=TotalCatch,
+             BaselineBiomass=TotalBiomass,BaselineProfits=TotalProfits,BaselinePrice=MeanPrice)
     
     # Join upsides and baseline data
-    upsides<-inner_join(totals,base,by='Country') %>%
+    upsides<-inner_join(totals,base) %>%
       tbl_df()
   }
 
@@ -134,6 +138,8 @@ ScenarioResults<-function(DataU,BaselineYear,Level)
     ALL$Policy[ALL$Policy=='CatchShare']<-'RBFM'
     
     # Subset respective BAU policies and add to scenarios
+    if(Level %in% c('Country','Global'))
+    {
     CCBAU<-subset(upsides,Policy=='Business As Usual') %>%
       select(Country,Policy,Year,MedianBvBmsy,MedianFvFmsy,TotalCatch,TotalBiomass,TotalProfits) %>%
       rename(PolicyBAU=Policy,BvBmsyBAU=MedianBvBmsy,FvFmsyBAU=MedianFvFmsy,TotalCatchBAU=TotalCatch,TotalBiomassBAU=TotalBiomass,TotalProfitsBAU=TotalProfits)
@@ -141,18 +147,23 @@ ScenarioResults<-function(DataU,BaselineYear,Level)
     ALLBAU<-subset(upsides,Policy=='Business As Usual Pessimistic') %>%
       select(Country,Policy,Year,MedianBvBmsy,MedianFvFmsy,TotalCatch,TotalBiomass,TotalProfits) %>%
       rename(PolicyBAU=Policy,BvBmsyBAU=MedianBvBmsy,FvFmsyBAU=MedianFvFmsy,TotalCatchBAU=TotalCatch,TotalBiomassBAU=TotalBiomass,TotalProfitsBAU=TotalProfits)
+    }
+    
+    if(Level %in% c('SpeciesCatName'))
+    {
+      CCBAU<-subset(upsides,Policy=='Business As Usual') %>%
+        select(SpeciesCatName,Policy,Year,MedianBvBmsy,MedianFvFmsy,TotalCatch,TotalBiomass,TotalProfits) %>%
+        rename(PolicyBAU=Policy,BvBmsyBAU=MedianBvBmsy,FvFmsyBAU=MedianFvFmsy,TotalCatchBAU=TotalCatch,TotalBiomassBAU=TotalBiomass,TotalProfitsBAU=TotalProfits)
+      
+      ALLBAU<-subset(upsides,Policy=='Business As Usual Pessimistic') %>%
+        select(SpeciesCatName,Policy,Year,MedianBvBmsy,MedianFvFmsy,TotalCatch,TotalBiomass,TotalProfits) %>%
+        rename(PolicyBAU=Policy,BvBmsyBAU=MedianBvBmsy,FvFmsyBAU=MedianFvFmsy,TotalCatchBAU=TotalCatch,TotalBiomassBAU=TotalBiomass,TotalProfitsBAU=TotalProfits)
+    }
     
     # Join BAU results with scenario upsides
-    CC<-inner_join(CC,CCBAU,by=c('Country','Year'))
+    CC<-inner_join(CC,CCBAU)
     
-    ALL<-inner_join(ALL,ALLBAU,by=c('Country','Year'))
-    
-    if(Level=='Global')
-    {
-      CC<-inner_join(CC,CCBAU,by=c('Year'))
-      
-      ALL<-inner_join(ALL,ALLBAU,by=c('Year'))
-    }
+    ALL<-inner_join(ALL,ALLBAU)
     
     Scenarios<-rbind(CC,ALL)
     

@@ -455,10 +455,10 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
           bg=useCol,fg='black',inches=sizeCirc,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,xaxt='n')
   text(xQuant,jitter(yQuant,factor=0),labs,cex=.75,col=colLabs)
-  mtext(side=2,"Change Annual Profit ($ Billion)",line=2.25)
+  mtext(side=2,"Change in Annual Profit ($ Billion)",line=2.25)
   mtext(side=1,"Change in Biomass (MMT)",outer=T)
   text(y=legendY*.84,x=legendX,"MSY ",cex=.7)
-  text(y=legendY*.75,x=legendX+5,"(MMT, of conservation concern)",cex=.7)
+  # text(y=legendY*.75,x=legendX+5,"(MMT, of conservation concern)",cex=.7)
   par(xpd=NA)
   #text(x=.5*cutoff,y=1.11*cutoff,"% change in catch",cex=.8)
   mtext(side=3,"Change in Catch (MMT)",line=.8,cex=.8)
@@ -603,8 +603,8 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
                newDF[newDF$Year==2050&newDF$Policy=="Business As Usual",])
   
   #==this makes the legend
-  newDF$PerHealth[nrow(newDF)]<-17
-  newDF$PerHealth[nrow(newDF)-1]<-10
+  newDF$PerHealth[nrow(newDF)]<-22
+  newDF$PerHealth[nrow(newDF)-1]<-15
   newDF$Year[nrow(newDF)]<-1980
   newDF$Year[nrow(newDF)-1]<-1980
   newDF$value[nrow(newDF)]<-.5*max(newDF$value)
@@ -668,13 +668,13 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   mtext(side=3,round(max(NoPastProfits),-1),adj=.94,line=-.05)
   color.legend(1987,105,2042,110,rect.col=col,legend="")
   par(xpd=FALSE)
-  mtext(side=2,expression('% Stocks above B/Bmsy of 0.8'),line=2.2)
+  mtext(side=2,expression('% Stocks above 0.8 B/B'[MSY]),line=2.2)
   #   mtext(side=2,expression('B'[MSY]),line=2.1,adj=.75)
   mtext(side=1,"Year",line=2)
   par(new=T)
-  text(x=1985,y=3,"Total harvest (MMT)",cex=.7)
-  text(x=1983,y=10,round(as.numeric(newDF$value)[nrow(newDF)-1]/1000000),cex=.8)
-  text(x=1983,y=17,round(as.numeric(newDF$value)[nrow(newDF)]/1000000),cex=.8)
+  text(x=1985,y=28,"Total harvest (MMT)",cex=.7)
+  text(x=1983,y=15,round(as.numeric(newDF$value)[nrow(newDF)-1]/1000000),cex=.8)
+  text(x=1983,y=22,round(as.numeric(newDF$value)[nrow(newDF)]/1000000),cex=.8)
   dev.off()
   
   ####### Figure 3 ##########
@@ -697,8 +697,8 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   tmp				<-unique(OverfishStocks$Country)
   tmp2				<-unique(AllStocks$Country)
   useCountry			<-intersect(tmp,tmp2)
-  AllStocks			<-AllStocks[!is.na(match(AllStocks$Country,useCountry)),]
-  OverfishStocks		<-OverfishStocks[!is.na(match(OverfishStocks$Country,useCountry)),]
+#   AllStocks			<-AllStocks[!is.na(match(AllStocks$Country,useCountry)),]
+#   OverfishStocks		<-OverfishStocks[!is.na(match(OverfishStocks$Country,useCountry)),]
   
   unqPols		<-unique(AllStocks$Policy)
   ChangeBioCur	<-rep(0,length(unqPols))
@@ -791,10 +791,10 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   #,round(c(CatCur[indPol],baseCat),1)
   
   # Adjust the position of the bubble labels. order is (BAU, BAUP, RBFM CC, RBFM All, Fmsy All, Fmsy, Today)
-  Xind<-  Xind+c(0,0,0,0,0,0,0) 
-  Xind2<-Xind2+c(0,0,0,0,0,0,0)
-  Yind<-  Yind+c(0,0,0,0,0,0,-9)
-  Yind2<-Yind2+c(0,0,0,0,0,0,-9)
+  Xind<-  Xind+c(-120,0,0,0,0,0,120) 
+  Xind2<-Xind2+c(-120,0,0,0,0,0,120)
+  Yind<-  Yind+c(0,0,0,0,9,0,0)
+  Yind2<-Yind2+c(0,0,0,0,9,0,0)
   
   text(y=Yind,x=Xind,labName,cex=.85)
   text(y=Yind2,x=Xind2,round(plotz,digits=1),cex=.65)
