@@ -39,7 +39,7 @@ if (RunAnalyses==TRUE)
 
       phidata <- read.csv('Data/thorson_2012_msy_ratios.csv', stringsAsFactors = F)
 
-      fulldata <- assign_phi(fulldata, taxdata, phidata, default_phi = DefaultPhi)
+      fulldata <- assign_phi(fulldata, taxdata, phidata, default_phi = DefaultPhi, min_phi = -1)
     }
     if (custom_phi == F)
     {
