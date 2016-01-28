@@ -41,11 +41,12 @@ up<-UnlumpedProjectionData %>%
 
 ## Calculate total catch in 2012 for upsides by country, RAM, and catch share fisheries. Calculate percentages ----
 
-# Catch totals by country
+# Catch and revenue totals by country
 upcatch<-up %>%
   filter(Year==2012) %>%
+  mutate(revenue=Catch*Price) %>%
   group_by(Country) %>%
-  summarize(harvest_2012=sum(Catch,na.rm=T),biomass_2012=sum(Biomass,na.rm=T), profits_2012=sum(Profits,na.rm=T)) %>%
+  summarize(harvest_2012=sum(Catch,na.rm=T),biomass_2012=sum(Biomass,na.rm=T), profits_2012=sum(Profits,na.rm=T),revenue_2012=sum(revenue,na.rm=T)) %>%
   ungroup()
 
 # Catch total by Dbase
@@ -119,4 +120,4 @@ df<-left_join(df,up2050biomass)
 df<-left_join(df,up2050profits)
 
 ## Write csv file
-write.csv(df,file = 'Results/Cost_of_mgmt_data_12216.csv')
+write.csv(df,file = 'Results/Cost_of_mgmt_data_12716.csv')
