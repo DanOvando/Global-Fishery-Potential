@@ -49,12 +49,11 @@ upcatch<-up %>%
   summarize(harvest_2012=sum(Catch,na.rm=T),biomass_2012=sum(Biomass,na.rm=T), profits_2012=sum(Profits,na.rm=T),revenue_2012=sum(revenue,na.rm=T)) %>%
   ungroup()
 
-# Catch total by Dbase
+# Catch total by country for RAM stocks that are not labeled as catch shares
 upram<-up %>%
-  filter(Year==2012) %>%
+  filter(Year==2012 & Dbase=='RAM' & CatchShare==0) %>%
   group_by(Country,Dbase) %>%
   summarize(harvest_ram=sum(Catch,na.rm=T)) %>%
-  filter(Dbase=='RAM') %>%
   ungroup()
 
 # Catch by catch shares
@@ -65,7 +64,7 @@ upcs<-up %>%
   ungroup() %>%
   filter(CatchShare==1)
 
-# join catch summaries to fao catch summary
+# join catch summaries to fao catch summary. Calculate what % the model data represents of FAO 2012 data, what % is RAM non-catch shares, and what % is CS
 df<-left_join(c,upcatch) %>%
   left_join(upram) %>%
   left_join(upcs) %>%
@@ -73,11 +72,11 @@ df<-left_join(c,upcatch) %>%
   mutate(H_perc_fao2012=harvest_2012/harvest_fao_2012, H_perc_RAM2012=harvest_ram/harvest_2012, H_perc_CS2012=harvest_cs/harvest_2012)
 
 # replace NAs with zeros
-df$harvest_cs[is.na(df$harvest_cs)]<-0
-df$harvest_ram[is.na(df$harvest_ram)]<-0
-df$H_perc_CS2012[is.na(df$H_perc_CS2012)]<-0
-df$H_perc_RAM2012[is.na(df$H_perc_RAM2012)]<-0
-df$H_perc_fao2012[is.na(df$H_perc_fao2012)]<-0
+df$harvest_cs[is.na(df$harvest_2012)==F & is.na(df$harvest_cs)]<-0
+df$harvest_ram[is.na(df$harvest_2012)==F &is.na(df$harvest_ram)]<-0
+df$H_perc_CS2012[is.na(df$harvest_2012)==F &is.na(df$H_perc_CS2012)]<-0
+df$H_perc_RAM2012[is.na(df$harvest_2012)==F &is.na(df$H_perc_RAM2012)]<-0
+df$H_perc_fao2012[is.na(df$harvest_2012)==F &is.na(df$H_perc_fao2012)]<-0
 
 ## Summarize country results by policy (CatchShare, Fmsy, Opt, and BAU for both scenarios) ----
 
@@ -120,4 +119,4 @@ df<-left_join(df,up2050biomass)
 df<-left_join(df,up2050profits)
 
 ## Write csv file
-write.csv(df,file = 'Results/Cost_of_mgmt_data_12716.csv')
+write.csv(df,file = 'Results/Cost_of_mgmt_data_020216.csv')
