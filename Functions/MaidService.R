@@ -73,6 +73,19 @@ MaidService<- function(Data,OverlapMode,BaselineYear)
     show('Timeseries extended')
     
   }
+  
+  # Find and remove any RAM stocks missing all three reference values or with negative MSY (Pacific halibut - not sure why)
+  HasAllRefs<- Data %>%
+    filter(Dbase=='RAM') %>%
+    group_by(IdOrig) %>%
+    summarize(HasAllBFM=any(is.na(BvBmsy)==F & is.na(FvFmsy)==F & is.na(MSY)==F), NegMSY=sum(MSY,na.rm=T)<0) %>%
+    ungroup()
+  
+  RamMissIds<- unique(HasAllRefs$IdOrig[HasAllRefs$HasAllBFM==F | HasAllRefs$NegMSY==T])
+  
+  Data<-Data[!(Data$IdOrig %in% RamMissIds),]
+  
+  # Remove overlap
   Overlap<- RemoveOverlap(Data,OverlapMode)
   
   Data<-Overlap$FilteredData
