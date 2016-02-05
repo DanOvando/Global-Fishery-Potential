@@ -85,9 +85,10 @@ up2050<-up %>%
   filter(Year==2050 & Policy %in% c('CatchShare','Catch Share Three','Fmsy','Fmsy Three',
                                     'Opt','Business As Usual','Business As Usual Pessimistic','StatusQuoOpenAccess')) %>%
   ungroup() %>%
-  select(Country,Policy,Catch,Profits,Biomass) %>%
+  mutate(revenue=Catch*Price) %>%
+  select(Country,Policy,Catch,Profits,Biomass,revenue) %>%
   group_by(Country,Policy) %>%
-  summarize(harvest_policy=sum(Catch,na.rm=T), biomass_policy=sum(Biomass,na.rm=T),profits_policy=sum(Profits,na.rm=T)) %>%
+  summarize(harvest_policy=sum(Catch,na.rm=T), biomass_policy=sum(Biomass,na.rm=T),revenue_policy=sum(revenue,na.rm=T),profits_policy=sum(Profits,na.rm=T)) %>%
   ungroup() 
   
 # Harvest  
@@ -104,6 +105,13 @@ up2050biomass<- up2050 %>%
   rename(Biomass_BAU=`Business As Usual`,Biomass_BAUP=`Business As Usual Pessimistic`,Biomass_OA=StatusQuoOpenAccess,
          Biomass_CS=CatchShare,Biomass_CS3=`Catch Share Three`,Biomass_Fmsy=Fmsy,Biomass_Fmsy3=`Fmsy Three`,Biomass_Opt=Opt)
 
+# Revenue 
+up2050revenue<- up2050 %>%
+  select(Country,Policy,revenue_policy) %>%
+  spread(Policy, revenue_policy) %>%
+  rename(Revenue_BAU=`Business As Usual`,Revenue_BAUP=`Business As Usual Pessimistic`,Revenue_OA=StatusQuoOpenAccess,
+         Revenue_CS=CatchShare,Revenue_CS3=`Catch Share Three`,Revenue_Fmsy=Fmsy,Revenue_Fmsy3=`Fmsy Three`,Revenue_Opt=Opt)
+
 # Profits 
 up2050profits<- up2050 %>%
   select(Country,Policy,profits_policy) %>%
@@ -116,7 +124,9 @@ df<-left_join(df,up2050catch)
 
 df<-left_join(df,up2050biomass)
 
+df<-left_join(df,up2050revenue)
+
 df<-left_join(df,up2050profits)
 
 ## Write csv file
-write.csv(df,file = 'Results/Cost_of_mgmt_data_020216.csv')
+write.csv(df,file = 'Results/Cost_of_mgmt_data_020416.csv')
