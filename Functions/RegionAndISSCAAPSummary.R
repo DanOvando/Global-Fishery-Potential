@@ -38,9 +38,9 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
   
   regs<-unique(data$RegionFAO[data$Dbase=='FAO'])
   
-  RegionStatus<-data.frame(matrix(NA,nrow=length(regs),ncol=5))
+  RegionStatus<-data.frame(matrix(NA,nrow=length(regs),ncol=7))
   
-  colnames(RegionStatus)<-c('RegionFAO','MedianBvBmsy','MedianFvFmsy','CatchWtMeanB','CatchWtMeanF')
+  colnames(RegionStatus)<-c('RegionFAO','MedianBvBmsy','MedianFvFmsy','CatchWtMeanB','CatchWtMeanF', 'PercBelowBof1','PercBelowFof1')
   
   for(c in 1:length(regs))
   {
@@ -54,7 +54,8 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       mutate(bxcatch=BvBmsy*Catch,fxcatch=FvFmsy*Catch) %>%
       group_by(Year) %>%
       summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T),
-                WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T)) %>%
+                WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T),
+                PercBelowBof1=100*(length(BvBmsy[BvBmsy<1])/length(BvBmsy)),PercBelowFof1=100*(length(FvFmsy[FvFmsy<1])/length(FvFmsy))) %>%
       ungroup()
     
     RegionStatus$RegionFAO[c]<-regs[c]
@@ -66,6 +67,10 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
     RegionStatus$CatchWtMeanB[c]<-temp$WtMeanB
     
     RegionStatus$CatchWtMeanF[c]<-temp$WtMeanF
+    
+    RegionStatus$PercBelowBof1[c]<-temp$PercBelowBof1
+    
+    RegionStatus$PercBelowFof1[c]<-temp$PercBelowFof1
   }
   
   write.csv(RegionStatus,file=paste(ResultFolder,'Status by FAO Region.csv',sep=''))
