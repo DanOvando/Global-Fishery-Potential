@@ -339,18 +339,21 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       OutCols<-inCols
       
       # RGBcols	<-c("#000000","#FF0000","#00CC00") #black, red, green
-      RGBcols<-c('#A0A0A0','#FC6969','#0B610B')
+      # RGBcols<-c('#A0A0A0','#FC6969','#0B610B')
+      RGBcols<-c('#000000','#FF0000','#0B610B')
+      
       AddTrans	<-99		# adjusts the transparency--lower is more transparent
       
       for(x in 1:3)
         OutCols[inCols==x]<-paste(RGBcols[x],AddTrans,sep="")
       
       points(BaselineData$BvBmsy,BaselineData$FvFmsy,pch=16,col=OutCols,cex=0.75+(BaselineData$Catch)/max(BaselineData$Catch,na.rm=T))
-      points(KobeMedians$MedianB,KobeMedians$MedianF,pch=17,col=RGBcols[3], cex=1.5)
-      points(KobeMedians$WtMeanB,KobeMedians$WtMeanF,pch=15,col=RGBcols[3], cex=1.5)
+      points(BaselineData$BvBmsy,BaselineData$FvFmsy,pch=1,col=OutCols,cex=0.75+(BaselineData$Catch)/max(BaselineData$Catch,na.rm=T))
+#       points(KobeMedians$MedianB,KobeMedians$MedianF,pch=17,col=RGBcols[3], cex=1.5)
+#       points(KobeMedians$WtMeanB,KobeMedians$WtMeanF,pch=15,col=RGBcols[3], cex=1.5)
       box()
-      abline(h=1,v=1,lty=2)
-      legend("topright",tempName,bty='n')
+      abline(h=1,v=1,lty=2,lwd=3)
+      # legend("topright",tempName,bty='n')
       # legend('center',legend=unique(BaselineData$Dbase),pch=16,col=(as.factor(unique(BaselineData$Dbase))),cex=0.7,bty='n') 
     } 
     #     show(a)

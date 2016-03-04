@@ -646,12 +646,7 @@ UnlumpedUpsideOverfishOnly<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYea
                                               RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='Overfish Only',IncludeNEIs)
 
 
-# Calculate global upsides relative to Trevor denominator
-# GlobalUpsideTrevor<-TrevorDenominator(GlobalUpsideOverF=UnlumpedUpsideOverfishOnly$GlobalUpside,GlobalUpsideAll=UnlumpedUpsideAllStocks$GlobalUpside,Discount)
-
 ### Plot figures for paper and diagnostics  --------------------------------------------------
-
-## ******* INSERT CODY'S PLOT SCRIPTS ***************
 
 # FIGURE 3 - Recovery Trajectories
 
