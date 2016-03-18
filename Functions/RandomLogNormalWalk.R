@@ -3,7 +3,7 @@ RandomWalk<- function(Length,Iterations,Start,Error,AC)
     
   Walk<- matrix(NA,nrow=Iterations,ncol=Length)
   
-  Walk[,1]<- rlnorm(Iterations,Start,Error)
+  Walk[,1]<- rnorm(Iterations,Start,Error)
   
   for (i in 2:Length)
   {
@@ -13,6 +13,6 @@ RandomWalk<- function(Length,Iterations,Start,Error,AC)
   return(Walk)
 }
 
-# Walk<- RandomWalk(1000,1,0,1,1)
-# 
-# plot(t(Walk/mean(Walk)))
+Walk<- RandomWalk(1000,1,0,1,1)
+
+plot(t(Walk/mean(Walk)))
