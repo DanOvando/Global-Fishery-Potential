@@ -530,7 +530,7 @@ if (RunAnalyses==F) #Load baseline versions of key dataframes for analysis after
 
 ### Process results and prepare summary tables --------------------------------------------------
 
-### TEMPORARY REMOVAL OF DUPLICATED TUNA STOCKS ### !!!!!!!
+### TEMPORARY REMOVAL OF DUPLICATED TUNA STOCKS when using any old data version <6.01 ### !!!!!!!
 ProjectionData<-ProjectionData %>%
   filter(!(IdOrig %in% c("Lumped-Southern bluefin tuna-FaoRegion51",
                          "Lumped-Atlantic bluefin tuna-FaoRegion37",
@@ -646,12 +646,7 @@ UnlumpedUpsideOverfishOnly<-FisheriesUpsideV3(UnlumpedProjectionData,BaselineYea
                                               RecoveryThreshold=0.8,LumpedName='UnLumped Projection Data',SubsetName='Overfish Only',IncludeNEIs)
 
 
-# Calculate global upsides relative to Trevor denominator
-# GlobalUpsideTrevor<-TrevorDenominator(GlobalUpsideOverF=UnlumpedUpsideOverfishOnly$GlobalUpside,GlobalUpsideAll=UnlumpedUpsideAllStocks$GlobalUpside,Discount)
-
 ### Plot figures for paper and diagnostics  --------------------------------------------------
-
-## ******* INSERT CODY'S PLOT SCRIPTS ***************
 
 # FIGURE 3 - Recovery Trajectories
 

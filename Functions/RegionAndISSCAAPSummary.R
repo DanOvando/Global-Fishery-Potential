@@ -38,9 +38,9 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
   
   regs<-unique(data$RegionFAO[data$Dbase=='FAO'])
   
-  RegionStatus<-data.frame(matrix(NA,nrow=length(regs),ncol=5))
+  RegionStatus<-data.frame(matrix(NA,nrow=length(regs),ncol=7))
   
-  colnames(RegionStatus)<-c('RegionFAO','MedianBvBmsy','MedianFvFmsy','CatchWtMeanB','CatchWtMeanF')
+  colnames(RegionStatus)<-c('RegionFAO','MedianBvBmsy','MedianFvFmsy','CatchWtMeanB','CatchWtMeanF', 'PercBelowBof1','PercBelowFof1')
   
   for(c in 1:length(regs))
   {
@@ -54,7 +54,8 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       mutate(bxcatch=BvBmsy*Catch,fxcatch=FvFmsy*Catch) %>%
       group_by(Year) %>%
       summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T),
-                WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T)) %>%
+                WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T),
+                PercBelowBof1=100*(length(BvBmsy[BvBmsy<1])/length(BvBmsy)),PercBelowFof1=100*(length(FvFmsy[FvFmsy<1])/length(FvFmsy))) %>%
       ungroup()
     
     RegionStatus$RegionFAO[c]<-regs[c]
@@ -66,6 +67,10 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
     RegionStatus$CatchWtMeanB[c]<-temp$WtMeanB
     
     RegionStatus$CatchWtMeanF[c]<-temp$WtMeanF
+    
+    RegionStatus$PercBelowBof1[c]<-temp$PercBelowBof1
+    
+    RegionStatus$PercBelowFof1[c]<-temp$PercBelowFof1
   }
   
   write.csv(RegionStatus,file=paste(ResultFolder,'Status by FAO Region.csv',sep=''))
@@ -334,18 +339,21 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       OutCols<-inCols
       
       # RGBcols	<-c("#000000","#FF0000","#00CC00") #black, red, green
-      RGBcols<-c('#A0A0A0','#FC6969','#0B610B')
+      # RGBcols<-c('#A0A0A0','#FC6969','#0B610B')
+      RGBcols<-c('#000000','#FF0000','#0B610B')
+      
       AddTrans	<-99		# adjusts the transparency--lower is more transparent
       
       for(x in 1:3)
         OutCols[inCols==x]<-paste(RGBcols[x],AddTrans,sep="")
       
       points(BaselineData$BvBmsy,BaselineData$FvFmsy,pch=16,col=OutCols,cex=0.75+(BaselineData$Catch)/max(BaselineData$Catch,na.rm=T))
-      points(KobeMedians$MedianB,KobeMedians$MedianF,pch=17,col=RGBcols[3], cex=1.5)
-      points(KobeMedians$WtMeanB,KobeMedians$WtMeanF,pch=15,col=RGBcols[3], cex=1.5)
+      points(BaselineData$BvBmsy,BaselineData$FvFmsy,pch=1,col=OutCols,cex=0.75+(BaselineData$Catch)/max(BaselineData$Catch,na.rm=T))
+#       points(KobeMedians$MedianB,KobeMedians$MedianF,pch=17,col=RGBcols[3], cex=1.5)
+#       points(KobeMedians$WtMeanB,KobeMedians$WtMeanF,pch=15,col=RGBcols[3], cex=1.5)
       box()
-      abline(h=1,v=1,lty=2)
-      legend("topright",tempName,bty='n')
+      abline(h=1,v=1,lty=2,lwd=3)
+      # legend("topright",tempName,bty='n')
       # legend('center',legend=unique(BaselineData$Dbase),pch=16,col=(as.factor(unique(BaselineData$Dbase))),cex=0.7,bty='n') 
     } 
     #     show(a)
