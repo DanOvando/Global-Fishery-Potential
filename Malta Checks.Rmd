@@ -1,0 +1,87 @@
+---
+title: "Malta Presentation Checks"
+author: "Dan Ovando"
+date: "January 18, 2016"
+output: pdf_document
+---
+
+These numbers are my calculations of the sums of catch and abundance in by policy in 2050, along with "current" (2012). 
+
+```{r check, message=F, warning=F, cache = F, echo=F}
+
+library(dplyr)
+library(tidyr)
+library(knitr)
+
+load('Results/6.0 global demand common phi/Data/ProjectionData Data.Rdata')
+
+spnamekey <- read.csv('SPPNameKey.csv', stringsAsFactors = F) %>%
+  select(SciName,CommGroup) %>%
+  unique()
+
+
+
+wtf <- ProjectionData %>%
+  left_join(spnamekey, by = 'SciName') %>%
+  subset(Year == 2050) %>%
+  group_by(Policy,CommGroup) %>%
+    summarize(wtfprofits = sum(Biomass, na.rm = T)/1e6) %>% 
+#   summarize(wtfprofits = sum(Profits, na.rm = T)/1e6) %>% 
+#     summarize(wtfprofits = length(unique(IdOrig))) %>% 
+  subset(is.na(CommGroup) == F & CommGroup != '') %>%
+  spread(CommGroup, wtfprofits)
+
+# ProjectionData %>%
+#   subset(Year == 2050) %>%
+#   group_by(Policy) %>%
+#   summarise(tc = sum(Profits, na.rm = T)/1e6)
+
+dat = ProjectionData %>%
+  group_by(IdOrig) %>%
+  mutate(max_year = max(Year)) %>%
+  subset(max_year == 2050) %>%
+  mutate(base_catch = Catch[Year == 2012], base_biomass = Biomass[Year == 2012], 
+         base_profits = Profits[Year == 2012]) %>%
+  left_join(spnamekey, by = 'SciName') %>%
+  subset(CommGroup !='' & is.na(CommGroup) == F) %>%
+  subset(CommGroup %in% c('Whitefish','Small Pelagics','Major Tuna Species','Minor Tuna Species'))
+
+dat$Policy[dat$Year == 2012] <- 'Current'
+
+dat$Year[dat$Policy == 'Current'] <- 2050
+
+malta_catch <- dat %>%
+  ungroup() %>%
+  subset(Year == max(Year) & Policy %in% c('Catch Share Three','Fmsy Three',"Business As Usual Pessimistic",'Current') & is.na(CommGroup) == F) %>%
+  group_by(Policy, CommGroup) %>%
+  summarize(final_catch = sum(Catch, na.rm = T)/1e6) %>% #, final_abundance = sum(Biomass, na.rm = T), final_profits = sum(Profits, na.rm = T)) %>%
+  ungroup() %>%
+  spread(CommGroup, final_catch)
+
+malta_profit <- dat %>%
+  ungroup() %>%
+  subset(Year == max(Year) & Policy %in% c('Catch Share Three','Fmsy Three',"Business As Usual Pessimistic",'Current')) %>%
+  group_by(Policy, CommGroup) %>%
+  summarize(final_profit = sum(Profits, na.rm = T)/1e6) %>% #, final_abundance = sum(Biomass, na.rm = T), final_profits = sum(Profits, na.rm = T)) %>%
+  ungroup() %>%
+  spread(CommGroup, final_profit)
+
+malta_abund <- dat %>%
+  ungroup() %>%
+  subset(Year == max(Year) & Policy %in% c('Catch Share Three','Fmsy Three',"Business As Usual Pessimistic",'Current')) %>%
+  group_by(Policy, CommGroup) %>%
+  summarize(final_abund = sum(Biomass, na.rm = T)/1e6) %>% #, final_abundance = sum(Biomass, na.rm = T), final_profits = sum(Profits, na.rm = T)) %>%
+  ungroup() %>%
+  spread(CommGroup, final_abund)
+
+kable(malta_catch, caption = 'Catch (MMT)', digits = 2)
+
+kable(malta_profit, caption = 'Profits (Million $s)', digits =2 )
+
+kable(malta_abund, caption = 'Abundance (MMT)', digits = 2)
+summaries = list(abundance = malta_abund, profits = malta_profit, catch = malta_catch)
+save(summaries ,file = 'FilesForRay.Rdata')
+
+```
+
+
