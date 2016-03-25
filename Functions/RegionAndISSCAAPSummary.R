@@ -115,13 +115,15 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       if (any(temp$BvBmsy<0,na.rm=T)){temp$BvBmsy<- exp(temp$BvBmsy)}
       
       BaselineData<- subset(temp,subset=Year==BaselineYear & is.na(FvFmsy)==F & is.na(BvBmsy)==F)
-      
       KobeMedians<- BaselineData %>%
         mutate(bxcatch=BvBmsy*Catch,fxcatch=FvFmsy*Catch) %>%
         group_by(Year) %>%
         summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T),
-                  WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T))
-      
+                  WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),
+                  WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T),
+                  WtGeomMeanB=exp(sum(Catch * log(BvBmsy),na.rm=T)/sum(Catch,na.rm=T)),
+                  WtGeomMeanF=exp(sum(Catch * log(FvFmsy + 1e-3),na.rm=T)/sum(Catch,na.rm=T)))
+                  
       BaselineData$FvFmsy[BaselineData$FvFmsy>4]<- 4
       
       BaselineData$BvBmsy[BaselineData$BvBmsy>2.5]<- 2.5
@@ -159,7 +161,7 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       
       points(BaselineData$BvBmsy,BaselineData$FvFmsy,pch=16,col=OutCols,cex=0.75+(BaselineData$Catch)/max(BaselineData$Catch,na.rm=T))
       points(KobeMedians$MedianB,KobeMedians$MedianF,pch=17,col=RGBcols[3], cex=1.5)
-      points(KobeMedians$WtMeanB,KobeMedians$WtMeanF,pch=15,col=RGBcols[3], cex=1.5)
+      points(KobeMedians$WtGeomMeanB,KobeMedians$WtGeomMeanB,pch=15,col=RGBcols[3], cex=1.5)
       box()
       abline(h=1,v=1,lty=2)
       legend("topright",tempName,bty='n')
@@ -219,8 +221,11 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
         mutate(bxcatch=BvBmsy*Catch,fxcatch=FvFmsy*Catch) %>%
         group_by(Year) %>%
         summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T),
-                  WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T))
-      
+                  WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),
+                  WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T),
+                  WtGeomMeanB=exp(sum(Catch * log(BvBmsy),na.rm=T)/sum(Catch,na.rm=T)),
+                  WtGeomMeanF=exp(sum(Catch * log(FvFmsy + 1e-3),na.rm=T)/sum(Catch,na.rm=T)))
+
       BaselineData$FvFmsy[BaselineData$FvFmsy>4]<- 4
       
       BaselineData$BvBmsy[BaselineData$BvBmsy>2.5]<- 2.5
@@ -258,7 +263,7 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       
       points(BaselineData$BvBmsy,BaselineData$FvFmsy,pch=16,col=OutCols,cex=0.75+(BaselineData$Catch)/max(BaselineData$Catch,na.rm=T))
       points(KobeMedians$MedianB,KobeMedians$MedianF,pch=17,col=RGBcols[3], cex=1.5)
-      points(KobeMedians$WtMeanB,KobeMedians$WtMeanF,pch=15,col=RGBcols[3], cex=1.5)
+      points(KobeMedians$WtGeomMeanB,KobeMedians$WtGeomMeanF,pch=15,col=RGBcols[3], cex=1.5)
       box()
       abline(h=1,v=1,lty=2)
       legend("topright",tempName,bty='n')
@@ -313,7 +318,10 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
         mutate(bxcatch=BvBmsy*Catch,fxcatch=FvFmsy*Catch) %>%
         group_by(Year) %>%
         summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T),
-                  WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T))
+                  WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),
+                  WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T),
+                  WtGeomMeanB=exp(sum(Catch * log(BvBmsy),na.rm=T)/sum(Catch,na.rm=T)),
+                  WtGeomMeanF=exp(sum(Catch * log(FvFmsy + 1e-3),na.rm=T)/sum(Catch,na.rm=T)))
       
       BaselineData$FvFmsy[BaselineData$FvFmsy>4]<- 4
       
@@ -349,8 +357,8 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       
       points(BaselineData$BvBmsy,BaselineData$FvFmsy,pch=16,col=OutCols,cex=0.75+(BaselineData$Catch)/max(BaselineData$Catch,na.rm=T))
       points(BaselineData$BvBmsy,BaselineData$FvFmsy,pch=1,col=OutCols,cex=0.75+(BaselineData$Catch)/max(BaselineData$Catch,na.rm=T))
-#       points(KobeMedians$MedianB,KobeMedians$MedianF,pch=17,col=RGBcols[3], cex=1.5)
-#       points(KobeMedians$WtMeanB,KobeMedians$WtMeanF,pch=15,col=RGBcols[3], cex=1.5)
+      points(KobeMedians$MedianB,KobeMedians$MedianF,pch=17,col=RGBcols[3], cex=1.5)
+      points(KobeMedians$WtGeomMeanB,KobeMedians$WtGeomMeanF,pch=15,col=RGBcols[3], cex=1.5)
       box()
       abline(h=1,v=1,lty=2,lwd=3)
       # legend("topright",tempName,bty='n')

@@ -21,18 +21,38 @@ ram_color <- 'steelblue2'
 
 cut_breaks <- 10^(seq(-2,7, by = 1))
 
+
 dat <- ProjectionData %>%
   ungroup() %>%
   filter(Year == 2012 ) %>%
   mutate(log10MSY = log10(MSY),log10MSY_bin = ntile(log10MSY,6),
          log10MSY_bins = cut(MSY,breaks = cut_breaks, dig.lab = 1)) %>%
   mutate(fao_region_num = as.numeric(RegionFAO)) %>%
-  filter(is.na(fao_region_num) ==F) %>%
   left_join(fao_key, by = 'fao_region_num' ) %>%
   ungroup() %>%
   group_by(log10MSY_bins) %>%
   mutate(mean_log10MSY = 10^mean(log10MSY, na.rm= T)) %>%
   ungroup()
+
+min_fun <- function(x){
+  return(y = pmax(1e-3,x))
+}
+
+ arg = dat %>%
+  ungroup() %>%
+   # filter(RegionFAO == '71') %>%
+  mutate(FvFmsy = min_fun(FvFmsy),
+         BvBmsy = min_fun(BvBmsy)) %>%
+  mutate(f_v_catch = FvFmsy * Catch, b_v_catch = BvBmsy * Catch) %>%
+  summarise(catch_weighted_arth_mean_f = sum(f_v_catch, na.rm = T)/sum(Catch, na.rm = T),
+            catch_weighted_geom_mean_f = exp(sum(Catch * log(FvFmsy), na.rm = T)/sum(Catch, na.rm = T)),
+            catch_weighted_arth_mean_b = sum(b_v_catch, na.rm = T)/sum(Catch, na.rm = T),
+            catch_weighted_geom_mean_b = exp(sum(Catch * log(BvBmsy), na.rm = T)/sum(Catch, na.rm = T)))
+
+ kable(arg, digits = 2)
+
+# exp(sum(dat$Catch * log(dat$FvFmsy + 1e-4), na.rm = T) / sum(dat$Catch, na.rm = T))
+
 
 label_dat <- dat %>%
   group_by(log10MSY_bins) %>%
@@ -57,6 +77,7 @@ regional_label_dat <- dat %>%
 
 dat_global <- dat %>%
   filter(MSY >= 100) %>%
+  filter(is.na(fao_region_num) ==F) %>%
   group_by(log10MSY_bins) %>%
   mutate(median_f = pmin(2,median(FvFmsy, na.rm = T)), total_msy = sum(MSY, na.rm = T),
          perc_ram = mean(Dbase == 'RAM'),median_b = pmin(2,median(BvBmsy, na.rm = T)),
@@ -64,6 +85,7 @@ dat_global <- dat %>%
 
 dat_regional <- dat %>%
   filter(MSY >= 100) %>%
+  filter(is.na(fao_region_num) ==F) %>%
   group_by(fao_region_long,log10MSY_bins) %>%
   mutate(median_f = pmin(2,median(FvFmsy, na.rm = T)), total_msy = sum(MSY, na.rm = T),
          perc_ram = mean(Dbase == 'RAM'),median_b = pmin(2,median(BvBmsy, na.rm = T)),

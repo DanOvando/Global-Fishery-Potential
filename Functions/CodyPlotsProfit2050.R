@@ -649,7 +649,6 @@ CodyPlotsProfit2050<- function(FigureFolder,ResultFolder,Policy)
   plot(-100000,las=1,ylab="",xlab="",ylim=ylimIn,xlim=xlimIn)
   abline(h=0,lty=2)
   par(new=T)
-  browser()
   symbols(x=newDF$Year,y=as.numeric(newDF$PerHealth),circles=as.numeric(newDF$value),
           bg=useCol,fg='black',inches=sizeCirc,las=1,
           ylab="",xlab="",ylim=ylimIn,xlim=xlimIn,yaxt='n',xaxt='n')
