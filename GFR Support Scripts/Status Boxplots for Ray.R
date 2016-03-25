@@ -7,6 +7,22 @@ library(readr)
 
 load('Results/PNAS Submission - 6.01 global demand common phi/Data/ProjectionData Data.Rdata')
 
+load('Results/PNAS Submission - 6.02 global demand common phi/Data/MsyData.Rdata')
+
+
+arg = read.csv(file = 'wtf mate.csv', stringsAsFactors = F)
+
+huh <- as.data.frame(CatchMSYPossibleParams) %>%
+  subset(IdOrig %in% unique(arg$IdOrig)) %>%
+  group_by(IdOrig) %>%
+  summarise(samps = length(g))
+
+old_dat <- ProjectionData
+new_dat <- ProjectionData
+
+huh <- new_dat %>%
+  subset(!(IdOrig %in% unique(old_dat$IdOrig)))
+
 fao_key <- read_csv(file = 'Data/fao_regions_key.csv')
 
 use_varwidth <- F
@@ -21,6 +37,33 @@ ram_color <- 'steelblue2'
 
 cut_breaks <- 10^(seq(-2,7, by = 1))
 
+
+all_dat <- ProjectionData %>%
+  ungroup() %>%
+  # filter(Year == 2012 ) %>%
+  mutate(log10MSY = log10(MSY),log10MSY_bin = ntile(log10MSY,6),
+         log10MSY_bins = cut(MSY,breaks = cut_breaks, dig.lab = 1)) %>%
+  mutate(fao_region_num = as.numeric(RegionFAO)) %>%
+  left_join(fao_key, by = 'fao_region_num' ) %>%
+  ungroup() %>%
+  group_by(log10MSY_bins) %>%
+  mutate(mean_log10MSY = 10^mean(log10MSY, na.rm= T)) %>%
+  ungroup()
+
+bio_plot <- all_dat %>%
+  ungroup() %>%
+  filter(Year <= 2012 & Year >= 1955) %>%
+  group_by(Year) %>%
+  summarise(total_biomass = sum(Biomass, na.rm = T)/1e6, stocks = length(unique(IdOrig))) %>% 
+  ggplot(aes(Year,total_biomass, size = stocks, fill = stocks, group = stocks)) + 
+  geom_point(shape = 21) + 
+  scale_fill_continuous(name = 'Number of Stocks',low = 'white',high = 'steelblue4') + 
+  scale_size_continuous(guide = F) + 
+  ylab('Total Biomass/1e6')
+
+
+ggsave(filename ='GFR Support Scripts/Biomass Trend.pdf', bio_plot,
+       width = 8,height = 6)
 
 dat <- ProjectionData %>%
   ungroup() %>%
