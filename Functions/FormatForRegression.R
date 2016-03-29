@@ -1,3 +1,20 @@
+#' FormatForRegression
+#'
+#' \code{FormatForRegression} takes data and prepares it for PRM regression
+#' @param f fishery
+#' @param Data raw data
+#' @param Fisheries the total list of all possible fisheries
+#' @param DependentVariable the left hand variable
+#' @param CatchVariables vector of catch related variables
+#' @param CatchLags number of years of catch lags to create
+#' @param LifeHistoryVars life history variables to include
+#' @param IsLog is the dependent variable in log space
+#' @param IdVar the variable marking the id
+#'
+#' @return
+#' @export
+#'
+#' @examples
 FormatForRegression<- function(f, Data,Fisheries,DependentVariable,CatchVariables,CatchLags,LifeHistoryVars,IsLog,IdVar)
 
 {

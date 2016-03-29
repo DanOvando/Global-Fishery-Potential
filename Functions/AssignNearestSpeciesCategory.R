@@ -1,15 +1,16 @@
+#' AssignNearestSpeciesCategory
+#'
+#' \code{AssignNearestSpeciesCategory} assigns the nearest species category available from regression
+#' @param Data the raw data
+#' @param AvailableCategories the categories present in the regression model
+#' @param AllCategories all possible species categories
+#'
+#' @return
+#' @export
 AssignNearestSpeciesCategory<- function(Data,AvailableCategories,AllCategories)
 {
   
-  
-#   Data<- FaoSpeciesLevel
-# 
-#    AvailableCategories<- TempLevel
-#   
-# AllCategories<- AllPossible
-
-  
-  PossibleNumbers<- (AllCategories$SpeciesCatNames  %in% AvailableCategories)
+  PossibleNumbers<- (AllCategories$SpeciesCatName  %in% AvailableCategories)
   
   PossibleCats<- AllCategories[PossibleNumbers,]
   
@@ -20,7 +21,7 @@ AssignNearestSpeciesCategory<- function(Data,AvailableCategories,AllCategories)
   for (s in 1:length(AllCats))
   {
     
-    IsAvailable<- any(AllCats[s] %in% PossibleCats$SpeciesCatNames)
+    IsAvailable<- any(AllCats[s] %in% PossibleCats$SpeciesCatName)
     
     if (IsAvailable==F)
     {
@@ -34,28 +35,27 @@ AssignNearestSpeciesCategory<- function(Data,AvailableCategories,AllCategories)
       if (any(Possible==Group))
       {
         
-       SpeciesCat<- Data$SpeciesCat[Where][1]
-       
-       GroupDistance<- (abs(PossibleCats$SpeciesCat-SpeciesCat)) # Find the closest match within the group
-      
-       ClosestGroupNumber<- PossibleCats$SpeciesCat[GroupDistance==min(GroupDistance)[1]][1]
-       
-       ClosestGroup<- PossibleCats$SpeciesCatNames[PossibleCats$SpeciesCat==ClosestGroupNumber]
-       
-       Data$SpeciesCatName[Where]<- ClosestGroup
-       
+        SpeciesCat<- Data$SpeciesCat[Where][1]
+        
+        GroupDistance<- (abs(PossibleCats$SpeciesCat-SpeciesCat)) # Find the closest match within the group
+        ClosestGroupNumber<- PossibleCats$SpeciesCat[GroupDistance==min(GroupDistance)[1]][1]
+        
+        ClosestGroup<- PossibleCats$SpeciesCatName[PossibleCats$SpeciesCat==ClosestGroupNumber]
+        
+        Data$SpeciesCatName[Where]<- ClosestGroup
+        
       } #Close if 
       else
       {
         
         GroupDistance<- ((abs(Possible-Group)))
-      
+        
         ClosestCategories<- PossibleCats[GroupDistance==min(GroupDistance)[1],]
         
         ClosestGroup<- ClosestCategories[ClosestCategories$SpeciesCat==max(ClosestCategories$SpeciesCat),]
         
-        Data$SpeciesCatName[Where]<- ClosestGroup$SpeciesCatNames
-                
+        Data$SpeciesCatName[Where]<- ClosestGroup$SpeciesCatName
+        
       } #Close else loop
       
     } #Close if IsAvailable statement

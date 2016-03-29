@@ -216,7 +216,7 @@ if (RunAnalyses==TRUE)
 
   AllPossible<- unique(data.frame(I(FullData$SpeciesCatName),I(FullData$SpeciesCat)))
 
-  colnames(AllPossible)<- c('SpeciesCatNames','SpeciesCat')
+  colnames(AllPossible)<- c('SpeciesCatName','SpeciesCat')
 
   RamPossibleCats<- unique(RamData$SpeciesCatName)
 

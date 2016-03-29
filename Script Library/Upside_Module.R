@@ -13,6 +13,16 @@ library(ggplot2)
 # Data - Make sure data file is in same directory (folder) as this R script or adjust the pathname accordingly
 testdf<-read.csv(file = 'Data/test data for upside module.csv')
 
+load('Results/PNAS Submission - 6.01 global demand common phi/Data/PrmRegressions.Rdata')
+
+dat <- testdf
+
+regs <- RealModels$M1
+
+a = apply_prm(dat = dat, reg = regs)
+
+b = predict(regs,a$Data)
+
 #############################################---------------------------------------------
 ## DEFINE INTERNAL FUNCTIONS
 ############################################# --------------------------------------------
