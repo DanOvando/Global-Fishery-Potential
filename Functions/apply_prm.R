@@ -24,6 +24,8 @@ apply_prm <- function(dat,reg,CatchLags = 4, LifeHistoryVars = c('MaxLength','Ag
   
   formatted <- assign_life_history(dat = formatted)
   
+  reg_factors <- reg$xlevels$SpeciesCatName
+  
   AllPossible = formatted %>%
     select(SpeciesCatName, SpeciesCat) %>%
     unique()

@@ -3,6 +3,10 @@
 ############################################# --------------------------------------------
 
 # Packages
+
+rm(list = ls())
+sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
+
 library(zoo)
 library(readr)
 library(dplyr)
@@ -11,17 +15,16 @@ library(tidyr)
 library(ggplot2)
 
 # Data - Make sure data file is in same directory (folder) as this R script or adjust the pathname accordingly
-testdf<-read.csv(file = 'Data/test data for upside module.csv')
+testdf = read.csv(file = 'Data/test data for upside module.csv')
 
 load('Results/PNAS Submission - 6.01 global demand common phi/Data/PrmRegressions.Rdata')
 
-dat <- testdf
+dat = testdf
 
-regs <- RealModels$M1
+regs = RealModels$M1
 
-a = apply_prm(dat = dat, reg = regs)
-
-b = predict(regs,a$Data)
+predicted = apply_prm(dat = dat, reg = regs) %>%
+  filter( is.na(LogBvBmsy))
 
 #############################################---------------------------------------------
 ## DEFINE INTERNAL FUNCTIONS
@@ -168,243 +171,243 @@ results<-list()
 ## Loop over stocks and apply CMSY individually
 for(a in 1:length(stockids))
 {
-print(a)
-stockdata<-subset(data,IdOrig==stockids[a])
+  print(a)
+  stockdata<-subset(data,IdOrig==stockids[a])
   
-BtoKRatio<- unique(stockdata$BtoKRatio)
-
-CatchYears<- (stockdata$Year*as.numeric(is.na(stockdata$Catch)==F))
-
-CatchYears[CatchYears==0]<- NA
-
-FirstCatchYear<- which(stockdata$Year==min(CatchYears,na.rm=T))[1]
-
-LastCatchYear<- which(stockdata$Year==max(CatchYears,na.rm=T))[1]
-
-stockdata<- stockdata[FirstCatchYear:LastCatchYear,]
-
-
-Where<- stockdata[,IdVar]==stockids[a]
-
-
-# write.table((paste(round(100*(s/length(stock_id)),2),'% done with CatchMSY',sep='')), file = 'CatchMSY Progress.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
-
-
-yr   <- stockdata$Year[(stockdata[,IdVar])==stockids[a]]
-
-ct   <- (stockdata$Catch[(stockdata[,IdVar])==stockids[a]])  
-
-bio<- pmin(1,(stockdata$BvBmsy*stockdata$BtoKRatio)[stockdata[,IdVar]==stockids[a]]) #pull out bvbmsy (transposed to B/K)
-
-bioerror<- (stockdata$BvBmsySD*stockdata$BtoKRatio)[Where]
-
-
-bioerror[is.na(bioerror)]<- CommonError
-
-PossibleRuns<- NA
-
-if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0 & length(LastCatchYear)>0 & length(ct)>1)
-{
+  BtoKRatio<- unique(stockdata$BtoKRatio)
   
-  ct<- na.approx(ct)
+  CatchYears<- (stockdata$Year*as.numeric(is.na(stockdata$Catch)==F))
   
-  if(Smooth==1){ct<- runmed(ct,3)}
+  CatchYears[CatchYears==0]<- NA
   
-  res  <- (stockdata$Res[(stockdata[,IdVar])==stockids[a]])[1] ## resilience from FishBase, if needed, enable in PARAMETER SECTION
+  FirstCatchYear<- which(stockdata$Year==min(CatchYears,na.rm=T))[1]
   
-  if(is.na(res)){res<- 0.5}
+  LastCatchYear<- which(stockdata$Year==max(CatchYears,na.rm=T))[1]
   
-  for (i in 1){
-    start_g  <- if(res == "Very low"){c(0.001, 0.05)}
-    else if(res == "Low") {c(0.05,0.15)}
-    else if(res == "Medium") {c(0.15,0.5)}
-    else if(res == "High") {c(0.5,1)}
-    else {c(0.15,0.5)} ## Medium, or default if no res is found  
-  }
-  phi<- unique(stockdata$phi)
+  stockdata<- stockdata[FirstCatchYear:LastCatchYear,]
   
-  start_g<- start_g*(phi/(1+phi)) #To account for g instead of r
   
-  nyr  <- length(yr) 
-# Set default for upper k e.g. 100 * max catch
-start_k<- c(max(ct,na.rm=T),50*max(ct,na.rm=T)) 
-
-# Assumed biomass range at start of time series, as fraction of K
-startbio 	<- c(0.6,1) 
-
-
-if (is.na(bio[1]) | bio[1]==0)
-{
-  startbio    <- if(ct[1]/max(ct,na.rm=T) < 0.5) {c(0.5,0.9)} else {c(0.3,0.6)} ## use for batch processing #SUB IN BVBMSY VALUES
-}
-
-interyr 	<- median(1:length(yr))   ## interim year within time series for which biomass estimate is available; set to yr[2] if no estimates are available #SUB IN INTERMIN YEAR
-
-
-interbio   <- c(0, 1) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
-
-
-if (is.na(bio[interyr]) | bio[interyr]==0)
-{
-  interbio 	<- c(0, 1) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
-}
-
-interyr<- yr[interyr]
-
-finalbio    <- pmin(1,pmax(0,c(qnorm(0.45,bio[nyr],bioerror[nyr]),qnorm(0.55,bio[nyr],bioerror[nyr]))))
-
-if(bio[nyr]>=0.95) # if final stock bio is 2 or higher set priors to BvBmsy 1.4-1.7
-{ 
-  finalbio<-c(0.7,0.85)
-}
-
-if (is.na(bio[nyr]) | bio[nyr]==0)
-{
-  finalbio    <- if(ct[nyr]/max(ct,na.rm=T) > 0.5) {c(0.3,0.7)} else {c(0.01,0.4)} ## use for batch processing #SET TO KNOWN B/BMSY RANGE
-}
-
-startbt     <- seq(startbio[1], startbio[2], length.out = 10) ## apply range of start biomass in steps of 0.05	
- 
-parbound <- list(stock = unique(stockdata$IdOrig), g = start_g, k = start_k, lambda = finalbio, sigR=sigR,phi=unique(stockdata$phi))
-
-if (Display==1)
-{
-  cat("Last year =",max(yr),", last catch =",ct[nyr],"\n")
-  cat("Resilience =",res,"\n")
-  cat("Process error =", sigR,"\n")
-  cat("Assumed initial biomass (B/k) =", startbio[1],"-", startbio[2], " k","\n")
-  cat("Assumed intermediate biomass (B/k) in", interyr, " =", interbio[1],"-",interbio[2]," k","\n")
-  cat("Assumed final biomass (B/k) =", parbound$lambda[1],"-",parbound$lambda[2]," k","\n")
-  cat("Initial bounds for g =", parbound$g[1], "-", parbound$g[2],"\n")
-  cat("Initial bounds for k =", format(parbound$k[1], digits=3), "-", format(parbound$k[2],digits=3),"\n")
-}
-
-possibleruns<-MatrixCmsy(parbound = parbound,n,interbio = interbio,finalbio = finalbio,startbt = startbt)
-
-## Get statistics on g, k, MSY and determine new bounds for g and k
-g1 	<- possibleruns$g
-k1 	<- possibleruns$K
-
-if(length(g1)<10) 
-{        
+  Where<- stockdata[,IdVar]==stockids[a]
   
-  finalbio<- pmax(0,pmin(1,finalbio+c(-.065,.065)))
-  possibleruns<- MatrixCmsy(parbound,n,interbio,finalbio,startbt)
-  ## Get statistics on g, k, MSY and determine new bounds for g and k
-  g1   <- possibleruns$g
-  k1 	<- possibleruns$K
   
-}
-
-if(length(g1)<10) {    
-  cat("Too few (", length(g1), ") possible g-k combinations, check input parameters","\n")
-  flush.console()
-}
-
-if(length(g1)>=10) {
+  # write.table((paste(round(100*(s/length(stock_id)),2),'% done with CatchMSY',sep='')), file = 'CatchMSY Progress.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
   
-  msy1  <- (g1*k1)*BtoKRatio
-  mean_msy1 <- exp(mean(log(msy1))) 
-  max_k1a  <- min(k1[g1<1.1*parbound$g[1]],na.rm=T) ## smallest k1 near initial lower bound of g
-  max_k1b  <- max(k1[(g1*k1)*BtoKRatio <mean_msy1],na.rm=T) ## largest k1 that gives mean MSY
-  max_k1 <- if(max_k1a < max_k1b) {max_k1a} else {max_k1b}
-  ## set new upper bound of g to 1.2 max r1
-  parbound$g[2] <- 1.2*max(g1)
-  ## set new lower bound for k to 0.9 min k1 and upper bound to max_k1 
-  parbound$k 	  <- c(0.9 * min(k1), max_k1)
   
-  if (Display==1)	
+  yr   <- stockdata$Year[(stockdata[,IdVar])==stockids[a]]
+  
+  ct   <- (stockdata$Catch[(stockdata[,IdVar])==stockids[a]])  
+  
+  bio<- pmin(1,(stockdata$BvBmsy*stockdata$BtoKRatio)[stockdata[,IdVar]==stockids[a]]) #pull out bvbmsy (transposed to B/K)
+  
+  bioerror<- (stockdata$BvBmsySD*stockdata$BtoKRatio)[Where]
+  
+  
+  bioerror[is.na(bioerror)]<- CommonError
+  
+  PossibleRuns<- NA
+  
+  if (sum(ct,na.rm=T)>0 & sum(bio,na.rm=T)>0 & length(LastCatchYear)>0 & length(ct)>1)
   {
-    cat("First MSY =", format(mean_msy1, digits=3),"\n")
-    cat("First g =", format(exp(mean(log(g1))), digits=3),"\n")
-    cat("New upper bound for g =", format(parbound$g[2],digits=2),"\n")	
-    cat("New range for k =", format(parbound$k[1], digits=3), "-", format(parbound$k[2],digits=3),"\n")
-  }
+    
+    ct<- na.approx(ct)
+    
+    if(Smooth==1){ct<- runmed(ct,3)}
+    
+    res  <- (stockdata$Res[(stockdata[,IdVar])==stockids[a]])[1] ## resilience from FishBase, if needed, enable in PARAMETER SECTION
+    
+    if(is.na(res)){res<- 0.5}
+    
+    for (i in 1){
+      start_g  <- if(res == "Very low"){c(0.001, 0.05)}
+      else if(res == "Low") {c(0.05,0.15)}
+      else if(res == "Medium") {c(0.15,0.5)}
+      else if(res == "High") {c(0.5,1)}
+      else {c(0.15,0.5)} ## Medium, or default if no res is found  
+    }
+    phi<- unique(stockdata$phi)
+    
+    start_g<- start_g*(phi/(1+phi)) #To account for g instead of r
+    
+    nyr  <- length(yr) 
+    # Set default for upper k e.g. 100 * max catch
+    start_k<- c(max(ct,na.rm=T),50*max(ct,na.rm=T)) 
+    
+    # Assumed biomass range at start of time series, as fraction of K
+    startbio 	<- c(0.6,1) 
+    
+    
+    if (is.na(bio[1]) | bio[1]==0)
+    {
+      startbio    <- if(ct[1]/max(ct,na.rm=T) < 0.5) {c(0.5,0.9)} else {c(0.3,0.6)} ## use for batch processing #SUB IN BVBMSY VALUES
+    }
+    
+    interyr 	<- median(1:length(yr))   ## interim year within time series for which biomass estimate is available; set to yr[2] if no estimates are available #SUB IN INTERMIN YEAR
+    
+    
+    interbio   <- c(0, 1) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
+    
+    
+    if (is.na(bio[interyr]) | bio[interyr]==0)
+    {
+      interbio 	<- c(0, 1) ## biomass range for interim year, as fraction of k; set to 0 and 1 if not available
+    }
+    
+    interyr<- yr[interyr]
+    
+    finalbio    <- pmin(1,pmax(0,c(qnorm(0.45,bio[nyr],bioerror[nyr]),qnorm(0.55,bio[nyr],bioerror[nyr]))))
+    
+    if(bio[nyr]>=0.95) # if final stock bio is 2 or higher set priors to BvBmsy 1.4-1.7
+    { 
+      finalbio<-c(0.7,0.85)
+    }
+    
+    if (is.na(bio[nyr]) | bio[nyr]==0)
+    {
+      finalbio    <- if(ct[nyr]/max(ct,na.rm=T) > 0.5) {c(0.3,0.7)} else {c(0.01,0.4)} ## use for batch processing #SET TO KNOWN B/BMSY RANGE
+    }
+    
+    startbt     <- seq(startbio[1], startbio[2], length.out = 10) ## apply range of start biomass in steps of 0.05	
+    
+    parbound <- list(stock = unique(stockdata$IdOrig), g = start_g, k = start_k, lambda = finalbio, sigR=sigR,phi=unique(stockdata$phi))
+    
+    if (Display==1)
+    {
+      cat("Last year =",max(yr),", last catch =",ct[nyr],"\n")
+      cat("Resilience =",res,"\n")
+      cat("Process error =", sigR,"\n")
+      cat("Assumed initial biomass (B/k) =", startbio[1],"-", startbio[2], " k","\n")
+      cat("Assumed intermediate biomass (B/k) in", interyr, " =", interbio[1],"-",interbio[2]," k","\n")
+      cat("Assumed final biomass (B/k) =", parbound$lambda[1],"-",parbound$lambda[2]," k","\n")
+      cat("Initial bounds for g =", parbound$g[1], "-", parbound$g[2],"\n")
+      cat("Initial bounds for k =", format(parbound$k[1], digits=3), "-", format(parbound$k[2],digits=3),"\n")
+    }
+    
+    possibleruns<-MatrixCmsy(parbound = parbound,n,interbio = interbio,finalbio = finalbio,startbt = startbt)
+    
+    ## Get statistics on g, k, MSY and determine new bounds for g and k
+    g1 	<- possibleruns$g
+    k1 	<- possibleruns$K
+    
+    if(length(g1)<10) 
+    {        
+      
+      finalbio<- pmax(0,pmin(1,finalbio+c(-.065,.065)))
+      possibleruns<- MatrixCmsy(parbound,n,interbio,finalbio,startbt)
+      ## Get statistics on g, k, MSY and determine new bounds for g and k
+      g1   <- possibleruns$g
+      k1 	<- possibleruns$K
+      
+    }
+    
+    if(length(g1)<10) {    
+      cat("Too few (", length(g1), ") possible g-k combinations, check input parameters","\n")
+      flush.console()
+    }
+    
+    if(length(g1)>=10) {
+      
+      msy1  <- (g1*k1)*BtoKRatio
+      mean_msy1 <- exp(mean(log(msy1))) 
+      max_k1a  <- min(k1[g1<1.1*parbound$g[1]],na.rm=T) ## smallest k1 near initial lower bound of g
+      max_k1b  <- max(k1[(g1*k1)*BtoKRatio <mean_msy1],na.rm=T) ## largest k1 that gives mean MSY
+      max_k1 <- if(max_k1a < max_k1b) {max_k1a} else {max_k1b}
+      ## set new upper bound of g to 1.2 max r1
+      parbound$g[2] <- 1.2*max(g1)
+      ## set new lower bound for k to 0.9 min k1 and upper bound to max_k1 
+      parbound$k 	  <- c(0.9 * min(k1), max_k1)
+      
+      if (Display==1)	
+      {
+        cat("First MSY =", format(mean_msy1, digits=3),"\n")
+        cat("First g =", format(exp(mean(log(g1))), digits=3),"\n")
+        cat("New upper bound for g =", format(parbound$g[2],digits=2),"\n")	
+        cat("New range for k =", format(parbound$k[1], digits=3), "-", format(parbound$k[2],digits=3),"\n")
+      }
+      
+      ## Repeat analysis with new g-k bounds
+      
+      possibleruns$Fail<- 0
+      
+      possibleruns$IdOrig<- stockids[a]
+      
+      
+      ## Get statistics on g, k and msy
+      g   <- possibleruns$g
+      k 	<- possibleruns$K
+      
+      possibleruns$MSY<- (g*k)*BtoKRatio
+      
+      bvbmsy<- (possibleruns[,grepl('X',colnames(possibleruns))]/k)/BtoKRatio
+      
+      CatchMat=matrix(rep(ct,dim(possibleruns)[1]),nrow=dim(possibleruns)[1],ncol=length(ct),byrow=T)  
+      
+      fvfmsy<- CatchMat/possibleruns$MSY/bvbmsy
+      
+      possibleruns$FinalFvFmsy<- fvfmsy[,dim(fvfmsy)[2]]
+      
+      possibleruns$FinalBvBmsy<- bvbmsy[,dim(bvbmsy)[2]]
+      
+      
+      time_bvbmsy<- (apply(bvbmsy,2,function(x) exp(mean(log(x)))))
+      mean_bvbmsy<- mean(apply(bvbmsy,1,function(x) exp(mean(log(x)))))
+      LogSD_bvbmsy<- mean(apply(bvbmsy,1,function(x) (sd(log(x)))))
+      
+      msy = (g * k) * BtoKRatio
+      
+      Fmsy<- g
+      
+      mean_ln_msy = mean(log(msy),na.rm=T)
+      
+      negative_g <- F
+      
+      mean_ln_g<- mean(log(g),na.rm=T)
+      
+      mean_ln_k<- mean(log(k),na.rm=T)
+      
+      stockdata$RanCatchMSY[Where]<- TRUE
+      
+      stockdata$MSY[Where]<- exp(mean_ln_msy)
+      
+      stockdata$g[Where]<- exp(mean_ln_g)
+      
+      stockdata$k[Where]<- exp(mean_ln_k)
+      
+      stockdata$MSYLogSd[Where]<- (sd(log(msy)))
+      
+      stockdata$gLogSd[Where]<- (sd(log(g),na.rm=T))
+      
+      stockdata$KLogSd[Where]<- (sd(log(k),na.rm=T))
+      
+      stockdata$CatchMSYBvBmsy[Where]<- time_bvbmsy
+      
+      if (CatchMSYTrumps==T)
+      {
+        stockdata$BvBmsy[Where]<- time_bvbmsy
+      }
+      
+      stockdata$CatchMSYBvBmsy_LogSd[Where]<- LogSD_bvbmsy
+      
+      stockdata$FvFmsy[Where]<- (stockdata$Catch[Where]/stockdata$MSY[Where])/stockdata$BvBmsy[Where]
+      
+      if (Display==1)
+      {
+        cat("Possible combinations = ", length(g),"\n")
+        cat("geom. mean g =", format(exp(mean(log(g))),digits=3), "\n")
+        cat("g +/- 2 SD =", format(exp(mean(log(g))-2*sd(log(g))),digits=3),"-",format(exp(mean(log(g))+2*sd(log(g))),digits=3), "\n")
+        cat("geom. mean k =", format(exp(mean(log(k))),digits=3), "\n")
+        cat("k +/- 2 SD =", format(exp(mean(log(k))-2*sd(log(k))),digits=3),"-",format(exp(mean(log(k))+2*sd(log(k))),digits=3), "\n")
+        cat("geom. mean MSY =", format(exp(mean(log(msy))),digits=3),"\n")
+        cat("MSY +/- 2 SD =", format(exp(mean_ln_msy - 2 * sd(log(msy))),digits=3), "-", format(exp(mean_ln_msy + 2 * sd(log(msy))),digits=3), "\n")
+      }
+      
+      RanCMSY<- TRUE
+      
+    } #Close if r1 is greater than 10
+    
+  } #Close if there is catch loop
   
-## Repeat analysis with new g-k bounds
-
-possibleruns$Fail<- 0
-
-possibleruns$IdOrig<- stockids[a]
-
-
-## Get statistics on g, k and msy
-g   <- possibleruns$g
-k 	<- possibleruns$K
-
-possibleruns$MSY<- (g*k)*BtoKRatio
-
-bvbmsy<- (possibleruns[,grepl('X',colnames(possibleruns))]/k)/BtoKRatio
-
-CatchMat=matrix(rep(ct,dim(possibleruns)[1]),nrow=dim(possibleruns)[1],ncol=length(ct),byrow=T)  
-
-fvfmsy<- CatchMat/possibleruns$MSY/bvbmsy
-
-possibleruns$FinalFvFmsy<- fvfmsy[,dim(fvfmsy)[2]]
-
-possibleruns$FinalBvBmsy<- bvbmsy[,dim(bvbmsy)[2]]
-
-
-time_bvbmsy<- (apply(bvbmsy,2,function(x) exp(mean(log(x)))))
-mean_bvbmsy<- mean(apply(bvbmsy,1,function(x) exp(mean(log(x)))))
-LogSD_bvbmsy<- mean(apply(bvbmsy,1,function(x) (sd(log(x)))))
-
-msy = (g * k) * BtoKRatio
-
-Fmsy<- g
-
-mean_ln_msy = mean(log(msy),na.rm=T)
-
-negative_g <- F
-     
-mean_ln_g<- mean(log(g),na.rm=T)
-
-mean_ln_k<- mean(log(k),na.rm=T)
-
-stockdata$RanCatchMSY[Where]<- TRUE
-
-stockdata$MSY[Where]<- exp(mean_ln_msy)
-
-stockdata$g[Where]<- exp(mean_ln_g)
-
-stockdata$k[Where]<- exp(mean_ln_k)
-
-stockdata$MSYLogSd[Where]<- (sd(log(msy)))
-
-stockdata$gLogSd[Where]<- (sd(log(g),na.rm=T))
-
-stockdata$KLogSd[Where]<- (sd(log(k),na.rm=T))
-
-stockdata$CatchMSYBvBmsy[Where]<- time_bvbmsy
-
-if (CatchMSYTrumps==T)
-{
-  stockdata$BvBmsy[Where]<- time_bvbmsy
-}
-
-stockdata$CatchMSYBvBmsy_LogSd[Where]<- LogSD_bvbmsy
-
-stockdata$FvFmsy[Where]<- (stockdata$Catch[Where]/stockdata$MSY[Where])/stockdata$BvBmsy[Where]
-
-if (Display==1)
-{
-  cat("Possible combinations = ", length(g),"\n")
-  cat("geom. mean g =", format(exp(mean(log(g))),digits=3), "\n")
-  cat("g +/- 2 SD =", format(exp(mean(log(g))-2*sd(log(g))),digits=3),"-",format(exp(mean(log(g))+2*sd(log(g))),digits=3), "\n")
-  cat("geom. mean k =", format(exp(mean(log(k))),digits=3), "\n")
-  cat("k +/- 2 SD =", format(exp(mean(log(k))-2*sd(log(k))),digits=3),"-",format(exp(mean(log(k))+2*sd(log(k))),digits=3), "\n")
-  cat("geom. mean MSY =", format(exp(mean(log(msy))),digits=3),"\n")
-  cat("MSY +/- 2 SD =", format(exp(mean_ln_msy - 2 * sd(log(msy))),digits=3), "-", format(exp(mean_ln_msy + 2 * sd(log(msy))),digits=3), "\n")
-}
-
-RanCMSY<- TRUE
-
-} #Close if r1 is greater than 10
-
-} #Close if there is catch loop
-
-results[[a]]<-stockdata
-
+  results[[a]]<-stockdata
+  
 } # close stock loop
 
 # combine all data frames into single data frame
