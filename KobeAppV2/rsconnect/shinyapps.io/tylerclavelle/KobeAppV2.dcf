@@ -1,6 +1,10 @@
 name: KobeAppV2
 account: tylerclavelle
 server: shinyapps.io
-bundleId: 383702
+appId: 85649
+bundleId: 403469
 url: https://tylerclavelle.shinyapps.io/KobeAppV2/
-when: 1456776317.49008
+when: 1458953550.70938
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Kobe Density.pdf|Kobe Density.png|kobe.pdf

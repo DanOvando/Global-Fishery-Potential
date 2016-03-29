@@ -11,7 +11,7 @@ library(tidyr)
 library(ggplot2)
 
 # Data - Make sure data file is in same directory (folder) as this R script or adjust the pathname accordingly
-testdf<-read.csv(file = 'test data for upside module.csv')
+testdf<-read.csv(file = 'Data/test data for upside module.csv')
 
 #############################################---------------------------------------------
 ## DEFINE INTERNAL FUNCTIONS

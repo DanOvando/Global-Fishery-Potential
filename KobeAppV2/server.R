@@ -86,6 +86,10 @@ shinyServer(function(input, output) {
     # toggle NEIs
     if(input$Neis==FALSE){Data<-Data[Data$IdLevel!="Neis",]}
     
+    # toggle stock size
+    Data<- Data %>%
+      filter(Catch>=input$Size)
+    
     # QAQC of BvBmsy values
     Data<-Data[Data$BvBmsy!=999 |is.infinite(Data$BvBmsy)!=TRUE,]
     
@@ -94,7 +98,9 @@ shinyServer(function(input, output) {
       mutate(bxcatch=BvBmsy*Catch,fxcatch=FvFmsy*Catch) %>%
       group_by(Policy) %>%
       summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T),
-                WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T))
+                WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T),
+                WtGeomMeanB=exp(sum(Catch * log(BvBmsy),na.rm=T)/sum(Catch,na.rm=T)),
+                WtGeomMeanF=exp(sum(Catch * log(FvFmsy + 1e-3),na.rm=T)/sum(Catch,na.rm=T)))
     
     # cap FvFmsy and BvBmsy values to the kobe plot axis limits
     Data$FvFmsy[Data$FvFmsy>4]<- 4
@@ -113,22 +119,33 @@ shinyServer(function(input, output) {
     if (input$ColorID==TRUE){DotColor=Data$IdLevel}
     
     # if(DotColor==Data$Dbase){DotColor<-paste(c('#A0A0A0','#FC6969'),99,sep = '')}
-  
+
     # plot Kobe plot
+
     layout(t(matrix(c(1,2))), widths = c(4,1), heights = c(1,1), respect = FALSE)
     par(mai=c(1,1,1,0))
     image(DensityData$x,DensityData$y,DensityData$z,col=KobeColors(50),xlab='B/Bmsy',ylab='F/Fmsy')
     points(Data$BvBmsy,Data$FvFmsy,pch=16,
            col=as.factor(DotColor),                          
-           cex=0.75+(Data$Catch)/max(Data$Catch,na.rm=T))
+           cex=1.95*log((Data$Catch))/max(log(Data$Catch),na.rm=T))
     points(KobeMedians$MedianB,KobeMedians$MedianF,pch=17,col='#0B610B', cex=1.5)
-    points(KobeMedians$WtMeanB,KobeMedians$WtMeanF,pch=15,col='#0B610B', cex=1.5)
+    points(KobeMedians$WtGeomMeanB,KobeMedians$WtGeomMeanF,pch=15,col='#0B610B', cex=1.5)
     abline(h=1,v=1,lty=2)
     plot.new()
     par(mar=c(0,0,0,0))
     legend('left',legend=unique(DotColor),pch=16,col=(as.factor(unique(DotColor))),cex=0.75,bty='n')
-    
-  })
+ 
+    })
+  
+  # plotB<-renderPlot(kobe_plot)
+  # 
+  # output$downloadPDF<-downloadHandler(
+  #   filename = function() {
+  #     paste('kobe-', Sys.Date(), '.pdf', sep = '')
+  #   },
+  #   content  = function(file){
+  #     pdf(plotB,file)
+  #   })
   
 })
 
