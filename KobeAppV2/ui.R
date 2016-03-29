@@ -70,6 +70,8 @@ shinyUI(fluidPage(theme = 'bootstrap.css',
 #       ),
       
       radioButtons('Dbase','Assessment\nLevel',choices = c('All','RAM','Unassessed'),selected = c('All')),
+
+      sliderInput('Size','Select Mininimum\nStock Size', min = 1, max = 100000, value = 1, step = 1000, round = T),
       
       checkboxInput('ColorID','Color by taxonomic\nlevel?'),
       
@@ -82,6 +84,8 @@ shinyUI(fluidPage(theme = 'bootstrap.css',
       
       
       plotOutput(outputId = "kobe_plot", height = "600px")
+      
+      # downloadButton(outputId = 'downloadPDF', label = 'Download PDF')
       
     ))
   
