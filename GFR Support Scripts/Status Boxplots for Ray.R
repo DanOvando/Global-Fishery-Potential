@@ -13,9 +13,10 @@ load('Results/PNAS Submission - 6.02 global demand common phi/Data/MsyData.Rdata
 arg = read.csv(file = 'wtf mate.csv', stringsAsFactors = F)
 
 huh <- as.data.frame(CatchMSYPossibleParams) %>%
-  subset(IdOrig %in% unique(arg$IdOrig)) %>%
+  # subset(IdOrig %in% unique(arg$IdOrig)) %>%
   group_by(IdOrig) %>%
-  summarise(samps = length(g))
+  summarise(samps = length(g)) %>%
+  arrange((samps))
 
 old_dat <- ProjectionData
 new_dat <- ProjectionData
