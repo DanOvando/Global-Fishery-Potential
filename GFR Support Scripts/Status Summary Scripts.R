@@ -1,3 +1,4 @@
+# A bunch of scripts for analyzing current status from GFR ----------------
 rm(list = ls())
 library(ggplot2)
 library(dplyr)
@@ -8,10 +9,55 @@ library(knitr)
 
 load('Results/PNAS Submission - 6.01 global demand common phi/Data/ProjectionData Data.Rdata')
 
-# load('Results/PNAS Submission - 6.02 global demand common phi/Data/MsyData.Rdata')
+
+global <- ProjectionData %>%
+  filter(Year >=2000, Policy %in% c('Business As Usual','Business As Usual Pessimistic','CatchShare',
+                                                        'Catch Share Three', 'Historic')) %>%
+  group_by(Year, Policy) %>%
+  summarise(total_profits = sum(Profits, na.rm = T),
+            total_revenue = sum(Profits, na.rm = T),
+            total_catch = sum(Catch, na.rm = T),
+            mean_price = mean(Price, na.rm = T)) %>%
+  ggplot(aes(Year,mean_price, fill = Policy, size = total_catch)) + 
+  geom_point(shape = 21, alpha = 0.6)
+
+ProjectionData %>%
+  filter(Policy == 'CatchShare' & Year >2012 ) %>%
+  group_by(Year) %>%
+  summarise(total_catch = sum(Catch, na.rm = T), mean_price = mean(Price, na.rm = T)) %>%
+  ggplot(aes(total_catch, mean_price)) + 
+  geom_point()
 
 
-arg = read.csv(file = 'wtf mate.csv', stringsAsFactors = F)
+canada <- ProjectionData %>%
+  ungroup() %>%
+  filter(Year >=2000,Country == 'Canada', Policy %in% c('Business As Usual','Business As Usual Pessimistic','CatchShare',
+                                            'Catch Share Three', 'Historic')) %>%
+  group_by(Year, Policy) %>%
+  summarise(total_profits = sum(Profits, na.rm = T),
+            total_revenue = sum(Profits, na.rm = T),
+            total_catch = sum(Catch, na.rm = T),
+            mean_price = mean(Price, na.rm = T)) %>%
+  ggplot(aes(Year,total_profits, fill = Policy)) + 
+  geom_line(size = 0.5) + 
+  geom_point(shape = 21, alpha = 0.6, size = 2) + 
+  ylab('Profits ($)')
+
+canada <- ProjectionData %>%
+  ungroup() %>%
+  filter(Year >=2000,Country == 'Canada', Policy %in% c('Business As Usual','Business As Usual Pessimistic','CatchShare',
+                                                        'Catch Share Three', 'Historic')) %>%
+  group_by(Year, Policy) %>%
+  summarise(total_profits = sum(Profits, na.rm = T),
+            total_revenue = sum(Profits, na.rm = T),
+            total_catch = sum(Catch, na.rm = T),
+            mean_price = mean(Price, na.rm = T),perc_ram = 
+              mean(Dbase == 'RAM')) %>%
+  ggplot(aes(Year,mean_price, fill = Policy)) + 
+  geom_line(size = 0.5) + 
+  geom_point(shape = 21, alpha = 0.6, size = 2) + 
+  ylab('Mean Price ($/MT)')
+
 
 huh <- as.data.frame(CatchMSYPossibleParams) %>%
   # subset(IdOrig %in% unique(arg$IdOrig)) %>%
@@ -90,24 +136,43 @@ min_fun <- function(x){
    # filter(RegionFAO == '71') %>%
   mutate(FvFmsy = min_fun(FvFmsy),
          BvBmsy = min_fun(BvBmsy)) %>%
-  mutate(f_v_catch = FvFmsy * Catch, b_v_catch = BvBmsy * Catch) %>%
+  mutate(f_v_catch = FvFmsy * Catch, b_v_catch = BvBmsy * Catch,
+         f_v_msy = FvFmsy * MSY, b_v_msy = BvBmsy * MSY,
+         f_v_bmsy = FvFmsy * Bmsy, b_v_bmsy = BvBmsy * Bmsy) %>%
   summarise(catch_weighted_arth_mean_f = sum(f_v_catch, na.rm = T)/sum(Catch, na.rm = T),
             catch_weighted_geom_mean_f = exp(sum(Catch * log(FvFmsy), na.rm = T)/sum(Catch, na.rm = T)),
             catch_weighted_arth_mean_b = sum(b_v_catch, na.rm = T)/sum(Catch, na.rm = T),
-            catch_weighted_geom_mean_b = exp(sum(Catch * log(BvBmsy), na.rm = T)/sum(Catch, na.rm = T)))
+            catch_weighted_geom_mean_b = exp(sum(Catch * log(BvBmsy), na.rm = T)/sum(Catch, na.rm = T)),
+            msy_weighted_arth_mean_f = sum(f_v_msy, na.rm = T)/sum(MSY, na.rm = T),
+            msy_weighted_geom_mean_f = exp(sum(MSY * log(FvFmsy), na.rm = T)/sum(MSY, na.rm = T)),
+            msy_weighted_arth_mean_b = sum(b_v_msy, na.rm = T)/sum(MSY, na.rm = T),
+            msy_weighted_geom_mean_b = exp(sum(MSY * log(BvBmsy), na.rm = T)/sum(MSY, na.rm = T)),
+            bmsy_weighted_arth_mean_f = sum(f_v_bmsy, na.rm = T)/sum(Bmsy, na.rm = T),
+            bmsy_weighted_geom_mean_f = exp(sum(Bmsy * log(FvFmsy), na.rm = T)/sum(Bmsy, na.rm = T)),
+            bmsy_weighted_arth_mean_b = sum(b_v_bmsy, na.rm = T)/sum(Bmsy, na.rm = T),
+            bmsy_weighted_geom_mean_b = exp(sum(Bmsy * log(BvBmsy), na.rm = T)/sum(Bmsy, na.rm = T)))
 
  kable(global, digits = 2)
  
- fuck <- fao_key %>%
+ huh <- dat %>%
+   filter(Year == 2012) %>%
+  ggplot(aes(BvBmsy, manual_b)) + 
+   geom_point(shape = 21, aes(fill = Dbase)) + 
+   geom_abline(slope = 1, intercept = 0) + 
+   xlab('B/Bmsy') + 
+   ylab('Biomass/Biomass at MSY')
+ 
+ fao_key <- fao_key %>%
    rename(RegionFAO = fao_region_num)
    
- for_ray <- ProjectionData %>%
+ global_summary <- ProjectionData %>%
    select(IdOrig, Country, RegionFAO, SciName, CommName, SpeciesCatName, SpeciesCat, Dbase,
           Policy, Year, Catch, Profits, Biomass, BvBmsy, FvFmsy, MSY) %>%
    mutate(RegionFAO = as.numeric(RegionFAO)) %>%
-  left_join(fuck, by = 'RegionFAO')
+  left_join(fao_key, by = 'RegionFAO')
+
  
- save(for_ray, file = 'Historic and Projected Data for Ray.Rdata')
+ save(global_summary, file = 'Historic and Projected Data for Ray.Rdata')
  
  regional = dat %>%
    ungroup() %>%
@@ -125,7 +190,7 @@ min_fun <- function(x){
  
  write.csv(file = 'Regional Kobe Status.csv',regional)
  
- write.csv(file = 'Global Kobe Status.csv',global)
+ write.csv(file = 'Global Kobe Status.csv',round(global,2))
  
 
 # exp(sum(dat$Catch * log(dat$FvFmsy + 1e-4), na.rm = T) / sum(dat$Catch, na.rm = T))

@@ -121,8 +121,8 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
         summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T),
                   WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),
                   WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T),
-                  WtGeomMeanB=exp(sum(Catch * log(BvBmsy),na.rm=T)/sum(Catch,na.rm=T)),
-                  WtGeomMeanF=exp(sum(Catch * log(FvFmsy + 1e-3),na.rm=T)/sum(Catch,na.rm=T)))
+                  WtGeomMeanB=exp(sum(MSY * log(BvBmsy),na.rm=T)/sum(MSY,na.rm=T)),
+                  WtGeomMeanF=exp(sum(MSY * log(FvFmsy + 1e-3),na.rm=T)/sum(MSY,na.rm=T)))
                   
       BaselineData$FvFmsy[BaselineData$FvFmsy>4]<- 4
       
@@ -223,8 +223,8 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
         summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T),
                   WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),
                   WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T),
-                  WtGeomMeanB=exp(sum(Catch * log(BvBmsy),na.rm=T)/sum(Catch,na.rm=T)),
-                  WtGeomMeanF=exp(sum(Catch * log(FvFmsy + 1e-3),na.rm=T)/sum(Catch,na.rm=T)))
+                  WtGeomMeanB=exp(sum(MSY * log(BvBmsy),na.rm=T)/sum(MSY,na.rm=T)),
+                  WtGeomMeanF=exp(sum(MSY * log(FvFmsy + 1e-3),na.rm=T)/sum(MSY,na.rm=T)))
 
       BaselineData$FvFmsy[BaselineData$FvFmsy>4]<- 4
       
@@ -274,7 +274,6 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
   
   dev.off()
 
-
   # ####################################################
   # ##
   # ## Make SI Global Kobe Plot
@@ -320,8 +319,8 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
         summarize(MedianB=median(BvBmsy,na.rm=T),MedianF=median(FvFmsy,na.rm=T),
                   WtMeanB=sum(bxcatch,na.rm=T)/sum(Catch,na.rm=T),
                   WtMeanF=sum(fxcatch,na.rm=T)/sum(Catch,na.rm=T),
-                  WtGeomMeanB=exp(sum(Catch * log(BvBmsy),na.rm=T)/sum(Catch,na.rm=T)),
-                  WtGeomMeanF=exp(sum(Catch * log(FvFmsy + 1e-3),na.rm=T)/sum(Catch,na.rm=T)))
+                  WtGeomMeanB=exp(sum(MSY * log(BvBmsy),na.rm=T)/sum(MSY,na.rm=T)),
+                  WtGeomMeanF=exp(sum(MSY * log(FvFmsy + 1e-3),na.rm=T)/sum(MSY,na.rm=T)))
       
       BaselineData$FvFmsy[BaselineData$FvFmsy>4]<- 4
       
