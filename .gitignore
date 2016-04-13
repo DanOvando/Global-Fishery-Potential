@@ -24,4 +24,7 @@ Results/
 Paper**/*.csv
 Paper**/*.*
 **/*.docx
+**/*.eps
+**/*.tiff
+
 GFR_Master.R

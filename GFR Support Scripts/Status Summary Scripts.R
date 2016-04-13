@@ -6,6 +6,8 @@ library(tidyr)
 library(scales)
 library(readr)
 library(knitr)
+library(grid)
+library(gridExtra)
 
 load('Results/PNAS Submission - 6.01 global demand common phi/Data/ProjectionData Data.Rdata')
 
@@ -59,17 +61,17 @@ canada <- ProjectionData %>%
   ylab('Mean Price ($/MT)')
 
 
-huh <- as.data.frame(CatchMSYPossibleParams) %>%
-  # subset(IdOrig %in% unique(arg$IdOrig)) %>%
-  group_by(IdOrig) %>%
-  summarise(samps = length(g)) %>%
-  arrange((samps))
+# huh <- as.data.frame(CatchMSYPossibleParams) %>%
+#   # subset(IdOrig %in% unique(arg$IdOrig)) %>%
+#   group_by(IdOrig) %>%
+#   summarise(samps = length(g)) %>%
+#   arrange((samps))
 
-old_dat <- ProjectionData
-new_dat <- ProjectionData
-
-huh <- new_dat %>%
-  subset(!(IdOrig %in% unique(old_dat$IdOrig)))
+# old_dat <- ProjectionData
+# new_dat <- ProjectionData
+# 
+# huh <- new_dat %>%
+#   subset(!(IdOrig %in% unique(old_dat$IdOrig)))
 
 fao_key <- read_csv(file = 'Data/fao_regions_key.csv')
 
@@ -186,7 +188,7 @@ min_fun <- function(x){
              catch_weighted_geom_mean_f = exp(sum(Catch * log(FvFmsy), na.rm = T)/sum(Catch, na.rm = T)),
              catch_weighted_arth_mean_b = sum(b_v_catch, na.rm = T)/sum(Catch, na.rm = T),
              catch_weighted_geom_mean_b = exp(sum(Catch * log(BvBmsy), na.rm = T)/sum(Catch, na.rm = T))) %>%
-  left_join(fuck, by = 'RegionFAO')
+  left_join(fao_key, by = 'RegionFAO')
  
  write.csv(file = 'Regional Kobe Status.csv',regional)
  

@@ -81,7 +81,8 @@ kobes <- kobe_data %>%
   scale_fill_gradient2(guide = F,low = 'skyblue1', mid = 'white', high = 'khaki1', midpoint = 0.2) + 
   geom_hline(aes(yintercept = 1), linetype = 'longdash') + 
   geom_vline(aes(xintercept = 1), linetype = 'longdash') + 
-  geom_point(aes(color = factor(Dbase == 'RAM'), size = MSY), alpha = 0.3) + 
+  geom_point(aes(color = factor(Dbase == 'RAM'), size = MSY, alpha = MSY)) + 
+  scale_alpha_continuous(guide = F, range = c(0.5,0.9)) + 
   scale_color_manual(guide = F, values = c('grey','red')) +
   scale_size_continuous(guide = F) + 
   geom_point(data = kobe_summary, aes(median_b, median_f), shape = 17, size = 4) + 
@@ -89,28 +90,43 @@ kobes <- kobe_data %>%
              shape = 15, size = 4) + 
   xlab('B/Bmsy') + 
   ylab('F/Fmsy') + 
-  theme_classic()
+  theme_classic() + 
+  theme(text = element_text(size = 16)) + 
+  # ylim(c(-1,6)) + 
+  # xlim(c(-1,4)) + 
+  scale_x_continuous(limits = c(-1,4),breaks = seq(-1,4, by = 0.5),labels = c(seq(-1,2,by = 0.5), expression(phantom(x) >=2.5), seq(3,4, by = 0.5))) +
+  scale_y_continuous(limits = c(-1,6),breaks = seq(-1,6, by = 0.5),labels = c(seq(-1,3.5,by = 0.5), expression(phantom(x) >=4), seq(4.5,6,by = 0.5))) + 
+  coord_cartesian(xlim = c(0,2.5), ylim = c(0,4)) #+ 
+
 
 ggsave(file = 'Blogpost Kobe.pdf', kobes, height = 8,width = 8)
 
 global_kobes <- kobe_data %>%
   filter(Year == 2012 & fao_region_long == 'Global') %>%
-  ggplot(aes(BvBmsy, pmin(4,FvFmsy))) + 
+  ggplot(aes(jitter(BvBmsy), jitter(pmin(4,FvFmsy)))) + 
   # facet_wrap(~fao_region_long,as.table = T) + 
   stat_density_2d(aes(fill = ..density..), geom = 'tile', n = 100, alpha = 0.8, contour = F) + 
   scale_fill_gradient2(guide = F,low = 'skyblue1', mid = 'white', high = 'khaki1', midpoint = 0.2) + 
   geom_hline(aes(yintercept = 1), linetype = 'longdash') + 
   geom_vline(aes(xintercept = 1), linetype = 'longdash') + 
-  geom_point(aes(color = factor(Dbase == 'RAM'), size = MSY), alpha = 0.5) + 
+  geom_point(aes(color = factor(Dbase == 'RAM'), size = MSY, alpha = (MSY))) + 
   scale_color_manual(guide = F, values = c('grey','red')) +
   geom_point(data = filter(kobe_summary, fao_region_long == 'Global'), aes(median_b, median_f), shape = 17, size = 4) + 
   geom_point(data = filter(kobe_summary, fao_region_long == 'Global'), aes(x = msy_weighted_geom_mean_b, y = msy_weighted_geom_mean_f),
              shape = 15, size = 4) + 
   scale_size_continuous(guide = F) + 
+  scale_alpha_continuous(guide = F, range = c(0.5,0.9)) + 
   xlab('B/Bmsy') + 
   ylab('F/Fmsy') + 
-  theme_classic()
+  theme_classic() + 
+  theme(text = element_text(size = 16)) + 
+  # ylim(c(-1,6)) + 
+  # xlim(c(-1,4)) + 
+  scale_x_continuous(limits = c(-1,4),breaks = seq(-1,4, by = 0.5),labels = c(seq(-1,2,by = 0.5), expression(phantom(x) >=2.5), seq(3,4, by = 0.5))) +
+  scale_y_continuous(limits = c(-1,6),breaks = seq(-1,6, by = 0.5),labels = c(seq(-1,3.5,by = 0.5), expression(phantom(x) >=4), seq(4.5,6,by = 0.5))) + 
+  coord_cartesian(xlim = c(0,2.5), ylim = c(0,4)) #+ 
 
-ggsave(file = 'Global Blogpost Kobe.pdf', global_kobes, height = 8,width = 8)
+
+ggsave(file = 'Global Blogpost Kobe.tiff', global_kobes, height = 8,width = 9)
 
 
