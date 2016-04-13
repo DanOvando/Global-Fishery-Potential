@@ -77,13 +77,13 @@ FindResilience<-function(Data)
 #     }
 #   }
 
-  write.csv(file=paste(ResultFolder,'ISSCAAP Default Resiliency.csv',sep=''),DefaultRes)
-  
-  pdf(file=paste(FigureFolder,'Resilience Histograms by ISSCAAP.pdf',sep=''),width=12,height=10)
-  print(ggplot(Data,aes(x=factor(Res))) +
-    geom_bar() +
-    facet_wrap(~SpeciesCatName,scales='free'))
-  dev.off()
+  # write.csv(file=paste(ResultFolder,'ISSCAAP Default Resiliency.csv',sep=''),DefaultRes)
+  # 
+  # pdf(file=paste(FigureFolder,'Resilience Histograms by ISSCAAP.pdf',sep=''),width=12,height=10)
+  # print(ggplot(Data,aes(x=factor(Res))) +
+  #   geom_bar() +
+  #   facet_wrap(~SpeciesCatName,scales='free'))
+  # dev.off()
   
   return(FullData=Data)
   

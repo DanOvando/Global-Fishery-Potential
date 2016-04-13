@@ -1,12 +1,11 @@
-apply_prm <- function(dat,reg,CatchLags = 4, LifeHistoryVars = c('MaxLength','AgeMat','VonBertK','Temp'),
+apply_prm <- function(dat,reg,CatchLags = 4, LifeHistoryVars = c('MaxLength','AgeMat','VonBertK','Temp','SpeciesCat','SpeciesCatName','b_to_k_ratio'),
                       IdVar = 'IdOrig',   CatchVariables =  c('YearsBack','ScaledCatch',paste('ScaledCatch',1:CatchLags,'Back',sep=''),'MaxCatch','TimeToMaxCatch','InitialScaledCatchSlope'
                                                               ,'MeanScaledCatch','CatchToRollingMax'),
                       min_catch_years = 10){
   
-  dat$BvBmsy <- NA
+  dat$BvBmsy <- NA #housekeeping
   
-  dat <- dat %>% dplyr::select(IdOrig,SciName,CommName,SpeciesCat,SpeciesCatName,Year,Catch,BvBmsy)
-  
+  # Filter out things that don't have enough catch years
   not_enough_catch  <- dat %>%
     group_by(IdOrig) %>%
     summarize(catch_years = sum(is.na(Catch) == F)) %>%
@@ -17,13 +16,16 @@ apply_prm <- function(dat,reg,CatchLags = 4, LifeHistoryVars = c('MaxLength','Ag
   
   Fisheries <- unique(dat$IdOrig)
   
+  # Format data for regression
   formatted <- lapply(1:length(Fisheries),FormatForRegression, Data = dat, Fisheries = Fisheries, DependentVariable = 'BvBmsy',
                       CatchVariables = CatchVariables, CatchLags = 4, LifeHistoryVars = LifeHistoryVars, 
                       IsLog = T, IdVar = 'IdOrig') %>%
     bind_rows()
   
-  formatted <- assign_life_history(dat = formatted)
+  # Add in life history
+  formatted <- assign_life_history(dat = formatted,LifeHistoryVars = LifeHistoryVars)
   
+  # Change species category factors to match model
   reg_factors <- reg$xlevels$SpeciesCatName
   
   AllPossible = formatted %>%
@@ -32,9 +34,12 @@ apply_prm <- function(dat,reg,CatchLags = 4, LifeHistoryVars = c('MaxLength','Ag
   
   adjusted_data = AssignNearestSpeciesCategory(Data = formatted, AvailableCategories = reg_factors, AllCategories = AllPossible)
   
-  predicted = predict(reg,adjusted_data$Data)
+  # Predict log B/Bmsy
+  predicted = predict.lm(reg,adjusted_data$Data, se.fit = T)
   
-  formatted$LogBvBmsy = predicted
+  formatted$LogBvBmsy = predicted$fit
+  
+  formatted$BvBmsySD = predicted$se.fit
   
   return(formatted)
 }

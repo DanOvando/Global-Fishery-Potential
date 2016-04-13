@@ -1,37 +1,14 @@
-#############################################---------------------------------------------
-## LOAD PACKAGES AND DATA
-############################################# --------------------------------------------
-
-# Packages
-
-rm(list = ls())
-sapply(list.files(pattern="[.]R$", path="Functions", full.names=TRUE), source)
-
-library(zoo)
-library(readr)
-library(dplyr)
-library(readr)
-library(tidyr)
-library(ggplot2)
-
-# Data - Make sure data file is in same directory (folder) as this R script or adjust the pathname accordingly
-sample_data = read.csv(file = 'Data/test data for upside module.csv')
-
-load('Results/PNAS Submission - 6.01 global demand common phi/Data/PrmRegressions.Rdata')
- 
-load('Data/fishbase_data.Rdata')
-
-isscaap <- read.csv('Data/ISSCAAP Codes.csv', stringsAsFactors = F)
-
-regs = RealModels[names(RealModels) != 'M7'] #get rid of NEI model
-
-devtools::use_data(regs,fishbase_lifehistory,isscaap, pkg = '/Users/danovando/Code\ Library/GUM', internal = T)
-
-dat = testdf
-
+#' run_gum_assessment
+#'
+#' Run assessment part of global upside model (GUM)
+#' @param dat data frame with at minimum colnames Year,Catch, SciName
+#'
+#' @return results a data frame with assessment results
+#' @export
+run_gum_assessment <- function(dat){
+  
 dat <- dat %>% dplyr::select(IdOrig,SciName,CommName,Year,Catch,BvBmsy) %>%
   mutate(IdOrig = as.character(IdOrig))
-
 
 temp_predicted <- list()
 
@@ -44,7 +21,7 @@ for (i in 1 :length(regs) ){
 data <- bind_rows(temp_predicted) %>%
   mutate(model_worked = is.na(LogBvBmsy) == F) %>%
   filter(model_worked == T) %>% #drop models that didn't work
-ungroup() %>%
+  ungroup() %>%
   group_by(IdOrig) %>%
   filter(model_number == min(model_number)) %>%
   mutate(BvBmsy = exp(LogBvBmsy)) %>%
@@ -68,3 +45,4 @@ apply_fun <- function(i,data,stocks){
 results <- lapply(1:length(stocks), apply_fun, data = data, stocks = stocks) %>%
   bind_rows()
 
+}
