@@ -11,6 +11,12 @@ library(gridExtra)
 
 load('Results/PNAS Submission - 6.01 global demand common phi/Data/ProjectionData Data.Rdata')
 
+ProjectionData %>%
+  filter(Year == 2012) %>%
+  group_by(Dbase) %>%
+  summarise(tc = sum(Catch, na.rm = T)) %>%
+  ungroup() %>%
+  mutate(perc_catch = tc/sum(tc, na.rm = T))
 
 global <- ProjectionData %>%
   filter(Year >=2000, Policy %in% c('Business As Usual','Business As Usual Pessimistic','CatchShare',

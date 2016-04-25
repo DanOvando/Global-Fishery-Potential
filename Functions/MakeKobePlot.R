@@ -16,16 +16,11 @@ FTrend<- Data %>%
   group_by(Year,Dbase) %>%
   summarize(FTrend=mean(FvFmsy,na.rm=T))
   
-# FTrend<- ddply(Data,c('Year','Dbase'),summarize,FTrend=mean(FvFmsy,na.rm=T))
-
 KobeColors<- colorRampPalette(c("lightskyblue", "white",'gold1'))
 
 DbaseColors<- colorRampPalette(c('Red','Black','Green'))
 
-# BaselinData$BvBmsy[BaselineData$Dbase=='RAM']<- 2
-
 pdf(file=paste(FigureFolder,FigureName,'.pdf',sep=''))
-# par(mfrow=c(1,2))
 layout(t(matrix(c(1,2))), widths = c(4,1), heights = c(1,1), respect = FALSE)
 par(mai=c(1,1,1,0))
 image(DensityData$x,DensityData$y,DensityData$z,col=KobeColors(50),xlab='B/Bmsy',ylab='F/Fmsy')
