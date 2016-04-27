@@ -7,6 +7,8 @@ library(tidyr)
 library(scales)
 library(readr)
 library(knitr)
+library(ggvis)
+library(googleVis)
 
 load('Results/PNAS Submission - 6.01 global demand common phi/Data/ProjectionData Data.Rdata')
 
