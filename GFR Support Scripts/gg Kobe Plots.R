@@ -1,3 +1,4 @@
+
 # A bunch of scripts for analyzing current status from GFR ----------------
 rm(list = ls())
 library(ggplot2)
@@ -102,29 +103,30 @@ kobes <- kobe_data %>%
 ggsave(file = 'Blogpost Kobe.pdf', kobes, height = 8,width = 8)
 
 global_kobes <- kobe_data %>%
-  filter(Year == 2012 & fao_region_long == 'Global') %>%
-  ggplot(aes(jitter(BvBmsy), jitter(pmin(4,FvFmsy)))) + 
-  # facet_wrap(~fao_region_long,as.table = T) + 
-  stat_density_2d(aes(fill = ..density..), geom = 'tile', n = 100, alpha = 0.8, contour = F) + 
-  scale_fill_gradient2(guide = F,low = 'skyblue1', mid = 'white', high = 'khaki1', midpoint = 0.2) + 
+  filter(Year == 2012 & fao_region_long == 'Global') %>% #Filter out data
+  ggplot(aes(jitter(BvBmsy), jitter(pmin(4,FvFmsy)))) + #general aesthetic
+  stat_density_2d(aes(fill = ..density..), geom = 'tile', n = 100, alpha = 0.8, contour = F) + #eggplot
+  scale_fill_gradient2(guide = F,low = 'skyblue1', mid = 'white', high = 'khaki1', midpoint = 0.2) + #set eggplot colors
   geom_hline(aes(yintercept = 1), linetype = 'longdash') + 
   geom_vline(aes(xintercept = 1), linetype = 'longdash') + 
-  geom_point(aes(color = factor(Dbase == 'RAM'), size = MSY, alpha = (MSY))) + 
+  geom_point(aes(BvBmsy, FvFmsy,color = factor(Dbase == 'RAM'), size = MSY, alpha = (MSY))) + #plot points
   scale_color_manual(guide = F, values = c('grey','red')) +
-  geom_point(data = filter(kobe_summary, fao_region_long == 'Global'), aes(median_b, median_f), shape = 17, size = 4) + 
+  geom_point(data = filter(kobe_summary, fao_region_long == 'Global'), aes(median_b, median_f), shape = 17, size = 4) + #plot median
   geom_point(data = filter(kobe_summary, fao_region_long == 'Global'), aes(x = msy_weighted_geom_mean_b, y = msy_weighted_geom_mean_f),
-             shape = 15, size = 4) + 
-  scale_size_continuous(guide = F) + 
+             shape = 15, size = 4) + #plot geometric summaries
+  scale_size_continuous(guide = F) + #turn off legends
   scale_alpha_continuous(guide = F, range = c(0.5,0.9)) + 
   xlab('B/Bmsy') + 
   ylab('F/Fmsy') + 
   theme_classic() + 
-  theme(text = element_text(size = 16)) + 
-  # ylim(c(-1,6)) + 
-  # xlim(c(-1,4)) + 
+  theme(text = element_text(size = 16)) + #Extend the boundaries
   scale_x_continuous(limits = c(-1,4),breaks = seq(-1,4, by = 0.5),labels = c(seq(-1,2,by = 0.5), expression(phantom(x) >=2.5), seq(3,4, by = 0.5))) +
   scale_y_continuous(limits = c(-1,6),breaks = seq(-1,6, by = 0.5),labels = c(seq(-1,3.5,by = 0.5), expression(phantom(x) >=4), seq(4.5,6,by = 0.5))) + 
-  coord_cartesian(xlim = c(0,2.5), ylim = c(0,4)) #+ 
+  coord_cartesian(xlim = c(0,2.5), ylim = c(0,4)) #Trim the boundaries
+
+library(plotly)
+
+ggplotly(global_kobes)
 
 
 ggsave(file = 'Global Blogpost Kobe.tiff', global_kobes, height = 8,width = 9)
