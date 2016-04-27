@@ -38,16 +38,25 @@ findMEY<-function(df) {
     bmey = fzero(DiffF,1.2,bgrid=bvec,f0=fvec,f1=fpt)
     fmey = ((phi+1)/phi)*(1 - bmey$x^phi/(phi+1)) 
     
-    current_b[i] = DANsub$StatusQuoBForever[1] #current B/Bmsy
-    current_f[i] = DANsub$StatusQuoFForever[1] #current F/Fmsy
+    current_b[i] = DANsub$BvBmsy[1] #current B/Bmsy
+    current_f[i] = DANsub$FvFmsy[1] #current F/Fmsy
     b_mey[i] = bmey$x #Bmey/Bmsy
     f_mey[i] = fmey #Fmey/Fmsy
-    current_b_mey[i] = DANsub$StatusQuoBForever[1]/bmey$x #B/Bmey
-    current_f_mey[i] = DANsub$StatusQuoFForever[1]/fmey #F/Fmey
+    current_b_mey[i] = DANsub$BvBmsy[1]/bmey$x #B/Bmey
+    current_f_mey[i] = DANsub$FvFmsy[1]/fmey #F/Fmey
     grow_disc[i] = ((phi+1)/phi)*g
   }
   
-  MEYdata = data.frame(Fisheries,current_b,current_f,b_mey,f_mey,current_b_mey, current_f_mey,stringsAsFactors = F)
+  # make dataframe
+  MEYdata = data.frame(IdOrig = Fisheries,current_b,current_f,
+                       b_mey,f_mey,current_b_mey, current_f_mey, stringsAsFactors = F)
+  
+  # extract id info from df
+  df2<-unique(df[,c('IdOrig','CommName', 'SciName', 'SpeciesCatName', 'SpeciesCat')])
+  
+  # add id info to MEY results
+  MEYdata<-MEYdata %>%
+    left_join(df2, by = 'IdOrig')
   
   return(MEYdata)
 }
