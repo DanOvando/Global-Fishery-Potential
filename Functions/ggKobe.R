@@ -20,7 +20,14 @@ ggKobe <- function(dat, xvar = 'BvBmsy', yvar = 'FvFmsy') {
   
   dots <-
     eval(parse(
-      text = paste('list(~median(', xvar, '),~median(', yvar, '))', sep = '')
+      text = paste(
+        'list(~median(',
+        xvar,
+        ', na.rm = T),~median(',
+        yvar,
+        ', na.rm = T))',
+        sep = ''
+      )
     ))
   
   summary_dat <- dat %>%
