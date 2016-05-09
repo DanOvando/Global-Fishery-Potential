@@ -88,9 +88,9 @@ kobes <- kobe_data %>%
   scale_alpha_continuous(guide = F, range = c(0.5,0.9)) + 
   scale_color_manual(guide = F, values = c('grey','red')) +
   scale_size_continuous(guide = F) + 
-  geom_point(data = kobe_summary, aes(median_b, median_f), shape = 17, size = 4) + 
-  geom_point(data = kobe_summary, aes(x = msy_weighted_geom_mean_b, y = msy_weighted_geom_mean_f),
-             shape = 15, size = 4) + 
+  geom_point(data = kobe_summary, aes(median_b, median_f), shape = 17, size = 4) +
+  # geom_point(data = kobe_summary, aes(x = msy_weighted_geom_mean_b, y = msy_weighted_geom_mean_f),
+  #            shape = 15, size = 4) + 
   xlab('B/Bmsy') + 
   ylab('F/Fmsy') + 
   theme_classic() + 
@@ -114,8 +114,8 @@ global_kobes <- kobe_data %>%
   geom_point(aes(BvBmsy, FvFmsy,color = factor(Dbase == 'RAM'), size = MSY, alpha = (MSY))) + #plot points
   scale_color_manual(guide = F, values = c('grey','red')) +
   geom_point(data = filter(kobe_summary, fao_region_long == 'Global'), aes(median_b, median_f), shape = 17, size = 4) + #plot median
-  geom_point(data = filter(kobe_summary, fao_region_long == 'Global'), aes(x = msy_weighted_geom_mean_b, y = msy_weighted_geom_mean_f),
-             shape = 15, size = 4) + #plot geometric summaries
+  # geom_point(data = filter(kobe_summary, fao_region_long == 'Global'), aes(x = msy_weighted_geom_mean_b, y = msy_weighted_geom_mean_f),
+  #            shape = 15, size = 4) + #plot geometric summaries
   scale_size_continuous(guide = F) + #turn off legends
   scale_alpha_continuous(guide = F, range = c(0.5,0.9)) + 
   xlab('B/Bmsy') + 
@@ -131,6 +131,6 @@ library(plotly)
 ggplotly(global_kobes)
 
 
-ggsave(file = 'Global Blogpost Kobe.tiff', global_kobes, height = 8,width = 9)
+ggsave(file = 'Global Blogpost Kobe.pdf', global_kobes, height = 8,width = 9)
 
 

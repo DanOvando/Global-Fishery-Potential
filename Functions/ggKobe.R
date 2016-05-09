@@ -49,7 +49,7 @@ ggKobe <- function(dat, xvar = 'BvBmsy', yvar = 'FvFmsy') {
       low = 'skyblue1',
       mid = 'white',
       high = 'khaki1',
-      midpoint = 0.2
+      midpoint = 0.5
     ) + #set eggplot colors
     geom_hline(aes(yintercept = 1), linetype = 'longdash') +
     geom_vline(aes(xintercept = 1), linetype = 'longdash') +

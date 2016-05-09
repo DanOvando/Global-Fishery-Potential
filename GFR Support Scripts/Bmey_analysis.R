@@ -23,7 +23,7 @@ asfis<-read.csv(file = 'Data/TaxonCodes.csv', stringsAsFactors = F)
 ## Source or define functions
 source(file = 'GFR Support Scripts/NEI_lookup.R')
 source(file = 'GFR Support Scripts/findMEY.R')
-# source(file = 'GFR Support Scripts/gg Kobe Plots.R')
+source(file = 'Functions/ggKobe.R')
 
 DiffF=function(b,bgrid,f0,f1)
 {
@@ -66,21 +66,20 @@ if(makeNEIlookup==T) { nei_lookup<-NEI_lookup(df = ProjectionData, asfis = asfis
 ### Calculate Bmey and Fmey for NEIs -------------------------------------------------------------------------
 
 # Calculate MEY variables
-comp_results<-bind_rows(pblapply(nei_lookup,function(x) { 
+comp_results<-bind_rows(pblapply(nei_lookup,function(x) {  
   sps<-x$SciName
   phi<-0.188
   
   out<-filter(mey_results, SciName %in% sps) %>%
-    summarize( 
-      current_b     = quantile(current_b, c(0.25), na.rm = T),
-      current_f     = quantile(current_f, c(0.75), na.rm =T),
-      b_mey         = median(b_mey,na.rm=T),
-      f_mey         = ((phi+1)/phi)*(1 - b_mey^phi/(phi+1)),
-      current_b_mey = current_b/b_mey,
-      current_f_mey = current_f/f_mey)
-  
- })) %>%
-  mutate(CommName=names(nei_lookup)) 
+    summarize(  
+      current_b     = quantile(current_b, c(0.25), na.rm = T), # should match actual values assigned to NEIs
+      current_f     = quantile(current_f, c(0.75), na.rm =T), # should match actual values assigned to NEIs
+      b_mey         = quantile(b_mey, c(0.25), na.rm=T), # Bmey 
+      f_mey         = ((phi+1)/phi)*(1 - b_mey^phi/(phi+1)), # Fmey
+      current_b_mey = quantile(current_b_mey, c(0.25), na.rm = T), # B/Bmey ** Use this value **
+      current_f_mey = quantile(current_f_mey, c(0.75), na.rm = T)) # F/Fmey ** Use this value **
+ })) %>%  
+  mutate(CommName=names(nei_lookup))  
 
 # Join with nei data
 nei_results <- ProjectionData %>%
@@ -96,7 +95,7 @@ nei_results <- ProjectionData %>%
          BvBmsy,
          FvFmsy,
          Policy) %>%
-  left_join(comp_results, by = 'CommName')
+  left_join(comp_results, by = 'CommName') 
 
 ### Join Bmey results for species and NEI stocks -------------------------------------------------------------------------
 
@@ -105,16 +104,18 @@ kobe_dat <- ProjectionData %>%
   select(IdOrig, Dbase, SciName, CommName, MSY, SpeciesCat, SpeciesCatName, BvBmsy, FvFmsy) %>%
   unique() %>%
   left_join(mey_results,by = c('IdOrig', 'SciName','CommName','SpeciesCat','SpeciesCatName')) %>%
-  bind_rows(nei_results)
+  bind_rows(nei_results) 
+
+write.csv(file = '../Misc Analyses/MEY data all stocks.csv', kobe_dat) 
 
 ### Kobe Plots ----------------------------------------------------------------------------------------------------------
 
 kobe_mey <- ggKobe(kobe_dat, xvar = 'current_b_mey', yvar = 'current_f_mey' ) +
   labs(x = 'B/Bmey', y = 'F/Fmey')
 
-ggsave('MEY Kobe.pdf', kobe_mey)
+ggsave('MEY Kobe no Median.pdf', kobe_mey, height = 8, width = 9)
 
-kobe_msy <- ggKobe(kobe_dat, xvar = 'current_b', yvar = 'current_f' ) +
+ kobe_msy <- ggKobe(kobe_dat, xvar = 'current_b', yvar = 'current_f' ) +
   labs(x = 'B/Bmsy', y = 'F/Fmsy')
 
 ggsave('MSY Kobe.pdf', kobe_msy)
