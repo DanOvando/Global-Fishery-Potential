@@ -26,5 +26,6 @@ Paper**/*.*
 **/*.docx
 **/*.eps
 **/*.tiff
+**/*.csv
 
 GFR_Master.R

@@ -37,9 +37,11 @@ ggKobe <- function(dat, xvar = 'BvBmsy', yvar = 'FvFmsy') {
         sep = ''
       )
     ))
-
   summary_dat <- dat %>%
     ungroup() %>%
+    mutate(has_all = is.na(MSY) == F & is.na(xvar) == F & is.na(yvar) == F,
+  has_both_y = is.na(MSY) == F & is.na(yvar) == F) %>% 
+    filter(has_all == T) %>% 
     summarise(median_x = median(xvar, na.rm = T),
               median_y = median(yvar, na.rm = T),
               geom_mean_msy_weight_x = exp(sum(MSY * log(xvar), na.rm = T) / sum(MSY, na.rm = T)),

@@ -12,7 +12,9 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
   
   ### Current status by ISSCAAP category---------------------------------------------------
   
-  current<-ddply(data[data$Year==BaselineYear,],c('SpeciesCatName'),summarize,Stocks=length(unique(IdOrig)),MedianB=median(BvBmsy,na.rm=T),
+  current<- data[data$Year==BaselineYear,] %>% 
+    group_by(SpeciesCatName) %>% 
+    summarize(Stocks=length(unique(IdOrig)),MedianB=median(BvBmsy,na.rm=T),
                  MedianF=median(FvFmsy,na.rm=T),TotalMSY=sum(MSY,na.rm=T),TotalCatch=sum(Catch,na.rm=T))
   
   current<-current[with(current,order(-TotalMSY)),]
@@ -21,7 +23,9 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
   
   # Status through time
   
-  trend<-ddply(data[data$Year %in% c(1950:BaselineYear),],c('Year','SpeciesCatName'),summarize,Stocks=length(unique(IdOrig)),MedianB=median(BvBmsy,na.rm=T),
+  trend<- data[data$Year %in% c(1950:BaselineYear),] %>% 
+    group_by(Year,SpeciesCatName) %>% 
+    summarize(Stocks=length(unique(IdOrig)),MedianB=median(BvBmsy,na.rm=T),
                MedianF=median(FvFmsy,na.rm=T),TotalMSY=sum(MSY,na.rm=T),TotalCatch=sum(Catch,na.rm=T))
   
   pdf(file=paste(FigureFolder,'Median Status by ISSCAAP.pdf',sep=''),width=16,height=10) 
@@ -114,7 +118,7 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       
       if (any(temp$BvBmsy<0,na.rm=T)){temp$BvBmsy<- exp(temp$BvBmsy)}
       
-      BaselineData<- subset(temp,subset=Year==BaselineYear & is.na(FvFmsy)==F & is.na(BvBmsy)==F)
+      BaselineData<- subset(temp,Year==BaselineYear & is.na(FvFmsy)==F & is.na(BvBmsy)==F & is.na(MSY) == F)
       KobeMedians<- BaselineData %>%
         mutate(bxcatch=BvBmsy*Catch,fxcatch=FvFmsy*Catch) %>%
         group_by(Year) %>%

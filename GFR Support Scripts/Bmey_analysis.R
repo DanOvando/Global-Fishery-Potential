@@ -15,6 +15,7 @@ library(pracma)
 library(pbapply)
 library(gridExtra)
 library(ggplot2)
+library(grid)
 
 # Load Projection Data
 load(file = 'Results/PNAS Submission - 6.01 global demand common phi/Data/ProjectionData Data.rdata')
@@ -115,11 +116,19 @@ kobe_dat <- ProjectionData %>%
 kobe_mey <- ggKobe(kobe_dat, xvar = 'current_b_mey', yvar = 'current_f_mey' ) +
   labs(x = 'B/Bmey', y = 'F/Fmey')
 
+ggsave(file = 'MEY Kobe all stocks.pdf',kobe_mey, height = 6, width = 6)
+
 kobe_mey_gr1000 <- ggKobe(filter(kobe_dat, MSY > 1000), xvar = 'current_b_mey', yvar = 'current_f_mey' ) +
   labs(x = 'B/Bmey', y = 'F/Fmey')
 
+ggsave(file = 'MEY Kobe MSY gr 1000.pdf',kobe_mey_gr1000, height = 6, width = 6)
+
 kobe_mey_gr3000 <- ggKobe(filter(kobe_dat, MSY > 3000), xvar = 'current_b_mey', yvar = 'current_f_mey' ) +
   labs(x = 'B/Bmey', y = 'F/Fmey')
+
+ggsave(file = 'MEY Kobe MSY gr 3000.pdf',kobe_mey_gr3000, height = 6, width = 6)
+
+write.csv(file = 'Kobe MEY data for chris.csv', kobe_dat)
 
 
 ggsave('MEY Kobe no Median.pdf', kobe_mey, height = 8, width = 9)
