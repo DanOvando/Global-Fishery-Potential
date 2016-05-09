@@ -8,11 +8,13 @@
 
 
 ### Load packages, data, functions, and set options -------------------------------------------------------
+rm(list = ls())
 library(dplyr)
 library(tidyr)
 library(pracma)
 library(pbapply)
 library(gridExtra)
+library(ggplot2)
 
 # Load Projection Data
 load(file = 'Results/PNAS Submission - 6.01 global demand common phi/Data/ProjectionData Data.rdata')
@@ -106,12 +108,19 @@ kobe_dat <- ProjectionData %>%
   left_join(mey_results,by = c('IdOrig', 'SciName','CommName','SpeciesCat','SpeciesCatName')) %>%
   bind_rows(nei_results) 
 
-write.csv(file = '../Misc Analyses/MEY data all stocks.csv', kobe_dat) 
+# write.csv(file = '../Misc Analyses/MEY data all stocks.csv', kobe_dat) 
 
 ### Kobe Plots ----------------------------------------------------------------------------------------------------------
 
 kobe_mey <- ggKobe(kobe_dat, xvar = 'current_b_mey', yvar = 'current_f_mey' ) +
   labs(x = 'B/Bmey', y = 'F/Fmey')
+
+kobe_mey_gr1000 <- ggKobe(filter(kobe_dat, MSY > 1000), xvar = 'current_b_mey', yvar = 'current_f_mey' ) +
+  labs(x = 'B/Bmey', y = 'F/Fmey')
+
+kobe_mey_gr3000 <- ggKobe(filter(kobe_dat, MSY > 3000), xvar = 'current_b_mey', yvar = 'current_f_mey' ) +
+  labs(x = 'B/Bmey', y = 'F/Fmey')
+
 
 ggsave('MEY Kobe no Median.pdf', kobe_mey, height = 8, width = 9)
 
