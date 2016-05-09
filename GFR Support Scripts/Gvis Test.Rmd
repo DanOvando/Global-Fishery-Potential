@@ -1,6 +1,15 @@
+---
+title: "GoogleVis Test"
+author: "Dan Ovando"
+date: "April 28, 2016"
+output: html_document
+---
 
-# A bunch of scripts for analyzing current status from GFR ----------------
-rm(list = ls())
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r gvis options}
 library(ggplot2)
 library(dplyr)
 library(tidyr)
@@ -10,8 +19,12 @@ library(knitr)
 library(ggvis)
 library(googleVis)
 
-load('Results/PNAS Submission - 6.01 global demand common phi/Data/ProjectionData Data.Rdata')
+load('../Results/PNAS Submission - 6.01 global demand common phi/Data/ProjectionData Data.Rdata')
 
+op <- options(gvis.plot.tag='chart')
+```
+
+```{r makeplot, results = 'asis', tidy = FALSE}
 vis_summary = ProjectionData %>%
   ungroup() %>% 
   mutate(msy_bin = cut(log10(MSY),5)) %>% 
@@ -40,4 +53,4 @@ m = gvisMotionChart(
   height = 600))
 plot(m)
 
-print(m, file = 'test gvis.html')
+```
