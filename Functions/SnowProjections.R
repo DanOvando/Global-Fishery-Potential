@@ -155,19 +155,13 @@ SnowProjections<- function(s,Data,BaselineYear,Stocks,IdVar,bvec,Discount,tol,be
     return(Projection)
   }
   
-  #   sapply(list.files(pattern="[.]g$", path="Functions", full.names=TRUE), source)
-  
   counter<- 1
-  
-  #   show(paste(  round(100*(s/length(Stocks)),2),'% Done with Projections',sep=''))
   
   write.table(paste(  round(100*(s/length(Stocks)),2),'% Done with Projections',sep=''), file = 'Projection Analysis Progress.txt', append = TRUE, sep = ";", dec = ".", row.names = FALSE, col.names = FALSE)
   
   TempMat<- TempStockMatrix
   
   Where<- Data[,IdVar]==Stocks[s]
-  
-  #   Where<- Data[,IdVar]== '11776-FAO-67-31'
   
   StockData<- Data[Where,]
   
