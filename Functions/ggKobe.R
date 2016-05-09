@@ -45,15 +45,7 @@ ggKobe <- function(dat, xvar = 'BvBmsy', yvar = 'FvFmsy') {
               geom_mean_msy_weight_x = exp(sum(MSY * log(xvar), na.rm = T) / sum(MSY, na.rm = T)),
               geom_mean_msy_weight_y = exp(sum(MSY * log(yvar + 1e-3), na.rm = T) / sum(MSY, na.rm = T))) %>%
     mutate(is_ram = NA, MSY = NA)
-  # WtGeomMeanB=exp(sum(MSY * log(BvBmsy),na.rm=T)/sum(MSY,na.rm=T)),
 
-
-  # summarise_(.dots = setNames(dots, c('median_x', 'median_y'))) %>%
-
-  # summary_dat <- dat %>%
-  #   ungroup() %>%
-  #   summarise_(.dots = setNames(dots, c('median_x', 'median_y'))) %>%
-  #   mutate(is_ram = NA, MSY = NA)
 
   kobe <- dat %>%
     ggplot(aes(xvar, yvar)) + #general aesthetic
@@ -93,13 +85,6 @@ ggKobe <- function(dat, xvar = 'BvBmsy', yvar = 'FvFmsy') {
       shape = 15,
       size = 4
     ) +
-    #plot median
-    # geom_point(
-    #   data = filter(kobe_summary, fao_region_long == 'Global'),
-    #   aes(x = msy_weighted_geom_mean_b, y = msy_weighted_geom_mean_f),
-    #   shape = 15,
-    #   size = 4
-    # ) + #plot geometric summaries
     scale_size_continuous(guide = F) + #turn off legends
     scale_alpha_continuous(guide = F, range = c(0.5, 0.9)) +
     xlab(xvar_name) +
