@@ -13,11 +13,19 @@
 #' ggKobe(filter(ProjectionData, Year == 2012), xvar = 'BvBmsy', yvar = 'FvFmsy')
 ggKobe <- function(dat, xvar = 'BvBmsy', yvar = 'FvFmsy') {
   dat <- ungroup(dat)
-  
-  dat[, yvar] <- pmin(4, as.matrix(dat[, yvar]))
-  
+
+  orig_names = colnames(dat)
+
+  xvar_name = xvar
+
+  yvar_name = yvar
+
+  dat = dat %>%
+    rename_(xvar = xvar, yvar = yvar) %>%
+    mutate(yvar = pmin(4, yvar))
+
   dat$is_ram <- dat$Dbase == 'RAM'
-  
+
   dots <-
     eval(parse(
       text = paste(
@@ -29,14 +37,26 @@ ggKobe <- function(dat, xvar = 'BvBmsy', yvar = 'FvFmsy') {
         sep = ''
       )
     ))
-  
+
   summary_dat <- dat %>%
     ungroup() %>%
-    summarise_(.dots = setNames(dots, c('median_x', 'median_y'))) %>%
+    summarise(median_x = median(xvar, na.rm = T),
+              median_y = median(yvar, na.rm = T),
+              geom_mean_msy_weight_x = exp(sum(MSY * log(xvar), na.rm = T) / sum(MSY, na.rm = T)),
+              geom_mean_msy_weight_y = exp(sum(MSY * log(yvar + 1e-3), na.rm = T) / sum(MSY, na.rm = T))) %>%
     mutate(is_ram = NA, MSY = NA)
-  
+  # WtGeomMeanB=exp(sum(MSY * log(BvBmsy),na.rm=T)/sum(MSY,na.rm=T)),
+
+
+  # summarise_(.dots = setNames(dots, c('median_x', 'median_y'))) %>%
+
+  # summary_dat <- dat %>%
+  #   ungroup() %>%
+  #   summarise_(.dots = setNames(dots, c('median_x', 'median_y'))) %>%
+  #   mutate(is_ram = NA, MSY = NA)
+
   kobe <- dat %>%
-    ggplot(aes_string(xvar, yvar)) + #general aesthetic
+    ggplot(aes(xvar, yvar)) + #general aesthetic
     stat_density_2d(
       aes(fill = ..density..),
       geom = 'tile',
@@ -53,12 +73,12 @@ ggKobe <- function(dat, xvar = 'BvBmsy', yvar = 'FvFmsy') {
     ) + #set eggplot colors
     geom_hline(aes(yintercept = 1), linetype = 'longdash') +
     geom_vline(aes(xintercept = 1), linetype = 'longdash') +
-    geom_point(aes_string(
-      as.name(xvar),
-      as.name(yvar),
-      color = "is_ram",
-      size = "MSY",
-      alpha = ("MSY")
+    geom_point(aes(
+      xvar,
+      yvar,
+      color = is_ram,
+      size = MSY,
+      alpha = (MSY)
     )) + #plot points
     scale_color_manual(guide = F, values = c('grey', 'red')) +
     geom_point(
@@ -66,7 +86,14 @@ ggKobe <- function(dat, xvar = 'BvBmsy', yvar = 'FvFmsy') {
       aes(median_x, median_y),
       shape = 17,
       size = 4
-    ) + #plot median
+    ) +
+    geom_point(
+      data = summary_dat,
+      aes(geom_mean_msy_weight_x, geom_mean_msy_weight_y),
+      shape = 15,
+      size = 4
+    ) +
+    #plot median
     # geom_point(
     #   data = filter(kobe_summary, fao_region_long == 'Global'),
     #   aes(x = msy_weighted_geom_mean_b, y = msy_weighted_geom_mean_f),
@@ -75,8 +102,8 @@ ggKobe <- function(dat, xvar = 'BvBmsy', yvar = 'FvFmsy') {
     # ) + #plot geometric summaries
     scale_size_continuous(guide = F) + #turn off legends
     scale_alpha_continuous(guide = F, range = c(0.5, 0.9)) +
-    xlab(xvar) +
-    ylab(yvar) +
+    xlab(xvar_name) +
+    ylab(yvar_name) +
     theme_classic() +
     theme(text = element_text(size = 16)) + #Extend the boundaries
     scale_x_continuous(
@@ -98,6 +125,6 @@ ggKobe <- function(dat, xvar = 'BvBmsy', yvar = 'FvFmsy') {
       )
     ) +
     coord_cartesian(xlim = c(0, 2.5), ylim = c(0, 4)) #Trim the boundaries
-  
+
   return(kobe)
 }
