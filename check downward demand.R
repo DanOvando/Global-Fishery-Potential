@@ -7,6 +7,7 @@ fuck <- subset(ProjectionData) %>%
 # + geom_line(alpha = 0.1) + geom_point(aes(color = Year),alpha = 0.3) +xlab('Global Catch') + 
 #   theme(text = element_text(size = 6)))
 
+#gitcheck
 phew <- (ggplot(subset(fuck, Policy == 'Catch Share Three' & IdLevel == 'Species'), aes((total_catch), Price,group = IdOrig)) 
          + geom_line(alpha = 0.1) + geom_point(shape = 21,aes(fill = Year),alpha = 0.3) +
           facet_wrap(~CommodityName, scales = 'fixed') +xlab('Global Catch') + 
