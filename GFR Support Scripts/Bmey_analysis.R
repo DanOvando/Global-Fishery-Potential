@@ -113,8 +113,7 @@ kobe_dat <- ProjectionData %>%
 
 ### Kobe Plots ----------------------------------------------------------------------------------------------------------
 
-kobe_mey <- ggKobe(kobe_dat, xvar = 'current_b_mey', yvar = 'current_f_mey' ) +
-  labs(x = 'B/Bmey', y = 'F/Fmey')
+kobe_mey <- ggKobe(kobe_dat, xvar = 'current_b_mey', yvar = 'current_f_mey' )
 
 ggsave(file = 'MEY Kobe all stocks.pdf',kobe_mey, height = 6, width = 6)
 
