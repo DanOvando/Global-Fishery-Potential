@@ -12,26 +12,25 @@ library(dplyr)
 library(tidyr)
 
 # set model run data to use and load data
-modelrun<-'Results/PNAS Submission - 6.01 global demand common phi/'
+modelrun<-'PNAS Submission - 6.01 global demand common phi/'
 
-load(paste('/Users/Tyler/Documents/Sustainable\ Fisheries\ Group/SFG\ 2014/Global\ Fishery\ Potential/Results/',
-           modelrun,'/Data/ProjectionData Data.rdata',sep = ''))
+load('Global Fishery Potential/Results/PNAS Submission - 6.01 global demand common phi/Data/ProjectionData Data.rdata')
 
 ## Subset to data necessary for kobe plot and write csv ----
 
 # global kobe data
 ldata<-ProjectionData %>%
   filter(Year==2012 & is.na(BvBmsy)==F & is.na(FvFmsy)==F) %>%
-  select(IdOrig,Dbase,Country,SciName,CommName,SpeciesCatName,IdLevel,RegionFAO,BvBmsy,FvFmsy,MSY,Catch) %>%
+  dplyr::select(IdOrig,Dbase,Country,SciName,CommName,SpeciesCatName,IdLevel,RegionFAO,BvBmsy,FvFmsy,MSY,Catch,g,k) %>%
   ungroup()
 
 # unlumped data 
 udata<-UnlumpedProjectionData %>%
   filter(Year==2012 & is.na(BvBmsy)==F & is.na(FvFmsy)==F) %>%
-  select(IdOrig,Dbase,Country,SciName,CommName,SpeciesCatName,IdLevel,RegionFAO,BvBmsy,FvFmsy,MSY,Catch) %>%
+  dplyr::select(IdOrig,Dbase,Country,SciName,CommName,SpeciesCatName,IdLevel,RegionFAO,BvBmsy,FvFmsy,MSY,Catch,g,k) %>%
   ungroup()
 
 # save kobe data as a list
 data<-list(lumped=ldata,unlumped=udata)
 
-save(data,file = paste('/Users/Tyler/Documents/Sustainable Fisheries Group/SFG 2014/Global Fishery Potential/KobeAppV2/data/','KobeAppData.rdata',sep=''))
+save(data,file = paste('gfr-kobe/data/','KobeAppData.rdata',sep=''))
