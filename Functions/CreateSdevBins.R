@@ -32,11 +32,19 @@ CreateSdevBins<- function(Models,Data,BinBreak)
     
     colnames(TempData)<- c('Prediction','Residual','Year')
     
-    ModelStdevSummary<- ddply(TempData,~Year,summarise,Stdev=sd(Residual))
+    ModelStdevSummary<- TempData %>% 
+      group_by(Year) %>% 
+      summarise(Stdev=sd(Residual))
 
-    HighBModelStdev<- ddply(TempData[TempData$Prediction>log(BinBreak),],~Year,summarise,Stdev=sd(Residual))
+    HighBModelStdev<- TempData %>% 
+      filter(Prediction>log(BinBreak)) %>% 
+      group_by(Year) %>% 
+      summarise(Stdev=sd(Residual))
 
-    LowBModelStdev<- ddply(TempData[TempData$Prediction<=log(BinBreak),],~Year,summarise,Stdev=sd(Residual))
+    LowBModelStdev<- TempData %>% 
+      filter(Prediction<=log(BinBreak)) %>% 
+      group_by(Year) %>% 
+      summarise(Stdev=sd(Residual))
     
     TempSdevBins<- merge(HighBModelStdev,LowBModelStdev,by='Year')
     

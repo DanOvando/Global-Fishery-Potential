@@ -71,7 +71,7 @@ ScenarioResults<-function(DataU,BaselineYear,ResultFolder,Level)
     base<-totals %>%
       ungroup() %>%
       filter(Year==BaselineYear) %>%
-      select(-TotalMSY,-Year,-Policy,-Fisheries) %>%
+      dplyr::select(-TotalMSY,-Year,-Policy,-Fisheries) %>%
       rename(BaselineBvBmsy=MedianBvBmsy,BaselineFvFmsy=MedianFvFmsy,BaselineCatch=TotalCatch,
              BaselineBiomass=TotalBiomass,BaselineProfits=TotalProfits,BaselinePrice=MeanPrice)
     
@@ -91,7 +91,7 @@ ScenarioResults<-function(DataU,BaselineYear,ResultFolder,Level)
       base<-totals %>%
         ungroup() %>%
         filter(Year==BaselineYear) %>%
-        select(-TotalMSY,-Year,-Policy,-Fisheries) %>%
+        dplyr::select(-TotalMSY,-Year,-Policy,-Fisheries) %>%
         rename(BaselineBvBmsy=MedianBvBmsy,BaselineFvFmsy=MedianFvFmsy,BaselineCatch=TotalCatch,
                BaselineBiomass=TotalBiomass,BaselineProfits=TotalProfits,BaselinePrice=MeanPrice)
       
@@ -113,7 +113,7 @@ ScenarioResults<-function(DataU,BaselineYear,ResultFolder,Level)
     base<-totals %>%
       ungroup() %>%
       filter(Year==BaselineYear) %>%
-      select(-TotalMSY,-Year,-Fisheries,-Policy) %>%
+      dplyr::select(-TotalMSY,-Year,-Fisheries,-Policy) %>%
       rename(BaselineBvBmsy=MedianBvBmsy,BaselineFvFmsy=MedianFvFmsy,BaselineCatch=TotalCatch,
              BaselineBiomass=TotalBiomass,BaselineProfits=TotalProfits,BaselinePrice=MeanPrice)
     
@@ -141,22 +141,22 @@ ScenarioResults<-function(DataU,BaselineYear,ResultFolder,Level)
     if(Level %in% c('Country','Global'))
     {
     CCBAU<-subset(upsides,Policy=='Business As Usual') %>%
-      select(Country,Policy,Year,MedianBvBmsy,MedianFvFmsy,TotalCatch,TotalBiomass,TotalProfits) %>%
+      dplyr::select(Country,Policy,Year,MedianBvBmsy,MedianFvFmsy,TotalCatch,TotalBiomass,TotalProfits) %>%
       rename(PolicyBAU=Policy,BvBmsyBAU=MedianBvBmsy,FvFmsyBAU=MedianFvFmsy,TotalCatchBAU=TotalCatch,TotalBiomassBAU=TotalBiomass,TotalProfitsBAU=TotalProfits)
     
     ALLBAU<-subset(upsides,Policy=='Business As Usual Pessimistic') %>%
-      select(Country,Policy,Year,MedianBvBmsy,MedianFvFmsy,TotalCatch,TotalBiomass,TotalProfits) %>%
+      dplyr::select(Country,Policy,Year,MedianBvBmsy,MedianFvFmsy,TotalCatch,TotalBiomass,TotalProfits) %>%
       rename(PolicyBAU=Policy,BvBmsyBAU=MedianBvBmsy,FvFmsyBAU=MedianFvFmsy,TotalCatchBAU=TotalCatch,TotalBiomassBAU=TotalBiomass,TotalProfitsBAU=TotalProfits)
     }
     
     if(Level %in% c('SpeciesCatName'))
     {
       CCBAU<-subset(upsides,Policy=='Business As Usual') %>%
-        select(SpeciesCatName,Policy,Year,MedianBvBmsy,MedianFvFmsy,TotalCatch,TotalBiomass,TotalProfits) %>%
+        dplyr::select(SpeciesCatName,Policy,Year,MedianBvBmsy,MedianFvFmsy,TotalCatch,TotalBiomass,TotalProfits) %>%
         rename(PolicyBAU=Policy,BvBmsyBAU=MedianBvBmsy,FvFmsyBAU=MedianFvFmsy,TotalCatchBAU=TotalCatch,TotalBiomassBAU=TotalBiomass,TotalProfitsBAU=TotalProfits)
       
       ALLBAU<-subset(upsides,Policy=='Business As Usual Pessimistic') %>%
-        select(SpeciesCatName,Policy,Year,MedianBvBmsy,MedianFvFmsy,TotalCatch,TotalBiomass,TotalProfits) %>%
+        dplyr::select(SpeciesCatName,Policy,Year,MedianBvBmsy,MedianFvFmsy,TotalCatch,TotalBiomass,TotalProfits) %>%
         rename(PolicyBAU=Policy,BvBmsyBAU=MedianBvBmsy,FvFmsyBAU=MedianFvFmsy,TotalCatchBAU=TotalCatch,TotalBiomassBAU=TotalBiomass,TotalProfitsBAU=TotalProfits)
     }
     

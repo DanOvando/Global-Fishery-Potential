@@ -15,7 +15,9 @@ CheckLumping<- function(ProjectionData,UnlumpedProjectionData,BatchFolder)
   
   TUP<- rbind(FinalP,FinalUP)
   
-  Summary<- ddply(TUP,c('Lumping','Policy'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T),
+  Summary<- TUP %>% 
+    group_by(Lumping,Policy) %>% 
+    summarize(TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T),
                   TotalProfits=sum(Profits,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),MedianB=median(BvBmsy,na.rm=T),
                   MedianF=median(FvFmsy,na.rm=T))
   
@@ -35,11 +37,17 @@ CheckLumping<- function(ProjectionData,UnlumpedProjectionData,BatchFolder)
   
   dev.off()
   
-  CountrySummary<- ddply(subset(TUP,Policy=='Catch Share Three'),c('Lumping','Country'),summarize,TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T),
+  CountrySummary<- TUP %>% 
+    filter(Policy=='Catch Share Three') %>% 
+    group_by('Lumping','Country') %>% 
+    summarize(TotalCatch=sum(Catch,na.rm=T),TotalMSY=sum(MSY,na.rm=T),
                          TotalProfits=sum(Profits,na.rm=T),TotalBiomass=sum(Biomass,na.rm=T),MedianB=median(BvBmsy,na.rm=T),
                          MedianF=median(FvFmsy,na.rm=T))
   
-  CountryDiff<- ddply(subset(TUP,Policy=='Catch Share Three'),c('Country'),summarize,LumpedCatch=sum(Catch[Lumping=='Lumped'],na.rm=T)
+  CountryDiff<- TUP %>% 
+    filter(Policy=='Catch Share Three') %>% 
+    group_by(Country) %>% 
+    summarize(LumpedCatch=sum(Catch[Lumping=='Lumped'],na.rm=T)
                       ,UnlumpedCatch=sum(Catch[Lumping=='Unlumped'],na.rm=T))
   
   CountryDiff$LumpChange=100*((CountryDiff$UnlumpedCatch-CountryDiff$LumpedCatch)/CountryDiff$LumpedCatch)

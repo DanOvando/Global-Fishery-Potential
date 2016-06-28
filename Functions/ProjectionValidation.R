@@ -24,13 +24,12 @@ ProjectionValidation<-function(ProjectionData,BaselineYear)
     summarize(FinalNPV=sum(DiscProfits,na.rm=T))
     
 #   npv<-ddply(ProjectionData[ProjectionData$IdOrig %in% output$IdOrig & ProjectionData$Policy!='Historic',],c('IdOrig','Policy'),summarize,FinalNPV=sum(DiscProfits,na.rm=T))
+
+  # npv$name<- paste(npv$IdOrig,npv$Policy,sep='-')
+  # 
+  # output$name<- paste(output$IdOrig,output$Policy,sep='-')
   
-    
-  npv$name<- paste(npv$IdOrig,npv$Policy,sep='-')
-  
-  output$name<- paste(output$IdOrig,output$Policy,sep='-')
-  
-  output<-join(output,npv,by='name')
+  output<- left_join(output,npv,by=c('IdOrig','Policy'))
 
   output<- output[order(output$IdOrig),]
   

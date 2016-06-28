@@ -43,7 +43,7 @@ BuildPolicyBAUs<-function(ProjectionData,BaselineYear, elastic_demand = T, elast
         group_by(CommodityName) %>%
         summarise(global_catch = sum(Catch, na.rm = T))
       
-      ProjectionData <- join(ProjectionData,base_supply, by = 'CommodityName')
+      ProjectionData <- left_join(ProjectionData,base_supply, by = 'CommodityName')
       
     }
     if (sp_group_demand == F)

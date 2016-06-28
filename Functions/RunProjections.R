@@ -133,9 +133,9 @@ RunProjection <-
       lapply(seq(along = Projections), function(i)
         Projections[[i]]$TempMat)
 
-    TempStockMatrix <- ldply(TempMat, data.frame)
+    TempStockMatrix <- bind_rows(TempMat)
 
-    PolicyStorage <- ldply(PolicyStorage, data.frame)
+    PolicyStorage <- bind_rows(PolicyStorage)
 
 
     Data$Policy <- NA

@@ -8,7 +8,7 @@ MatrixSnowCatchMSY<- function(s,Data,CommonError,CommonRange,sigR,Smooth,Display
 {
   RanCMSY<- FALSE
   require(zoo)
-  require(plyr)
+  # require(plyr)
   
   MatrixCmsy<- function(parbound,n,interbio,finalbio,startbt)
   {

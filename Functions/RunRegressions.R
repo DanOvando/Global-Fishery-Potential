@@ -35,11 +35,11 @@ RunRegressions<- function(Data,RegList,FigureName)
     
     TempReg<- lm(fmla,data=RegData)
     
-    RobustTempReg<- RobustRegression(lm(fmla,data=RegData))
+    RobustTempReg<- RobustRegression(lm(fmla,data=RegData), dat = RegData)
     
-    TempReg<- RobustTempReg$Model
+    TempReg<- RobustTempReg$model
 
-    TempReg$ClusteredVCOV<- ClusteredVCOV(model=TempReg,data=RegData,cluster='IdOrig')
+    TempReg$ClusteredVCOV<- ClusteredVCOV(model=TempReg,cluster='IdOrig', dat = RegData)
            
     Model<- RegNames[m]  
         

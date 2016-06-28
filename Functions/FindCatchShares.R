@@ -55,7 +55,7 @@ FindCatchShares<-function(DataR,CatchSharePercent)
 #     show(a)
   }
   
-  CSstocks<-ldply(tempCSstocks)
+  CSstocks<-bind_rows(tempCSstocks)
   
   # create unique id to use for matching to GFR data
   CSstocks$IdCS1<-seq(1:nrow(CSstocks))
@@ -104,7 +104,7 @@ FindCatchShares<-function(DataR,CatchSharePercent)
 #     show(a)
   }
   
-  ram<-ldply(tempRMstocks)
+  ram<-bind_rows(tempRMstocks)
   
   multiRam<-subset(ram,Country=='Multinational')
   
@@ -131,10 +131,10 @@ FindCatchShares<-function(DataR,CatchSharePercent)
   ### Find country/species/region matches-----------------------------------------------------------------------------------
   
   ## Find country level RAM stocks that match
-  matchR<-join(CSstocks,ram,by=c('Country','RegionFAO','SciName'),type='inner')
+  matchR<-left_join(CSstocks,ram,by=c('Country','RegionFAO','SciName'))
   
   ## Find all FAO matches and save ids
-  matchF<-join(CSstocks,fao,by=c('Country','RegionFAO','SciName'),type='inner')
+  matchF<-left_join(CSstocks,fao,by=c('Country','RegionFAO','SciName'))
   
   faoCSids<-unique(matchF$IdOrig)
   
@@ -155,7 +155,7 @@ FindCatchShares<-function(DataR,CatchSharePercent)
   fao2$CatchShare[!(fao2$IdOrig %in% faoCSids)]<-0
   
   ## Match multinational RAM stocks to fao 2012 data and calculate percent of catch in catchshares
-  matchM<-join(multiRam,fao2,by=c('RegionFAO','SciName'),type='inner')
+  matchM<- left_join(multiRam,fao2,by=c('RegionFAO','SciName'))
   
   colnames(matchM)<-c('IdOrig_RAM','Dbase','Country_RAM','CommName_RAM','SciName','RegionFAO','CatchShare_RAM','IdOrig_FAO','Country_FAO','CommName_FAO','Catch','CatchShare_FAO')
   

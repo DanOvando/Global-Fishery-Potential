@@ -15,14 +15,16 @@ AdjustMSY<-function(Data,RawData,ForageFish)
   Data$MSYUnit[Data$SpeciesCatName==ForageFish]<-'Reduced MSY by 25%'
   
   ### adjust MSY for RAM stocks with unreliable k values
-  ToAdjust<-read.csv('Data/RAM_StocksToAdjust_MSY.csv')
+  ToAdjust<-read.csv('Data/RAM_StocksToAdjust_MSY.csv', stringsAsFactors = F)
   
   ids<-unique(ToAdjust$IdOrig)
   
   # Set MSY to equal the average annual lifetime catch of these RAM stocks
   temp<-RawData[RawData$IdOrig %in% ids,]
   
-  avgCatch<-ddply(temp,c('IdOrig','CommName'),summarize,AvgCatch=mean(Catch,na.rm=T),AvgMsy=mean(MSY,na.rm=T))
+  avgCatch<- temp %>% 
+    group_by(IdOrig,CommName) %>% 
+    summarize(AvgCatch=mean(Catch,na.rm=T),AvgMsy=mean(MSY,na.rm=T))
   
   avgCatch$PercOfOriginalMSY<-100*(avgCatch$AvgCatch/avgCatch$AvgMsy)
   

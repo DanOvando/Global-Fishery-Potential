@@ -33,15 +33,21 @@ StockAndCountrySummary<-function(UnlumpedProjectionData,ProjectionData,StitchIds
     #     show(a)
   }
   
-  stitchIds<-ldply(stitchIds)
+  stitchIds<-bind_rows(stitchIds)
   
   stitchIds$StockId<-as.character(stitchIds$StockId)
   
   # Indicate which stocks were previously lumped
   
+  StockList$WasLumped <- FALSE
+  
   StockList$WasLumped[StockList$IdOrig %in% stitchIds$StockId]<-TRUE
   
   # Indicate which stocks are currently B/Bmsy < 1
+  
+  StockList$OverFished <- FALSE
+  
+  StockList$OverFishing <- FALSE
   
   StockList$OverFished[StockList$BvBmsy<1]<-TRUE
   
@@ -74,6 +80,7 @@ StockAndCountrySummary<-function(UnlumpedProjectionData,ProjectionData,StitchIds
               PercFvFmsyAboveOne=100*(sum(OverFishing,na.rm=T))/length(unique(IdOrig)))
   
   # calculate number of NEI fisheries
+  
   if (include_neis == T)
   {
     CountryNeiSummary<- StockList[StockList$IdLevel=='Neis',] %>%
@@ -99,7 +106,7 @@ StockAndCountrySummary<-function(UnlumpedProjectionData,ProjectionData,StitchIds
       {
         CountrySummary$NeiCatch[b]<-CountryNeiSummary$NeiCatch[whereN]
         
-        CountrySummary$NeiStocks[b]<-CountryNeiSummary$NeiStock[whereN]
+        CountrySummary$NeiStocks[b]<-CountryNeiSummary$NeiStocks[whereN]
       }
       rm(whereN)
     }

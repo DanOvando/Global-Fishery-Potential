@@ -33,7 +33,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
 
     poldata <- poldata %>%
       dplyr::select(-global_catch) %>%
-      join(supply, by = 'CommodityName')
+      left_join(supply, by = 'CommodityName')
   }
 
   if (sp_group_demand == F)
@@ -78,7 +78,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
 
     species_types <- read.csv("Data/ASFIS_Feb2014.csv",stringsAsFactors=F) # list of ASFIS scientific names and corressponding ISSCAAP codes
 
-    nei_lookup_table <- lapply(1:length(nei_types),make_nei_lookup,nei_type_table = nei_type_table,species_types = species_types) %>% ldply()
+    nei_lookup_table <- lapply(1:length(nei_types),make_nei_lookup,nei_type_table = nei_type_table,species_types = species_types) %>% bind_rows()
   }
   # Back to open access -------------------------------------------------------
 
@@ -192,7 +192,7 @@ elastic_projection <- function(poldata,oa_ids,elasticity = -.7, discount = 0.05,
     {
       poldata <- poldata %>%
         dplyr::select(-global_catch) %>%
-        join(supply, by = 'CommodityName')
+        left_join(supply, by = 'CommodityName')
 
     }
 

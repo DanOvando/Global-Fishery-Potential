@@ -102,10 +102,10 @@ UnlumpFisheries<-function(Data,ProjData,RawData,BaselineYear,YearsBack,StitchIds
     lumpproj<-tempdata
     
     # initialize dataframes to store historical and projected results
-    UnLumpedHist<-data.frame(matrix(nrow=0,ncol=ncol(lumpproj)))
+    UnLumpedHist<-as.data.frame(matrix(nrow=0,ncol=ncol(lumpproj)))
     colnames(UnLumpedHist)<-colnames(lumpproj)
     
-    UnLumpedProj<-data.frame(matrix(nrow=0,ncol=ncol(lumpproj)))
+    UnLumpedProj<-as.data.frame(matrix(nrow=0,ncol=ncol(lumpproj)))
     colnames(UnLumpedProj)<-colnames(lumpproj)
     
     # loop over all stitched ids and unlump historical
@@ -153,7 +153,7 @@ UnlumpFisheries<-function(Data,ProjData,RawData,BaselineYear,YearsBack,StitchIds
       unlumphist<- unlumphist %>%
         dplyr::select(-Percent)
     
-      UnLumpedHist<-rbind(UnLumpedHist,unlumphist)
+      UnLumpedHist<-bind_rows(UnLumpedHist,unlumphist)
       
 #       a=unlumphist$Catch
 #       b=raw$Catch[raw$Year %in% unlumphist$Year & raw$IdOrig==stids[b]]
@@ -185,13 +185,13 @@ UnlumpFisheries<-function(Data,ProjData,RawData,BaselineYear,YearsBack,StitchIds
           
           unlumpproj$DiscProfits<-unlumpproj$DiscProfits*percentFuture$Percent[percentFuture$IdOrig==futurestids[b]]
           
-          UnLumpedProj<-rbind(UnLumpedProj,unlumpproj)
+          UnLumpedProj<-bind_rows(UnLumpedProj,unlumpproj)
         }
     }
-      # UnLumped<-rbind(UnLumped,unlumphist,unlumpproj)
+      # UnLumped<-bind_rows(UnLumped,unlumphist,unlumpproj)
       show(a)
       
-      All<-rbind(UnLumpedHist,UnLumpedProj)
+      All<-bind_rows(UnLumpedHist,UnLumpedProj)
       
       UnlumpedFaoData[[a]]<-All
     
@@ -200,7 +200,7 @@ UnlumpFisheries<-function(Data,ProjData,RawData,BaselineYear,YearsBack,StitchIds
   } # close lumped stock loop
   
   # flatten to one dataframe
-  UnLumpedFaoData<-ldply(UnlumpedFaoData, data.frame) 
+  UnLumpedFaoData<-bind_rows(UnlumpedFaoData) 
   
 #   testAll<-inner_join(UnLumpedFaoData,RawData[,c('IdOrig','Year','Catch')],by=c('IdOrig','Year'))
 #   plot(testAll$Catch.x,testAll$Catch.y)
@@ -208,7 +208,7 @@ UnlumpFisheries<-function(Data,ProjData,RawData,BaselineYear,YearsBack,StitchIds
   
   FinalData<-Data[!(grepl('Lumped',Data$IdOrig)),]
 
-  FinalData<-rbind(UnLumpedFaoData,FinalData)
+  FinalData<-bind_rows(UnLumpedFaoData,FinalData)
 
   return(FinalData)
   

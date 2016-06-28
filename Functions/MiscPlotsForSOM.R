@@ -2,7 +2,10 @@
 PlotsForSOM<-function(RawData,FullData,UnlumpedProjectionData,UnlumpedUpsidesAllStocks)
 {
   
-  dbase<-ddply(RawData[RawData$Year>=1950 & RawData$Year<2013,],c('Year','Dbase'),summarize,TotalCatch=sum(Catch,na.rm=T))
+  dbase<- RawData %>% 
+    filter(Year>=1950 & Year<2013) %>% 
+    group_by(Year,Dbase) %>% 
+    summarize(TotalCatch=sum(Catch,na.rm=T))
   
   fdbase<-ddply(FullData[FullData$Year>=1950 & FullData$Year<2013,],c('Year','Dbase'),summarize,TotalCatch=sum(Catch,na.rm=T))
   

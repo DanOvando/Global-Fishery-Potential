@@ -188,7 +188,7 @@ NearestNeighborNeis <-
     }
     show('Completed NEI Stats mclapply')
     
-    NEIs <- bind_rows(tempNEIs, data.frame)
+    NEIs <- bind_rows(tempNEIs)
     
     show("Completed NEI ldply")
     

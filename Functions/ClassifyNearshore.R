@@ -189,7 +189,7 @@ ClassifyNearshore<-function(DataU,DataR,DepthRangeMax)
     print(a)
   }
   
-  FinalData<-ldply(FinalData)
+  FinalData<-bind_rows(FinalData)
   
   # write csv of profit upside by Country for all fisheries, nearshore, and offshore classifications
   NearImportance<-FinalData %>%

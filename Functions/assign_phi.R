@@ -16,15 +16,15 @@ assign_phi <- function(data, taxdata, phidata, default_phi = 0.188, min_phi = .1
   
   taxdata <- taxdata[,c('paste_name','order')]
   
-  data <- join(data, taxdata, by = 'paste_name')
+  data <- left_join(data, taxdata, by = 'paste_name')
   
   data$order <- tolower(data$order)
   
-  data <- select(data, -phi, -paste_name)
+  data <- dplyr::select(data, -phi, -paste_name)
   
-  phidata <- select(phidata,order,phi)
+  phidata <- dplyr::select(phidata,order,phi)
   
-  data <- join(data,phidata, by = 'order')
+  data <- left_join(data,phidata, by = 'order')
   
   data$phi[is.na(data$phi)] <- default_phi
   

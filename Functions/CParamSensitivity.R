@@ -37,7 +37,7 @@ CParamSensitivity<-function(Data,BaselineYear,beta)
     result$BOA<-boa[b]
     
     if(a==1 & b==1){SensitivityC<-result}
-    if(a==1 & b>1 | a>1){SensitivityC<-rbind(SensitivityC,result)}
+    if(a==1 & b>1 | a>1){SensitivityC<-bind_rows(SensitivityC,result)}
     } # close BOA loop
   } # close cats loop
 

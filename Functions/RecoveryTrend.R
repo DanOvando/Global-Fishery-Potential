@@ -15,6 +15,8 @@ RecoveryTrend<-function(ProjectionData,RecoveryThreshold,OnlyOverfish,StartYear)
     RecoveryData<-ProjectionData[ProjectionData$IdOrig %in% OverfishedIds,]
   }
   
+  RecoveryData$Recovered <- FALSE
+  
   RecoveryData$Recovered[RecoveryData$BvBmsy>RecoveryThreshold]<-TRUE
   
   RecoveryTrend<- RecoveryData %>%

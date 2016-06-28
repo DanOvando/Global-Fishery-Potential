@@ -107,7 +107,7 @@ DivyMultinational<-function(Data,RawData,BaselineYear,YearsBack)
       
       unlumpMulti$DiscProfits<-unlumpMulti$DiscProfits*cntrys$PercOfTotal[cntrys$Country==cntryIds[d]]
       
-      NewMulti<-rbind(NewMulti,unlumpMulti)
+      NewMulti<-bind_rows(NewMulti,unlumpMulti)
       
       } # close country loop
     
@@ -130,15 +130,15 @@ DivyMultinational<-function(Data,RawData,BaselineYear,YearsBack)
   } # close Multinational stock loop
   
   # flatten list
-  DivyMulti<-ldply(DivyMulti)
+  DivyMulti<- bind_rows(DivyMulti)
   
   # add tuna stocks back in
-  DivyMultiFinal<-rbind(Tunas,DivyMulti)
+  DivyMultiFinal<-bind_rows(Tunas,DivyMulti)
   
   # Remove multinational from original UnlumpedProjectionData and add in new DivyMulti
   FinalData<-Data[!(Data$Dbase=='RAM' & Data$Country=='Multinational'),]
 
-  FinalData<-rbind(FinalData,DivyMultiFinal)
+  FinalData<-bind_rows(FinalData,DivyMultiFinal)
   
   return(FinalData)
 }

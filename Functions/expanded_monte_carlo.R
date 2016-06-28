@@ -79,7 +79,7 @@ expanded_monte_carlo <- function(runfolder,CPUs,mciterations = 250,real_elastic_
     summarize(MeanFvFmsy=mean(FvFmsy),MeanBvBmsy=mean(BvBmsy),MeanMSY=mean(MSY),MeanBiomass=mean(Biomass),MeanCatch=mean(Catch))
   
   
-  Comp<- join(LastProj,Check,by='Name')
+  Comp<- left_join(LastProj,Check,by='Name')
   
   CmpCatch<- ggplot(data=subset(Comp),aes(Catch,MeanCatch,color=IdLevel))+geom_point()
   

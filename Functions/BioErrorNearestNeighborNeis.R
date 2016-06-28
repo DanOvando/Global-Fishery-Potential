@@ -56,7 +56,7 @@ BioErrorNearestNeighborNeis<- function(BiomassData,MsyData,ProjData,Projected,Ba
   
   
   
-  NEIs <- ldply (ExtendResults, data.frame)
+  NEIs <- bind_rows(ExtendResults)
   
   #   NEIs<- ExtendTimeSeries(NEIs,max(ProjData$Year))
   
@@ -116,7 +116,7 @@ BioErrorNearestNeighborNeis<- function(BiomassData,MsyData,ProjData,Projected,Ba
   
   show('Completed NEI Stats mclapply')
   
-  NEIs<-ldply(tempNEIs,data.frame)
+  NEIs<-bind_rows(tempNEIs)
   
   show("Completed NEI ldply")
   

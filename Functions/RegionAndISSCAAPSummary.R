@@ -11,7 +11,6 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
   data<-ProjectionData[ProjectionData$CanProject==T,]
   
   ### Current status by ISSCAAP category---------------------------------------------------
-  
   current<- data[data$Year==BaselineYear,] %>% 
     group_by(SpeciesCatName) %>% 
     summarize(Stocks=length(unique(IdOrig)),MedianB=median(BvBmsy,na.rm=T),
@@ -134,7 +133,9 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       
       DensityData<- (kde2d(BaselineData$BvBmsy,BaselineData$FvFmsy,n=100,lims=c(0,2.5,0,4)))
       
-      FTrend<- ddply(temp,c('Year','Dbase'),summarize,FTrend=mean(FvFmsy,na.rm=T))
+      FTrend<- temp %>% 
+        group_by(Year,Dbase) %>% 
+        summarize(FTrend=mean(FvFmsy,na.rm=T))
       
       KobeColors<- colorRampPalette(c("powderblue", "white",'#FFFF99'))
       
@@ -236,7 +237,9 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       
       DensityData<- (kde2d(BaselineData$BvBmsy,BaselineData$FvFmsy,n=100,lims=c(0,2.5,0,4)))
       
-      FTrend<- ddply(temp,c('Year','Dbase'),summarize,FTrend=mean(FvFmsy,na.rm=T))
+      FTrend<- temp %>% 
+        group_by(Year,Dbase) %>% 
+        summarize(FTrend=mean(FvFmsy,na.rm=T))
       
       KobeColors<- colorRampPalette(c("powderblue", "white",'#FFFF99'))
       
@@ -332,7 +335,9 @@ RegionFaoAndISSCAAPSummary<-function(ProjectionData,BaselineYear)
       
       DensityData<- (kde2d(BaselineData$BvBmsy,BaselineData$FvFmsy,n=100,lims=c(0,2.5,0,4)))
       
-      FTrend<- ddply(temp,c('Year','Dbase'),summarize,FTrend=mean(FvFmsy,na.rm=T))
+      FTrend<- temp %>% 
+        group_by(Year,Dbase) %>% 
+        summarize(FTrend=mean(FvFmsy,na.rm=T))
       
       KobeColors<- colorRampPalette(c("powderblue", "white",'#FFFF99'))
       

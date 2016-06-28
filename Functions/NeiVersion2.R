@@ -158,7 +158,9 @@ NeiVersion2<-function(MsyData,Level,MinStocks)
       
       if(exists('CompStocks') & nrow(CompStocks)>MinStocks)
       {
-        results<-ddply(CompStocks,c("Year"),summarize, JStocks=length(unique(IdOrig)),MedianBvBmsy=median(BvBmsy,na.rm=T), MedianFvFmsy=median(FvFmsy,na.rm=T),
+        results<- CompStocks %>% 
+          group_by(Year) %>% 
+          summarize(JStocks=length(unique(IdOrig)),MedianBvBmsy=median(BvBmsy,na.rm=T), MedianFvFmsy=median(FvFmsy,na.rm=T),
                        MedianMSY=median(MSY,na.rm=T),MedianR=median(r,na.rm=T))
         
         tempNeiStats$JStocks[b]<-results$JStocks[1]
@@ -177,7 +179,7 @@ NeiVersion2<-function(MsyData,Level,MinStocks)
   
   } # close years loop
   
-  ResultsNEIs<-ldply(ResultsNEIs,data.frame)
+  ResultsNEIs<-bind_rows(ResultsNEIs)
   
   ### Assign median values to matching NEI stocks--------------------------------------------
   

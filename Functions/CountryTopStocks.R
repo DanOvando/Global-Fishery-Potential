@@ -123,12 +123,16 @@ CountryTopStocks<-function(DataU,DataL,BaselineYear,Policies,NumberOfStocks,Numb
       # join results for each policy as new columns
       if(b==1)
       {
-        tempFinal<-join(tempBase,tempPol,by='IdOrig',type='full',match='all')
+        tempFinal<- full_join(tempBase,tempPol,by='IdOrig',type='full',match='all')
+        # tempFinal<- full_join(tempBase,tempPol,by='IdOrig',type='full',match='all')
+        
       }
       
       if(b>1)
       {
-        tempFinal<-join(tempFinal,tempPol,by='IdOrig',type='full',match='all')
+        # tempFinal<-join(tempFinal,tempPol,by='IdOrig',type='full',match='all')
+        tempFinal<-full_join(tempFinal,tempPol,by='IdOrig')
+        
       }
     } # close loop
     
@@ -159,7 +163,7 @@ CountryTopStocks<-function(DataU,DataL,BaselineYear,Policies,NumberOfStocks,Numb
     
   } # close cntrys loop
   
-  TopStocks<-ldply(TopStocks)
+  TopStocks<-bind_rows(TopStocks)
   
   # Calculate global totals by policy and add to table
   global<- DataL[DataL$Year %in% c(BaselineYear,max(DataL$Year)),] %>%

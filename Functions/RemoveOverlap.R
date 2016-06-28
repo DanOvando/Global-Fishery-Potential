@@ -294,7 +294,7 @@ FinalData<-CleanedData[order(CleanedData$IdOrig, CleanedData$Year),] # sort colu
 
 # flatten multinational list
 
-MultinationalOverlap<-ldply(MultinationalOverlap)
+MultinationalOverlap<-bind_rows(MultinationalOverlap)
 
 return(list(FilteredData=FinalData,AllOverlap=AllOverlapFinal,RamOverlap=RamOverlapFinal,SofiaOverlap=SofiaOverlapFinal,
             SofiaRamOverlap=SofiaRamOverlapFinal,SofiaWithoutDataIds=SofiaWithoutDataIdsFinal,MultinationalOverlap=MultinationalOverlap))

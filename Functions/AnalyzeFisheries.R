@@ -155,7 +155,7 @@ AnalyzeFisheries<- function(Data,BatchName,GroupingVars,Years,RealModelSdevs,Nei
         CmsyDist<-  ((lapply(1:(dim(CmsyStocks)[1]),GenerateDist,CmsyStocks=CmsyStocks,Mean='BvBmsy',SD='CatchMSYBvBmsy_LogSd',N=J )))
 
 
-        CmsyDist<- log(ldply(CmsyDist))
+        CmsyDist<- log(bind_rows(CmsyDist))
 
         CmsyDist<- cbind(CmsyStocks[,c('Year','IdOrig')],CmsyDist)
       }

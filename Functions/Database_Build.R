@@ -385,17 +385,16 @@ DatabaseBuild<- function()
   
   
   GroupNums<-unique(na.omit(RAM$SpeciesCat))
-  
+
   for (i in 1:length(GroupNums)) # match group code to group name
   {
     Where<-((RAM$SpeciesCat==GroupNums[i]))
     
-    if (sum(GroupNames_ISSCAAP$ISSCAAP.code==GroupNums[i])>0)
+    if (sum(GroupNames_ISSCAAP$SpeciesCat==GroupNums[i])>0)
     {
-      RAM$SpeciesCatName[Where]<-GroupNames_ISSCAAP$Definition[GroupNames_ISSCAAP$ISSCAAP.code==GroupNums[i]]
+      RAM$SpeciesCatName[Where]<- GroupNames_ISSCAAP$SpeciesCatName[GroupNames_ISSCAAP$SpeciesCat==GroupNums[i]]
     }
   }
-  
   # RAM quality control and data checks
   
   RAM$Country[RAM$Country=="Russia"]<-"Russian Federation"

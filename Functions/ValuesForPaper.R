@@ -15,7 +15,7 @@
 ResultsForPaper<-function(DataU,DataL,RawData,BaselineYear=2012,ResultFolder)
 {
   ## Build result table
-  results<-data.frame(matrix(NA,ncol = 2))
+  results<- as.data.frame(matrix(NA,ncol = 2))
   colnames(results)<-c('Metric','Result')
   
   # vector of policies of interest
@@ -43,7 +43,7 @@ ResultsForPaper<-function(DataU,DataL,RawData,BaselineYear=2012,ResultFolder)
   
   ## % Fisheries with BvBmsy <0.8 in 2050
   recovered<-DataL %>%
-    select(IdOrig,Country,SciName,Year,Catch,BvBmsy,FvFmsy) %>%
+    dplyr::select(IdOrig,Policy,Country,SciName,Year,Catch,BvBmsy,FvFmsy) %>%
     mutate(Recovered=BvBmsy>=0.8) %>%
     group_by(Policy,Year) %>%
     summarize(Fisheries=length(IdOrig),TotalCatch=sum(Catch,na.rm=T),RecoveredFisheries=length(IdOrig[Recovered==TRUE]),
@@ -51,8 +51,7 @@ ResultsForPaper<-function(DataU,DataL,RawData,BaselineYear=2012,ResultFolder)
               PercNeedRecovery=100-PercRecovered) %>%
     ungroup() %>%
     filter(Year %in% c(2012,2050) & Policy %in% pols)
-  
-  
+
   results[3:8,'Metric']<-c("% Recovered,BAU CC","% Recovered, BAU All","% Recovered, RBFM CC",
                            "% Recovered, RBFM All","% Recovered, Fmsy All","% Recovered,Fmsy All")
   
@@ -80,7 +79,7 @@ ResultsForPaper<-function(DataU,DataL,RawData,BaselineYear=2012,ResultFolder)
   ## conservation concern stocks
   concern<-DataL %>%
     filter(Year %in% c(2012) & (BvBmsy<1 | FvFmsy>1)) %>%
-    select(IdOrig,Policy,Year,BvBmsy,FvFmsy) 
+    dplyr::select(IdOrig,Policy,Year,BvBmsy,FvFmsy) 
   
   concern<-100*(length(unique(concern$IdOrig))/length(unique(DataL$IdOrig[DataL$Year==2012])))
 
@@ -111,7 +110,7 @@ ResultsForPaper<-function(DataU,DataL,RawData,BaselineYear=2012,ResultFolder)
   
   tbl<-fishupsides %>%
     filter(Policy %in% c('CatchShare','Catch Share Three')) %>%
-    select(IdOrig,Country,Year,Policy,AbsChangeFromSQProfits,AbsChangeFromSQTotalCatch,AbsChangeFromSQTotalBiomass) %>%
+    dplyr::select(IdOrig,Country,Year,Policy,AbsChangeFromSQProfits,AbsChangeFromSQTotalCatch,AbsChangeFromSQTotalBiomass) %>%
     mutate(TBL=AbsChangeFromSQProfits>0 & AbsChangeFromSQTotalCatch>0 & AbsChangeFromSQTotalBiomass>0) %>%
     group_by(Policy) %>%
     summarize(Stocks=length(unique(IdOrig)),TBLstock=sum(TBL,na.rm=T),
@@ -126,7 +125,7 @@ ResultsForPaper<-function(DataU,DataL,RawData,BaselineYear=2012,ResultFolder)
   
   tbl<-fishupsides %>%
     filter(Policy %in% c('CatchShare','Catch Share Three')) %>%
-    select(IdOrig,Country,Year,Policy,AbsChangeFromSQProfits,AbsChangeFromSQTotalCatch,AbsChangeFromSQTotalBiomass) %>%
+    dplyr::select(IdOrig,Country,Year,Policy,AbsChangeFromSQProfits,AbsChangeFromSQTotalCatch,AbsChangeFromSQTotalBiomass) %>%
     mutate(TBL=AbsChangeFromSQProfits>0 & AbsChangeFromSQTotalCatch>0 & AbsChangeFromSQTotalBiomass>0) %>%
     group_by(Policy) %>%
     summarize(Stocks=length(unique(IdOrig)),TBLstock=sum(TBL,na.rm=T),
@@ -147,7 +146,7 @@ ResultsForPaper<-function(DataU,DataL,RawData,BaselineYear=2012,ResultFolder)
 
   cntrytbl<-cntryupsides %>%
     filter(Policy %in% c('CatchShare','Catch Share Three') & Country %in% topcntrys$Country) %>%
-    select(Country,Policy,AbsChangeFromSQProfits,AbsChangeFromSQTotalCatch,AbsChangeFromSQTotalBiomass) %>%
+    dplyr::select(Country,Policy,AbsChangeFromSQProfits,AbsChangeFromSQTotalCatch,AbsChangeFromSQTotalBiomass) %>%
     mutate(TBL=AbsChangeFromSQProfits>0 & AbsChangeFromSQTotalCatch>0 & AbsChangeFromSQTotalBiomass>0) %>%
     group_by(Policy) %>%
     summarize(Country=length(unique(Country)),TBLcntry=sum(TBL,na.rm=T),

@@ -20,7 +20,9 @@ sci<-unique(Data$SciName)
 
 catprices2011<-PriceData[,c('SpeciesCatName','Species_AFSIS','CommName','X2011')]
 
-catprices2011<-ddply(catprices2011,c('SpeciesCatName'),summarize,MeanPrice=mean(X2011,na.rm=T))
+catprices2011<- catprices2011 %>% 
+  group_by(SpeciesCatName) %>% 
+  summarize(MeanPrice=mean(X2011,na.rm=T))
 
 for(l in 1:length(sci))
 {
@@ -51,15 +53,6 @@ for(l in 1:length(sci))
     
     WhereSpecies<- Data$SpeciesCatName==SpeciesCats[s]
         
-#     WherePrices<- as.character(PriceData$SpeciesCatName)==as.character(SpeciesCats[s])
-#     
-#     if (sum(WherePrices)>0)
-#     {
-#       Price<- (PriceData$wt_avg_08to12[WherePrices])
-#       
-#     }
-#     else{Price<- mean(PriceData$wt_avg_08to12,na.rm=T)}
-    
     WhereBOA<- (BvBmsyOpenAccess$SpeciesCatName)==as.character(SpeciesCats[s])
     
     if (sum(WhereBOA)>0)

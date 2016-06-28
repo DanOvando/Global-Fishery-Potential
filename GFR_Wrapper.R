@@ -107,7 +107,7 @@ if (RunAnalyses == TRUE)
     
     FullData <-
       RamSciNameAdjuster(FullData, VersionToUse = 'SciNameToUse') # adjust SciNames of RAM stocks that have synonyms and other variations not found in AFSIS list
-    
+
     CleanedData <-
       MaidService(FullData, OverlapMode, BaselineYear) #Filter out unusable stocks, prepare data for regression and use
     
@@ -180,7 +180,6 @@ if (RunAnalyses == TRUE)
   #  flatProfile(RProfData,byTotal=TRUE)
   
   # Run regressions ---------------------------------------------------------
-  
   RegressionResultsAllRam <-
     RunRegressions(RamData, Regressions, 'Real Stocks') # run regressions using all RAM stock values
   
@@ -493,10 +492,13 @@ if (RunAnalyses == TRUE)
   
   #   huh <- GlobalStatus$Data[GlobalStatus$Data$IdOrig %in% missing$IdOrig,]
   
+  samples = sample(GlobalStatus$Data$IdOrig, 10)
+  
   CatchMSYresults <-
     (
+      GlobalStatus$Data %>% 
+        # filter(IdOrig %in% samples) %>% 
       RunCatchMSY(
-        (GlobalStatus$Data),
         ErrorSize,
         sigR,
         Smooth,
@@ -547,16 +549,7 @@ if (RunAnalyses == TRUE)
   
   BiomassData <-
     AssignEconomicData(BiomassData, BvBmsyOpenAccess) #Assign price and cost data back to each stock in biomass data
-  
-  #Run quick diagnostic of CatchMSY results
-  #   pdf(file=paste(FigureFolder,'Catch MSY vs PRM BvBmsy predictions.pdf',sep=''))
-  #   print(xyplot(  CatchMSYBvBmsy ~ BvBmsy | Dbase,data=MsyData,xlab='PRM BvBmsy',ylab='CMSY BvBmsy',panel=function(x,y,...){
-  #     panel.xyplot(x,y,...)
-  #     panel.abline(a=0,b=1,lty=2)
-  #   }))
-  #   dev.off()
-  
-  
+
   MsyData$PercentGain <- 100 * (MsyData$MSY / MsyData$Catch - 1)
   
   # Run projection analysis -------------------------------------------------
@@ -576,14 +569,8 @@ if (RunAnalyses == TRUE)
        MsyData,
        BiomassData)
   
-  # load(file=paste(ResultFolder,"MsyData.rdata",sep=""))
-  
   MsyData$BestModel <- as.character(MsyData$BestModel)
   
-  #   if(SubSample>0)
-  #   {
-  #   save.image(file=paste(ResultFolder,'Test Results Prior to Projections.rdata',sep=''))
-  #   }
   
   Policies = c(
     'StatusQuoOpenAccess',
@@ -613,7 +600,6 @@ if (RunAnalyses == TRUE)
   ProjectionData <- FullProjectionData$DataPlus
   
   show("Completed Projections")
-  
   if (IncludeNEIs == TRUE)
   {
     #    Rprof()
@@ -642,9 +628,9 @@ if (RunAnalyses == TRUE)
     #     RProfData<- readProfileData('Rprof.out')
     #     flatProfile(RProfData,byTotal=TRUE)
     
-    ProjectionData <- rbind(ProjectionData, NeiData$ProjNeis)
+    ProjectionData <- bind_rows(ProjectionData, NeiData$ProjNeis)
     
-    BiomassData <- rbind(BiomassData, NeiData$BiomassNeis)
+    BiomassData <- bind_rows(BiomassData, NeiData$BiomassNeis)
   }
   
   BiomassData <-
@@ -671,7 +657,6 @@ if (RunAnalyses == TRUE)
                            ProjectionData$Biomass == 0] <-
     (ProjectionData$BvBmsy * ProjectionData$Bmsy)[is.na(ProjectionData$Biomass) |
                                                     ProjectionData$Biomass == 0]
-  
   OriginalProjectionData <- ProjectionData
   
   OriginalFullData <- FullData
@@ -866,7 +851,7 @@ UpsideAllStocks <-
     RecoveryThreshold = 0.8,
     LumpedName = 'Lumped Projection Data',
     SubsetName = 'All Stocks',
-    IncludeNEIs
+    IncludeNEIs = IncludeNEIs
   )
 
 UpsideOverfishOnly <-
@@ -877,7 +862,7 @@ UpsideOverfishOnly <-
     RecoveryThreshold = 0.8,
     LumpedName = 'Lumped Projection Data',
     SubsetName = 'Overfish Only',
-    'IncludeNEIs'
+    IncludeNEIs = IncludeNEIs
   )
 
 # Unlump lumped fisheries and create separate ProjectionData dataframe with unlumped stocks
@@ -925,7 +910,7 @@ UnlumpedUpsideAllStocks <-
     RecoveryThreshold = 0.8,
     LumpedName = 'UnLumped Projection Data',
     SubsetName = 'All Stocks',
-    IncludeNEIs
+    IncludeNEIs = IncludeNEIs
   )
 
 
