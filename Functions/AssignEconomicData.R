@@ -18,6 +18,27 @@ AssignEconomicData<- function(Data,BvBmsyOpenAccess)
 
 sci<-unique(Data$SciName)
 
+  
+  if (file.exists('Data/Exvessel Price Database.csv')){
+    
+    old_pricedata <- PriceData
+    
+    PriceData <- read.csv('Data/Exvessel Price Database.csv', stringsAsFactors = F) %>% 
+      as_data_frame() %>% 
+      group_by(ASFIS_species, pooled_commodity) %>% 
+      mutate(Avg07to11 = mean(exvessel[is.na(Year) == F & Year >= 2007 & Year <=max(Year, na.rm = T)], na.rm = T)) %>% 
+      filter(Year == 2011) %>% 
+      rename(Species_AFSIS = scientific_name,
+             SpeciesCatName = ISSCAAP_group,
+             CommName = ASFIS_species,
+             X2011 = exvessel)
+    
+    
+
+  }
+  
+  
+  
 catprices2011<-PriceData[,c('SpeciesCatName','Species_AFSIS','CommName','X2011')]
 
 catprices2011<- catprices2011 %>% 

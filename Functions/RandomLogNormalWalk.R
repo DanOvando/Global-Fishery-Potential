@@ -13,6 +13,6 @@ RandomWalk<- function(Length,Iterations,Start,Error,AC)
   return(Walk)
 }
 
-Walk<- RandomWalk(1000,1,0,1,1)
+Walk<- RandomWalk(1000,1,0,1,0.5)
 
 plot(t(Walk/mean(Walk)))
